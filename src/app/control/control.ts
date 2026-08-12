@@ -1,8 +1,10 @@
-import { Component, computed, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, inject, OnDestroy, OnInit, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import type { UnlistenFn } from '@tauri-apps/api/event';
 
 import { DisplayGateway } from '../display/display.gateway';
 import type { MonitorDescriptor } from '../display/display.models';
+import { PlayerDisplayStore } from '../display/player-display.store';
 
 @Component({
   selector: 'app-control',
@@ -10,8 +12,10 @@ import type { MonitorDescriptor } from '../display/display.models';
   templateUrl: './control.html',
   styleUrl: './control.scss',
 })
-export class Control implements OnInit {
+export class Control implements OnInit, OnDestroy {
   private readonly displayGateway = inject(DisplayGateway);
+  private readonly playerDisplayStore = inject(PlayerDisplayStore);
+  private unlistenPlayerDisplayReady?: UnlistenFn;
 
   protected readonly isDesktop = this.displayGateway.isDesktop;
   protected readonly monitors = signal<readonly MonitorDescriptor[]>([]);
@@ -25,8 +29,12 @@ export class Control implements OnInit {
 
   ngOnInit(): void {
     if (this.isDesktop) {
-      void this.refreshMonitors();
+      void this.initializeDesktop();
     }
+  }
+
+  ngOnDestroy(): void {
+    this.unlistenPlayerDisplayReady?.();
   }
 
   protected async refreshMonitors(): Promise<void> {
@@ -81,6 +89,20 @@ export class Control implements OnInit {
     } finally {
       this.isLoading.set(false);
     }
+  }
+
+  private async initializeDesktop(): Promise<void> {
+    try {
+      this.unlistenPlayerDisplayReady = await this.displayGateway.listenForPlayerDisplayReady(
+        () => {
+          void this.displayGateway.sendPlayerDisplayState(this.playerDisplayStore.state());
+        },
+      );
+    } catch (error) {
+      this.error.set(this.errorMessage(error));
+    }
+
+    await this.refreshMonitors();
   }
 
   private errorMessage(error: unknown): string {

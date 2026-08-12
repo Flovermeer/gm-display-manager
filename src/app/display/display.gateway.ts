@@ -1,9 +1,12 @@
 import { Injectable } from '@angular/core';
 import { isTauri } from '@tauri-apps/api/core';
+import { emitTo, listen, type UnlistenFn } from '@tauri-apps/api/event';
 import { WebviewWindow, getCurrentWebviewWindow } from '@tauri-apps/api/webviewWindow';
 import { availableMonitors, primaryMonitor, type Monitor } from '@tauri-apps/api/window';
 
+import { playerDisplayEvents } from './display.events';
 import type { MonitorDescriptor } from './display.models';
+import type { PlayerDisplayState } from './player-display-state';
 
 const PLAYER_DISPLAY_WINDOW_LABEL = 'player-display';
 
@@ -70,6 +73,28 @@ export class DisplayGateway {
     this.assertDesktop();
     const playerDisplay = await WebviewWindow.getByLabel(PLAYER_DISPLAY_WINDOW_LABEL);
     await playerDisplay?.close();
+  }
+
+  listenForPlayerDisplayReady(callback: () => void): Promise<UnlistenFn> {
+    this.assertDesktop();
+    return listen<void>(playerDisplayEvents.ready, callback);
+  }
+
+  listenForPlayerDisplayState(callback: (state: PlayerDisplayState) => void): Promise<UnlistenFn> {
+    this.assertDesktop();
+    return listen<PlayerDisplayState>(playerDisplayEvents.stateChanged, ({ payload }) =>
+      callback(payload),
+    );
+  }
+
+  sendPlayerDisplayState(state: PlayerDisplayState): Promise<void> {
+    this.assertDesktop();
+    return emitTo(PLAYER_DISPLAY_WINDOW_LABEL, playerDisplayEvents.stateChanged, state);
+  }
+
+  announcePlayerDisplayReady(): Promise<void> {
+    this.assertDesktop();
+    return emitTo('main', playerDisplayEvents.ready);
   }
 
   private async placeFullscreen(window: WebviewWindow, monitor: Monitor): Promise<void> {

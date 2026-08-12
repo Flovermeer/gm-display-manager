@@ -2,5 +2,5 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 fn main() {
-  gm_display_manager_lib::run();
+    gm_display_manager_lib::run();
 }

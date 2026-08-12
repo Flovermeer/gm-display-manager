@@ -75,7 +75,7 @@
             <button
               class="secondary-button display-button"
               type="button"
-              [disabled]="!selectedNpc()?.portraitPath || !isPlayerDisplayOpen() || isPublishing()"
+              [disabled]="!isPlayerDisplayOpen() || isPublishing()"
               [attr.title]="playerDisplayActionTitle()"
               (click)="showNpcOnPlayerDisplay()"
             >
@@ -114,13 +114,12 @@
         </div>
 
         <div class="portrait-frame" [class.editable]="isEditing()">
-          @if (portraitUrl(); as portrait) {
-            <img [src]="portrait" [alt]="selectedNpc()?.name || 'Portrait du nouveau PNJ'" />
-          } @else {
-            <div class="portrait-placeholder" aria-hidden="true">
-              <span>◉</span>
-              <small>Aucun portrait</small>
-            </div>
+          <img
+            [src]="portraitUrl()"
+            [alt]="selectedNpc()?.name || 'Portrait de démonstration du nouveau PNJ'"
+          />
+          @if (isUsingDemoPortrait()) {
+            <span class="portrait-demo-label">Démo</span>
           }
 
           @if (isEditing()) {
@@ -130,7 +129,13 @@
               [disabled]="isImportingPortrait()"
               (click)="choosePortrait()"
             >
-              {{ isImportingPortrait() ? 'Import…' : portraitUrl() ? 'Remplacer' : 'Choisir' }}
+              {{
+                isImportingPortrait()
+                  ? 'Import…'
+                  : effectivePortraitPath()
+                    ? 'Remplacer'
+                    : 'Choisir'
+              }}
             </button>
           }
         </div>

@@ -61,9 +61,10 @@ validation de la fiche et elle est supprimée si tu annules. Le cadre carré
 utilise un recadrage visuel sans modifier le fichier.
 
 En lecture seule, **Afficher aux joueurs** envoie ce portrait statique au Player
-Display. Le bouton reste désactivé tant qu'aucun portrait n'est enregistré ou
-que la fenêtre joueurs n'est pas ouverte. Cette image deviendra automatiquement
-le fallback lorsqu'un portrait animé sera ajouté ultérieurement.
+Display. Tant qu'aucun portrait n'est enregistré, l'illustration de démonstration
+de Mira Vell est utilisée et marquée **Démo**. Le bouton reste désactivé si la
+fenêtre joueurs n'est pas ouverte. Le portrait enregistré deviendra
+automatiquement le fallback lorsqu'un média animé sera ajouté ultérieurement.
 
 Si tu tentes de changer de fiche ou de page avec un brouillon, l'application
 propose trois choix : **Enregistrer et quitter**, **Quitter sans enregistrer** ou

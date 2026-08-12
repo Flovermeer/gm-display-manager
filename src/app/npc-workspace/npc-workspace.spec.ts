@@ -179,6 +179,32 @@ describe('NpcWorkspace', () => {
       });
     });
   });
+
+  it('uses the demo portrait when the NPC has no persisted portrait', async () => {
+    const fixture = TestBed.createComponent(NpcWorkspace);
+    fixture.detectChanges();
+    await renderUntil(fixture, 'Syndra Silvane');
+    const element = fixture.nativeElement as HTMLElement;
+
+    element.querySelector<HTMLButtonElement>('.npc-list-item')?.click();
+    await renderUntil(fixture, 'Afficher aux joueurs');
+
+    expect(element.querySelector<HTMLImageElement>('.portrait-frame img')?.src).toContain(
+      '/demo/innkeeper.svg',
+    );
+    expect(element.querySelector('.portrait-demo-label')?.textContent).toContain('Démo');
+
+    element.querySelector<HTMLButtonElement>('.display-button')?.click();
+
+    await vi.waitFor(() => {
+      expect(displayGateway.sendPlayerDisplayState).toHaveBeenCalledWith({
+        mode: 'npc',
+        npcId: npc.id,
+        name: npc.name,
+        portraitPath: '/demo/innkeeper.svg',
+      });
+    });
+  });
 });
 
 async function renderUntil(fixture: ComponentFixture<NpcWorkspace>, text: string) {

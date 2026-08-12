@@ -160,6 +160,20 @@ a {
   object-fit: cover;
 }
 
+.portrait-demo-label {
+  position: absolute;
+  top: 0.55rem;
+  right: 0.55rem;
+  padding: 0.25rem 0.45rem;
+  border-radius: 999px;
+  color: #fff;
+  background: rgb(37 27 45 / 78%);
+  font-size: 0.65rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
 .portrait-placeholder {
   display: grid;
   height: 100%;

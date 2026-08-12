@@ -13,6 +13,7 @@ import { NPC_STATUSES, type Npc, type NpcStatus } from '../npc/npc';
 import { NpcService } from '../npc/npc.service';
 
 type PendingDecisionResolver = (canLeave: boolean) => void;
+const DEMO_NPC_PORTRAIT_URL = '/demo/innkeeper.svg';
 
 @Component({
   selector: 'app-npc-workspace',
@@ -33,7 +34,7 @@ export class NpcWorkspace implements OnInit, PendingChangesAware {
   protected readonly campaign = signal<Campaign | null>(null);
   protected readonly npcs = signal<readonly Npc[]>([]);
   protected readonly selectedNpc = signal<Npc | null>(null);
-  protected readonly portraitUrl = signal<string | null>(null);
+  protected readonly portraitUrl = signal<string>(DEMO_NPC_PORTRAIT_URL);
   protected readonly draftPortraitPath = signal<string | null>(null);
   protected readonly searchTerm = signal('');
   protected readonly isSidebarCollapsed = signal(false);
@@ -51,6 +52,7 @@ export class NpcWorkspace implements OnInit, PendingChangesAware {
   protected readonly effectivePortraitPath = computed(
     () => this.draftPortraitPath() ?? this.selectedNpc()?.portraitPath ?? null,
   );
+  protected readonly isUsingDemoPortrait = computed(() => this.effectivePortraitPath() === null);
   protected readonly filteredNpcs = computed(() => {
     const searchTerm = this.searchTerm().trim().toLocaleLowerCase('fr');
     if (!searchTerm) {
@@ -100,7 +102,7 @@ export class NpcWorkspace implements OnInit, PendingChangesAware {
     }
 
     this.selectedNpc.set(null);
-    this.portraitUrl.set(null);
+    this.portraitUrl.set(DEMO_NPC_PORTRAIT_URL);
     this.draftPortraitPath.set(null);
     this.isCreating.set(true);
     this.isEditing.set(true);
@@ -201,8 +203,7 @@ export class NpcWorkspace implements OnInit, PendingChangesAware {
 
   protected async showNpcOnPlayerDisplay(): Promise<void> {
     const npc = this.selectedNpc();
-    const portraitPath = npc?.portraitPath;
-    if (!npc || !portraitPath || !this.isPlayerDisplayOpen() || this.isPublishing()) {
+    if (!npc || !this.isPlayerDisplayOpen() || this.isPublishing()) {
       return;
     }
 
@@ -214,7 +215,9 @@ export class NpcWorkspace implements OnInit, PendingChangesAware {
         mode: 'npc' as const,
         npcId: npc.id,
         name: npc.name,
-        portraitPath: await this.npcPortraitGateway.resolveUrl(portraitPath),
+        portraitPath: npc.portraitPath
+          ? await this.npcPortraitGateway.resolveUrl(npc.portraitPath)
+          : DEMO_NPC_PORTRAIT_URL,
       };
       this.playerDisplayStore.setState(state);
       await this.displayGateway.sendPlayerDisplayState(state);
@@ -227,10 +230,6 @@ export class NpcWorkspace implements OnInit, PendingChangesAware {
   }
 
   protected playerDisplayActionTitle(): string {
-    if (!this.selectedNpc()?.portraitPath) {
-      return "Ajoute d'abord un portrait au PNJ.";
-    }
-
     if (!this.isPlayerDisplayOpen()) {
       return "Ouvre d'abord l'écran joueurs depuis la régie.";
     }
@@ -270,7 +269,7 @@ export class NpcWorkspace implements OnInit, PendingChangesAware {
       }
       await this.reloadNpcs();
       this.selectedNpc.set(null);
-      this.portraitUrl.set(null);
+      this.portraitUrl.set(DEMO_NPC_PORTRAIT_URL);
       this.showDeleteDialog.set(false);
     } catch (error) {
       this.error.set(this.errorMessage(error));
@@ -377,12 +376,12 @@ export class NpcWorkspace implements OnInit, PendingChangesAware {
       await this.loadPortraitPreview(selectedNpc.portraitPath);
     } else {
       this.npcForm.reset({ name: '', status: 'active', summary: '', notes: '' });
-      this.portraitUrl.set(null);
+      this.portraitUrl.set(DEMO_NPC_PORTRAIT_URL);
     }
   }
 
   private async loadPortraitPreview(relativePath: string | null): Promise<void> {
-    this.portraitUrl.set(null);
+    this.portraitUrl.set(DEMO_NPC_PORTRAIT_URL);
     if (!relativePath) {
       return;
     }

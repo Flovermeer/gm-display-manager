@@ -115,6 +115,10 @@ figcaption,
   filter: drop-shadow(0 1rem 2rem rgb(0 0 0 / 75%));
 }
 
+.npc-idle-video {
+  background: transparent;
+}
+
 .npc-display h1 {
   bottom: 0;
   padding-bottom: clamp(1.5rem, 4vh, 3rem);

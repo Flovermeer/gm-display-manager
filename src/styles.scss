@@ -109,6 +109,25 @@ app-campaign-home .campaign-actions button:disabled {
   opacity: 0.45;
 }
 
+app-npc-workspace .media-field {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem;
+  border: 1px solid #cfc6ba;
+  border-radius: 0.5rem;
+  background: #e8e2d9;
+}
+
+app-npc-workspace .media-field label {
+  margin: 0 0 0.25rem;
+}
+
+app-npc-workspace .media-field small {
+  color: #746b60;
+}
+
 .status-badge {
   display: inline-block;
   padding: 0.25rem 0.55rem;

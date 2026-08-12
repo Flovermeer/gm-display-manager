@@ -14,6 +14,7 @@ type NpcRow = Readonly<{
   summary: string;
   notes: string;
   portrait_path: string | null;
+  idle_video_path: string | null;
   sheet_json: string;
   sheet_schema_version: number;
   created_at: string;
@@ -53,15 +54,16 @@ export class TauriNpcRepository extends NpcRepository {
     const database = await this.getDatabase();
     await database.execute(
       `INSERT INTO npc (
-         id, campaign_id, name, status, summary, notes, portrait_path,
+         id, campaign_id, name, status, summary, notes, portrait_path, idle_video_path,
          sheet_json, sheet_schema_version, created_at, updated_at
-       ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+       ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
        ON CONFLICT(id) DO UPDATE SET
          name = excluded.name,
          status = excluded.status,
          summary = excluded.summary,
          notes = excluded.notes,
          portrait_path = excluded.portrait_path,
+         idle_video_path = excluded.idle_video_path,
          sheet_json = excluded.sheet_json,
          sheet_schema_version = excluded.sheet_schema_version,
          updated_at = excluded.updated_at
@@ -74,6 +76,7 @@ export class TauriNpcRepository extends NpcRepository {
         npc.summary,
         npc.notes,
         npc.portraitPath,
+        npc.idleVideoPath,
         JSON.stringify(npc.sheet),
         npc.sheetSchemaVersion,
         npc.createdAt,
@@ -98,7 +101,7 @@ export class TauriNpcRepository extends NpcRepository {
 }
 
 const NPC_COLUMNS = `SELECT id, campaign_id, name, status, summary, notes,
-                            portrait_path, sheet_json, sheet_schema_version,
+                            portrait_path, idle_video_path, sheet_json, sheet_schema_version,
                             created_at, updated_at`;
 
 function mapNpcRow(row: NpcRow): Npc {
@@ -110,6 +113,7 @@ function mapNpcRow(row: NpcRow): Npc {
     summary: row.summary,
     notes: row.notes,
     portraitPath: row.portrait_path,
+    idleVideoPath: row.idle_video_path,
     sheet: parseSheet(row.sheet_json),
     sheetSchemaVersion: row.sheet_schema_version,
     createdAt: row.created_at,

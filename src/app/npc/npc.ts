@@ -10,6 +10,7 @@ export type Npc = Readonly<{
   summary: string;
   notes: string;
   portraitPath: string | null;
+  idleVideoPath: string | null;
   sheet: Readonly<Record<string, unknown>>;
   sheetSchemaVersion: number;
   createdAt: string;
@@ -23,6 +24,7 @@ export type CreateNpcInput = Readonly<{
   summary?: string;
   notes?: string;
   portraitPath?: string | null;
+  idleVideoPath?: string | null;
 }>;
 
 export type UpdateNpcInput = Readonly<{
@@ -57,6 +59,7 @@ export function createNpc(
     summary: input.summary?.trim() ?? '',
     notes: input.notes?.trim() ?? '',
     portraitPath: input.portraitPath ?? null,
+    idleVideoPath: input.idleVideoPath ?? null,
     sheet: {},
     sheetSchemaVersion: 1,
     createdAt: now,

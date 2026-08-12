@@ -6,13 +6,16 @@ import { CampaignRepository } from './campaign/campaign.repository';
 import { BrowserCampaignMediaGateway } from './media/browser-campaign-media.gateway';
 import { LocationRepository } from './location/location.repository';
 import { BrowserNpcPortraitGateway } from './media/browser-npc-portrait.gateway';
+import { BrowserNpcIdleVideoGateway } from './media/browser-npc-idle-video.gateway';
 import { BrowserLocationImageGateway } from './media/browser-location-image.gateway';
 import { CampaignMediaGateway } from './media/campaign-media.gateway';
 import { LocationImageGateway } from './media/location-image.gateway';
 import { NpcPortraitGateway } from './media/npc-portrait.gateway';
+import { NpcIdleVideoGateway } from './media/npc-idle-video.gateway';
 import { TauriLocationImageGateway } from './media/tauri-location-image.gateway';
 import { TauriCampaignMediaGateway } from './media/tauri-campaign-media.gateway';
 import { TauriNpcPortraitGateway } from './media/tauri-npc-portrait.gateway';
+import { TauriNpcIdleVideoGateway } from './media/tauri-npc-idle-video.gateway';
 import { NpcRepository } from './npc/npc.repository';
 import { routes } from './app.routes';
 import { AppSettingRepository } from './persistence/app-setting.repository';
@@ -57,6 +60,11 @@ export const appConfig: ApplicationConfig = {
       provide: LocationImageGateway,
       useFactory: () =>
         isTauri() ? new TauriLocationImageGateway() : new BrowserLocationImageGateway(),
+    },
+    {
+      provide: NpcIdleVideoGateway,
+      useFactory: () =>
+        isTauri() ? new TauriNpcIdleVideoGateway() : new BrowserNpcIdleVideoGateway(),
     },
     {
       provide: NpcPortraitGateway,

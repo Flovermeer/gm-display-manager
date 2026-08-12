@@ -35,6 +35,7 @@ describe('NpcService', () => {
     );
 
     expect(updated.portraitPath).toBe('campaigns/campaign-id/media/npc-portraits/syndra.webp');
+    expect(updated.idleVideoPath).toBeNull();
     await expect(service.list('campaign-id')).resolves.toEqual([updated]);
     await service.delete(updated);
     await expect(service.list('campaign-id')).resolves.toEqual([]);

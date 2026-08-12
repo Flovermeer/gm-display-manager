@@ -96,7 +96,9 @@
             <button
               class="primary-button"
               type="button"
-              [disabled]="npcForm.invalid || isSaving() || isImportingPortrait()"
+              [disabled]="
+                npcForm.invalid || isSaving() || isImportingPortrait() || isImportingVideo()
+              "
               (click)="saveNpc()"
             >
               {{ isSaving() ? 'Enregistrement…' : 'Enregistrer' }}
@@ -172,6 +174,29 @@
             />
           </div>
 
+          <div class="field media-field">
+            <div>
+              <label>Animation pour l'écran joueurs</label>
+              <small>
+                {{ effectiveIdleVideoPath() ? 'Vidéo WebM/MP4 prête' : 'Aucune animation' }}
+              </small>
+            </div>
+            <button
+              class="secondary-button"
+              type="button"
+              [disabled]="isImportingVideo()"
+              (click)="chooseIdleVideo()"
+            >
+              {{
+                isImportingVideo()
+                  ? 'Import…'
+                  : effectiveIdleVideoPath()
+                    ? 'Remplacer'
+                    : 'Choisir une vidéo'
+              }}
+            </button>
+          </div>
+
           <div class="field notes-field">
             <label for="npc-notes">Notes</label>
             <textarea id="npc-notes" formControlName="notes" rows="14"></textarea>
@@ -191,6 +216,10 @@
             <div>
               <dt>Rôle ou résumé</dt>
               <dd>{{ npc.summary || 'Non renseigné' }}</dd>
+            </div>
+            <div>
+              <dt>Animation joueurs</dt>
+              <dd>{{ npc.idleVideoPath ? 'Vidéo prête' : 'Portrait statique' }}</dd>
             </div>
           </dl>
 

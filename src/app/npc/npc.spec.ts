@@ -25,6 +25,7 @@ describe('Npc', () => {
       summary: 'Commanditaire',
       notes: 'Souffre de la malédiction.',
       portraitPath: null,
+      idleVideoPath: null,
       sheet: {},
       sheetSchemaVersion: 1,
       createdAt: '2026-08-12T18:30:00.000Z',

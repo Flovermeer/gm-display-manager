@@ -15,8 +15,9 @@ export class NpcService {
     campaignId: string,
     input: UpdateNpcInput,
     portraitPath: string | null = null,
+    idleVideoPath: string | null = null,
   ): Promise<Npc> {
-    const npc = createNpc({ campaignId, ...input, portraitPath });
+    const npc = createNpc({ campaignId, ...input, portraitPath, idleVideoPath });
     await this.repository.save(npc);
     return npc;
   }
@@ -25,8 +26,9 @@ export class NpcService {
     npc: Npc,
     input: UpdateNpcInput,
     portraitPath: string | null = npc.portraitPath,
+    idleVideoPath: string | null = npc.idleVideoPath,
   ): Promise<Npc> {
-    const updatedNpc = { ...updateNpc(npc, input), portraitPath };
+    const updatedNpc = { ...updateNpc(npc, input), portraitPath, idleVideoPath };
     await this.repository.save(updatedNpc);
     return updatedNpc;
   }

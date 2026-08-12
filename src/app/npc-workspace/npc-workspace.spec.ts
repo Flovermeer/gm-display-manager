@@ -6,6 +6,7 @@ import type { Campaign } from '../campaign/campaign';
 import { CampaignService } from '../campaign/campaign.service';
 import { DisplayGateway } from '../display/display.gateway';
 import { NpcPortraitGateway } from '../media/npc-portrait.gateway';
+import { NpcIdleVideoGateway } from '../media/npc-idle-video.gateway';
 import type { Npc } from '../npc/npc';
 import { NpcService } from '../npc/npc.service';
 import { NpcWorkspace } from './npc-workspace';
@@ -27,6 +28,7 @@ describe('NpcWorkspace', () => {
     summary: 'Commanditaire',
     notes: '',
     portraitPath: null,
+    idleVideoPath: null,
     sheet: {},
     sheetSchemaVersion: 1,
     createdAt: '2026-08-12T18:30:00.000Z',
@@ -43,6 +45,11 @@ describe('NpcWorkspace', () => {
     delete: vi.fn(),
   };
   const portraitGateway = {
+    chooseAndImport: vi.fn(),
+    resolveUrl: vi.fn(),
+    discard: vi.fn(),
+  };
+  const idleVideoGateway = {
     chooseAndImport: vi.fn(),
     resolveUrl: vi.fn(),
     discard: vi.fn(),
@@ -64,6 +71,9 @@ describe('NpcWorkspace', () => {
     portraitGateway.chooseAndImport.mockResolvedValue(null);
     portraitGateway.resolveUrl.mockResolvedValue('asset://portrait');
     portraitGateway.discard.mockResolvedValue(undefined);
+    idleVideoGateway.chooseAndImport.mockResolvedValue(null);
+    idleVideoGateway.resolveUrl.mockResolvedValue('asset://video');
+    idleVideoGateway.discard.mockResolvedValue(undefined);
     displayGateway.isPlayerDisplayOpen.mockResolvedValue(true);
     displayGateway.sendPlayerDisplayState.mockResolvedValue(undefined);
 
@@ -74,6 +84,7 @@ describe('NpcWorkspace', () => {
         { provide: CampaignService, useValue: campaignService },
         { provide: NpcService, useValue: npcService },
         { provide: NpcPortraitGateway, useValue: portraitGateway },
+        { provide: NpcIdleVideoGateway, useValue: idleVideoGateway },
         { provide: DisplayGateway, useValue: displayGateway },
         {
           provide: ActivatedRoute,
@@ -155,10 +166,11 @@ describe('NpcWorkspace', () => {
     });
   });
 
-  it('sends a persisted portrait to the player display', async () => {
+  it('sends a persisted portrait and idle video to the player display', async () => {
     const npcWithPortrait = {
       ...npc,
       portraitPath: 'campaigns/campaign-id/media/npc-portraits/syndra.webp',
+      idleVideoPath: 'campaigns/campaign-id/media/npc-idle-videos/syndra.webm',
     };
     npcService.list.mockResolvedValue([npcWithPortrait]);
     const fixture = TestBed.createComponent(NpcWorkspace);
@@ -176,6 +188,7 @@ describe('NpcWorkspace', () => {
         npcId: npc.id,
         name: npc.name,
         portraitPath: 'asset://portrait',
+        idleVideoPath: 'asset://video',
       });
     });
   });

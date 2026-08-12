@@ -1,4 +1,4 @@
-import { Component, inject, OnDestroy, OnInit } from '@angular/core';
+import { Component, inject, OnDestroy, OnInit, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import type { UnlistenFn } from '@tauri-apps/api/event';
 
@@ -18,6 +18,11 @@ export class PlayerDisplay implements OnInit, OnDestroy {
 
   protected readonly isPreview = !this.displayGateway.isPlayerDisplayWindow();
   protected readonly state = this.playerDisplayStore.state;
+  protected readonly videoFailed = signal(false);
+
+  protected handleVideoError(): void {
+    this.videoFailed.set(true);
+  }
 
   ngOnInit(): void {
     if (!this.isPreview) {
@@ -32,6 +37,7 @@ export class PlayerDisplay implements OnInit, OnDestroy {
   private async initializePlayerDisplay(): Promise<void> {
     this.unlistenPlayerDisplayState = await this.displayGateway.listenForPlayerDisplayState(
       (state) => {
+        this.videoFailed.set(false);
         this.playerDisplayStore.setState(state);
       },
     );

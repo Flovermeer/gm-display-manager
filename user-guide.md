@@ -28,6 +28,12 @@ création à droite.
 - Clique sur une carte pour ouvrir immédiatement la campagne.
 - Pour créer une campagne, renseigne au minimum son nom puis clique sur **Créer
   la campagne**. La nouvelle campagne s'ouvre automatiquement.
+- **Modifier** charge la campagne dans le formulaire de droite sans l'ouvrir.
+  Enregistre les changements ou utilise **Annuler** pour revenir au formulaire
+  de création.
+- **Supprimer** ouvre une confirmation explicite. La validation supprime aussi
+  les PNJ, les lieux et les médias importés de cette campagne ; cette action est
+  définitive.
 - La dernière campagne ouverte est mise en évidence, mais l'application revient
   toujours à l'accueil après un redémarrage.
 

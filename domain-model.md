@@ -11,7 +11,8 @@ Ce document fixe les décisions de modélisation prises pour le gestionnaire de 
 - Les données recherchées, filtrées ou reliées restent dans des colonnes et tables relationnelles.
 - Les données dépendantes d'un système de jeu restent dans du JSON versionné.
 - Les médias volumineux restent dans le filesystem ; SQLite ne conserve que leurs métadonnées et chemins internes.
-- Les suppressions d'une campagne suppriment en cascade ses données métier après confirmation explicite dans l'interface.
+- Les suppressions d'une campagne suppriment en cascade ses données métier et
+  son dossier de médias après confirmation explicite dans l'interface.
 
 ## Campagne
 
@@ -23,7 +24,9 @@ Une campagne contient au minimum :
 - `system_key`, avec `dnd5e` comme valeur initiale par défaut ;
 - `created_at` et `updated_at`.
 
-La campagne active est une préférence applicative stockée dans `app_setting`, et non un attribut de la campagne.
+La campagne active est une préférence applicative stockée dans `app_setting`, et
+non un attribut de la campagne. Cette préférence est effacée si elle désigne une
+campagne supprimée.
 
 ## Personnages
 

@@ -1,0 +1,86 @@
+<main class="control-shell">
+  <header>
+    <p class="eyebrow">Beholder's Inn</p>
+    <h1>Panneau du maître de jeu</h1>
+    <p class="summary">
+      Choisis le moniteur narratif puis ouvre une fenêtre dédiée pour les joueurs. Le panneau MJ
+      reste disponible sur cet écran.
+    </p>
+  </header>
+
+  <section aria-labelledby="display-control">
+    <div class="section-heading">
+      <div>
+        <p class="section-kicker">Régie</p>
+        <h2 id="display-control">Écran joueurs</h2>
+      </div>
+
+      @if (isDesktop) {
+        <button
+          class="secondary-button"
+          type="button"
+          (click)="refreshMonitors()"
+          [disabled]="isLoading()"
+        >
+          Actualiser
+        </button>
+      }
+    </div>
+
+    @if (!isDesktop) {
+      <p class="notice">La gestion multi-écran est disponible dans l'application Tauri.</p>
+      <a class="preview-link" routerLink="/player-display">
+        Prévisualiser l'écran joueurs dans le navigateur
+      </a>
+    } @else if (monitors().length === 0 && !isLoading()) {
+      <p class="notice">Aucun moniteur n'a été détecté.</p>
+    } @else {
+      <label for="monitor">Moniteur narratif</label>
+      <select
+        id="monitor"
+        [value]="selectedMonitorId()"
+        (change)="selectMonitor($event)"
+        [disabled]="isLoading()"
+      >
+        <option value="">Sélectionner un moniteur</option>
+        @for (monitor of monitors(); track monitor.id) {
+          <option [value]="monitor.id">{{ monitorLabel(monitor) }}</option>
+        }
+      </select>
+
+      @if (selectedMonitor(); as monitor) {
+        <p class="monitor-details">
+          Position {{ monitor.x }}, {{ monitor.y }} · Échelle {{ monitor.scaleFactor * 100 }} %
+        </p>
+      }
+
+      <div class="actions">
+        <button
+          class="primary-button"
+          type="button"
+          (click)="openPlayerDisplay()"
+          [disabled]="!selectedMonitor() || isLoading()"
+        >
+          {{ isPlayerDisplayOpen() ? "Déplacer l'écran joueurs" : "Ouvrir l'écran joueurs" }}
+        </button>
+        @if (isPlayerDisplayOpen()) {
+          <button
+            class="secondary-button"
+            type="button"
+            (click)="closePlayerDisplay()"
+            [disabled]="isLoading()"
+          >
+            Fermer l'écran joueurs
+          </button>
+        }
+      </div>
+    }
+
+    @if (isLoading()) {
+      <p class="status" aria-live="polite">Communication avec Tauri…</p>
+    }
+    @if (error(); as errorMessage) {
+      <p class="error" role="alert">{{ errorMessage }}</p>
+    }
+  </section>
+</main>

@@ -1,0 +1,48 @@
+:host {
+  display: block;
+  min-height: 100dvh;
+  background: #000;
+}
+
+.player-display {
+  position: relative;
+  display: grid;
+  min-height: 100dvh;
+  place-items: center;
+  overflow: hidden;
+  color: #625f59;
+  background: radial-gradient(circle, rgb(38 34 27 / 58%), transparent 28rem), #000;
+}
+
+.back-link {
+  position: absolute;
+  top: 1.25rem;
+  left: 1.25rem;
+  padding: 0.7rem 0.9rem;
+  border: 1px solid #49443b;
+  border-radius: 0.4rem;
+  color: #d8d2c7;
+  background: rgb(23 21 18 / 85%);
+  text-decoration: none;
+}
+
+.back-link:hover {
+  border-color: #806e4f;
+}
+
+.placeholder {
+  text-align: center;
+}
+
+.placeholder span {
+  display: block;
+  color: #806e4f;
+  font-size: 2rem;
+}
+
+.placeholder p {
+  margin: 0.75rem 0 0;
+  font-size: 0.8rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}

@@ -3,6 +3,9 @@ import { provideRouter, withInMemoryScrolling } from '@angular/router';
 import { isTauri } from '@tauri-apps/api/core';
 
 import { CampaignRepository } from './campaign/campaign.repository';
+import { BrowserNpcPortraitGateway } from './media/browser-npc-portrait.gateway';
+import { NpcPortraitGateway } from './media/npc-portrait.gateway';
+import { TauriNpcPortraitGateway } from './media/tauri-npc-portrait.gateway';
 import { NpcRepository } from './npc/npc.repository';
 import { routes } from './app.routes';
 import { AppSettingRepository } from './persistence/app-setting.repository';
@@ -30,6 +33,11 @@ export const appConfig: ApplicationConfig = {
     {
       provide: NpcRepository,
       useFactory: () => (isTauri() ? new TauriNpcRepository() : new InMemoryNpcRepository()),
+    },
+    {
+      provide: NpcPortraitGateway,
+      useFactory: () =>
+        isTauri() ? new TauriNpcPortraitGateway() : new BrowserNpcPortraitGateway(),
     },
   ],
 };

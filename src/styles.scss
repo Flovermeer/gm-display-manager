@@ -78,8 +78,35 @@ a {
 }
 
 .delete-confirm {
-  border-color: #a7464e;
+  padding: 0.55rem 0.75rem;
+  border: 1px solid #a7464e;
+  border-radius: 0.4rem;
+  color: #f5f0f7;
   background: #8d363e;
+  cursor: pointer;
+}
+
+.cancel-button {
+  padding: 0.55rem 0.75rem;
+  border: 1px solid #68616b;
+  border-radius: 0.4rem;
+  color: #f5f0f7;
+  background: transparent;
+  cursor: pointer;
+}
+
+app-campaign-home .campaign-actions button {
+  padding: 0.55rem 0.75rem;
+  border: 1px solid #947ea3;
+  border-radius: 0.4rem;
+  color: #f5f0f7;
+  background: rgb(30 27 32 / 45%);
+  cursor: pointer;
+}
+
+app-campaign-home .campaign-actions button:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
 }
 
 .status-badge {

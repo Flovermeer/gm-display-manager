@@ -2,8 +2,7 @@
   display: block;
   min-height: 100dvh;
   background:
-    radial-gradient(circle at 50% -12rem, rgb(117 81 157 / 38%), transparent 34rem),
-    #171619;
+    radial-gradient(circle at 50% -12rem, rgb(117 81 157 / 38%), transparent 34rem), #171619;
 }
 
 .campaign-home {
@@ -106,38 +105,57 @@ h2 {
   padding-right: 0.4rem;
 }
 
-.campaign-card {
-  display: flex;
-  min-height: 6rem;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-  padding: 1.1rem 1.25rem;
+.campaign-card-row {
+  overflow: hidden;
   border: 1px solid #665571;
   border-radius: 0.65rem;
-  color: #f5f0f7;
   background: #624b77;
-  text-align: left;
-  cursor: pointer;
   transition:
     border-color 140ms ease,
     background 140ms ease,
     transform 140ms ease;
 }
 
-.campaign-card:hover {
+.campaign-card {
+  display: flex;
+  width: 100%;
+  min-height: 6rem;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1.1rem 1.25rem;
+  border: 0;
+  color: #f5f0f7;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+}
+
+.campaign-card-row:hover {
   border-color: #c4a7dc;
   background: #715787;
   transform: translateY(-1px);
 }
 
-.campaign-card.active {
+.campaign-card-row.active {
   box-shadow: inset 0 0 0 1px #c4a7dc;
 }
 
 .campaign-card:disabled {
-  cursor: wait;
+  cursor: not-allowed;
   opacity: 0.6;
+}
+
+.campaign-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  padding: 0 0.8rem 0.8rem;
+}
+
+.campaign-actions .delete-action {
+  border-color: #b06b72;
+  color: #ffd9dc;
 }
 
 .campaign-card strong,
@@ -232,14 +250,19 @@ button:focus-visible {
 }
 
 .create-button {
-  justify-self: end;
-  margin-top: 1.75rem;
   padding: 0.8rem 1.25rem;
   border: 1px solid #8f69aa;
   border-radius: 0.45rem;
   color: #fff;
   background: #76538d;
   cursor: pointer;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.7rem;
+  margin-top: 1.75rem;
 }
 
 .create-button:hover:not(:disabled) {
@@ -283,7 +306,7 @@ button:focus-visible {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .campaign-card {
+  .campaign-card-row {
     transition: none;
   }
 }

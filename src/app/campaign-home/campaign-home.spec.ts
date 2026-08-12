@@ -1,4 +1,4 @@
-import { TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { Router } from '@angular/router';
 
 import type { Campaign } from '../campaign/campaign';
@@ -19,6 +19,8 @@ describe('CampaignHome', () => {
     getActiveCampaignId: vi.fn(),
     activate: vi.fn(),
     createAndActivate: vi.fn(),
+    update: vi.fn(),
+    delete: vi.fn(),
   };
   const router = {
     navigate: vi.fn(),
@@ -30,6 +32,8 @@ describe('CampaignHome', () => {
     campaignService.getActiveCampaignId.mockResolvedValue(campaign.id);
     campaignService.activate.mockResolvedValue(undefined);
     campaignService.createAndActivate.mockResolvedValue(campaign);
+    campaignService.update.mockResolvedValue(campaign);
+    campaignService.delete.mockResolvedValue(undefined);
     router.navigate.mockResolvedValue(true);
 
     await TestBed.configureTestingModule({
@@ -47,9 +51,7 @@ describe('CampaignHome', () => {
 
     await vi.waitFor(() => {
       fixture.detectChanges();
-      expect((fixture.nativeElement as HTMLElement).textContent).toContain(
-        'Tomb of Annihilation',
-      );
+      expect((fixture.nativeElement as HTMLElement).textContent).toContain('Tomb of Annihilation');
     });
 
     const content = (fixture.nativeElement as HTMLElement).textContent;
@@ -104,4 +106,70 @@ describe('CampaignHome', () => {
       expect(router.navigate).toHaveBeenCalledWith(['/campaigns', campaign.id]);
     });
   });
+
+  it('edits a campaign without opening it', async () => {
+    const updatedCampaign = { ...campaign, name: 'Tomb of Annihilation — Chult' };
+    campaignService.update.mockResolvedValue(updatedCampaign);
+    const fixture = TestBed.createComponent(CampaignHome);
+    fixture.detectChanges();
+    await renderUntil(fixture, 'Tomb of Annihilation');
+    const element = fixture.nativeElement as HTMLElement;
+
+    findButton(element, 'Modifier')?.click();
+    await renderUntil(fixture, 'Modifier la campagne');
+    const nameInput = element.querySelector<HTMLInputElement>('#campaign-name');
+    if (!nameInput) {
+      throw new Error('Campaign name field not found.');
+    }
+    nameInput.value = updatedCampaign.name;
+    nameInput.dispatchEvent(new Event('input'));
+    element.querySelector<HTMLFormElement>('form')?.dispatchEvent(new Event('submit'));
+
+    await vi.waitFor(() => {
+      expect(campaignService.update).toHaveBeenCalledWith(campaign, {
+        name: updatedCampaign.name,
+        description: campaign.description,
+        systemKey: campaign.systemKey,
+      });
+      fixture.detectChanges();
+      expect(element.textContent).toContain(updatedCampaign.name);
+      expect(router.navigate).not.toHaveBeenCalled();
+    });
+  });
+
+  it('requires explicit confirmation before deleting a campaign', async () => {
+    campaignService.list.mockResolvedValueOnce([campaign]).mockResolvedValueOnce([]);
+    campaignService.getActiveCampaignId
+      .mockResolvedValueOnce(campaign.id)
+      .mockResolvedValueOnce(null);
+    const fixture = TestBed.createComponent(CampaignHome);
+    fixture.detectChanges();
+    await renderUntil(fixture, 'Tomb of Annihilation');
+    const element = fixture.nativeElement as HTMLElement;
+
+    findButton(element, 'Supprimer')?.click();
+    await renderUntil(fixture, 'Supprimer définitivement');
+    expect(campaignService.delete).not.toHaveBeenCalled();
+
+    findButton(element, 'Supprimer définitivement')?.click();
+
+    await vi.waitFor(() => {
+      expect(campaignService.delete).toHaveBeenCalledWith(campaign);
+      fixture.detectChanges();
+      expect(element.textContent).toContain('Aucune campagne');
+    });
+  });
 });
+
+async function renderUntil(fixture: ComponentFixture<CampaignHome>, text: string) {
+  await vi.waitFor(() => {
+    fixture.detectChanges();
+    expect((fixture.nativeElement as HTMLElement).textContent).toContain(text);
+  });
+}
+
+function findButton(element: HTMLElement, text: string): HTMLButtonElement | undefined {
+  return [...element.querySelectorAll<HTMLButtonElement>('button')].find(
+    (button) => button.textContent?.trim() === text,
+  );
+}

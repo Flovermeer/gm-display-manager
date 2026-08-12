@@ -26,23 +26,41 @@
       } @else {
         <div class="campaign-list">
           @for (campaign of campaigns(); track campaign.id) {
-            <button
-              class="campaign-card"
-              type="button"
-              [class.active]="campaign.id === activeCampaignId()"
-              [disabled]="isSubmitting()"
-              (click)="openCampaign(campaign)"
-            >
-              <span>
-                <strong>{{ campaign.name }}</strong>
-                @if (campaign.description) {
-                  <small>{{ campaign.description }}</small>
+            <article class="campaign-card-row" [class.active]="campaign.id === activeCampaignId()">
+              <button
+                class="campaign-card"
+                type="button"
+                [disabled]="isSubmitting() || editingCampaign() !== null"
+                (click)="openCampaign(campaign)"
+              >
+                <span>
+                  <strong>{{ campaign.name }}</strong>
+                  @if (campaign.description) {
+                    <small>{{ campaign.description }}</small>
+                  }
+                </span>
+                @if (campaign.id === activeCampaignId()) {
+                  <span class="last-opened">Dernière ouverte</span>
                 }
-              </span>
-              @if (campaign.id === activeCampaignId()) {
-                <span class="last-opened">Dernière ouverte</span>
-              }
-            </button>
+              </button>
+              <div class="campaign-actions">
+                <button
+                  type="button"
+                  [disabled]="isSubmitting() || editingCampaign() !== null"
+                  (click)="editCampaign(campaign)"
+                >
+                  Modifier
+                </button>
+                <button
+                  class="delete-action"
+                  type="button"
+                  [disabled]="isSubmitting() || editingCampaign() !== null"
+                  (click)="requestDeleteCampaign(campaign)"
+                >
+                  Supprimer
+                </button>
+              </div>
+            </article>
           }
         </div>
       }
@@ -50,11 +68,15 @@
 
     <section class="create-panel" aria-labelledby="create-campaign-title">
       <div class="panel-heading">
-        <p class="section-kicker">Nouvelle aventure</p>
-        <h2 id="create-campaign-title">Créer une campagne</h2>
+        <p class="section-kicker">
+          {{ editingCampaign() ? 'Paramètres de la campagne' : 'Nouvelle aventure' }}
+        </p>
+        <h2 id="create-campaign-title">
+          {{ editingCampaign() ? 'Modifier la campagne' : 'Créer une campagne' }}
+        </h2>
       </div>
 
-      <form [formGroup]="campaignForm" (ngSubmit)="createCampaign()">
+      <form [formGroup]="campaignForm" (ngSubmit)="saveCampaign()">
         <label for="campaign-name">Nom</label>
         <input
           id="campaign-name"
@@ -80,13 +102,29 @@
           <option value="dnd5e">Dungeons & Dragons 5e</option>
         </select>
 
-        <button
-          class="create-button"
-          type="submit"
-          [disabled]="campaignForm.invalid || isSubmitting()"
-        >
-          {{ isSubmitting() ? 'Création…' : 'Créer la campagne' }}
-        </button>
+        <div class="form-actions">
+          @if (editingCampaign()) {
+            <button
+              class="cancel-button"
+              type="button"
+              [disabled]="isSubmitting()"
+              (click)="cancelEditing()"
+            >
+              Annuler
+            </button>
+          }
+          <button
+            class="create-button"
+            type="submit"
+            [disabled]="campaignForm.invalid || isSubmitting()"
+          >
+            @if (isSubmitting()) {
+              Enregistrement…
+            } @else {
+              {{ editingCampaign() ? 'Enregistrer' : 'Créer la campagne' }}
+            }
+          </button>
+        </div>
       </form>
     </section>
   </div>
@@ -95,3 +133,27 @@
     <p class="global-error" role="alert">{{ errorMessage }}</p>
   }
 </main>
+
+@if (campaignPendingDeletion(); as campaign) {
+  <div class="dialog-backdrop" role="presentation">
+    <section class="dialog" role="dialog" aria-modal="true" aria-labelledby="delete-title">
+      <p class="section-kicker">Suppression définitive</p>
+      <h2 id="delete-title">Supprimer {{ campaign.name }} ?</h2>
+      <p>
+        Cette action supprimera la campagne, ses PNJ, ses lieux et tous les médias importés. Elle ne
+        pourra pas être annulée.
+      </p>
+      <div class="dialog-actions">
+        <button class="cancel-button" type="button" (click)="cancelDelete()">Annuler</button>
+        <button
+          class="delete-confirm"
+          type="button"
+          [disabled]="isSubmitting()"
+          (click)="confirmDeleteCampaign()"
+        >
+          {{ isSubmitting() ? 'Suppression…' : 'Supprimer définitivement' }}
+        </button>
+      </div>
+    </section>
+  </div>
+}

@@ -21,7 +21,6 @@ describe('CampaignNavigation', () => {
       'Régie',
       'Lieux',
       'PNJ',
-      'Écrans',
       'Accueil',
     ]);
     expect([...element.querySelectorAll('[aria-disabled="true"]')]).toHaveLength(4);

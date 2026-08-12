@@ -3,6 +3,7 @@ import { provideRouter, withInMemoryScrolling } from '@angular/router';
 import { isTauri } from '@tauri-apps/api/core';
 
 import { CampaignRepository } from './campaign/campaign.repository';
+import { LocationRepository } from './location/location.repository';
 import { BrowserNpcPortraitGateway } from './media/browser-npc-portrait.gateway';
 import { NpcPortraitGateway } from './media/npc-portrait.gateway';
 import { TauriNpcPortraitGateway } from './media/tauri-npc-portrait.gateway';
@@ -11,9 +12,11 @@ import { routes } from './app.routes';
 import { AppSettingRepository } from './persistence/app-setting.repository';
 import { InMemoryAppSettingRepository } from './persistence/in-memory-app-setting.repository';
 import { InMemoryCampaignRepository } from './persistence/in-memory-campaign.repository';
+import { InMemoryLocationRepository } from './persistence/in-memory-location.repository';
 import { InMemoryNpcRepository } from './persistence/in-memory-npc.repository';
 import { TauriAppSettingRepository } from './persistence/tauri-app-setting.repository';
 import { TauriCampaignRepository } from './persistence/tauri-campaign.repository';
+import { TauriLocationRepository } from './persistence/tauri-location.repository';
 import { TauriNpcRepository } from './persistence/tauri-npc.repository';
 
 export const appConfig: ApplicationConfig = {
@@ -29,6 +32,11 @@ export const appConfig: ApplicationConfig = {
       provide: CampaignRepository,
       useFactory: () =>
         isTauri() ? new TauriCampaignRepository() : new InMemoryCampaignRepository(),
+    },
+    {
+      provide: LocationRepository,
+      useFactory: () =>
+        isTauri() ? new TauriLocationRepository() : new InMemoryLocationRepository(),
     },
     {
       provide: NpcRepository,

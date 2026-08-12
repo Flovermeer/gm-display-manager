@@ -23,13 +23,18 @@ describe('NpcService', () => {
       notes: '',
     });
 
-    const updated = await service.update(created, {
-      name: 'Syndra Silvane',
-      status: 'missing',
-      summary: 'Commanditaire',
-      notes: 'Introuvable',
-    });
+    const updated = await service.update(
+      created,
+      {
+        name: 'Syndra Silvane',
+        status: 'missing',
+        summary: 'Commanditaire',
+        notes: 'Introuvable',
+      },
+      'campaigns/campaign-id/media/npc-portraits/syndra.webp',
+    );
 
+    expect(updated.portraitPath).toBe('campaigns/campaign-id/media/npc-portraits/syndra.webp');
     await expect(service.list('campaign-id')).resolves.toEqual([updated]);
     await service.delete(updated);
     await expect(service.list('campaign-id')).resolves.toEqual([]);

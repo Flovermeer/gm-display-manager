@@ -9,6 +9,7 @@ export type Npc = Readonly<{
   status: NpcStatus;
   summary: string;
   notes: string;
+  portraitPath: string | null;
   sheet: Readonly<Record<string, unknown>>;
   sheetSchemaVersion: number;
   createdAt: string;
@@ -21,6 +22,7 @@ export type CreateNpcInput = Readonly<{
   status?: NpcStatus;
   summary?: string;
   notes?: string;
+  portraitPath?: string | null;
 }>;
 
 export type UpdateNpcInput = Readonly<{
@@ -54,6 +56,7 @@ export function createNpc(
     status: input.status ?? 'active',
     summary: input.summary?.trim() ?? '',
     notes: input.notes?.trim() ?? '',
+    portraitPath: input.portraitPath ?? null,
     sheet: {},
     sheetSchemaVersion: 1,
     createdAt: now,

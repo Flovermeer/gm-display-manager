@@ -11,14 +11,22 @@ export class NpcService {
     return this.repository.listByCampaign(campaignId);
   }
 
-  async create(campaignId: string, input: UpdateNpcInput): Promise<Npc> {
-    const npc = createNpc({ campaignId, ...input });
+  async create(
+    campaignId: string,
+    input: UpdateNpcInput,
+    portraitPath: string | null = null,
+  ): Promise<Npc> {
+    const npc = createNpc({ campaignId, ...input, portraitPath });
     await this.repository.save(npc);
     return npc;
   }
 
-  async update(npc: Npc, input: UpdateNpcInput): Promise<Npc> {
-    const updatedNpc = updateNpc(npc, input);
+  async update(
+    npc: Npc,
+    input: UpdateNpcInput,
+    portraitPath: string | null = npc.portraitPath,
+  ): Promise<Npc> {
+    const updatedNpc = { ...updateNpc(npc, input), portraitPath };
     await this.repository.save(updatedNpc);
     return updatedNpc;
   }

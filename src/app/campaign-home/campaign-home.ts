@@ -165,8 +165,8 @@ export class CampaignHome implements OnInit {
   }
 
   private errorMessage(error: unknown): string {
-    return error instanceof Error
-      ? error.message
-      : "Une erreur inattendue empêche d'accéder aux campagnes.";
+    if (error instanceof Error) return error.message;
+    if (typeof error === 'string') return error;
+    return "Une erreur inattendue empêche d'accéder aux campagnes.";
   }
 }

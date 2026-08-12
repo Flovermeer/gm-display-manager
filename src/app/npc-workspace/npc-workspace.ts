@@ -148,9 +148,15 @@ export class NpcWorkspace implements OnInit, PendingChangesAware {
         return;
       }
 
+      const previewUrl = await this.npcPortraitGateway
+        .resolveUrl(importedPath)
+        .catch(async (error: unknown) => {
+          await this.npcPortraitGateway.discard(importedPath);
+          throw error;
+        });
       const previousDraft = this.draftPortraitPath();
       this.draftPortraitPath.set(importedPath);
-      this.portraitUrl.set(await this.npcPortraitGateway.resolveUrl(importedPath));
+      this.portraitUrl.set(previewUrl);
       this.npcForm.markAsDirty();
 
       if (previousDraft) {
@@ -504,6 +510,8 @@ export class NpcWorkspace implements OnInit, PendingChangesAware {
   }
 
   private errorMessage(error: unknown): string {
-    return error instanceof Error ? error.message : 'Une erreur inattendue est survenue.';
+    if (error instanceof Error) return error.message;
+    if (typeof error === 'string') return error;
+    return 'Une erreur inattendue est survenue.';
   }
 }

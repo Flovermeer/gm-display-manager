@@ -26,8 +26,12 @@ export class TauriNpcPortraitGateway extends NpcPortraitGateway {
     const relativePath = `${relativeDirectory}/${crypto.randomUUID()}.${extension}`;
     const destinationPath = await this.absolutePath(relativePath);
 
-    await mkdir(relativeDirectory, { baseDir: BaseDirectory.AppData, recursive: true });
-    await copyFile(selectedPath, destinationPath);
+    try {
+      await mkdir(relativeDirectory, { baseDir: BaseDirectory.AppData, recursive: true });
+      await copyFile(selectedPath, destinationPath);
+    } catch (error) {
+      throw new Error(`Impossible de copier le portrait : ${nativeErrorMessage(error)}`);
+    }
     return relativePath;
   }
 
@@ -44,6 +48,12 @@ export class TauriNpcPortraitGateway extends NpcPortraitGateway {
   private async absolutePath(relativePath: string): Promise<string> {
     return join(await appDataDir(), ...relativePath.split('/'));
   }
+}
+
+function nativeErrorMessage(error: unknown): string {
+  if (error instanceof Error) return error.message;
+  if (typeof error === 'string') return error;
+  return String(error);
 }
 
 function fileExtension(path: string): string {

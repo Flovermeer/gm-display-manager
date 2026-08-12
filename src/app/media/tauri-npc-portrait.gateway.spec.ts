@@ -51,6 +51,15 @@ describe('TauriNpcPortraitGateway', () => {
     expect(copyFile).not.toHaveBeenCalled();
   });
 
+  it('keeps the native reason when copying fails', async () => {
+    vi.mocked(open).mockResolvedValue('C:\\Pictures\\syndra.webp');
+    vi.mocked(copyFile).mockRejectedValue('forbidden path');
+
+    await expect(new TauriNpcPortraitGateway().chooseAndImport('campaign-id')).rejects.toThrow(
+      'Impossible de copier le portrait : forbidden path',
+    );
+  });
+
   it('resolves and deletes only internal portrait paths', async () => {
     const gateway = new TauriNpcPortraitGateway();
     const relativePath = 'campaigns/campaign-id/media/npc-portraits/syndra.png';

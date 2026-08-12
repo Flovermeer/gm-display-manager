@@ -19,10 +19,11 @@ describe('CampaignNavigation', () => {
     expect([...element.querySelectorAll('a')].map((link) => link.textContent?.trim())).toEqual([
       "Beholder's Inn",
       'Régie',
+      'Lieux',
       'PNJ',
       'Écrans',
       'Accueil',
     ]);
-    expect([...element.querySelectorAll('[aria-disabled="true"]')]).toHaveLength(5);
+    expect([...element.querySelectorAll('[aria-disabled="true"]')]).toHaveLength(4);
   });
 });

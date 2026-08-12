@@ -11,7 +11,12 @@
       Régie
     </a>
     <span aria-disabled="true" title="Bientôt disponible">Chapitres</span>
-    <span aria-disabled="true" title="Bientôt disponible">Lieux</span>
+    <a
+      [class.active]="activeSection() === 'locations'"
+      [routerLink]="['/campaigns', campaignId(), 'locations']"
+    >
+      Lieux
+    </a>
     <a
       [class.active]="activeSection() === 'npcs'"
       [routerLink]="['/campaigns', campaignId(), 'npcs']"

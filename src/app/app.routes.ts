@@ -10,6 +10,15 @@ export const routes: Routes = [
     title: "Beholder's Inn — Campagnes",
   },
   {
+    path: 'campaigns/:campaignId/locations',
+    loadComponent: () =>
+      import('./location-workspace/location-workspace').then(
+        ({ LocationWorkspace }) => LocationWorkspace,
+      ),
+    canDeactivate: [pendingChangesGuard],
+    title: "Beholder's Inn — Lieux",
+  },
+  {
     path: 'campaigns/:campaignId/npcs',
     loadComponent: () =>
       import('./npc-workspace/npc-workspace').then(({ NpcWorkspace }) => NpcWorkspace),

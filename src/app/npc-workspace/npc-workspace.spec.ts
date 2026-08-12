@@ -4,6 +4,8 @@ import { ActivatedRoute } from '@angular/router';
 
 import type { Campaign } from '../campaign/campaign';
 import { CampaignService } from '../campaign/campaign.service';
+import { DisplayGateway } from '../display/display.gateway';
+import { NpcPortraitGateway } from '../media/npc-portrait.gateway';
 import type { Npc } from '../npc/npc';
 import { NpcService } from '../npc/npc.service';
 import { NpcWorkspace } from './npc-workspace';
@@ -24,6 +26,7 @@ describe('NpcWorkspace', () => {
     status: 'active',
     summary: 'Commanditaire',
     notes: '',
+    portraitPath: null,
     sheet: {},
     sheetSchemaVersion: 1,
     createdAt: '2026-08-12T18:30:00.000Z',
@@ -39,6 +42,16 @@ describe('NpcWorkspace', () => {
     update: vi.fn(),
     delete: vi.fn(),
   };
+  const portraitGateway = {
+    chooseAndImport: vi.fn(),
+    resolveUrl: vi.fn(),
+    discard: vi.fn(),
+  };
+  const displayGateway = {
+    isDesktop: true,
+    isPlayerDisplayOpen: vi.fn(),
+    sendPlayerDisplayState: vi.fn(),
+  };
 
   beforeEach(async () => {
     vi.clearAllMocks();
@@ -48,6 +61,11 @@ describe('NpcWorkspace', () => {
     npcService.create.mockResolvedValue(npc);
     npcService.update.mockResolvedValue(npc);
     npcService.delete.mockResolvedValue(undefined);
+    portraitGateway.chooseAndImport.mockResolvedValue(null);
+    portraitGateway.resolveUrl.mockResolvedValue('asset://portrait');
+    portraitGateway.discard.mockResolvedValue(undefined);
+    displayGateway.isPlayerDisplayOpen.mockResolvedValue(true);
+    displayGateway.sendPlayerDisplayState.mockResolvedValue(undefined);
 
     await TestBed.configureTestingModule({
       imports: [NpcWorkspace],
@@ -55,6 +73,8 @@ describe('NpcWorkspace', () => {
         provideRouter([]),
         { provide: CampaignService, useValue: campaignService },
         { provide: NpcService, useValue: npcService },
+        { provide: NpcPortraitGateway, useValue: portraitGateway },
+        { provide: DisplayGateway, useValue: displayGateway },
         {
           provide: ActivatedRoute,
           useValue: { snapshot: { paramMap: { get: () => campaign.id } } },
@@ -110,6 +130,54 @@ describe('NpcWorkspace', () => {
     ].find((button) => button.textContent?.includes('Continuer'));
     continueButton?.click();
     await expect(result).resolves.toBe(false);
+  });
+
+  it('previews an imported portrait while editing', async () => {
+    portraitGateway.chooseAndImport.mockResolvedValue(
+      'campaigns/campaign-id/media/npc-portraits/syndra.webp',
+    );
+    const fixture = TestBed.createComponent(NpcWorkspace);
+    fixture.detectChanges();
+    await renderUntil(fixture, 'Syndra Silvane');
+    const element = fixture.nativeElement as HTMLElement;
+
+    element.querySelector<HTMLButtonElement>('.npc-list-item')?.click();
+    await renderUntil(fixture, 'Modifier');
+    element.querySelector<HTMLButtonElement>('.primary-button')?.click();
+    fixture.detectChanges();
+    element.querySelector<HTMLButtonElement>('.portrait-action')?.click();
+
+    await vi.waitFor(() => {
+      fixture.detectChanges();
+      expect(element.querySelector<HTMLImageElement>('.portrait-frame img')?.src).toContain(
+        'asset://portrait',
+      );
+    });
+  });
+
+  it('sends a persisted portrait to the player display', async () => {
+    const npcWithPortrait = {
+      ...npc,
+      portraitPath: 'campaigns/campaign-id/media/npc-portraits/syndra.webp',
+    };
+    npcService.list.mockResolvedValue([npcWithPortrait]);
+    const fixture = TestBed.createComponent(NpcWorkspace);
+    fixture.detectChanges();
+    await renderUntil(fixture, 'Syndra Silvane');
+    const element = fixture.nativeElement as HTMLElement;
+
+    element.querySelector<HTMLButtonElement>('.npc-list-item')?.click();
+    await renderUntil(fixture, 'Afficher aux joueurs');
+    element.querySelector<HTMLButtonElement>('.display-button')?.click();
+
+    await vi.waitFor(() => {
+      expect(displayGateway.sendPlayerDisplayState).toHaveBeenCalledWith({
+        mode: 'npc',
+        npcId: npc.id,
+        name: npc.name,
+        portraitPath: 'asset://portrait',
+      });
+    });
   });
 });
 

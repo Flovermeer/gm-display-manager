@@ -69,6 +69,42 @@
     }
 
     @if (isCreating() || selectedNpc()) {
+      <div class="detail-toolbar">
+        <div class="detail-actions">
+          @if (!isEditing()) {
+            <button
+              class="secondary-button display-button"
+              type="button"
+              [disabled]="!selectedNpc()?.portraitPath || !isPlayerDisplayOpen() || isPublishing()"
+              [attr.title]="playerDisplayActionTitle()"
+              (click)="showNpcOnPlayerDisplay()"
+            >
+              {{ isPublishing() ? 'Envoi…' : 'Afficher aux joueurs' }}
+            </button>
+            <button class="primary-button" type="button" (click)="editNpc()">Modifier</button>
+            <button
+              class="secondary-button danger-button"
+              type="button"
+              (click)="requestDeleteNpc()"
+            >
+              Supprimer
+            </button>
+          } @else {
+            <button class="secondary-button" type="button" (click)="cancelEditing()">
+              Annuler
+            </button>
+            <button
+              class="primary-button"
+              type="button"
+              [disabled]="npcForm.invalid || isSaving() || isImportingPortrait()"
+              (click)="saveNpc()"
+            >
+              {{ isSaving() ? 'Enregistrement…' : 'Enregistrer' }}
+            </button>
+          }
+        </div>
+      </div>
+
       <header class="detail-heading">
         <div>
           <p class="section-kicker">{{ isCreating() ? 'Nouveau personnage' : 'Fiche du PNJ' }}</p>
@@ -77,27 +113,24 @@
           </h2>
         </div>
 
-        <div class="detail-actions">
-          @if (!isEditing()) {
-            <button
-              class="secondary-button danger-button"
-              type="button"
-              (click)="requestDeleteNpc()"
-            >
-              Supprimer
-            </button>
-            <button class="primary-button" type="button" (click)="editNpc()">Modifier</button>
+        <div class="portrait-frame" [class.editable]="isEditing()">
+          @if (portraitUrl(); as portrait) {
+            <img [src]="portrait" [alt]="selectedNpc()?.name || 'Portrait du nouveau PNJ'" />
           } @else {
-            <button class="secondary-button" type="button" (click)="cancelEditing()">
-              Annuler
-            </button>
+            <div class="portrait-placeholder" aria-hidden="true">
+              <span>◉</span>
+              <small>Aucun portrait</small>
+            </div>
+          }
+
+          @if (isEditing()) {
             <button
-              class="primary-button"
+              class="portrait-action"
               type="button"
-              [disabled]="npcForm.invalid || isSaving()"
-              (click)="saveNpc()"
+              [disabled]="isImportingPortrait()"
+              (click)="choosePortrait()"
             >
-              {{ isSaving() ? 'Enregistrement…' : 'Enregistrer' }}
+              {{ isImportingPortrait() ? 'Import…' : portraitUrl() ? 'Remplacer' : 'Choisir' }}
             </button>
           }
         </div>

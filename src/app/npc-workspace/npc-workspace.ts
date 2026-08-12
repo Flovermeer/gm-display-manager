@@ -5,6 +5,9 @@ import { ActivatedRoute, Router } from '@angular/router';
 import type { Campaign } from '../campaign/campaign';
 import { CampaignService } from '../campaign/campaign.service';
 import { CampaignNavigation } from '../campaign-navigation/campaign-navigation';
+import { DisplayGateway } from '../display/display.gateway';
+import { PlayerDisplayStore } from '../display/player-display.store';
+import { NpcPortraitGateway } from '../media/npc-portrait.gateway';
 import type { PendingChangesAware } from '../navigation/pending-changes.guard';
 import { NPC_STATUSES, type Npc, type NpcStatus } from '../npc/npc';
 import { NpcService } from '../npc/npc.service';
@@ -20,6 +23,9 @@ type PendingDecisionResolver = (canLeave: boolean) => void;
 export class NpcWorkspace implements OnInit, PendingChangesAware {
   private readonly campaignService = inject(CampaignService);
   private readonly npcService = inject(NpcService);
+  private readonly npcPortraitGateway = inject(NpcPortraitGateway);
+  private readonly displayGateway = inject(DisplayGateway);
+  private readonly playerDisplayStore = inject(PlayerDisplayStore);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private pendingDecisionResolver?: PendingDecisionResolver;
@@ -27,16 +33,24 @@ export class NpcWorkspace implements OnInit, PendingChangesAware {
   protected readonly campaign = signal<Campaign | null>(null);
   protected readonly npcs = signal<readonly Npc[]>([]);
   protected readonly selectedNpc = signal<Npc | null>(null);
+  protected readonly portraitUrl = signal<string | null>(null);
+  protected readonly draftPortraitPath = signal<string | null>(null);
   protected readonly searchTerm = signal('');
   protected readonly isSidebarCollapsed = signal(false);
   protected readonly isLoading = signal(true);
   protected readonly isSaving = signal(false);
+  protected readonly isImportingPortrait = signal(false);
+  protected readonly isPublishing = signal(false);
+  protected readonly isPlayerDisplayOpen = signal(false);
   protected readonly isEditing = signal(false);
   protected readonly isCreating = signal(false);
   protected readonly showPendingChangesDialog = signal(false);
   protected readonly showDeleteDialog = signal(false);
   protected readonly error = signal<string | null>(null);
   protected readonly statuses = NPC_STATUSES;
+  protected readonly effectivePortraitPath = computed(
+    () => this.draftPortraitPath() ?? this.selectedNpc()?.portraitPath ?? null,
+  );
   protected readonly filteredNpcs = computed(() => {
     const searchTerm = this.searchTerm().trim().toLocaleLowerCase('fr');
     if (!searchTerm) {
@@ -86,6 +100,8 @@ export class NpcWorkspace implements OnInit, PendingChangesAware {
     }
 
     this.selectedNpc.set(null);
+    this.portraitUrl.set(null);
+    this.draftPortraitPath.set(null);
     this.isCreating.set(true);
     this.isEditing.set(true);
     this.npcForm.reset({ name: '', status: 'active', summary: '', notes: '' });
@@ -104,7 +120,37 @@ export class NpcWorkspace implements OnInit, PendingChangesAware {
   }
 
   protected cancelEditing(): void {
-    this.abandonChanges();
+    void this.abandonChanges();
+  }
+
+  protected async choosePortrait(): Promise<void> {
+    const campaign = this.campaign();
+    if (!campaign || this.isImportingPortrait()) {
+      return;
+    }
+
+    this.isImportingPortrait.set(true);
+    this.error.set(null);
+
+    try {
+      const importedPath = await this.npcPortraitGateway.chooseAndImport(campaign.id);
+      if (!importedPath) {
+        return;
+      }
+
+      const previousDraft = this.draftPortraitPath();
+      this.draftPortraitPath.set(importedPath);
+      this.portraitUrl.set(await this.npcPortraitGateway.resolveUrl(importedPath));
+      this.npcForm.markAsDirty();
+
+      if (previousDraft) {
+        await this.npcPortraitGateway.discard(previousDraft);
+      }
+    } catch (error) {
+      this.error.set(this.errorMessage(error));
+    } finally {
+      this.isImportingPortrait.set(false);
+    }
   }
 
   protected async saveNpc(): Promise<boolean> {
@@ -123,18 +169,21 @@ export class NpcWorkspace implements OnInit, PendingChangesAware {
 
     try {
       const selectedNpc = this.selectedNpc();
+      const portraitPath = this.effectivePortraitPath();
       const savedNpc = this.isCreating()
-        ? await this.npcService.create(campaign.id, this.npcForm.getRawValue())
+        ? await this.npcService.create(campaign.id, this.npcForm.getRawValue(), portraitPath)
         : selectedNpc
-          ? await this.npcService.update(selectedNpc, this.npcForm.getRawValue())
+          ? await this.npcService.update(selectedNpc, this.npcForm.getRawValue(), portraitPath)
           : null;
 
       if (!savedNpc) {
         return false;
       }
 
+      this.draftPortraitPath.set(null);
       await this.reloadNpcs();
       this.openReadOnly(savedNpc);
+      await this.refreshPublishedNpc(savedNpc);
       return true;
     } catch (error) {
       this.error.set(this.errorMessage(error));
@@ -148,6 +197,45 @@ export class NpcWorkspace implements OnInit, PendingChangesAware {
     if (this.selectedNpc()) {
       this.showDeleteDialog.set(true);
     }
+  }
+
+  protected async showNpcOnPlayerDisplay(): Promise<void> {
+    const npc = this.selectedNpc();
+    const portraitPath = npc?.portraitPath;
+    if (!npc || !portraitPath || !this.isPlayerDisplayOpen() || this.isPublishing()) {
+      return;
+    }
+
+    this.isPublishing.set(true);
+    this.error.set(null);
+
+    try {
+      const state = {
+        mode: 'npc' as const,
+        npcId: npc.id,
+        name: npc.name,
+        portraitPath: await this.npcPortraitGateway.resolveUrl(portraitPath),
+      };
+      this.playerDisplayStore.setState(state);
+      await this.displayGateway.sendPlayerDisplayState(state);
+    } catch (error) {
+      this.error.set(this.errorMessage(error));
+      this.isPlayerDisplayOpen.set(false);
+    } finally {
+      this.isPublishing.set(false);
+    }
+  }
+
+  protected playerDisplayActionTitle(): string {
+    if (!this.selectedNpc()?.portraitPath) {
+      return "Ajoute d'abord un portrait au PNJ.";
+    }
+
+    if (!this.isPlayerDisplayOpen()) {
+      return "Ouvre d'abord l'écran joueurs depuis la régie.";
+    }
+
+    return "Afficher ce PNJ sur l'écran joueurs";
   }
 
   protected cancelDelete(): void {
@@ -164,9 +252,25 @@ export class NpcWorkspace implements OnInit, PendingChangesAware {
     this.error.set(null);
 
     try {
+      const displayState = this.playerDisplayStore.state();
+      if (displayState.mode === 'npc' && displayState.npcId === npc.id) {
+        this.playerDisplayStore.showBlank();
+        if (this.isPlayerDisplayOpen()) {
+          await this.displayGateway.sendPlayerDisplayState({ mode: 'blank' });
+        }
+      }
+
       await this.npcService.delete(npc);
+      if (npc.portraitPath) {
+        try {
+          await this.npcPortraitGateway.discard(npc.portraitPath);
+        } catch (error) {
+          this.error.set(this.errorMessage(error));
+        }
+      }
       await this.reloadNpcs();
       this.selectedNpc.set(null);
+      this.portraitUrl.set(null);
       this.showDeleteDialog.set(false);
     } catch (error) {
       this.error.set(this.errorMessage(error));
@@ -179,8 +283,8 @@ export class NpcWorkspace implements OnInit, PendingChangesAware {
     this.resolvePendingDecision(false);
   }
 
-  protected leaveWithoutSaving(): void {
-    this.abandonChanges();
+  protected async leaveWithoutSaving(): Promise<void> {
+    await this.abandonChanges();
     this.resolvePendingDecision(true);
   }
 
@@ -217,6 +321,9 @@ export class NpcWorkspace implements OnInit, PendingChangesAware {
       await this.campaignService.activate(campaign.id);
       this.campaign.set(campaign);
       await this.reloadNpcs();
+      if (this.displayGateway.isDesktop) {
+        this.isPlayerDisplayOpen.set(await this.displayGateway.isPlayerDisplayOpen());
+      }
     } catch (error) {
       this.error.set(this.errorMessage(error));
     } finally {
@@ -236,7 +343,9 @@ export class NpcWorkspace implements OnInit, PendingChangesAware {
     this.selectedNpc.set(refreshedNpc);
     this.isCreating.set(false);
     this.isEditing.set(false);
+    this.draftPortraitPath.set(null);
     this.populateForm(refreshedNpc);
+    void this.loadPortraitPreview(refreshedNpc.portraitPath);
   }
 
   private populateForm(npc: Npc): void {
@@ -249,14 +358,59 @@ export class NpcWorkspace implements OnInit, PendingChangesAware {
     this.npcForm.markAsPristine();
   }
 
-  private abandonChanges(): void {
+  private async abandonChanges(): Promise<void> {
+    const draftPortraitPath = this.draftPortraitPath();
+    this.draftPortraitPath.set(null);
+    if (draftPortraitPath) {
+      try {
+        await this.npcPortraitGateway.discard(draftPortraitPath);
+      } catch (error) {
+        this.error.set(this.errorMessage(error));
+      }
+    }
+
     const selectedNpc = this.selectedNpc();
     this.isEditing.set(false);
     this.isCreating.set(false);
     if (selectedNpc) {
       this.populateForm(selectedNpc);
+      await this.loadPortraitPreview(selectedNpc.portraitPath);
     } else {
       this.npcForm.reset({ name: '', status: 'active', summary: '', notes: '' });
+      this.portraitUrl.set(null);
+    }
+  }
+
+  private async loadPortraitPreview(relativePath: string | null): Promise<void> {
+    this.portraitUrl.set(null);
+    if (!relativePath) {
+      return;
+    }
+
+    try {
+      const url = await this.npcPortraitGateway.resolveUrl(relativePath);
+      if (this.effectivePortraitPath() === relativePath) {
+        this.portraitUrl.set(url);
+      }
+    } catch (error) {
+      this.error.set(this.errorMessage(error));
+    }
+  }
+
+  private async refreshPublishedNpc(npc: Npc): Promise<void> {
+    const currentState = this.playerDisplayStore.state();
+    if (currentState.mode !== 'npc' || currentState.npcId !== npc.id || !npc.portraitPath) {
+      return;
+    }
+
+    const state = {
+      ...currentState,
+      name: npc.name,
+      portraitPath: await this.npcPortraitGateway.resolveUrl(npc.portraitPath),
+    };
+    this.playerDisplayStore.setState(state);
+    if (this.isPlayerDisplayOpen()) {
+      await this.displayGateway.sendPlayerDisplayState(state);
     }
   }
 

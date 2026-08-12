@@ -426,6 +426,19 @@ Avant chaque ligne de ce tableau, l'agent doit présenter les paquets exacts, le
 - besoin d'un écran battlemap auxiliaire dans l'application ;
 - intégration Foundry, raccourcis globaux ou télécommande après le MVP.
 
+### Nice to have après le MVP
+
+- génération optionnelle d'une animation de PNJ à partir de son portrait statique avec LTX ;
+- conserver l'import vidéo manuel et le portrait statique comme fallback, indépendamment de LTX ;
+- explorer en premier un connecteur expérimental vers LTX Desktop lancé localement, isolé derrière
+  un service de génération afin de ne pas coupler le domaine à son API interne ;
+- réévaluer au moment de l'implémentation la stabilité de l'API locale de LTX Desktop et comparer
+  avec un pipeline LTX local dédié ou l'API cloud officielle ;
+- prévoir une génération asynchrone avec progression et annulation, puis copier le MP4 produit dans
+  le dossier média de la campagne et l'associer au PNJ ;
+- demander un choix explicite avant tout mode cloud en raison du coût, de la connexion requise et de
+  l'envoi du portrait à un service distant.
+
 ## 9. Ordre de livraison
 
 ```text

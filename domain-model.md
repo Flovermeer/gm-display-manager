@@ -46,7 +46,11 @@ Plusieurs personnages, y compris de même nom, peuvent appartenir à la même ca
 
 `npc` suit les mêmes principes, sans `player_name`. Sa fiche système reste également dans un JSON versionné.
 
-Chaque PNJ peut référencer un `portrait_path` statique relatif au dossier interne de la campagne. Ce portrait sert à l'interface MJ et de fallback au Player Display. Un futur média animé restera facultatif et séparé : aucune duplication de l'image statique n'est nécessaire.
+Chaque PNJ peut référencer un `portrait_path` statique et un
+`idle_video_path` facultatif, tous deux relatifs au dossier interne de la
+campagne. La fiche MJ reste statique. Sur le Player Display, la vidéo WebM ou MP4
+est lue en boucle, muette et sans contrôles ; le portrait reste affiché derrière
+et reprend automatiquement la place si la vidéo échoue.
 
 ## Lieux
 

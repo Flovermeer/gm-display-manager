@@ -88,7 +88,13 @@ En lecture seule, **Afficher aux joueurs** envoie ce portrait statique au Player
 Display. Tant qu'aucun portrait n'est enregistré, l'illustration de démonstration
 de Mira Vell est utilisée et marquée **Démo**. Le bouton reste désactivé si la
 fenêtre joueurs n'est pas ouverte. Le portrait enregistré deviendra
-automatiquement le fallback lorsqu'un média animé sera ajouté ultérieurement.
+automatiquement le fallback lorsqu'un média animé est ajouté.
+
+Le champ **Animation pour l'écran joueurs** accepte une vidéo WebM ou MP4. Elle
+est copiée dans la campagne comme les images, puis lue en boucle, muette et sans
+contrôles sur le Player Display. La fiche MJ conserve le portrait statique. Si la
+vidéo est absente ou illisible, l'écran joueurs revient automatiquement à ce
+portrait sans interrompre la régie.
 
 Si tu tentes de changer de fiche ou de page avec un brouillon, l'application
 propose trois choix : **Enregistrer et quitter**, **Quitter sans enregistrer** ou

@@ -35,6 +35,13 @@ La prévisualisation lancée avec Angular seul conserve les campagnes uniquement
 en mémoire. Dans Tauri, elles sont enregistrées dans SQLite et survivent au
 redémarrage.
 
+Une fois dans une campagne, la barre supérieure reste visible pendant le
+défilement :
+
+- **Régie** remonte au début du panneau MJ ;
+- **Écrans** rejoint directement la configuration du moniteur narratif ;
+- **Accueil** revient à la liste des campagnes.
+
 ## 3. Choisir l'écran des joueurs
 
 Dans la section **Écran joueurs** :

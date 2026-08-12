@@ -4,6 +4,7 @@ import type { UnlistenFn } from '@tauri-apps/api/event';
 
 import type { Campaign } from '../campaign/campaign';
 import { CampaignService } from '../campaign/campaign.service';
+import { CampaignNavigation } from '../campaign-navigation/campaign-navigation';
 import { DisplayGateway } from '../display/display.gateway';
 import type { MonitorDescriptor } from '../display/display.models';
 import { PlayerDisplayPreferenceService } from '../display/player-display-preference.service';
@@ -12,7 +13,7 @@ import { PlayerDisplayStore } from '../display/player-display.store';
 
 @Component({
   selector: 'app-control',
-  imports: [RouterLink],
+  imports: [CampaignNavigation, RouterLink],
   templateUrl: './control.html',
   styleUrl: './control.scss',
 })

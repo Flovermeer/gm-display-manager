@@ -1,6 +1,7 @@
-<main class="control-shell">
+<app-campaign-navigation [campaignName]="campaign()?.name ?? 'Chargement…'" />
+
+<main id="campaign-overview" class="control-shell">
   <header>
-    <a class="campaign-back" routerLink="/campaigns">← Toutes les campagnes</a>
     <p class="eyebrow">Campagne active</p>
     <h1>{{ campaign()?.name ?? 'Chargement…' }}</h1>
     <p class="summary">

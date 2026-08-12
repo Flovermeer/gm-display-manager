@@ -1,4 +1,7 @@
-<app-campaign-navigation [campaignName]="campaign()?.name ?? 'Chargement…'" />
+<app-campaign-navigation
+  [campaignName]="campaign()?.name ?? 'Chargement…'"
+  [campaignId]="campaign()?.id ?? ''"
+/>
 
 <main id="campaign-overview" class="control-shell">
   <header>

@@ -1,5 +1,5 @@
 import { ApplicationConfig, provideBrowserGlobalErrorListeners } from '@angular/core';
-import { provideRouter } from '@angular/router';
+import { provideRouter, withInMemoryScrolling } from '@angular/router';
 import { isTauri } from '@tauri-apps/api/core';
 
 import { CampaignRepository } from './campaign/campaign.repository';
@@ -16,7 +16,7 @@ import { TauriNpcRepository } from './persistence/tauri-npc.repository';
 export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
-    provideRouter(routes),
+    provideRouter(routes, withInMemoryScrolling({ anchorScrolling: 'enabled' })),
     {
       provide: AppSettingRepository,
       useFactory: () =>

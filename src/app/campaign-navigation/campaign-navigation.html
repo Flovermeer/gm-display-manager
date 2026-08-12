@@ -7,8 +7,21 @@
   <p class="campaign-name" [title]="campaignName()">{{ campaignName() }}</p>
 
   <div class="campaign-links">
-    <button class="active" type="button" (click)="scrollTo('campaign-overview')">Régie</button>
-    <button type="button" (click)="scrollTo('display-control')">Écrans</button>
+    <a [class.active]="activeSection() === 'control'" [routerLink]="['/campaigns', campaignId()]">
+      Régie
+    </a>
+    <span aria-disabled="true" title="Bientôt disponible">Chapitres</span>
+    <span aria-disabled="true" title="Bientôt disponible">Lieux</span>
+    <a
+      [class.active]="activeSection() === 'npcs'"
+      [routerLink]="['/campaigns', campaignId(), 'npcs']"
+    >
+      PNJ
+    </a>
+    <span aria-disabled="true" title="Bientôt disponible">PJ</span>
+    <span aria-disabled="true" title="Bientôt disponible">Objets</span>
+    <span aria-disabled="true" title="Bientôt disponible">Journal</span>
+    <a [routerLink]="['/campaigns', campaignId()]" fragment="display-control">Écrans</a>
     <a class="home-link" routerLink="/campaigns">Accueil</a>
   </div>
 </nav>

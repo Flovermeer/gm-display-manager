@@ -5,7 +5,10 @@ import { isTauri } from '@tauri-apps/api/core';
 import { CampaignRepository } from './campaign/campaign.repository';
 import { LocationRepository } from './location/location.repository';
 import { BrowserNpcPortraitGateway } from './media/browser-npc-portrait.gateway';
+import { BrowserLocationImageGateway } from './media/browser-location-image.gateway';
+import { LocationImageGateway } from './media/location-image.gateway';
 import { NpcPortraitGateway } from './media/npc-portrait.gateway';
+import { TauriLocationImageGateway } from './media/tauri-location-image.gateway';
 import { TauriNpcPortraitGateway } from './media/tauri-npc-portrait.gateway';
 import { NpcRepository } from './npc/npc.repository';
 import { routes } from './app.routes';
@@ -41,6 +44,11 @@ export const appConfig: ApplicationConfig = {
     {
       provide: NpcRepository,
       useFactory: () => (isTauri() ? new TauriNpcRepository() : new InMemoryNpcRepository()),
+    },
+    {
+      provide: LocationImageGateway,
+      useFactory: () =>
+        isTauri() ? new TauriLocationImageGateway() : new BrowserLocationImageGateway(),
     },
     {
       provide: NpcPortraitGateway,

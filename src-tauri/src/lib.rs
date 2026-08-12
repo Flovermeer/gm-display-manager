@@ -15,10 +15,18 @@ pub fn run() {
 }
 
 fn migrations() -> Vec<Migration> {
-    vec![Migration {
-        version: 1,
-        description: "create_app_setting",
-        sql: include_str!("../migrations/0001_create_app_setting.sql"),
-        kind: MigrationKind::Up,
-    }]
+    vec![
+        Migration {
+            version: 1,
+            description: "create_app_setting",
+            sql: include_str!("../migrations/0001_create_app_setting.sql"),
+            kind: MigrationKind::Up,
+        },
+        Migration {
+            version: 2,
+            description: "create_campaign",
+            sql: include_str!("../migrations/0002_create_campaign.sql"),
+            kind: MigrationKind::Up,
+        },
+    ]
 }

@@ -2,7 +2,12 @@ import { Injectable } from '@angular/core';
 import { isTauri } from '@tauri-apps/api/core';
 import { emitTo, listen, type UnlistenFn } from '@tauri-apps/api/event';
 import { WebviewWindow, getCurrentWebviewWindow } from '@tauri-apps/api/webviewWindow';
-import { availableMonitors, primaryMonitor, type Monitor } from '@tauri-apps/api/window';
+import {
+  availableMonitors,
+  monitorFromPoint,
+  primaryMonitor,
+  type Monitor,
+} from '@tauri-apps/api/window';
 
 import { playerDisplayEvents } from './display.events';
 import type { MonitorDescriptor } from './display.models';
@@ -31,6 +36,19 @@ export class DisplayGateway {
     return (await WebviewWindow.getByLabel(PLAYER_DISPLAY_WINDOW_LABEL)) !== null;
   }
 
+  async getPlayerDisplayMonitorId(): Promise<string | null> {
+    this.assertDesktop();
+    const playerDisplay = await WebviewWindow.getByLabel(PLAYER_DISPLAY_WINDOW_LABEL);
+
+    if (!playerDisplay) {
+      return null;
+    }
+
+    const position = await playerDisplay.outerPosition();
+    const monitor = await monitorFromPoint(position.x, position.y);
+    return monitor ? this.monitorId(monitor) : null;
+  }
+
   async openPlayerDisplay(monitorId: string): Promise<void> {
     this.assertDesktop();
 
@@ -46,6 +64,12 @@ export class DisplayGateway {
     const existing = await WebviewWindow.getByLabel(PLAYER_DISPLAY_WINDOW_LABEL);
 
     if (existing) {
+      const currentPosition = await existing.outerPosition();
+      const currentMonitor = await monitorFromPoint(currentPosition.x, currentPosition.y);
+      if (currentMonitor && this.monitorId(currentMonitor) === monitorId) {
+        return;
+      }
+
       await this.placeFullscreen(existing, target);
       return;
     }

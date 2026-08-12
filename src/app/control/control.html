@@ -59,9 +59,15 @@
           class="primary-button"
           type="button"
           (click)="openPlayerDisplay()"
-          [disabled]="!selectedMonitor() || isLoading()"
+          [disabled]="!selectedMonitor() || isLoading() || isSelectedPlayerMonitor()"
         >
-          {{ isPlayerDisplayOpen() ? "Déplacer l'écran joueurs" : "Ouvrir l'écran joueurs" }}
+          @if (!isPlayerDisplayOpen()) {
+            Ouvrir l'écran joueurs
+          } @else if (isSelectedPlayerMonitor()) {
+            Déjà affiché sur cet écran
+          } @else {
+            Déplacer l'écran joueurs
+          }
         </button>
         @if (isPlayerDisplayOpen()) {
           <button

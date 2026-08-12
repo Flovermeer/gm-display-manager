@@ -74,11 +74,9 @@ plein écran sur le moniteur choisi.
 
 ### Comportement provisoire
 
-Si tu cliques sur **Déplacer l'écran joueurs** sans changer de moniteur, Tauri
-réapplique tout de même le placement et le plein écran. Cela provoque un bref
-flicker sans changement visible. Une amélioration d'interface devra empêcher
-cette action inutile ou indiquer que la fenêtre est déjà sur le moniteur
-sélectionné.
+Lorsque le moniteur sélectionné héberge déjà la fenêtre joueurs, le bouton
+indique **Déjà affiché sur cet écran** et reste désactivé. Cela évite de
+réappliquer inutilement le plein écran et de provoquer un flicker.
 
 ## 6. Fermer l'écran joueurs
 

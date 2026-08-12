@@ -23,11 +23,16 @@ export class Control implements OnInit, OnDestroy {
   protected readonly selectedMonitorId = signal('');
   protected readonly isLoading = signal(false);
   protected readonly isPlayerDisplayOpen = signal(false);
+  protected readonly playerDisplayMonitorId = signal<string | null>(null);
   protected readonly error = signal<string | null>(null);
   protected readonly selectedMonitor = computed(() =>
     this.monitors().find((monitor) => monitor.id === this.selectedMonitorId()),
   );
   protected readonly displayState = this.playerDisplayStore.state;
+  protected readonly isSelectedPlayerMonitor = computed(
+    () =>
+      this.selectedMonitorId() !== '' && this.selectedMonitorId() === this.playerDisplayMonitorId(),
+  );
 
   ngOnInit(): void {
     if (this.isDesktop) {
@@ -48,7 +53,11 @@ export class Control implements OnInit, OnDestroy {
       if (!monitors.some((monitor) => monitor.id === selectedMonitorId)) {
         this.selectedMonitorId.set('');
       }
-      this.isPlayerDisplayOpen.set(await this.displayGateway.isPlayerDisplayOpen());
+      const isPlayerDisplayOpen = await this.displayGateway.isPlayerDisplayOpen();
+      this.isPlayerDisplayOpen.set(isPlayerDisplayOpen);
+      this.playerDisplayMonitorId.set(
+        isPlayerDisplayOpen ? await this.displayGateway.getPlayerDisplayMonitorId() : null,
+      );
     });
   }
 
@@ -65,6 +74,7 @@ export class Control implements OnInit, OnDestroy {
     await this.runDisplayAction(async () => {
       await this.displayGateway.openPlayerDisplay(monitor.id);
       this.isPlayerDisplayOpen.set(true);
+      this.playerDisplayMonitorId.set(monitor.id);
     });
   }
 
@@ -72,6 +82,7 @@ export class Control implements OnInit, OnDestroy {
     await this.runDisplayAction(async () => {
       await this.displayGateway.closePlayerDisplay();
       this.isPlayerDisplayOpen.set(false);
+      this.playerDisplayMonitorId.set(null);
     });
   }
 

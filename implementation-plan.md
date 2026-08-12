@@ -329,6 +329,26 @@ Critère de validation :
 
 > Lieu -> PNJ -> masquer le PNJ -> retour au lieu fonctionne sans autre action du MJ.
 
+### Extension différée — Suivi de combat léger
+
+Objectif envisagé : fournir au MJ un onglet **Combat** avec un panneau superposé
+permettant de suivre rapidement les points de vie pendant une rencontre, sans
+remplacer la gestion de combat de Foundry ni implémenter les règles complètes de
+D&D.
+
+Périmètre proposé, à confirmer avant l'implémentation :
+
+- ajouter à une rencontre des PNJ de la campagne et des monstres ponctuels ;
+- afficher les combattants sous forme de liste compacte ;
+- suivre leurs points de vie actuels et maximum ;
+- appliquer rapidement des dégâts ou des soins ;
+- conserver l'état temporaire du combat séparé de la fiche canonique du PNJ ;
+- ouvrir et replier le panneau sans perdre le contexte de la page courante.
+
+Décisions différées : persistance d'une rencontre après fermeture, gestion de
+plusieurs exemplaires d'un même monstre, initiative, états temporaires et contenu
+éventuellement visible sur le Player Display.
+
 ### Jalon 9 — Durcissement et livraison Windows
 
 Objectif : rendre l'application fiable pendant une session réelle.

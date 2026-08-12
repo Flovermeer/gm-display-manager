@@ -1,11 +1,20 @@
 import { Routes } from '@angular/router';
 
+import { pendingChangesGuard } from './navigation/pending-changes.guard';
+
 export const routes: Routes = [
   {
     path: 'campaigns',
     loadComponent: () =>
       import('./campaign-home/campaign-home').then(({ CampaignHome }) => CampaignHome),
     title: "Beholder's Inn — Campagnes",
+  },
+  {
+    path: 'campaigns/:campaignId/npcs',
+    loadComponent: () =>
+      import('./npc-workspace/npc-workspace').then(({ NpcWorkspace }) => NpcWorkspace),
+    canDeactivate: [pendingChangesGuard],
+    title: "Beholder's Inn — PNJ",
   },
   {
     path: 'campaigns/:campaignId',

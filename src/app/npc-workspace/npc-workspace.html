@@ -1,0 +1,220 @@
+<app-campaign-navigation
+  [campaignName]="campaign()?.name ?? 'Chargement…'"
+  [campaignId]="campaign()?.id ?? ''"
+  activeSection="npcs"
+/>
+
+<main class="workspace" [class.sidebar-collapsed]="isSidebarCollapsed()">
+  <aside class="sidebar" aria-label="Liste des PNJ">
+    <div class="sidebar-tools">
+      <label class="search-label" for="npc-search">Rechercher un PNJ</label>
+      <input
+        id="npc-search"
+        type="search"
+        placeholder="Nom ou rôle…"
+        [value]="searchTerm()"
+        (input)="updateSearch($event)"
+      />
+
+      <div class="sidebar-heading">
+        <h1>PNJ</h1>
+        <span>{{ filteredNpcs().length }}</span>
+      </div>
+
+      <button class="create-button" type="button" (click)="requestCreateNpc()">
+        + Nouveau PNJ
+      </button>
+    </div>
+
+    <div class="npc-list">
+      @if (isLoading()) {
+        <p class="list-message">Chargement…</p>
+      } @else if (filteredNpcs().length === 0) {
+        <p class="list-message">
+          {{
+            searchTerm() ? 'Aucun PNJ ne correspond à la recherche.' : 'Aucun PNJ pour le moment.'
+          }}
+        </p>
+      } @else {
+        @for (npc of filteredNpcs(); track npc.id) {
+          <button
+            class="npc-list-item"
+            type="button"
+            [class.active]="selectedNpc()?.id === npc.id && !isCreating()"
+            (click)="requestSelectNpc(npc)"
+          >
+            <strong>{{ npc.name }}</strong>
+            <span>{{ npc.summary || statusLabel(npc.status) }}</span>
+          </button>
+        }
+      }
+    </div>
+  </aside>
+
+  <button
+    class="sidebar-toggle"
+    type="button"
+    [attr.aria-label]="
+      isSidebarCollapsed() ? 'Afficher la liste des PNJ' : 'Replier la liste des PNJ'
+    "
+    [attr.title]="isSidebarCollapsed() ? 'Afficher la liste' : 'Replier la liste'"
+    (click)="toggleSidebar()"
+  >
+    {{ isSidebarCollapsed() ? '→' : '←' }}
+  </button>
+
+  <section class="detail-panel" aria-labelledby="npc-detail-title">
+    @if (error(); as errorMessage) {
+      <p class="error" role="alert">{{ errorMessage }}</p>
+    }
+
+    @if (isCreating() || selectedNpc()) {
+      <header class="detail-heading">
+        <div>
+          <p class="section-kicker">{{ isCreating() ? 'Nouveau personnage' : 'Fiche du PNJ' }}</p>
+          <h2 id="npc-detail-title">
+            {{ isCreating() ? 'Créer un PNJ' : selectedNpc()?.name }}
+          </h2>
+        </div>
+
+        <div class="detail-actions">
+          @if (!isEditing()) {
+            <button
+              class="secondary-button danger-button"
+              type="button"
+              (click)="requestDeleteNpc()"
+            >
+              Supprimer
+            </button>
+            <button class="primary-button" type="button" (click)="editNpc()">Modifier</button>
+          } @else {
+            <button class="secondary-button" type="button" (click)="cancelEditing()">
+              Annuler
+            </button>
+            <button
+              class="primary-button"
+              type="button"
+              [disabled]="npcForm.invalid || isSaving()"
+              (click)="saveNpc()"
+            >
+              {{ isSaving() ? 'Enregistrement…' : 'Enregistrer' }}
+            </button>
+          }
+        </div>
+      </header>
+
+      @if (isEditing()) {
+        <form class="npc-form" [formGroup]="npcForm" (ngSubmit)="saveNpc()">
+          <div class="form-row">
+            <div class="field field-wide">
+              <label for="npc-name">Nom</label>
+              <input id="npc-name" type="text" formControlName="name" autocomplete="off" />
+              @if (npcForm.controls.name.touched && npcForm.controls.name.invalid) {
+                <p class="field-error">Le nom est obligatoire.</p>
+              }
+            </div>
+
+            <div class="field">
+              <label for="npc-status">Statut</label>
+              <select id="npc-status" formControlName="status">
+                @for (status of statuses; track status) {
+                  <option [value]="status">{{ statusLabel(status) }}</option>
+                }
+              </select>
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="npc-summary">Rôle ou résumé</label>
+            <input
+              id="npc-summary"
+              type="text"
+              formControlName="summary"
+              placeholder="Commanditaire, guide, antagoniste…"
+            />
+          </div>
+
+          <div class="field notes-field">
+            <label for="npc-notes">Notes</label>
+            <textarea id="npc-notes" formControlName="notes" rows="14"></textarea>
+          </div>
+        </form>
+      } @else if (selectedNpc(); as npc) {
+        <article class="npc-sheet">
+          <dl>
+            <div>
+              <dt>Statut</dt>
+              <dd>
+                <span class="status-badge" [attr.data-status]="npc.status">{{
+                  statusLabel(npc.status)
+                }}</span>
+              </dd>
+            </div>
+            <div>
+              <dt>Rôle ou résumé</dt>
+              <dd>{{ npc.summary || 'Non renseigné' }}</dd>
+            </div>
+          </dl>
+
+          <section class="notes-readonly">
+            <h3>Notes</h3>
+            <p>{{ npc.notes || 'Aucune note pour le moment.' }}</p>
+          </section>
+        </article>
+      }
+    } @else {
+      <div class="empty-detail">
+        <span aria-hidden="true">◉</span>
+        <h2 id="npc-detail-title">Aucun PNJ sélectionné</h2>
+        <p>Sélectionne un PNJ dans la liste ou crée-en un nouveau.</p>
+      </div>
+    }
+  </section>
+</main>
+
+@if (showPendingChangesDialog()) {
+  <div class="dialog-backdrop" role="presentation">
+    <section class="dialog" role="dialog" aria-modal="true" aria-labelledby="pending-title">
+      <p class="section-kicker">Modifications non enregistrées</p>
+      <h2 id="pending-title">Que veux-tu faire ?</h2>
+      <p>Tes dernières modifications seront perdues si tu quittes cette fiche.</p>
+      <div class="dialog-actions three-actions">
+        <button
+          class="primary-button"
+          type="button"
+          [disabled]="isSaving()"
+          (click)="saveAndLeave()"
+        >
+          Enregistrer et quitter
+        </button>
+        <button class="secondary-button danger-button" type="button" (click)="leaveWithoutSaving()">
+          Quitter sans enregistrer
+        </button>
+        <button class="secondary-button" type="button" (click)="continueEditing()">
+          Continuer la modification
+        </button>
+      </div>
+    </section>
+  </div>
+}
+
+@if (showDeleteDialog()) {
+  <div class="dialog-backdrop" role="presentation">
+    <section class="dialog" role="dialog" aria-modal="true" aria-labelledby="delete-title">
+      <p class="section-kicker">Suppression définitive</p>
+      <h2 id="delete-title">Supprimer {{ selectedNpc()?.name }} ?</h2>
+      <p>Cette action supprimera définitivement ce PNJ de la campagne.</p>
+      <div class="dialog-actions">
+        <button class="secondary-button" type="button" (click)="cancelDelete()">Annuler</button>
+        <button
+          class="primary-button delete-confirm"
+          type="button"
+          [disabled]="isSaving()"
+          (click)="confirmDeleteNpc()"
+        >
+          Supprimer définitivement
+        </button>
+      </div>
+    </section>
+  </div>
+}

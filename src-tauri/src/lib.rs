@@ -1,7 +1,24 @@
+use tauri_plugin_sql::{Migration, MigrationKind};
+
+const DATABASE_URL: &str = "sqlite:beholders-inn.db";
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
-        .plugin(tauri_plugin_sql::Builder::new().build())
+        .plugin(
+            tauri_plugin_sql::Builder::new()
+                .add_migrations(DATABASE_URL, migrations())
+                .build(),
+        )
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
+}
+
+fn migrations() -> Vec<Migration> {
+    vec![Migration {
+        version: 1,
+        description: "create_app_setting",
+        sql: include_str!("../migrations/0001_create_app_setting.sql"),
+        kind: MigrationKind::Up,
+    }]
 }

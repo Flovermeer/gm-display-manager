@@ -8,6 +8,7 @@
     "core:event:allow-emit-to",
     "core:event:allow-listen",
     "core:event:allow-unlisten",
+    "core:path:allow-join",
     "core:path:allow-resolve-directory",
     "core:webview:allow-create-webview-window",
     "core:window:allow-available-monitors",

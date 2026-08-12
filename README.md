@@ -43,7 +43,8 @@ npm.cmd start
 
 Routes actuelles :
 
-- `http://localhost:4200/control` : panneau du maître de jeu ;
+- `http://localhost:4200/campaigns` : accueil et création des campagnes ;
+- `http://localhost:4200/campaigns/:campaignId` : panneau du maître de jeu pour une campagne ;
 - `http://localhost:4200/player-display` : rendu sans contrôles pour les joueurs.
 
 Lancer Angular dans la fenêtre desktop Tauri :

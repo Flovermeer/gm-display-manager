@@ -30,8 +30,9 @@ Le premier objectif n'est pas le gestionnaire de campagne complet. La priorité 
 Une seule application Angular fournit deux routes :
 
 ```text
-/control          -> panneau de contrôle du MJ
-/player-display   -> rendu sans contrôles sur l'écran des joueurs
+/campaigns              -> accueil et création des campagnes
+/campaigns/:campaignId  -> panneau de contrôle du MJ
+/player-display         -> rendu sans contrôles sur l'écran des joueurs
 ```
 
 Tauri ouvre deux `WebviewWindow` distinctes. La route détermine le rôle de chaque fenêtre.
@@ -94,7 +95,7 @@ La partie native de Tauri a été vérifiée le 12 août 2026 : Rust/Cargo 1.97.
 
 Toute installation constitue un arrêt obligatoire : l'agent explique le besoin et donne les commandes exactes, puis l'utilisateur les exécute et confirme le résultat.
 
-État au 12 août 2026 : le workspace Angular standalone zoneless et le shell Tauri sont initialisés. Le premier lancement et la compilation Tauri ont réussi. Le chemin nominal du jalon 2 a également été validé manuellement : les moniteurs sont détectés et la fenêtre joueurs s'ouvre en plein écran sur le moniteur sélectionné sans remplacer le panneau MJ. Les scénarios matériels avancés du jalon 2 restent à vérifier. Le jalon 3 est validé manuellement : le contrat d'état complet, les stores Signals et la synchronisation `ready` permettent d'enchaîner lieu, PNJ et écran noir depuis le panneau MJ, puis de restaurer l'état courant lorsque la fenêtre joueurs est ouverte. Le jalon 4 est commencé : la migration V1 crée `app_setting` et la préférence de moniteur est persistée via un repository isolant le plugin SQLite. La restauration après redémarrage complet est validée manuellement. La migration V2 crée `campaign` ; son modèle TypeScript, sa factory UUID et son repository SQLite sont testés. L'interface de gestion des campagnes et la persistance de la campagne active restent à réaliser.
+État au 12 août 2026 : le workspace Angular standalone zoneless et le shell Tauri sont initialisés. Le premier lancement et la compilation Tauri ont réussi. Le chemin nominal du jalon 2 a également été validé manuellement : les moniteurs sont détectés et la fenêtre joueurs s'ouvre en plein écran sur le moniteur sélectionné sans remplacer le panneau MJ. Les scénarios matériels avancés du jalon 2 restent à vérifier. Le jalon 3 est validé manuellement : le contrat d'état complet, les stores Signals et la synchronisation `ready` permettent d'enchaîner lieu, PNJ et écran noir depuis le panneau MJ, puis de restaurer l'état courant lorsque la fenêtre joueurs est ouverte. Le jalon 4 est commencé : la migration V1 crée `app_setting` et la préférence de moniteur est persistée via un repository isolant le plugin SQLite. La restauration après redémarrage complet est validée manuellement. La migration V2 crée `campaign` ; son modèle TypeScript, sa factory UUID et son repository SQLite sont testés. L'accueil permet désormais de lister, créer et ouvrir une campagne ; la dernière campagne ouverte est mémorisée sans court-circuiter l'accueil au démarrage. La modification et la suppression restent à réaliser.
 
 ## 5. Jalons d'implémentation
 
@@ -129,14 +130,14 @@ Travail :
 - générer un workspace Angular standalone avec Router et SCSS ;
 - ajouter Tauri 2 au projet existant ;
 - configurer les commandes de développement et de build ;
-- créer les routes `/control` et `/player-display` ;
+- créer les routes de l'accueil, du panneau de campagne et du Player Display ;
 - afficher une page minimale différente selon le rôle de la fenêtre ;
 - limiter les capabilities Tauri aux permissions réellement utilisées.
 
 Critères de validation :
 
 - Angular fonctionne seul dans le navigateur ;
-- l'application Tauri démarre et affiche `/control` ;
+- l'application Tauri démarre et affiche l'accueil `/campaigns` ;
 - le build Angular et la compilation Tauri passent ;
 - aucune logique métier ni dépendance UI supplémentaire n'est encore ajoutée.
 

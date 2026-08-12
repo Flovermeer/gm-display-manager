@@ -14,6 +14,18 @@ header {
   max-width: 46rem;
 }
 
+.campaign-back {
+  display: inline-block;
+  margin-bottom: 2rem;
+  color: #bbb4a7;
+  font-size: 0.82rem;
+  text-decoration: none;
+}
+
+.campaign-back:hover {
+  color: #d8bd86;
+}
+
 .eyebrow {
   margin: 0 0 0.75rem;
   color: #c5a467;

@@ -1,10 +1,10 @@
 <main class="control-shell">
   <header>
-    <p class="eyebrow">Beholder's Inn</p>
-    <h1>Panneau du maître de jeu</h1>
+    <a class="campaign-back" routerLink="/campaigns">← Toutes les campagnes</a>
+    <p class="eyebrow">Campagne active</p>
+    <h1>{{ campaign()?.name ?? 'Chargement…' }}</h1>
     <p class="summary">
-      Choisis le moniteur narratif puis ouvre une fenêtre dédiée pour les joueurs. Le panneau MJ
-      reste disponible sur cet écran.
+      Pilote la régie de la campagne et choisis le moniteur narratif destiné aux joueurs.
     </p>
   </header>
 

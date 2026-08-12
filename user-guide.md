@@ -16,8 +16,9 @@ Au premier lancement, Cargo peut compiler de nombreuses dépendances Rust. Les
 lancements suivants réutilisent le cache de compilation et sont normalement
 plus rapides.
 
-La fenêtre principale **Beholder's Inn** s'ouvre sur le panneau du maître de
-jeu.
+La fenêtre principale **Beholder's Inn** s'ouvre maximisée sur le panneau du
+maître de jeu. Elle conserve sa barre de titre et les contrôles Windows : tu
+peux la réduire ou utiliser `Alt+Tab` pour gérer Foundry à côté.
 
 ## 2. Choisir l'écran des joueurs
 

@@ -222,6 +222,76 @@ a {
   background: #f0ece5;
 }
 
+app-location-workspace {
+  input,
+  textarea,
+  select {
+    width: 100%;
+    padding: 0.75rem 0.85rem;
+    border: 1px solid #4c463d;
+    border-radius: 0.4rem;
+    color: #f3efe6;
+    background: #161512;
+    font: inherit;
+  }
+
+  textarea {
+    min-height: 14rem;
+    resize: vertical;
+    line-height: 1.6;
+  }
+
+  .create-button,
+  .primary-button,
+  .secondary-button {
+    padding: 0.7rem 0.9rem;
+    border-radius: 0.4rem;
+    cursor: pointer;
+  }
+
+  .create-button,
+  .primary-button {
+    border: 1px solid #906bad;
+    color: #fff;
+    background: #76538d;
+  }
+
+  .secondary-button {
+    border: 1px solid #565047;
+    color: #ddd6ca;
+    background: transparent;
+  }
+
+  button:disabled {
+    cursor: not-allowed;
+    opacity: 0.45;
+  }
+
+  button:focus-visible,
+  input:focus-visible,
+  textarea:focus-visible,
+  select:focus-visible {
+    outline: 2px solid #c5a467;
+    outline-offset: 2px;
+  }
+
+  .field label {
+    display: block;
+    margin-bottom: 0.45rem;
+    color: #5d554c;
+    font-size: 0.8rem;
+    font-weight: 800;
+  }
+
+  .location-form input,
+  .location-form textarea,
+  .location-form select {
+    border-color: #bbb2a6;
+    color: #25221e;
+    background: #fff;
+  }
+}
+
 @media (max-width: 52rem) {
   .portrait-frame {
     width: min(12rem, 100%);

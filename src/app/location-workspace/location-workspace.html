@@ -1,0 +1,253 @@
+<app-campaign-navigation
+  [campaignName]="campaign()?.name ?? 'Chargement…'"
+  [campaignId]="campaign()?.id ?? ''"
+  activeSection="locations"
+/>
+
+<main class="workspace" [class.sidebar-collapsed]="isSidebarCollapsed()">
+  <aside class="sidebar" aria-label="Liste des lieux">
+    <div class="sidebar-tools">
+      <label class="search-label" for="location-search">Rechercher un lieu</label>
+      <input
+        id="location-search"
+        type="search"
+        placeholder="Nom, chemin ou résumé…"
+        [value]="searchTerm()"
+        (input)="updateSearch($event)"
+      />
+
+      <div class="sidebar-heading">
+        <h1>Lieux</h1>
+        <span>{{ locationEntries().length }}</span>
+      </div>
+
+      <button class="create-button" type="button" (click)="requestCreateLocation()">
+        + Nouveau lieu
+      </button>
+    </div>
+
+    <div class="location-list">
+      @if (isLoading()) {
+        <p class="list-message">Chargement…</p>
+      } @else if (locationEntries().length === 0) {
+        <p class="list-message">
+          {{
+            searchTerm() ? 'Aucun lieu ne correspond à la recherche.' : 'Aucun lieu pour le moment.'
+          }}
+        </p>
+      } @else {
+        @for (entry of locationEntries(); track entry.location.id) {
+          <button
+            class="location-list-item"
+            type="button"
+            [class.active]="selectedLocation()?.id === entry.location.id && !isCreating()"
+            [style.--location-depth]="entry.depth"
+            (click)="requestSelectLocation(entry.location)"
+          >
+            <strong>{{ entry.location.name }}</strong>
+            <span>{{ searchTerm() ? entry.path : entry.location.summary || 'Lieu' }}</span>
+          </button>
+        }
+      }
+    </div>
+  </aside>
+
+  <button
+    class="sidebar-toggle"
+    type="button"
+    [attr.aria-label]="
+      isSidebarCollapsed() ? 'Afficher la liste des lieux' : 'Replier la liste des lieux'
+    "
+    [attr.title]="isSidebarCollapsed() ? 'Afficher la liste' : 'Replier la liste'"
+    (click)="toggleSidebar()"
+  >
+    {{ isSidebarCollapsed() ? '→' : '←' }}
+  </button>
+
+  <section class="detail-panel" aria-labelledby="location-detail-title">
+    @if (error(); as errorMessage) {
+      <p class="error" role="alert">{{ errorMessage }}</p>
+    }
+
+    @if (isCreating() || selectedLocation()) {
+      <div class="detail-toolbar">
+        <div class="detail-actions">
+          @if (!isEditing()) {
+            <button
+              class="secondary-button display-button"
+              type="button"
+              [disabled]="!isPlayerDisplayOpen() || isPublishing()"
+              [attr.title]="playerDisplayActionTitle()"
+              (click)="showLocationOnPlayerDisplay()"
+            >
+              {{ isPublishing() ? 'Envoi…' : 'Afficher aux joueurs' }}
+            </button>
+            <button class="primary-button" type="button" (click)="editLocation()">Modifier</button>
+            <button
+              class="secondary-button danger-button"
+              type="button"
+              (click)="requestDeleteLocation()"
+            >
+              Supprimer
+            </button>
+          } @else {
+            <button class="secondary-button" type="button" (click)="cancelEditing()">
+              Annuler
+            </button>
+            <button
+              class="primary-button"
+              type="button"
+              [disabled]="locationForm.invalid || isSaving() || isImportingImage()"
+              (click)="saveLocation()"
+            >
+              {{ isSaving() ? 'Enregistrement…' : 'Enregistrer' }}
+            </button>
+          }
+        </div>
+      </div>
+
+      <header class="detail-heading">
+        <div>
+          <p class="section-kicker">{{ isCreating() ? 'Nouveau décor' : 'Fiche du lieu' }}</p>
+          <h2 id="location-detail-title">
+            {{ isCreating() ? 'Créer un lieu' : selectedLocation()?.name }}
+          </h2>
+        </div>
+
+        <div class="location-image-frame" [class.editable]="isEditing()">
+          <img
+            [src]="imageUrl()"
+            [alt]="selectedLocation()?.name || 'Illustration de démonstration du nouveau lieu'"
+          />
+          @if (isUsingDemoImage()) {
+            <span class="portrait-demo-label">Démo</span>
+          }
+
+          @if (isEditing()) {
+            <button
+              class="image-action"
+              type="button"
+              [disabled]="isImportingImage()"
+              (click)="chooseImage()"
+            >
+              {{ isImportingImage() ? 'Import…' : effectiveImagePath() ? 'Remplacer' : 'Choisir' }}
+            </button>
+          }
+        </div>
+      </header>
+
+      @if (isEditing()) {
+        <form class="location-form" [formGroup]="locationForm" (ngSubmit)="saveLocation()">
+          <div class="form-row">
+            <div class="field field-wide">
+              <label for="location-name">Nom</label>
+              <input id="location-name" type="text" formControlName="name" autocomplete="off" />
+              @if (locationForm.controls.name.touched && locationForm.controls.name.invalid) {
+                <p class="field-error">Le nom est obligatoire.</p>
+              }
+            </div>
+
+            <div class="field">
+              <label for="location-parent">Lieu parent</label>
+              <select id="location-parent" formControlName="parentLocationId">
+                <option [ngValue]="null">Racine de la campagne</option>
+                @for (entry of parentOptions(); track entry.location.id) {
+                  <option [value]="entry.location.id">{{ entry.path }}</option>
+                }
+              </select>
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="location-summary">Résumé</label>
+            <input
+              id="location-summary"
+              type="text"
+              formControlName="summary"
+              placeholder="Ville portuaire, temple oublié, auberge animée…"
+            />
+          </div>
+
+          <div class="field notes-field">
+            <label for="location-notes">Notes</label>
+            <textarea id="location-notes" formControlName="notes" rows="14"></textarea>
+          </div>
+        </form>
+      } @else if (selectedLocation(); as location) {
+        <article class="location-sheet">
+          <dl>
+            <div>
+              <dt>Dans</dt>
+              <dd>{{ locationName(location.parentLocationId) }}</dd>
+            </div>
+            <div>
+              <dt>Résumé</dt>
+              <dd>{{ location.summary || 'Non renseigné' }}</dd>
+            </div>
+          </dl>
+
+          <section class="notes-readonly">
+            <h3>Notes</h3>
+            <p>{{ location.notes || 'Aucune note pour le moment.' }}</p>
+          </section>
+        </article>
+      }
+    } @else {
+      <div class="empty-detail">
+        <span aria-hidden="true">⌂</span>
+        <h2 id="location-detail-title">Aucun lieu sélectionné</h2>
+        <p>Sélectionne un lieu dans la liste ou crée-en un nouveau.</p>
+      </div>
+    }
+  </section>
+</main>
+
+@if (showPendingChangesDialog()) {
+  <div class="dialog-backdrop" role="presentation">
+    <section class="dialog" role="dialog" aria-modal="true" aria-labelledby="pending-title">
+      <p class="section-kicker">Modifications non enregistrées</p>
+      <h2 id="pending-title">Que veux-tu faire ?</h2>
+      <p>Tes dernières modifications seront perdues si tu quittes cette fiche.</p>
+      <div class="dialog-actions three-actions">
+        <button
+          class="primary-button"
+          type="button"
+          [disabled]="isSaving()"
+          (click)="saveAndLeave()"
+        >
+          Enregistrer et quitter
+        </button>
+        <button class="secondary-button danger-button" type="button" (click)="leaveWithoutSaving()">
+          Quitter sans enregistrer
+        </button>
+        <button class="secondary-button" type="button" (click)="continueEditing()">
+          Continuer la modification
+        </button>
+      </div>
+    </section>
+  </div>
+}
+
+@if (showDeleteDialog()) {
+  <div class="dialog-backdrop" role="presentation">
+    <section class="dialog" role="dialog" aria-modal="true" aria-labelledby="delete-title">
+      <p class="section-kicker">Suppression définitive</p>
+      <h2 id="delete-title">Supprimer {{ selectedLocation()?.name }} ?</h2>
+      <p>
+        Cette action supprimera définitivement ce lieu. Ses lieux enfants seront replacés à la
+        racine de la campagne.
+      </p>
+      <div class="dialog-actions">
+        <button class="secondary-button" type="button" (click)="cancelDelete()">Annuler</button>
+        <button
+          class="primary-button delete-confirm"
+          type="button"
+          [disabled]="isSaving()"
+          (click)="confirmDeleteLocation()"
+        >
+          Supprimer définitivement
+        </button>
+      </div>
+    </section>
+  </div>
+}

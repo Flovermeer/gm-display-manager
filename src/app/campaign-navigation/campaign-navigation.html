@@ -1,0 +1,14 @@
+<nav class="campaign-navigation" aria-label="Navigation de la campagne">
+  <a class="brand-link" routerLink="/campaigns" aria-label="Retour à l'accueil des campagnes">
+    <span class="brand-mark" aria-hidden="true"><span></span></span>
+    <span class="brand-name">Beholder's Inn</span>
+  </a>
+
+  <p class="campaign-name" [title]="campaignName()">{{ campaignName() }}</p>
+
+  <div class="campaign-links">
+    <a class="active" href="#campaign-overview">Régie</a>
+    <a href="#display-control">Écrans</a>
+    <a class="home-link" routerLink="/campaigns">Accueil</a>
+  </div>
+</nav>

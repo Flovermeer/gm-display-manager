@@ -94,7 +94,7 @@ La partie native de Tauri a été vérifiée le 12 août 2026 : Rust/Cargo 1.97.
 
 Toute installation constitue un arrêt obligatoire : l'agent explique le besoin et donne les commandes exactes, puis l'utilisateur les exécute et confirme le résultat.
 
-État au 12 août 2026 : le workspace Angular standalone zoneless et le shell Tauri sont initialisés. Le premier lancement et la compilation Tauri ont réussi. Le chemin nominal du jalon 2 a également été validé manuellement : les moniteurs sont détectés et la fenêtre joueurs s'ouvre en plein écran sur le moniteur sélectionné sans remplacer le panneau MJ. Les scénarios matériels avancés du jalon 2 restent à vérifier.
+État au 12 août 2026 : le workspace Angular standalone zoneless et le shell Tauri sont initialisés. Le premier lancement et la compilation Tauri ont réussi. Le chemin nominal du jalon 2 a également été validé manuellement : les moniteurs sont détectés et la fenêtre joueurs s'ouvre en plein écran sur le moniteur sélectionné sans remplacer le panneau MJ. Les scénarios matériels avancés du jalon 2 restent à vérifier. Le jalon 3 est implémenté avec un contrat d'état complet, des stores Signals, la synchronisation `ready`, trois actions de démonstration et un fondu CSS ; son flux entre deux fenêtres reste à valider manuellement.
 
 ## 5. Jalons d'implémentation
 

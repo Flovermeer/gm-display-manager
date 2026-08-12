@@ -44,7 +44,22 @@ L'application crée une seconde fenêtre Tauri qui :
 
 La fenêtre principale reste ouverte sur le panneau du maître de jeu.
 
-## 4. Déplacer l'écran joueurs
+## 4. Piloter le contenu affiché
+
+La section **Contenu affiché** fournit actuellement trois actions de
+démonstration :
+
+- **Lieu — Beholder's Inn** affiche une illustration locale de l'auberge ;
+- **PNJ — Mira Vell** superpose un portrait local au décor de l'auberge ;
+- **Écran noir** masque immédiatement le contenu destiné aux joueurs.
+
+Le contenu courant est indiqué en haut à droite de la section. Les médias de
+démonstration sont inclus dans le projet et fonctionnent hors ligne.
+
+Tu peux choisir un contenu avant d'ouvrir la fenêtre joueurs : l'état complet
+sera envoyé automatiquement lorsque cette fenêtre annoncera qu'elle est prête.
+
+## 5. Déplacer l'écran joueurs
 
 Lorsque la fenêtre joueurs existe déjà, le bouton devient **Déplacer l'écran
 joueurs**.
@@ -65,7 +80,7 @@ flicker sans changement visible. Une amélioration d'interface devra empêcher
 cette action inutile ou indiquer que la fenêtre est déjà sur le moniteur
 sélectionné.
 
-## 5. Fermer l'écran joueurs
+## 6. Fermer l'écran joueurs
 
 Clique sur **Fermer l'écran joueurs** depuis le panneau MJ. La fenêtre dédiée
 est fermée sans fermer l'application principale.
@@ -73,7 +88,7 @@ est fermée sans fermer l'application principale.
 Si la fenêtre a été fermée directement depuis Windows, clique sur **Actualiser**
 pour synchroniser l'état affiché dans le panneau MJ.
 
-## 6. Prévisualisation dans le navigateur
+## 7. Prévisualisation dans le navigateur
 
 Angular peut être lancé sans Tauri :
 
@@ -82,10 +97,11 @@ npm.cmd start
 ```
 
 Dans ce mode, les API natives et la gestion multi-écran ne sont pas disponibles.
+Les actions de contenu modifient tout de même l'état de prévisualisation local.
 Le lien de prévisualisation ouvre la route `/player-display` dans la même page et
 affiche un bouton **Retour au panneau MJ**.
 
-## 7. Arrêter l'application de développement
+## 8. Arrêter l'application de développement
 
 Ferme les fenêtres puis, dans le terminal qui exécute Tauri, utilise :
 
@@ -93,17 +109,18 @@ Ferme les fenêtres puis, dans le terminal qui exécute Tauri, utilise :
 Ctrl + C
 ```
 
-## 8. Limites actuelles
+## 9. Limites actuelles
 
 - le moniteur sélectionné n'est pas encore mémorisé après un redémarrage ;
 - l'état de la fenêtre n'est pas encore synchronisé en temps réel si elle est
   fermée directement par Windows ;
-- l'écran joueurs affiche seulement un état d'attente ;
-- aucun lieu, PNJ, document ou écran noir n'est encore envoyé ;
+- les contenus sont encore des médias de démonstration et ne proviennent pas
+  d'une campagne persistée ;
+- les documents ne sont pas encore proposés dans le panneau MJ ;
 - la reconnexion automatique après le retrait d'un moniteur reste à implémenter ;
 - la validation multi-écran est pour l'instant manuelle et ciblée sur Windows.
 
-## 9. Dépannage rapide
+## 10. Dépannage rapide
 
 ### Aucun moniteur détecté
 

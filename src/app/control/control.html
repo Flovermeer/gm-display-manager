@@ -83,4 +83,57 @@
       <p class="error" role="alert">{{ errorMessage }}</p>
     }
   </section>
+
+  <section aria-labelledby="demo-controls">
+    <div class="section-heading">
+      <div>
+        <p class="section-kicker">Démonstration locale</p>
+        <h2 id="demo-controls">Contenu affiché</h2>
+      </div>
+      <p class="current-state" aria-live="polite">
+        {{ displayStateLabel(displayState()) }}
+      </p>
+    </div>
+
+    <p class="notice">
+      Ces contenus temporaires valident le flux panneau MJ → écran joueurs sans stockage ni
+      connexion Internet.
+    </p>
+
+    <div class="display-actions">
+      <button
+        type="button"
+        class="content-button"
+        [class.active]="displayState().mode === 'location'"
+        (click)="showLocation()"
+      >
+        <span class="button-label">Lieu</span>
+        <strong>Beholder's Inn</strong>
+      </button>
+      <button
+        type="button"
+        class="content-button"
+        [class.active]="displayState().mode === 'npc'"
+        (click)="showNpc()"
+      >
+        <span class="button-label">PNJ</span>
+        <strong>Mira Vell</strong>
+      </button>
+      <button
+        type="button"
+        class="content-button blank-button"
+        [class.active]="displayState().mode === 'blank'"
+        (click)="showBlank()"
+      >
+        <span class="button-label">Sécurité</span>
+        <strong>Écran noir</strong>
+      </button>
+    </div>
+
+    @if (isDesktop && !isPlayerDisplayOpen()) {
+      <p class="notice">
+        L'état est mémorisé et sera envoyé dès l'ouverture de la fenêtre joueurs.
+      </p>
+    }
+  </section>
 </main>

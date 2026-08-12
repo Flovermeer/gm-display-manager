@@ -4,6 +4,7 @@ import type { UnlistenFn } from '@tauri-apps/api/event';
 
 import { DisplayGateway } from '../display/display.gateway';
 import type { MonitorDescriptor } from '../display/display.models';
+import type { PlayerDisplayState } from '../display/player-display-state';
 import { PlayerDisplayStore } from '../display/player-display.store';
 
 @Component({
@@ -26,6 +27,7 @@ export class Control implements OnInit, OnDestroy {
   protected readonly selectedMonitor = computed(() =>
     this.monitors().find((monitor) => monitor.id === this.selectedMonitorId()),
   );
+  protected readonly displayState = this.playerDisplayStore.state;
 
   ngOnInit(): void {
     if (this.isDesktop) {
@@ -73,6 +75,42 @@ export class Control implements OnInit, OnDestroy {
     });
   }
 
+  protected showLocation(): void {
+    void this.publishDisplayState({
+      mode: 'location',
+      locationId: 'demo-tavern',
+      imagePath: '/demo/tavern.svg',
+      name: "Beholder's Inn",
+    });
+  }
+
+  protected showNpc(): void {
+    void this.publishDisplayState({
+      mode: 'npc',
+      npcId: 'demo-innkeeper',
+      name: 'Mira Vell',
+      portraitPath: '/demo/innkeeper.svg',
+      backgroundPath: '/demo/tavern.svg',
+    });
+  }
+
+  protected showBlank(): void {
+    void this.publishDisplayState({ mode: 'blank' });
+  }
+
+  protected displayStateLabel(state: PlayerDisplayState): string {
+    switch (state.mode) {
+      case 'blank':
+        return 'Écran noir';
+      case 'location':
+        return state.name ?? 'Lieu';
+      case 'npc':
+        return state.name;
+      case 'document':
+        return state.name ?? 'Document';
+    }
+  }
+
   protected monitorLabel(monitor: MonitorDescriptor): string {
     const primary = monitor.isPrimary ? ' — principal' : '';
     return `${monitor.name} — ${monitor.width} × ${monitor.height}${primary}`;
@@ -103,6 +141,16 @@ export class Control implements OnInit, OnDestroy {
     }
 
     await this.refreshMonitors();
+  }
+
+  private async publishDisplayState(state: PlayerDisplayState): Promise<void> {
+    this.playerDisplayStore.setState(state);
+
+    if (!this.isDesktop || !this.isPlayerDisplayOpen()) {
+      return;
+    }
+
+    await this.runDisplayAction(() => this.displayGateway.sendPlayerDisplayState(state));
   }
 
   private errorMessage(error: unknown): string {

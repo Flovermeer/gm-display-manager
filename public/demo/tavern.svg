@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" role="img" aria-labelledby="title description">
+  <title id="title">Beholder's Inn</title>
+  <desc id="description">A warm fantasy tavern used as a local demonstration image.</desc>
+  <defs>
+    <linearGradient id="wall" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#2d2922"/>
+      <stop offset="1" stop-color="#15120f"/>
+    </linearGradient>
+    <radialGradient id="fire" cx="50%" cy="65%" r="45%">
+      <stop offset="0" stop-color="#d9a04e" stop-opacity=".8"/>
+      <stop offset=".45" stop-color="#8f4f27" stop-opacity=".35"/>
+      <stop offset="1" stop-color="#1a1712" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="1600" height="900" fill="url(#wall)"/>
+  <rect y="610" width="1600" height="290" fill="#100e0c"/>
+  <circle cx="800" cy="510" r="460" fill="url(#fire)"/>
+  <path d="M0 175h1600M0 355h1600M0 535h1600" stroke="#51473a" stroke-width="12" opacity=".55"/>
+  <path d="M185 0v610M520 0v610M1080 0v610M1415 0v610" stroke="#15120f" stroke-width="38" opacity=".8"/>
+  <path d="M630 610V355h340v255" fill="#16130f" stroke="#66523c" stroke-width="18"/>
+  <path d="M690 610c35-155 185-155 220 0" fill="#d47f35" opacity=".8"/>
+  <path d="M0 720h1600" stroke="#66523c" stroke-width="38"/>
+  <path d="M130 720v180M465 720v180M800 720v180M1135 720v180M1470 720v180" stroke="#362d24" stroke-width="18"/>
+</svg>

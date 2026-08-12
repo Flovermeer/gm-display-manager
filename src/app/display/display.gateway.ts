@@ -141,6 +141,7 @@ export class DisplayGateway {
   private toDescriptor(monitor: Monitor, primary: Monitor | null): MonitorDescriptor {
     return {
       id: this.monitorId(monitor),
+      fingerprint: this.monitorFingerprint(monitor),
       name: monitor.name ?? 'Moniteur sans nom',
       width: monitor.size.width,
       height: monitor.size.height,
@@ -152,11 +153,16 @@ export class DisplayGateway {
   }
 
   private monitorId(monitor: Monitor): string {
+    return [this.monitorFingerprint(monitor), `${monitor.position.x},${monitor.position.y}`].join(
+      '|',
+    );
+  }
+
+  private monitorFingerprint(monitor: Monitor): string {
     return [
       monitor.name ?? 'unknown',
       `${monitor.size.width}x${monitor.size.height}`,
       monitor.scaleFactor,
-      `${monitor.position.x},${monitor.position.y}`,
     ].join('|');
   }
 

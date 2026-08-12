@@ -4,6 +4,7 @@ import type { UnlistenFn } from '@tauri-apps/api/event';
 
 import { DisplayGateway } from '../display/display.gateway';
 import type { MonitorDescriptor } from '../display/display.models';
+import { PlayerDisplayPreferenceService } from '../display/player-display-preference.service';
 import type { PlayerDisplayState } from '../display/player-display-state';
 import { PlayerDisplayStore } from '../display/player-display.store';
 
@@ -15,6 +16,7 @@ import { PlayerDisplayStore } from '../display/player-display.store';
 })
 export class Control implements OnInit, OnDestroy {
   private readonly displayGateway = inject(DisplayGateway);
+  private readonly playerDisplayPreference = inject(PlayerDisplayPreferenceService);
   private readonly playerDisplayStore = inject(PlayerDisplayStore);
   private unlistenPlayerDisplayReady?: UnlistenFn;
 
@@ -51,7 +53,8 @@ export class Control implements OnInit, OnDestroy {
 
       this.monitors.set(monitors);
       if (!monitors.some((monitor) => monitor.id === selectedMonitorId)) {
-        this.selectedMonitorId.set('');
+        const preferredMonitor = await this.playerDisplayPreference.findPreferredMonitor(monitors);
+        this.selectedMonitorId.set(preferredMonitor?.id ?? '');
       }
       const isPlayerDisplayOpen = await this.displayGateway.isPlayerDisplayOpen();
       this.isPlayerDisplayOpen.set(isPlayerDisplayOpen);
@@ -75,6 +78,7 @@ export class Control implements OnInit, OnDestroy {
       await this.displayGateway.openPlayerDisplay(monitor.id);
       this.isPlayerDisplayOpen.set(true);
       this.playerDisplayMonitorId.set(monitor.id);
+      await this.playerDisplayPreference.savePreferredMonitor(monitor);
     });
   }
 

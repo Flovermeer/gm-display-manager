@@ -1,5 +1,6 @@
 export type MonitorDescriptor = Readonly<{
   id: string;
+  fingerprint: string;
   name: string;
   width: number;
   height: number;

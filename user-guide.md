@@ -31,6 +31,11 @@ Dans la section **Écran joueurs** :
 Le bouton **Actualiser** relit la configuration des écrans connectés. Utilise-le
 après avoir branché, débranché ou réorganisé un moniteur dans Windows.
 
+Le moniteur utilisé avec succès est mémorisé dans la base SQLite locale. Au
+prochain lancement, il est automatiquement présélectionné s'il peut être reconnu
+sans ambiguïté. Si deux moniteurs identiques partagent la même empreinte,
+l'application demande une nouvelle sélection au lieu de choisir arbitrairement.
+
 ## 3. Ouvrir l'écran joueurs
 
 Après avoir sélectionné un moniteur, clique sur **Ouvrir l'écran joueurs**.
@@ -109,7 +114,6 @@ Ctrl + C
 
 ## 9. Limites actuelles
 
-- le moniteur sélectionné n'est pas encore mémorisé après un redémarrage ;
 - l'état de la fenêtre n'est pas encore synchronisé en temps réel si elle est
   fermée directement par Windows ;
 - les contenus sont encore des médias de démonstration et ne proviennent pas

@@ -38,9 +38,25 @@ redémarrage.
 Une fois dans une campagne, la barre supérieure reste visible pendant le
 défilement :
 
-- **Régie** remonte au début du panneau MJ ;
-- **Écrans** rejoint directement la configuration du moniteur narratif ;
+- **Régie** ouvre le panneau MJ ;
+- **PNJ** ouvre la bibliothèque des personnages non joueurs ;
+- **Écrans** ouvre la régie à hauteur de la configuration du moniteur narratif ;
 - **Accueil** revient à la liste des campagnes.
+
+Les rubriques grisées indiquent les prochaines sections prévues.
+
+### Gérer les PNJ
+
+La page **PNJ** propose une liste filtrable à gauche et la fiche sélectionnée à
+droite. La flèche replie ou affiche le panneau latéral.
+
+Une fiche est toujours ouverte en lecture seule. Utilise **Modifier** pour
+changer son nom, son statut, son rôle ou ses notes, puis **Enregistrer**. La
+suppression demande une confirmation séparée.
+
+Si tu tentes de changer de fiche ou de page avec un brouillon, l'application
+propose trois choix : **Enregistrer et quitter**, **Quitter sans enregistrer** ou
+**Continuer la modification**.
 
 ## 3. Choisir l'écran des joueurs
 

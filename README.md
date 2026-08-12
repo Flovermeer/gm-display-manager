@@ -70,4 +70,5 @@ moniteurs physiques à partir du jalon 2.
 - [`user-guide.md`](./user-guide.md) : lancement et utilisation de la preuve de concept ;
 - [`dm-display-manager-specs.md`](./dm-display-manager-specs.md) : vision produit ;
 - [`dm-campaign-display-stack.md`](./dm-campaign-display-stack.md) : architecture cible ;
-- [`implementation-plan.md`](./implementation-plan.md) : jalons et critères de validation.
+- [`implementation-plan.md`](./implementation-plan.md) : jalons et critères de validation ;
+- [`domain-model.md`](./domain-model.md) : modèle métier et décisions de données.

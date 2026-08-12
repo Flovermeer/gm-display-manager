@@ -9,6 +9,7 @@ gestion de la battlemap, de la grille et du fog of war.
 - Angular 22, composants standalone et Router ;
 - application zoneless ;
 - Tauri 2 ;
+- SQLite, Dialog et Filesystem via les plugins officiels Tauri ;
 - Node.js 24.15.0 épinglé localement avec Volta ;
 - Rust stable avec la toolchain Windows MSVC.
 

@@ -54,6 +54,17 @@ Une fiche est toujours ouverte en lecture seule. Utilise **Modifier** pour
 changer son nom, son statut, son rôle ou ses notes, puis **Enregistrer**. La
 suppression demande une confirmation séparée.
 
+En mode édition, clique sur le cadre carré du portrait pour choisir une image
+PNG, JPG, JPEG ou WebP. L'original reste intact : une copie est enregistrée dans
+le dossier interne de la campagne. Elle n'est attachée au PNJ qu'après
+validation de la fiche et elle est supprimée si tu annules. Le cadre carré
+utilise un recadrage visuel sans modifier le fichier.
+
+En lecture seule, **Afficher aux joueurs** envoie ce portrait statique au Player
+Display. Le bouton reste désactivé tant qu'aucun portrait n'est enregistré ou
+que la fenêtre joueurs n'est pas ouverte. Cette image deviendra automatiquement
+le fallback lorsqu'un portrait animé sera ajouté ultérieurement.
+
 Si tu tentes de changer de fiche ou de page avec un brouillon, l'application
 propose trois choix : **Enregistrer et quitter**, **Quitter sans enregistrer** ou
 **Continuer la modification**.

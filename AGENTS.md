@@ -118,6 +118,7 @@ Ne pas ajouter sans demande explicite :
 - Inspecter les fichiers concernés avant de proposer ou d'effectuer une modification.
 - Préserver les changements existants de l'utilisateur et éviter toute réécriture sans rapport avec la demande.
 - Ne modifier que ce qui est nécessaire à la tâche en cours.
+- Créer de petits commits cohérents au fur et à mesure de l'implémentation, chaque commit correspondant à une étape fonctionnelle ou documentaire clairement identifiable.
 - Garder les fichiers et identifiants en anglais lorsque cela concerne le code ; utiliser un libellé français dans l'interface lorsque le produit l'exige.
 - Mettre à jour la documentation lorsqu'une décision d'architecture, un contrat ou une procédure de lancement change.
 - Ne pas ajouter de données de campagne, médias protégés, secrets ou chemins absolus propres à une machine dans le dépôt.

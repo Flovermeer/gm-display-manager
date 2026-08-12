@@ -1,0 +1,97 @@
+<main class="campaign-home">
+  <header class="brand" aria-labelledby="application-name">
+    <div class="beholder-mark" aria-hidden="true">
+      <span class="eye"><span class="pupil"></span></span>
+    </div>
+    <div>
+      <p class="brand-kicker">Campaign & Display Manager</p>
+      <h1 id="application-name">Beholder's Inn</h1>
+    </div>
+  </header>
+
+  <div class="home-layout">
+    <section class="campaign-panel" aria-labelledby="campaign-list-title">
+      <div class="panel-heading">
+        <p class="section-kicker">Continuer l'aventure</p>
+        <h2 id="campaign-list-title">Mes campagnes</h2>
+      </div>
+
+      @if (isLoading()) {
+        <p class="empty-state" aria-live="polite">Chargement des campagnes…</p>
+      } @else if (campaigns().length === 0) {
+        <div class="empty-state">
+          <strong>Aucune campagne</strong>
+          <span>Crée ta première aventure pour préparer ta régie.</span>
+        </div>
+      } @else {
+        <div class="campaign-list">
+          @for (campaign of campaigns(); track campaign.id) {
+            <button
+              class="campaign-card"
+              type="button"
+              [class.active]="campaign.id === activeCampaignId()"
+              [disabled]="isSubmitting()"
+              (click)="openCampaign(campaign)"
+            >
+              <span>
+                <strong>{{ campaign.name }}</strong>
+                @if (campaign.description) {
+                  <small>{{ campaign.description }}</small>
+                }
+              </span>
+              @if (campaign.id === activeCampaignId()) {
+                <span class="last-opened">Dernière ouverte</span>
+              }
+            </button>
+          }
+        </div>
+      }
+    </section>
+
+    <section class="create-panel" aria-labelledby="create-campaign-title">
+      <div class="panel-heading">
+        <p class="section-kicker">Nouvelle aventure</p>
+        <h2 id="create-campaign-title">Créer une campagne</h2>
+      </div>
+
+      <form [formGroup]="campaignForm" (ngSubmit)="createCampaign()">
+        <label for="campaign-name">Nom</label>
+        <input
+          id="campaign-name"
+          type="text"
+          formControlName="name"
+          autocomplete="off"
+          placeholder="Tomb of Annihilation"
+        />
+        @if (campaignForm.controls.name.touched && campaignForm.controls.name.invalid) {
+          <p class="field-error">Donne un nom à la campagne.</p>
+        }
+
+        <label for="campaign-description">Description</label>
+        <textarea
+          id="campaign-description"
+          formControlName="description"
+          rows="5"
+          placeholder="Une courte présentation de la campagne…"
+        ></textarea>
+
+        <label for="campaign-system">Système de jeu</label>
+        <select id="campaign-system" formControlName="systemKey">
+          <option value="dnd5e">Dungeons & Dragons 5e</option>
+        </select>
+
+        <button
+          class="create-button"
+          type="submit"
+          [disabled]="campaignForm.invalid || isSubmitting()"
+        >
+          {{ isSubmitting() ? 'Création…' : 'Créer la campagne' }}
+        </button>
+      </form>
+    </section>
+  </div>
+
+  @if (error(); as errorMessage) {
+    <p class="global-error" role="alert">{{ errorMessage }}</p>
+  }
+</main>

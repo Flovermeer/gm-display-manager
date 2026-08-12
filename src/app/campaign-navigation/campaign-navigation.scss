@@ -21,7 +21,8 @@
 }
 
 .brand-link,
-.campaign-links a {
+.campaign-links a,
+.campaign-links button {
   color: #bbb4a7;
   text-decoration: none;
 }
@@ -82,15 +83,23 @@
   gap: 0.3rem;
 }
 
-.campaign-links a {
+.campaign-links a,
+.campaign-links button {
   padding: 0.65rem 0.8rem;
   border-radius: 0.4rem;
   font-size: 0.82rem;
   font-weight: 700;
 }
 
+.campaign-links button {
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
+
 .campaign-links a:hover,
-.campaign-links a.active {
+.campaign-links button:hover,
+.campaign-links button.active {
   color: #f3efe6;
   background: #302b24;
 }
@@ -100,7 +109,8 @@
   border: 1px solid #49443b;
 }
 
-a:focus-visible {
+a:focus-visible,
+button:focus-visible {
   outline: 2px solid #c5a467;
   outline-offset: 2px;
 }
@@ -121,7 +131,8 @@ a:focus-visible {
 }
 
 @media (max-width: 28rem) {
-  .campaign-links a {
+  .campaign-links a,
+  .campaign-links button {
     padding-inline: 0.55rem;
   }
 }

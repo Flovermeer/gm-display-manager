@@ -7,8 +7,8 @@
   <p class="campaign-name" [title]="campaignName()">{{ campaignName() }}</p>
 
   <div class="campaign-links">
-    <a class="active" href="#campaign-overview">Régie</a>
-    <a href="#display-control">Écrans</a>
+    <button class="active" type="button" (click)="scrollTo('campaign-overview')">Régie</button>
+    <button type="button" (click)="scrollTo('display-control')">Écrans</button>
     <a class="home-link" routerLink="/campaigns">Accueil</a>
   </div>
 </nav>

@@ -9,4 +9,8 @@ import { RouterLink } from '@angular/router';
 })
 export class CampaignNavigation {
   readonly campaignName = input.required<string>();
+
+  protected scrollTo(sectionId: string): void {
+    document.getElementById(sectionId)?.scrollIntoView({ block: 'start' });
+  }
 }

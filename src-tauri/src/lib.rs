@@ -5,6 +5,8 @@ const DATABASE_URL: &str = "sqlite:beholders-inn.db";
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
+        .plugin(tauri_plugin_fs::init())
+        .plugin(tauri_plugin_dialog::init())
         .plugin(
             tauri_plugin_sql::Builder::new()
                 .add_migrations(DATABASE_URL, migrations())
@@ -32,6 +34,12 @@ fn migrations() -> Vec<Migration> {
             version: 3,
             description: "create_npc",
             sql: include_str!("../migrations/0003_create_npc.sql"),
+            kind: MigrationKind::Up,
+        },
+        Migration {
+            version: 4,
+            description: "add_npc_portrait",
+            sql: include_str!("../migrations/0004_add_npc_portrait.sql"),
             kind: MigrationKind::Up,
         },
     ]

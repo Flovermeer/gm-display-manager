@@ -33,6 +33,11 @@ export class TauriAppSettingRepository extends AppSettingRepository {
     );
   }
 
+  override async delete(key: string): Promise<void> {
+    const database = await this.getDatabase();
+    await database.execute('DELETE FROM app_setting WHERE key = $1', [key]);
+  }
+
   private getDatabase(): Promise<Database> {
     this.databasePromise ??= Database.load(DATABASE_URL).catch((error: unknown) => {
       this.databasePromise = undefined;

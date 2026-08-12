@@ -3,18 +3,23 @@ import { TestBed } from '@angular/core/testing';
 import { AppSettingRepository } from '../persistence/app-setting.repository';
 import { InMemoryAppSettingRepository } from '../persistence/in-memory-app-setting.repository';
 import { InMemoryCampaignRepository } from '../persistence/in-memory-campaign.repository';
+import { CampaignMediaGateway } from '../media/campaign-media.gateway';
 import { CampaignRepository } from './campaign.repository';
 import { CampaignService } from './campaign.service';
 
 describe('CampaignService', () => {
   let service: CampaignService;
+  const mediaGateway = { discardCampaign: vi.fn() };
 
   beforeEach(() => {
+    vi.clearAllMocks();
+    mediaGateway.discardCampaign.mockResolvedValue(undefined);
     TestBed.configureTestingModule({
       providers: [
         CampaignService,
         { provide: CampaignRepository, useClass: InMemoryCampaignRepository },
         { provide: AppSettingRepository, useClass: InMemoryAppSettingRepository },
+        { provide: CampaignMediaGateway, useValue: mediaGateway },
       ],
     });
     service = TestBed.inject(CampaignService);
@@ -40,5 +45,28 @@ describe('CampaignService', () => {
     await expect(service.getActiveCampaignId()).resolves.toBe(first.id);
     await expect(service.list()).resolves.toHaveLength(2);
     expect(second.id).not.toBe(first.id);
+  });
+
+  it('updates a campaign without changing its identity', async () => {
+    const campaign = await service.createAndActivate({ name: 'Tomb' });
+
+    const updated = await service.update(campaign, {
+      name: 'Tomb of Annihilation',
+      description: 'Exploration de Chult',
+      systemKey: 'dnd5e',
+    });
+
+    expect(updated.id).toBe(campaign.id);
+    await expect(service.findById(campaign.id)).resolves.toEqual(updated);
+  });
+
+  it('deletes the campaign, its active preference and its media', async () => {
+    const campaign = await service.createAndActivate({ name: 'Tomb of Annihilation' });
+
+    await service.delete(campaign);
+
+    await expect(service.findById(campaign.id)).resolves.toBeNull();
+    await expect(service.getActiveCampaignId()).resolves.toBeNull();
+    expect(mediaGateway.discardCampaign).toHaveBeenCalledWith(campaign.id);
   });
 });

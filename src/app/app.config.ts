@@ -3,12 +3,15 @@ import { provideRouter, withInMemoryScrolling } from '@angular/router';
 import { isTauri } from '@tauri-apps/api/core';
 
 import { CampaignRepository } from './campaign/campaign.repository';
+import { BrowserCampaignMediaGateway } from './media/browser-campaign-media.gateway';
 import { LocationRepository } from './location/location.repository';
 import { BrowserNpcPortraitGateway } from './media/browser-npc-portrait.gateway';
 import { BrowserLocationImageGateway } from './media/browser-location-image.gateway';
+import { CampaignMediaGateway } from './media/campaign-media.gateway';
 import { LocationImageGateway } from './media/location-image.gateway';
 import { NpcPortraitGateway } from './media/npc-portrait.gateway';
 import { TauriLocationImageGateway } from './media/tauri-location-image.gateway';
+import { TauriCampaignMediaGateway } from './media/tauri-campaign-media.gateway';
 import { TauriNpcPortraitGateway } from './media/tauri-npc-portrait.gateway';
 import { NpcRepository } from './npc/npc.repository';
 import { routes } from './app.routes';
@@ -35,6 +38,11 @@ export const appConfig: ApplicationConfig = {
       provide: CampaignRepository,
       useFactory: () =>
         isTauri() ? new TauriCampaignRepository() : new InMemoryCampaignRepository(),
+    },
+    {
+      provide: CampaignMediaGateway,
+      useFactory: () =>
+        isTauri() ? new TauriCampaignMediaGateway() : new BrowserCampaignMediaGateway(),
     },
     {
       provide: LocationRepository,

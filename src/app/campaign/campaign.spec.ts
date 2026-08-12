@@ -1,6 +1,7 @@
 import {
   createCampaign,
   DEFAULT_CAMPAIGN_SYSTEM_KEY,
+  updateCampaign,
   type CampaignFactoryDependencies,
 } from './campaign';
 
@@ -42,5 +43,27 @@ describe('createCampaign', () => {
     expect(() => createCampaign({ name: '   ' }, dependencies)).toThrow(
       'Campaign name is required.',
     );
+  });
+
+  it('updates normalized editable fields', () => {
+    const campaign = createCampaign({ name: 'Tomb' }, dependencies);
+
+    expect(
+      updateCampaign(
+        campaign,
+        {
+          name: ' Tomb of Annihilation ',
+          description: ' Exploration de Chult ',
+          systemKey: ' dnd5e ',
+        },
+        () => new Date('2026-08-13T10:00:00.000Z'),
+      ),
+    ).toMatchObject({
+      id: campaign.id,
+      name: 'Tomb of Annihilation',
+      description: 'Exploration de Chult',
+      systemKey: 'dnd5e',
+      updatedAt: '2026-08-13T10:00:00.000Z',
+    });
   });
 });

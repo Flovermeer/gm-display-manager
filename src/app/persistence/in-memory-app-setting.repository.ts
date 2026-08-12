@@ -11,4 +11,9 @@ export class InMemoryAppSettingRepository extends AppSettingRepository {
     this.values.set(key, value);
     return Promise.resolve();
   }
+
+  override delete(key: string): Promise<void> {
+    this.values.delete(key);
+    return Promise.resolve();
+  }
 }

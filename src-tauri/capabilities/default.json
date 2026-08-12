@@ -24,10 +24,11 @@
     "dialog:default",
     "fs:default",
     "fs:allow-copy-file",
+    "fs:allow-exists",
     "fs:allow-remove",
     {
       "identifier": "fs:scope",
-      "allow": [{ "path": "$APPDATA/campaigns/**/*" }]
+      "allow": [{ "path": "$APPDATA/campaigns/*" }, { "path": "$APPDATA/campaigns/**/*" }]
     }
   ]
 }

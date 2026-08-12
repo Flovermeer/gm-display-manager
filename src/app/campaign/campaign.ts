@@ -15,6 +15,12 @@ export type CreateCampaignInput = Readonly<{
   systemKey?: string;
 }>;
 
+export type UpdateCampaignInput = Readonly<{
+  name: string;
+  description: string;
+  systemKey: string;
+}>;
+
 export type CampaignFactoryDependencies = Readonly<{
   createId: () => string;
   now: () => Date;
@@ -45,5 +51,28 @@ export function createCampaign(
     systemKey,
     createdAt: now,
     updatedAt: now,
+  };
+}
+
+export function updateCampaign(
+  campaign: Campaign,
+  input: UpdateCampaignInput,
+  now: () => Date = () => new Date(),
+): Campaign {
+  const name = input.name.trim();
+  const systemKey = input.systemKey.trim();
+  if (!name) {
+    throw new Error('Campaign name is required.');
+  }
+  if (!systemKey) {
+    throw new Error('Campaign system key is required.');
+  }
+
+  return {
+    ...campaign,
+    name,
+    description: input.description.trim(),
+    systemKey,
+    updatedAt: now().toISOString(),
   };
 }

@@ -46,6 +46,7 @@ Routes actuelles :
 
 - `http://localhost:4200/campaigns` : accueil et création des campagnes ;
 - `http://localhost:4200/campaigns/:campaignId` : panneau du maître de jeu pour une campagne ;
+- `http://localhost:4200/campaigns/:campaignId/locations` : gestion hiérarchique des lieux ;
 - `http://localhost:4200/campaigns/:campaignId/npcs` : gestion des PNJ de la campagne ;
 - `http://localhost:4200/player-display` : rendu sans contrôles pour les joueurs.
 

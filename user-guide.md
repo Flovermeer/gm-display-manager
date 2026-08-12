@@ -39,11 +39,29 @@ Une fois dans une campagne, la barre supérieure reste visible pendant le
 défilement :
 
 - **Régie** ouvre le panneau MJ ;
+- **Lieux** ouvre la bibliothèque hiérarchique des décors et régions ;
 - **PNJ** ouvre la bibliothèque des personnages non joueurs ;
 - **Écrans** ouvre la régie à hauteur de la configuration du moniteur narratif ;
 - **Accueil** revient à la liste des campagnes.
 
 Les rubriques grisées indiquent les prochaines sections prévues.
+
+### Gérer les lieux
+
+La page **Lieux** présente l'arborescence de la campagne dans le panneau gauche.
+Un lieu peut rester à la racine ou être rangé dans un autre lieu, par exemple
+`Chult › Port Nyanzaru › Beholder's Inn`. La recherche porte aussi sur ce chemin,
+ce qui permet de distinguer facilement deux lieux portant le même nom.
+
+La fiche permet de modifier le nom, le lieu parent, le résumé et les notes. Elle
+accepte une illustration PNG, JPG, JPEG ou WebP, copiée dans le dossier interne
+de la campagne. Comme pour les PNJ, un brouillon importé est supprimé si tu
+annules la modification.
+
+En lecture seule, **Afficher aux joueurs** envoie l'illustration au Player
+Display. L'image de démonstration de l'auberge, marquée **Démo**, est utilisée si
+aucune illustration n'est encore enregistrée. Supprimer un lieu replace ses
+enfants à la racine de la campagne au lieu de les supprimer.
 
 ### Gérer les PNJ
 

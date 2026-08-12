@@ -56,6 +56,14 @@ Chult
 ```
 
 La hiérarchie reste facultative : un lieu peut être créé directement à la racine d'une campagne.
+Un lieu contient également un résumé, des notes simples et un `image_path` relatif
+vers son illustration dans le dossier interne de la campagne. L'illustration est
+utilisée dans la fiche MJ et sur le Player Display ; le visuel de démonstration de
+l'auberge sert de fallback tant qu'aucune image n'est enregistrée.
+
+Un lieu ne peut pas devenir son propre parent ni être placé dans un de ses
+descendants. Lorsqu'un lieu est supprimé, ses enfants directs sont replacés à la
+racine de la campagne afin d'éviter une suppression implicite de toute une branche.
 
 ## Objets narratifs
 

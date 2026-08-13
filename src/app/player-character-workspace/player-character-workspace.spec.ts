@@ -156,6 +156,25 @@ describe('PlayerCharacterWorkspace', () => {
     expect(element.querySelector('.validation-summary')?.textContent).toContain('Niveau (1 à 20)');
     expect(characterService.create).not.toHaveBeenCalled();
   });
+
+  it('shows the exhaustion range error while typing', async () => {
+    const fixture = TestBed.createComponent(PlayerCharacterWorkspace);
+    fixture.detectChanges();
+    await renderUntil(fixture, 'Nyssa');
+    const element = fixture.nativeElement as HTMLElement;
+
+    element.querySelector<HTMLButtonElement>('.create-button')?.click();
+    await renderUntil(fixture, 'Créer un PJ');
+    const exhaustionInput = element.querySelector<HTMLInputElement>('#character-exhaustion');
+    if (!exhaustionInput) throw new Error('Exhaustion field not found.');
+    exhaustionInput.value = '7';
+    exhaustionInput.dispatchEvent(new Event('input'));
+    fixture.detectChanges();
+
+    expect(exhaustionInput.closest('.field')?.querySelector('.field-error')?.textContent).toContain(
+      'entre 0 et 6',
+    );
+  });
 });
 
 async function renderUntil(fixture: ComponentFixture<PlayerCharacterWorkspace>, text: string) {

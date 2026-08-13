@@ -304,6 +304,15 @@
                   max="6"
                   formControlName="exhaustionLevel"
                 />
+                @if (
+                  characterForm.controls.exhaustionLevel.invalid &&
+                  (characterForm.controls.exhaustionLevel.dirty ||
+                    characterForm.controls.exhaustionLevel.touched)
+                ) {
+                  <p class="field-error" role="alert">
+                    L'épuisement doit être compris entre 0 et 6.
+                  </p>
+                }
               </div>
             </div>
             <div class="field">

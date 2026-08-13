@@ -28,11 +28,12 @@ describe('CampaignNavigation', () => {
       'Lieux',
       'PNJ',
       'PJ',
+      'Objets',
       'Journal',
       '⚙ Configuration',
       'Accueil',
     ]);
-    expect([...element.querySelectorAll('[aria-disabled="true"]')]).toHaveLength(1);
+    expect([...element.querySelectorAll('[aria-disabled="true"]')]).toHaveLength(0);
   });
 
   it('returns to the previous history entry', async () => {

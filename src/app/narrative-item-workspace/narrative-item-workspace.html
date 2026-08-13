@@ -1,0 +1,325 @@
+<main
+  class="workspace entity-workspace entity-workspace--item"
+  [class.entity-workspace--sidebar-collapsed]="isSidebarCollapsed()"
+>
+  <aside class="sidebar entity-workspace__sidebar" aria-label="Liste des objets narratifs">
+    <div class="sidebar-tools entity-workspace__sidebar-tools">
+      <label class="entity-workspace__visually-hidden" for="item-search">Rechercher un objet</label>
+      <input
+        id="item-search"
+        type="search"
+        placeholder="Nom, type ou résumé…"
+        [value]="searchTerm()"
+        (input)="updateSearch($event)"
+      />
+      <div class="sidebar-heading entity-workspace__sidebar-heading">
+        <h1>Objets</h1>
+        <span>{{ items().length }}</span>
+      </div>
+      <button appButton="primary" appButtonFull type="button" (click)="requestCreateItem()">
+        + Nouvel objet
+      </button>
+    </div>
+
+    <div class="item-list">
+      @if (isLoading()) {
+        <p class="list-message">Chargement…</p>
+      } @else if (filteredItems().length === 0) {
+        <p class="list-message">
+          {{
+            searchTerm()
+              ? 'Aucun objet ne correspond à la recherche.'
+              : 'Aucun objet pour le moment.'
+          }}
+        </p>
+      } @else {
+        @for (item of filteredItems(); track item.id) {
+          <button
+            class="item-list__entry"
+            type="button"
+            [class.item-list__entry--active]="selectedItem()?.id === item.id && !isCreating()"
+            (click)="requestSelectItem(item)"
+          >
+            <span
+              class="item-status"
+              [class]="'item-status item-status--' + item.status"
+              aria-hidden="true"
+            ></span>
+            <span class="item-list__text">
+              <strong>{{ item.name }}</strong>
+              <small>{{ item.summary || configurationName(item.itemTypeId) }}</small>
+            </span>
+          </button>
+        }
+      }
+    </div>
+  </aside>
+
+  <button
+    class="sidebar-toggle entity-workspace__sidebar-toggle"
+    type="button"
+    [attr.aria-label]="
+      isSidebarCollapsed() ? 'Afficher la liste des objets' : 'Replier la liste des objets'
+    "
+    (click)="toggleSidebar()"
+  >
+    {{ isSidebarCollapsed() ? '→' : '←' }}
+  </button>
+
+  <section class="detail-panel entity-workspace__detail" aria-labelledby="item-detail-title">
+    @if (error(); as errorMessage) {
+      <p class="error" role="alert">{{ errorMessage }}</p>
+    }
+
+    @if (isCreating() || selectedItem()) {
+      <div class="detail-toolbar entity-workspace__toolbar">
+        <div class="detail-actions entity-workspace__actions">
+          @if (!isEditing()) {
+            <button
+              appButton="secondary"
+              type="button"
+              [disabled]="!selectedItem()?.imagePath || !isPlayerDisplayOpen() || isPublishing()"
+              [title]="
+                !selectedItem()?.imagePath
+                  ? 'Ajoute une image pour afficher cet objet.'
+                  : !isPlayerDisplayOpen()
+                    ? 'Ouvre d’abord l’écran joueurs depuis la régie.'
+                    : ''
+              "
+              (click)="showOnPlayerDisplay()"
+            >
+              {{ isPublishing() ? 'Envoi…' : 'Afficher aux joueurs' }}
+            </button>
+            <button appButton="primary" type="button" (click)="editItem()">Modifier</button>
+            <button appButton="secondary-danger" type="button" (click)="requestDeleteItem()">
+              Supprimer
+            </button>
+          } @else {
+            <button appButton="secondary" type="button" (click)="cancelEditing()">Annuler</button>
+            <button
+              appButton="primary"
+              type="button"
+              [disabled]="
+                itemForm.invalid ||
+                (itemForm.controls.attunement.value === 'conditional' &&
+                  !itemForm.controls.attunementCondition.value.trim()) ||
+                isSaving() ||
+                isImportingImage()
+              "
+              (click)="saveItem()"
+            >
+              {{ isSaving() ? 'Enregistrement…' : 'Enregistrer' }}
+            </button>
+          }
+        </div>
+      </div>
+
+      <header class="item-heading">
+        <app-entity-title
+          [kicker]="isCreating() ? 'Nouvel objet narratif' : 'Objet narratif'"
+          [title]="isCreating() ? 'Créer un objet' : (selectedItem()?.name ?? '')"
+          headingId="item-detail-title"
+        />
+        <div class="item-image-frame" [class.item-image-frame--editable]="isEditing()">
+          <img [src]="imageUrl()" [alt]="selectedItem()?.name || 'Illustration de l’objet'" />
+          @if (!effectiveImagePath()) {
+            <span class="image-demo-label">Démo</span>
+          }
+          @if (isEditing()) {
+            <button
+              type="button"
+              class="image-action"
+              [disabled]="isImportingImage()"
+              (click)="chooseImage()"
+            >
+              {{ isImportingImage() ? 'Import…' : effectiveImagePath() ? 'Remplacer' : 'Choisir' }}
+            </button>
+          }
+        </div>
+      </header>
+
+      @if (isEditing()) {
+        <form class="item-form" [formGroup]="itemForm" (ngSubmit)="saveItem()">
+          <div class="form-grid">
+            <div class="field field--wide">
+              <label for="item-name">Nom</label>
+              <input id="item-name" type="text" formControlName="name" autocomplete="off" />
+              @if (itemForm.controls.name.touched && itemForm.controls.name.invalid) {
+                <p class="field-error">Le nom est obligatoire.</p>
+              }
+            </div>
+            <div class="field">
+              <label for="item-status">Statut</label>
+              <select id="item-status" formControlName="status">
+                @for (status of statuses; track status) {
+                  <option [value]="status">{{ statusLabel(status) }}</option>
+                }
+              </select>
+            </div>
+            <div class="field">
+              <label for="item-type">Type</label>
+              <select id="item-type" formControlName="itemTypeId">
+                @for (type of itemTypes(); track type.id) {
+                  <option [value]="type.id">{{ type.name }}</option>
+                }
+              </select>
+              @if (itemForm.controls.itemTypeId.touched && itemForm.controls.itemTypeId.invalid) {
+                <p class="field-error">Le type est obligatoire.</p>
+              }
+            </div>
+            <div class="field">
+              <label for="item-rarity">Rareté</label>
+              <select id="item-rarity" formControlName="itemRarityId">
+                <option [ngValue]="null">Non renseignée</option>
+                @for (rarity of itemRarities(); track rarity.id) {
+                  <option [value]="rarity.id">{{ rarity.name }}</option>
+                }
+              </select>
+            </div>
+            <div class="field">
+              <label for="item-attunement">Harmonisation</label>
+              <select id="item-attunement" formControlName="attunement">
+                <option value="none">Aucune</option>
+                <option value="required">Requise</option>
+                <option value="conditional">Requise sous condition</option>
+              </select>
+            </div>
+            @if (itemForm.controls.attunement.value === 'conditional') {
+              <div class="field">
+                <label for="item-attunement-condition">Condition d’harmonisation</label>
+                <input
+                  id="item-attunement-condition"
+                  type="text"
+                  formControlName="attunementCondition"
+                />
+                @if (!itemForm.controls.attunementCondition.value.trim()) {
+                  <p class="field-error">Précise la condition d’harmonisation.</p>
+                }
+              </div>
+            }
+            <div class="field">
+              <label for="item-owner">Détenteur actuel</label>
+              <select id="item-owner" formControlName="ownerKey">
+                <option value="">Aucun détenteur</option>
+                @for (owner of ownerOptions(); track owner.resourceType + owner.resourceId) {
+                  <option [value]="owner.resourceType + ':' + owner.resourceId">
+                    {{ owner.label }}
+                  </option>
+                }
+              </select>
+            </div>
+            <div class="field field--full">
+              <label for="item-summary">Résumé</label>
+              <input id="item-summary" type="text" formControlName="summary" />
+            </div>
+          </div>
+
+          <section class="item-description" aria-labelledby="item-description-form-title">
+            <h3 id="item-description-form-title">Description officielle</h3>
+            <app-rich-text-editor
+              [value]="descriptionDraft()"
+              [mentionCandidates]="mentionCandidates()"
+              (valueChange)="updateDescription($event)"
+              (mentionActivate)="openMention($event)"
+            />
+          </section>
+        </form>
+      } @else if (selectedItem(); as item) {
+        <article class="item-sheet">
+          <dl class="item-facts">
+            <div>
+              <dt>Type</dt>
+              <dd>{{ configurationName(item.itemTypeId) }}</dd>
+            </div>
+            <div>
+              <dt>Rareté</dt>
+              <dd>{{ configurationName(item.itemRarityId) }}</dd>
+            </div>
+            <div>
+              <dt>Statut</dt>
+              <dd>{{ statusLabel(item.status) }}</dd>
+            </div>
+            <div>
+              <dt>Harmonisation</dt>
+              <dd>{{ attunementLabel(item) }}</dd>
+            </div>
+            <div>
+              <dt>Détenteur actuel</dt>
+              <dd>{{ ownerName(item.owner) }}</dd>
+            </div>
+            <div class="item-facts__summary">
+              <dt>Résumé</dt>
+              <dd>{{ item.summary || 'Non renseigné' }}</dd>
+            </div>
+          </dl>
+          <section class="item-description" aria-labelledby="item-description-title">
+            <h3 id="item-description-title">Description officielle</h3>
+            <app-rich-text-editor
+              [value]="item.description"
+              [editable]="false"
+              [mentionCandidates]="mentionCandidates()"
+              (mentionActivate)="openMention($event)"
+            />
+          </section>
+          @if (campaign(); as activeCampaign) {
+            <app-journal-entry-list
+              [campaignId]="activeCampaign.id"
+              resourceType="item"
+              [resourceId]="item.id"
+              [focusEntryId]="focusedJournalEntryId()"
+            />
+          }
+        </article>
+      }
+    } @else {
+      <app-empty-state
+        icon="◆"
+        title="Aucun objet sélectionné"
+        description="Sélectionne un objet narratif dans la liste ou crée-en un nouveau."
+        headingId="item-detail-title"
+      />
+    }
+  </section>
+</main>
+
+@if (showPendingChangesDialog()) {
+  <app-dialog
+    kicker="Modifications non enregistrées"
+    title="Que veux-tu faire ?"
+    headingId="pending-title"
+  >
+    <p>Tes dernières modifications de fiche ou de note seront perdues si tu quittes.</p>
+    <div dialog-actions class="dialog-actions dialog-actions--three">
+      <button appButton="primary" type="button" [disabled]="isSaving()" (click)="saveAndLeave()">
+        Enregistrer et quitter
+      </button>
+      <button appButton="secondary-danger" type="button" (click)="leaveWithoutSaving()">
+        Quitter sans enregistrer
+      </button>
+      <button appButton="secondary" type="button" (click)="continueEditing()">
+        Continuer la modification
+      </button>
+    </div>
+  </app-dialog>
+}
+
+@if (showDeleteDialog()) {
+  <app-dialog
+    kicker="Suppression définitive"
+    [title]="'Supprimer ' + selectedItem()?.name + ' ?'"
+    headingId="delete-title"
+  >
+    <p>Cette action supprimera définitivement cet objet et ses notes.</p>
+    <div dialog-actions class="dialog-actions">
+      <button appButton="secondary" type="button" (click)="cancelDelete()">Annuler</button>
+      <button
+        appButton="danger"
+        type="button"
+        [disabled]="isSaving()"
+        (click)="confirmDeleteItem()"
+      >
+        Supprimer définitivement
+      </button>
+    </div>
+  </app-dialog>
+}

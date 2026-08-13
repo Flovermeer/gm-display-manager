@@ -55,6 +55,15 @@ export const routes: Routes = [
         title: "Beholder's Inn — PJ",
       },
       {
+        path: 'items',
+        loadComponent: () =>
+          import('./narrative-item-workspace/narrative-item-workspace').then(
+            ({ NarrativeItemWorkspace }) => NarrativeItemWorkspace,
+          ),
+        canDeactivate: [pendingChangesGuard],
+        title: "Beholder's Inn — Objets",
+      },
+      {
         path: 'journal',
         loadComponent: () =>
           import('./journal-workspace/journal-workspace').then(

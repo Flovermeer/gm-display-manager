@@ -46,5 +46,16 @@
         }
       </figure>
     }
+    @case ('item') {
+      <figure class="item-display">
+        <img [src]="display.imagePath" [alt]="display.name" />
+        <figcaption>
+          {{ display.name }}
+          @if (display.summary) {
+            <small>{{ display.summary }}</small>
+          }
+        </figcaption>
+      </figure>
+    }
   }
 </main>

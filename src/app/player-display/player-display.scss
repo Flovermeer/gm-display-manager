@@ -45,6 +45,28 @@
   animation: reveal 260ms ease-out;
 }
 
+.item-display {
+  position: relative;
+  width: 100%;
+  height: 100dvh;
+  margin: 0;
+  animation: reveal 260ms ease-out;
+}
+
+.item-display img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.item-display figcaption small {
+  display: block;
+  margin-top: 0.5rem;
+  font:
+    400 clamp(1rem, 2vw, 1.5rem) system-ui,
+    sans-serif;
+}
+
 .blank-screen {
   background: #000;
 }
@@ -138,6 +160,9 @@ figcaption,
   .location-display,
   .npc-display,
   .document-display {
+    animation: none;
+  }
+  .item-display {
     animation: none;
   }
 }

@@ -19,6 +19,13 @@ export type PlayerDisplayState =
       mediaId: string;
       filePath: string;
       name?: string;
+    }>
+  | Readonly<{
+      mode: 'item';
+      itemId: string;
+      imagePath: string;
+      name: string;
+      summary?: string;
     }>;
 
 export const initialPlayerDisplayState: PlayerDisplayState = { mode: 'blank' };

@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title description">
+  <title id="title">Objet narratif de démonstration</title>
+  <desc id="description">Un médaillon violet serti d'une gemme claire.</desc>
+  <defs>
+    <radialGradient id="background" cx="50%" cy="38%" r="70%">
+      <stop offset="0" stop-color="#f5ead1"/>
+      <stop offset="1" stop-color="#b9a98c"/>
+    </radialGradient>
+    <radialGradient id="gem" cx="38%" cy="28%" r="70%">
+      <stop offset="0" stop-color="#f5d9ff"/>
+      <stop offset="0.45" stop-color="#9a55ad"/>
+      <stop offset="1" stop-color="#44274e"/>
+    </radialGradient>
+  </defs>
+  <rect width="512" height="512" fill="url(#background)"/>
+  <circle cx="256" cy="254" r="154" fill="none" stroke="#74582c" stroke-width="18"/>
+  <circle cx="256" cy="254" r="118" fill="#3c2d22" stroke="#b28a45" stroke-width="16"/>
+  <path d="M256 148l70 80-70 132-70-132z" fill="url(#gem)" stroke="#d9bd77" stroke-width="10"/>
+  <circle cx="256" cy="90" r="26" fill="none" stroke="#74582c" stroke-width="14"/>
+  <path d="M115 425c74-40 208-40 282 0" fill="none" stroke="#786c58" stroke-linecap="round" stroke-width="12" opacity=".45"/>
+</svg>

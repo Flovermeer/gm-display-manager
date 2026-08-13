@@ -125,6 +125,8 @@ export class Control implements OnInit, OnDestroy {
         return state.name;
       case 'document':
         return state.name ?? 'Document';
+      case 'item':
+        return state.name;
     }
   }
 

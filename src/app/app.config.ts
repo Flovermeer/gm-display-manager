@@ -3,6 +3,7 @@ import { provideRouter, withInMemoryScrolling } from '@angular/router';
 import { isTauri } from '@tauri-apps/api/core';
 
 import { CampaignRepository } from './campaign/campaign.repository';
+import { ChapterRepository } from './chapter/chapter.repository';
 import { BrowserCampaignMediaGateway } from './media/browser-campaign-media.gateway';
 import { LocationRepository } from './location/location.repository';
 import { BrowserNpcPortraitGateway } from './media/browser-npc-portrait.gateway';
@@ -25,11 +26,13 @@ import { routes } from './app.routes';
 import { AppSettingRepository } from './persistence/app-setting.repository';
 import { InMemoryAppSettingRepository } from './persistence/in-memory-app-setting.repository';
 import { InMemoryCampaignRepository } from './persistence/in-memory-campaign.repository';
+import { InMemoryChapterRepository } from './persistence/in-memory-chapter.repository';
 import { InMemoryLocationRepository } from './persistence/in-memory-location.repository';
 import { InMemoryNpcRepository } from './persistence/in-memory-npc.repository';
 import { InMemoryPlayerCharacterRepository } from './persistence/in-memory-player-character.repository';
 import { TauriAppSettingRepository } from './persistence/tauri-app-setting.repository';
 import { TauriCampaignRepository } from './persistence/tauri-campaign.repository';
+import { TauriChapterRepository } from './persistence/tauri-chapter.repository';
 import { TauriLocationRepository } from './persistence/tauri-location.repository';
 import { TauriNpcRepository } from './persistence/tauri-npc.repository';
 import { TauriPlayerCharacterRepository } from './persistence/tauri-player-character.repository';
@@ -47,6 +50,11 @@ export const appConfig: ApplicationConfig = {
       provide: CampaignRepository,
       useFactory: () =>
         isTauri() ? new TauriCampaignRepository() : new InMemoryCampaignRepository(),
+    },
+    {
+      provide: ChapterRepository,
+      useFactory: () =>
+        isTauri() ? new TauriChapterRepository() : new InMemoryChapterRepository(),
     },
     {
       provide: CampaignMediaGateway,

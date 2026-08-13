@@ -49,10 +49,7 @@ CREATE TABLE narrative_item (
         (owner_location_id IS NOT NULL) +
         (owner_player_character_id IS NOT NULL) <= 1
     ),
-    CHECK (
-        (attunement = 'conditional' AND length(trim(attunement_condition)) > 0) OR
-        (attunement <> 'conditional' AND length(attunement_condition) = 0)
-    )
+    CHECK (attunement = 'conditional' OR length(attunement_condition) = 0)
 );
 
 CREATE INDEX narrative_item_campaign_name_idx

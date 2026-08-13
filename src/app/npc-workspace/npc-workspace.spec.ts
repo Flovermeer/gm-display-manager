@@ -166,7 +166,7 @@ describe('NpcWorkspace', () => {
     const icon = (status: Npc['status']) =>
       element.querySelector(`.npc-status-icon[data-status="${status}"]`)?.textContent?.trim();
     expect(icon('active')).toBe('V');
-    expect(icon('dead')).toBe('☠');
+    expect(icon('dead')).toBe('💀');
     expect(icon('missing')).toBe('?');
     expect(icon('retired')).toBe('X');
   });

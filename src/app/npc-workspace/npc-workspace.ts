@@ -425,7 +425,7 @@ export class NpcWorkspace implements OnInit, PendingChangesAware {
   protected statusIcon(status: NpcStatus): string {
     const icons: Record<NpcStatus, string> = {
       active: 'V',
-      dead: '☠',
+      dead: '💀',
       missing: '?',
       retired: 'X',
     };

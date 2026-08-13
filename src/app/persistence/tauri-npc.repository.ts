@@ -1,8 +1,8 @@
 import { Injectable } from '@angular/core';
 import Database from '@tauri-apps/plugin-sql';
 
-import { normalizeNpcSheet, type Npc, type NpcStatus } from '../npc/npc';
-import { NpcRepository } from '../npc/npc.repository';
+import { normalizeNpcSheet, type Npc, type NpcStatus } from '@app/npc/npc';
+import { NpcRepository } from '@app/npc/npc.repository';
 
 const DATABASE_URL = 'sqlite:beholders-inn.db';
 

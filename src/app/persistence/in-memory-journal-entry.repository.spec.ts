@@ -1,6 +1,6 @@
-import { createJournalEntry } from '../journal/journal-entry';
-import { createEmptyRichTextDocument } from '../shared/rich-text-editor/rich-text-document';
-import { InMemoryJournalEntryRepository } from './in-memory-journal-entry.repository';
+import { createJournalEntry } from '@app/journal/journal-entry';
+import { createEmptyRichTextDocument } from '@app/shared/rich-text-editor/rich-text-document';
+import { InMemoryJournalEntryRepository } from '@app/persistence/in-memory-journal-entry.repository';
 
 describe('InMemoryJournalEntryRepository', () => {
   it('lists target entries from newest to oldest', async () => {

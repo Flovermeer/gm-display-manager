@@ -1,8 +1,8 @@
 import { inject, Injectable, signal } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 
-import type { Campaign } from '../campaign/campaign';
-import { CampaignService } from '../campaign/campaign.service';
+import type { Campaign } from '@app/campaign/campaign';
+import { CampaignService } from '@app/campaign/campaign.service';
 
 @Injectable({ providedIn: 'root' })
 export class CampaignContext {

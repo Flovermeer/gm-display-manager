@@ -1,15 +1,15 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
 
-import { CampaignContext } from '../campaign-layout/campaign-context';
+import { CampaignContext } from '@app/campaign-layout/campaign-context';
 import type {
   ItemConfigurationKind,
   ItemConfigurationOption,
-} from '../narrative-item/item-configuration';
-import { ItemConfigurationService } from '../narrative-item/item-configuration.service';
-import { ButtonDirective } from '../shared/ui/button/button.directive';
-import { Dialog } from '../shared/ui/dialog/dialog';
-import { FormField } from '../shared/ui/form-field/form-field';
+} from '@app/narrative-item/item-configuration';
+import { ItemConfigurationService } from '@app/narrative-item/item-configuration.service';
+import { ButtonDirective } from '@app/shared/ui/button/button.directive';
+import { Dialog } from '@app/shared/ui/dialog/dialog';
+import { FormField } from '@app/shared/ui/form-field/form-field';
 
 type ConfigurationSection = Readonly<{
   kind: ItemConfigurationKind;

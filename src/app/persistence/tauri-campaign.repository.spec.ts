@@ -1,7 +1,7 @@
 import Database from '@tauri-apps/plugin-sql';
 
-import type { Campaign } from '../campaign/campaign';
-import { TauriCampaignRepository } from './tauri-campaign.repository';
+import type { Campaign } from '@app/campaign/campaign';
+import { TauriCampaignRepository } from '@app/persistence/tauri-campaign.repository';
 
 vi.mock('@tauri-apps/plugin-sql', () => ({
   default: {

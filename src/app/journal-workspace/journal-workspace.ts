@@ -1,22 +1,22 @@
 import { Component, computed, inject, OnInit, signal, viewChild } from '@angular/core';
 import { Router } from '@angular/router';
 
-import { CampaignContext } from '../campaign-layout/campaign-context';
-import type { JournalEntry, JournalResourceType } from '../journal/journal-entry';
-import { JournalEntryService } from '../journal/journal-entry.service';
-import { LocationService } from '../location/location.service';
-import type { PendingChangesAware } from '../navigation/pending-changes.guard';
-import { NpcService } from '../npc/npc.service';
-import { NarrativeItemService } from '../narrative-item/narrative-item.service';
-import { PlayerCharacterService } from '../player-character/player-character.service';
-import { SceneService } from '../scene/scene.service';
-import { JournalEntryList } from '../shared/journal-entry-list/journal-entry-list';
-import { RichTextEditor } from '../shared/rich-text-editor/rich-text-editor';
-import { ResourceMentionNavigationService } from '../shared/rich-text-editor/resource-mention-navigation.service';
-import type { ResourceMentionCandidate } from '../shared/rich-text-editor/resource-mention';
-import { ButtonDirective } from '../shared/ui/button/button.directive';
-import { Dialog } from '../shared/ui/dialog/dialog';
-import { EmptyState } from '../shared/ui/empty-state/empty-state';
+import { CampaignContext } from '@app/campaign-layout/campaign-context';
+import type { JournalEntry, JournalResourceType } from '@app/journal/journal-entry';
+import { JournalEntryService } from '@app/journal/journal-entry.service';
+import { LocationService } from '@app/location/location.service';
+import type { PendingChangesAware } from '@app/navigation/pending-changes.guard';
+import { NpcService } from '@app/npc/npc.service';
+import { NarrativeItemService } from '@app/narrative-item/narrative-item.service';
+import { PlayerCharacterService } from '@app/player-character/player-character.service';
+import { SceneService } from '@app/scene/scene.service';
+import { JournalEntryList } from '@app/shared/journal-entry-list/journal-entry-list';
+import { RichTextEditor } from '@app/shared/rich-text-editor/rich-text-editor';
+import { ResourceMentionNavigationService } from '@app/shared/rich-text-editor/resource-mention-navigation.service';
+import type { ResourceMentionCandidate } from '@app/shared/rich-text-editor/resource-mention';
+import { ButtonDirective } from '@app/shared/ui/button/button.directive';
+import { Dialog } from '@app/shared/ui/dialog/dialog';
+import { EmptyState } from '@app/shared/ui/empty-state/empty-state';
 
 type PendingDecisionResolver = (canLeave: boolean) => void;
 

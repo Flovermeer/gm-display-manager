@@ -1,5 +1,5 @@
-import type { PlayerCharacter } from '../player-character/player-character';
-import { PlayerCharacterRepository } from '../player-character/player-character.repository';
+import type { PlayerCharacter } from '@app/player-character/player-character';
+import { PlayerCharacterRepository } from '@app/player-character/player-character.repository';
 
 export class InMemoryPlayerCharacterRepository extends PlayerCharacterRepository {
   private readonly characters = new Map<string, PlayerCharacter>();

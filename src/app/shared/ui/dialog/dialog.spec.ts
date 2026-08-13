@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 
-import { Dialog } from './dialog';
+import { Dialog } from '@app/shared/ui/dialog/dialog';
 
 describe('Dialog', () => {
   it('associates its title with the dialog and projects its content', () => {

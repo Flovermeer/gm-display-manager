@@ -1,4 +1,4 @@
-import { PlayerDisplayStore } from './player-display.store';
+import { PlayerDisplayStore } from '@app/display/player-display.store';
 
 describe('PlayerDisplayStore', () => {
   it('starts with a blank display', () => {

@@ -1,5 +1,5 @@
-import type { NarrativeItem } from '../narrative-item/narrative-item';
-import { NarrativeItemRepository } from '../narrative-item/narrative-item.repository';
+import type { NarrativeItem } from '@app/narrative-item/narrative-item';
+import { NarrativeItemRepository } from '@app/narrative-item/narrative-item.repository';
 
 export class InMemoryNarrativeItemRepository extends NarrativeItemRepository {
   private readonly items = new Map<string, NarrativeItem>();

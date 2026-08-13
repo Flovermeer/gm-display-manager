@@ -1,8 +1,8 @@
 import Database from '@tauri-apps/plugin-sql';
 
-import type { Chapter } from '../chapter/chapter';
-import { RICH_TEXT_SCHEMA_VERSION } from '../shared/rich-text-editor/rich-text-document';
-import { TauriChapterRepository } from './tauri-chapter.repository';
+import type { Chapter } from '@app/chapter/chapter';
+import { RICH_TEXT_SCHEMA_VERSION } from '@app/shared/rich-text-editor/rich-text-document';
+import { TauriChapterRepository } from '@app/persistence/tauri-chapter.repository';
 
 vi.mock('@tauri-apps/plugin-sql', () => ({ default: { load: vi.fn() } }));
 

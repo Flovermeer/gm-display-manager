@@ -6,8 +6,8 @@ import {
   type PlayerCharacter,
   type PlayerCharacterSheet,
   type PlayerCharacterStatus,
-} from '../player-character/player-character';
-import { PlayerCharacterRepository } from '../player-character/player-character.repository';
+} from '@app/player-character/player-character';
+import { PlayerCharacterRepository } from '@app/player-character/player-character.repository';
 
 const DATABASE_URL = 'sqlite:beholders-inn.db';
 

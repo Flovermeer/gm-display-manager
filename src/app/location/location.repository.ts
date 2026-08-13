@@ -1,4 +1,4 @@
-import type { Location } from './location';
+import type { Location } from '@app/location/location';
 
 export abstract class LocationRepository {
   abstract listByCampaign(campaignId: string): Promise<readonly Location[]>;

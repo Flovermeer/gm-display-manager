@@ -11,6 +11,9 @@
     "isolatedModules": true,
     "experimentalDecorators": true,
     "importHelpers": true,
+    "paths": {
+      "@app/*": ["./src/app/*"]
+    },
     "target": "ES2022",
     "module": "preserve"
   },

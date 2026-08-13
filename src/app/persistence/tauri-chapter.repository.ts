@@ -1,9 +1,9 @@
 import { Injectable } from '@angular/core';
 import Database from '@tauri-apps/plugin-sql';
 
-import type { Chapter } from '../chapter/chapter';
-import { ChapterRepository, type ChapterOrder } from '../chapter/chapter.repository';
-import type { RichTextDocument } from '../shared/rich-text-editor/rich-text-document';
+import type { Chapter } from '@app/chapter/chapter';
+import { ChapterRepository, type ChapterOrder } from '@app/chapter/chapter.repository';
+import type { RichTextDocument } from '@app/shared/rich-text-editor/rich-text-document';
 
 const DATABASE_URL = 'sqlite:beholders-inn.db';
 

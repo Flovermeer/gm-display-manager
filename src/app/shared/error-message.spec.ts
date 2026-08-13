@@ -1,4 +1,4 @@
-import { errorMessage } from './error-message';
+import { errorMessage } from '@app/shared/error-message';
 
 describe('errorMessage', () => {
   it('keeps native Error, string and Tauri object messages', () => {

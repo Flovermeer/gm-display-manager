@@ -1,4 +1,4 @@
-import type { PlayerCharacter } from './player-character';
+import type { PlayerCharacter } from '@app/player-character/player-character';
 
 export abstract class PlayerCharacterRepository {
   abstract listByCampaign(campaignId: string): Promise<readonly PlayerCharacter[]>;

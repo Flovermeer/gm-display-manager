@@ -2,10 +2,10 @@ import { Component, inject, OnDestroy, OnInit, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import type { UnlistenFn } from '@tauri-apps/api/event';
 
-import { DisplayGateway } from '../display/display.gateway';
-import { PlayerDisplayStore } from '../display/player-display.store';
-import type { PlayerDisplayState } from '../display/player-display-state';
-import { DefaultDisplayBackground } from '../shared/default-display-background/default-display-background';
+import { DisplayGateway } from '@app/display/display.gateway';
+import { PlayerDisplayStore } from '@app/display/player-display.store';
+import type { PlayerDisplayState } from '@app/display/player-display-state';
+import { DefaultDisplayBackground } from '@app/shared/default-display-background/default-display-background';
 
 @Component({
   selector: 'app-player-display',

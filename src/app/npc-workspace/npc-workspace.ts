@@ -10,12 +10,12 @@ import {
   Validators,
 } from '@angular/forms';
 
-import { CampaignContext } from '../campaign-layout/campaign-context';
-import { DisplayGateway } from '../display/display.gateway';
-import { PlayerDisplayStore } from '../display/player-display.store';
-import { NpcPortraitGateway } from '../media/npc-portrait.gateway';
-import { NpcIdleVideoGateway } from '../media/npc-idle-video.gateway';
-import type { PendingChangesAware } from '../navigation/pending-changes.guard';
+import { CampaignContext } from '@app/campaign-layout/campaign-context';
+import { DisplayGateway } from '@app/display/display.gateway';
+import { PlayerDisplayStore } from '@app/display/player-display.store';
+import { NpcPortraitGateway } from '@app/media/npc-portrait.gateway';
+import { NpcIdleVideoGateway } from '@app/media/npc-idle-video.gateway';
+import type { PendingChangesAware } from '@app/navigation/pending-changes.guard';
 import {
   createEmptyNpcSheet,
   createNpcFeature,
@@ -25,20 +25,20 @@ import {
   type NpcSheet,
   type NpcStatus,
   type UpdateNpcInput,
-} from '../npc/npc';
-import { NpcService } from '../npc/npc.service';
-import { JournalEntryList } from '../shared/journal-entry-list/journal-entry-list';
-import { RichTextEditor } from '../shared/rich-text-editor/rich-text-editor';
+} from '@app/npc/npc';
+import { NpcService } from '@app/npc/npc.service';
+import { JournalEntryList } from '@app/shared/journal-entry-list/journal-entry-list';
+import { RichTextEditor } from '@app/shared/rich-text-editor/rich-text-editor';
 import {
   createEmptyRichTextDocument,
   type RichTextDocument,
-} from '../shared/rich-text-editor/rich-text-document';
-import { TagInput } from '../shared/tag-input/tag-input';
-import { ButtonDirective } from '../shared/ui/button/button.directive';
-import { Dialog } from '../shared/ui/dialog/dialog';
-import { EmptyState } from '../shared/ui/empty-state/empty-state';
-import { EntityTitle } from '../shared/ui/entity-title/entity-title';
-import { FormField, type FormFieldOption } from '../shared/ui/form-field/form-field';
+} from '@app/shared/rich-text-editor/rich-text-document';
+import { TagInput } from '@app/shared/tag-input/tag-input';
+import { ButtonDirective } from '@app/shared/ui/button/button.directive';
+import { Dialog } from '@app/shared/ui/dialog/dialog';
+import { EmptyState } from '@app/shared/ui/empty-state/empty-state';
+import { EntityTitle } from '@app/shared/ui/entity-title/entity-title';
+import { FormField, type FormFieldOption } from '@app/shared/ui/form-field/form-field';
 
 type PendingDecisionResolver = (canLeave: boolean) => void;
 const DEMO_NPC_PORTRAIT_URL = '/demo/innkeeper.svg';

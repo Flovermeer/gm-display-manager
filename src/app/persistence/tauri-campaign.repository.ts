@@ -1,8 +1,8 @@
 import { Injectable } from '@angular/core';
 import Database from '@tauri-apps/plugin-sql';
 
-import type { Campaign } from '../campaign/campaign';
-import { CampaignRepository } from '../campaign/campaign.repository';
+import type { Campaign } from '@app/campaign/campaign';
+import { CampaignRepository } from '@app/campaign/campaign.repository';
 
 const DATABASE_URL = 'sqlite:beholders-inn.db';
 

@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import Database from '@tauri-apps/plugin-sql';
 
-import { AppSettingRepository } from './app-setting.repository';
+import { AppSettingRepository } from '@app/persistence/app-setting.repository';
 
 const DATABASE_URL = 'sqlite:beholders-inn.db';
 

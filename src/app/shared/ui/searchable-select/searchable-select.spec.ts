@@ -2,7 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { Component } from '@angular/core';
 
-import { SearchableSelect } from './searchable-select';
+import { SearchableSelect } from '@app/shared/ui/searchable-select/searchable-select';
 
 @Component({
   imports: [ReactiveFormsModule, SearchableSelect],

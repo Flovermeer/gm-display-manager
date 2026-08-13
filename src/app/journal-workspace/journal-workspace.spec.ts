@@ -2,17 +2,17 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { Router } from '@angular/router';
 
-import type { Campaign } from '../campaign/campaign';
-import { CampaignContext } from '../campaign-layout/campaign-context';
-import type { JournalEntry } from '../journal/journal-entry';
-import { JournalEntryService } from '../journal/journal-entry.service';
-import { LocationService } from '../location/location.service';
-import { NpcService } from '../npc/npc.service';
-import { NarrativeItemService } from '../narrative-item/narrative-item.service';
-import { PlayerCharacterService } from '../player-character/player-character.service';
-import { SceneService } from '../scene/scene.service';
-import { JournalEntryList } from '../shared/journal-entry-list/journal-entry-list';
-import { JournalWorkspace } from './journal-workspace';
+import type { Campaign } from '@app/campaign/campaign';
+import { CampaignContext } from '@app/campaign-layout/campaign-context';
+import type { JournalEntry } from '@app/journal/journal-entry';
+import { JournalEntryService } from '@app/journal/journal-entry.service';
+import { LocationService } from '@app/location/location.service';
+import { NpcService } from '@app/npc/npc.service';
+import { NarrativeItemService } from '@app/narrative-item/narrative-item.service';
+import { PlayerCharacterService } from '@app/player-character/player-character.service';
+import { SceneService } from '@app/scene/scene.service';
+import { JournalEntryList } from '@app/shared/journal-entry-list/journal-entry-list';
+import { JournalWorkspace } from '@app/journal-workspace/journal-workspace';
 
 describe('JournalWorkspace', () => {
   const campaign: Campaign = {

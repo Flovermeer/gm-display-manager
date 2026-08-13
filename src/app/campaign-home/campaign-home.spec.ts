@@ -1,9 +1,9 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { Router } from '@angular/router';
 
-import type { Campaign } from '../campaign/campaign';
-import { CampaignService } from '../campaign/campaign.service';
-import { CampaignHome } from './campaign-home';
+import type { Campaign } from '@app/campaign/campaign';
+import { CampaignService } from '@app/campaign/campaign.service';
+import { CampaignHome } from '@app/campaign-home/campaign-home';
 
 describe('CampaignHome', () => {
   const campaign: Campaign = {

@@ -3,12 +3,12 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 
-import { CampaignContext } from '../campaign-layout/campaign-context';
-import { DisplayGateway } from '../display/display.gateway';
-import { PlayerDisplayStore } from '../display/player-display.store';
-import { LocationService } from '../location/location.service';
-import { ItemImageGateway } from '../media/item-image.gateway';
-import type { PendingChangesAware } from '../navigation/pending-changes.guard';
+import { CampaignContext } from '@app/campaign-layout/campaign-context';
+import { DisplayGateway } from '@app/display/display.gateway';
+import { PlayerDisplayStore } from '@app/display/player-display.store';
+import { LocationService } from '@app/location/location.service';
+import { ItemImageGateway } from '@app/media/item-image.gateway';
+import type { PendingChangesAware } from '@app/navigation/pending-changes.guard';
 import {
   emptyNarrativeItemInput,
   NARRATIVE_ITEM_STATUSES,
@@ -18,21 +18,21 @@ import {
   type NarrativeItem,
   type NarrativeItemStatus,
   type UpdateNarrativeItemInput,
-} from '../narrative-item/narrative-item';
-import type { ItemConfigurationOption } from '../narrative-item/item-configuration';
-import { ItemConfigurationService } from '../narrative-item/item-configuration.service';
-import { NarrativeItemService } from '../narrative-item/narrative-item.service';
-import { NpcService } from '../npc/npc.service';
-import { PlayerCharacterService } from '../player-character/player-character.service';
-import { JournalEntryList } from '../shared/journal-entry-list/journal-entry-list';
-import { RichTextEditor } from '../shared/rich-text-editor/rich-text-editor';
-import { ResourceMentionNavigationService } from '../shared/rich-text-editor/resource-mention-navigation.service';
-import type { ResourceMentionCandidate } from '../shared/rich-text-editor/resource-mention';
-import { ButtonDirective } from '../shared/ui/button/button.directive';
-import { Dialog } from '../shared/ui/dialog/dialog';
-import { EmptyState } from '../shared/ui/empty-state/empty-state';
-import { EntityTitle } from '../shared/ui/entity-title/entity-title';
-import { FormField, type FormFieldOption } from '../shared/ui/form-field/form-field';
+} from '@app/narrative-item/narrative-item';
+import type { ItemConfigurationOption } from '@app/narrative-item/item-configuration';
+import { ItemConfigurationService } from '@app/narrative-item/item-configuration.service';
+import { NarrativeItemService } from '@app/narrative-item/narrative-item.service';
+import { NpcService } from '@app/npc/npc.service';
+import { PlayerCharacterService } from '@app/player-character/player-character.service';
+import { JournalEntryList } from '@app/shared/journal-entry-list/journal-entry-list';
+import { RichTextEditor } from '@app/shared/rich-text-editor/rich-text-editor';
+import { ResourceMentionNavigationService } from '@app/shared/rich-text-editor/resource-mention-navigation.service';
+import type { ResourceMentionCandidate } from '@app/shared/rich-text-editor/resource-mention';
+import { ButtonDirective } from '@app/shared/ui/button/button.directive';
+import { Dialog } from '@app/shared/ui/dialog/dialog';
+import { EmptyState } from '@app/shared/ui/empty-state/empty-state';
+import { EntityTitle } from '@app/shared/ui/entity-title/entity-title';
+import { FormField, type FormFieldOption } from '@app/shared/ui/form-field/form-field';
 
 type PendingDecisionResolver = (canLeave: boolean) => void;
 type OwnerOption = Readonly<{ resourceType: ItemOwnerType; resourceId: string; label: string }>;

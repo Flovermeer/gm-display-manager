@@ -18,13 +18,13 @@ import {
   createEmptyRichTextDocument,
   RICH_TEXT_SCHEMA_VERSION,
   type RichTextDocument,
-} from './rich-text-document';
+} from '@app/shared/rich-text-editor/rich-text-document';
 import {
   createResourceMentionExtension,
   createResourceMentionTrigger,
   type ResourceMentionCandidate,
   type ResourceMentionMatch,
-} from './resource-mention';
+} from '@app/shared/rich-text-editor/resource-mention';
 
 @Component({
   selector: 'app-rich-text-editor',

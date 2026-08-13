@@ -3,7 +3,7 @@ import { appDataDir, join } from '@tauri-apps/api/path';
 import { open } from '@tauri-apps/plugin-dialog';
 import { BaseDirectory, copyFile, mkdir, remove } from '@tauri-apps/plugin-fs';
 
-import { PlayerCharacterPortraitGateway } from './player-character-portrait.gateway';
+import { PlayerCharacterPortraitGateway } from '@app/media/player-character-portrait.gateway';
 
 const SUPPORTED_EXTENSIONS = ['png', 'jpg', 'jpeg', 'webp'] as const;
 

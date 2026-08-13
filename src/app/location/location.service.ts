@@ -5,8 +5,8 @@ import {
   updateLocation,
   type Location,
   type UpdateLocationInput,
-} from './location';
-import { LocationRepository } from './location.repository';
+} from '@app/location/location';
+import { LocationRepository } from '@app/location/location.repository';
 
 @Injectable({ providedIn: 'root' })
 export class LocationService {

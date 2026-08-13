@@ -4,7 +4,7 @@ import {
   NPC_SHEET_SCHEMA_VERSION,
   updateNpc,
   type NpcFactoryDependencies,
-} from './npc';
+} from '@app/npc/npc';
 
 describe('Npc', () => {
   const dependencies: NpcFactoryDependencies = {

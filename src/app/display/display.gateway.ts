@@ -9,9 +9,9 @@ import {
   type Monitor,
 } from '@tauri-apps/api/window';
 
-import { playerDisplayEvents } from './display.events';
-import type { MonitorDescriptor } from './display.models';
-import type { PlayerDisplayState } from './player-display-state';
+import { playerDisplayEvents } from '@app/display/display.events';
+import type { MonitorDescriptor } from '@app/display/display.models';
+import type { PlayerDisplayState } from '@app/display/player-display-state';
 
 const PLAYER_DISPLAY_WINDOW_LABEL = 'player-display';
 

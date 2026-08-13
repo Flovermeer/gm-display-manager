@@ -3,7 +3,7 @@ import {
   DEFAULT_CAMPAIGN_SYSTEM_KEY,
   updateCampaign,
   type CampaignFactoryDependencies,
-} from './campaign';
+} from '@app/campaign/campaign';
 
 describe('createCampaign', () => {
   const dependencies: CampaignFactoryDependencies = {

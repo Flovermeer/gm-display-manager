@@ -1,7 +1,7 @@
 import Database from '@tauri-apps/plugin-sql';
 
-import type { Location } from '../location/location';
-import { TauriLocationRepository } from './tauri-location.repository';
+import type { Location } from '@app/location/location';
+import { TauriLocationRepository } from '@app/persistence/tauri-location.repository';
 
 vi.mock('@tauri-apps/plugin-sql', () => ({
   default: { load: vi.fn() },

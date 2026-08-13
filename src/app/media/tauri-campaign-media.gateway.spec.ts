@@ -1,6 +1,6 @@
 import { exists, remove } from '@tauri-apps/plugin-fs';
 
-import { TauriCampaignMediaGateway } from './tauri-campaign-media.gateway';
+import { TauriCampaignMediaGateway } from '@app/media/tauri-campaign-media.gateway';
 
 vi.mock('@tauri-apps/plugin-fs', () => ({
   BaseDirectory: { AppData: 14 },

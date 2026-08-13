@@ -2,14 +2,14 @@ import { Component, computed, inject, OnDestroy, OnInit, signal } from '@angular
 import { RouterLink } from '@angular/router';
 import type { UnlistenFn } from '@tauri-apps/api/event';
 
-import { CampaignContext } from '../campaign-layout/campaign-context';
-import { DisplayGateway } from '../display/display.gateway';
-import type { MonitorDescriptor } from '../display/display.models';
-import { PlayerDisplayPreferenceService } from '../display/player-display-preference.service';
-import type { PlayerDisplayState } from '../display/player-display-state';
-import { PlayerDisplayStore } from '../display/player-display.store';
-import { SceneDisplayService } from '../scene/scene-display.service';
-import { ButtonDirective } from '../shared/ui/button/button.directive';
+import { CampaignContext } from '@app/campaign-layout/campaign-context';
+import { DisplayGateway } from '@app/display/display.gateway';
+import type { MonitorDescriptor } from '@app/display/display.models';
+import { PlayerDisplayPreferenceService } from '@app/display/player-display-preference.service';
+import type { PlayerDisplayState } from '@app/display/player-display-state';
+import { PlayerDisplayStore } from '@app/display/player-display.store';
+import { SceneDisplayService } from '@app/scene/scene-display.service';
+import { ButtonDirective } from '@app/shared/ui/button/button.directive';
 
 @Component({
   selector: 'app-control',

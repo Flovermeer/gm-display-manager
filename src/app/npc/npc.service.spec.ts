@@ -1,9 +1,9 @@
 import { TestBed } from '@angular/core/testing';
 
-import { InMemoryNpcRepository } from '../persistence/in-memory-npc.repository';
-import { createEmptyNpcSheet, type Npc } from './npc';
-import { NpcRepository } from './npc.repository';
-import { NpcService } from './npc.service';
+import { InMemoryNpcRepository } from '@app/persistence/in-memory-npc.repository';
+import { createEmptyNpcSheet, type Npc } from '@app/npc/npc';
+import { NpcRepository } from '@app/npc/npc.repository';
+import { NpcService } from '@app/npc/npc.service';
 
 describe('NpcService', () => {
   let service: NpcService;

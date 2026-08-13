@@ -11,24 +11,24 @@ import {
   Validators,
 } from '@angular/forms';
 
-import { CampaignContext } from '../campaign-layout/campaign-context';
-import type { PendingChangesAware } from '../navigation/pending-changes.guard';
-import { PlayerCharacterPortraitGateway } from '../media/player-character-portrait.gateway';
+import { CampaignContext } from '@app/campaign-layout/campaign-context';
+import type { PendingChangesAware } from '@app/navigation/pending-changes.guard';
+import { PlayerCharacterPortraitGateway } from '@app/media/player-character-portrait.gateway';
 import {
   EMPTY_PLAYER_CHARACTER_SHEET,
   PLAYER_CHARACTER_STATUSES,
   type PlayerCharacter,
   type PlayerCharacterStatus,
   type UpdatePlayerCharacterInput,
-} from '../player-character/player-character';
-import { PlayerCharacterService } from '../player-character/player-character.service';
-import { JournalEntryList } from '../shared/journal-entry-list/journal-entry-list';
-import { TagInput } from '../shared/tag-input/tag-input';
-import { ButtonDirective } from '../shared/ui/button/button.directive';
-import { Dialog } from '../shared/ui/dialog/dialog';
-import { EmptyState } from '../shared/ui/empty-state/empty-state';
-import { EntityTitle } from '../shared/ui/entity-title/entity-title';
-import { FormField, type FormFieldOption } from '../shared/ui/form-field/form-field';
+} from '@app/player-character/player-character';
+import { PlayerCharacterService } from '@app/player-character/player-character.service';
+import { JournalEntryList } from '@app/shared/journal-entry-list/journal-entry-list';
+import { TagInput } from '@app/shared/tag-input/tag-input';
+import { ButtonDirective } from '@app/shared/ui/button/button.directive';
+import { Dialog } from '@app/shared/ui/dialog/dialog';
+import { EmptyState } from '@app/shared/ui/empty-state/empty-state';
+import { EntityTitle } from '@app/shared/ui/entity-title/entity-title';
+import { FormField, type FormFieldOption } from '@app/shared/ui/form-field/form-field';
 
 type PendingDecisionResolver = (canLeave: boolean) => void;
 

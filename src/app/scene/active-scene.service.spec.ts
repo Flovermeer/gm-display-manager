@@ -1,8 +1,8 @@
 import { TestBed } from '@angular/core/testing';
 
-import { AppSettingRepository } from '../persistence/app-setting.repository';
-import { InMemoryAppSettingRepository } from '../persistence/in-memory-app-setting.repository';
-import { ActiveSceneService } from './active-scene.service';
+import { AppSettingRepository } from '@app/persistence/app-setting.repository';
+import { InMemoryAppSettingRepository } from '@app/persistence/in-memory-app-setting.repository';
+import { ActiveSceneService } from '@app/scene/active-scene.service';
 
 describe('ActiveSceneService', () => {
   let service: ActiveSceneService;

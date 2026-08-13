@@ -4,7 +4,7 @@ import {
   updatePlayerCharacter,
   updatePlayerCharacterHitPoints,
   type PlayerCharacterFactoryDependencies,
-} from './player-character';
+} from '@app/player-character/player-character';
 
 describe('PlayerCharacter', () => {
   const dependencies: PlayerCharacterFactoryDependencies = {

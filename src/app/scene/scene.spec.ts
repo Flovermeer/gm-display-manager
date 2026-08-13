@@ -1,4 +1,4 @@
-import { createScene, updateScene } from './scene';
+import { createScene, updateScene } from '@app/scene/scene';
 
 describe('Scene', () => {
   const now = () => new Date('2026-08-13T12:00:00.000Z');

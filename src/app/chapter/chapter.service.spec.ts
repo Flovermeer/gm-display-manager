@@ -1,9 +1,9 @@
 import { TestBed } from '@angular/core/testing';
 
-import { RICH_TEXT_SCHEMA_VERSION } from '../shared/rich-text-editor/rich-text-document';
-import type { Chapter } from './chapter';
-import { ChapterRepository } from './chapter.repository';
-import { ChapterService } from './chapter.service';
+import { RICH_TEXT_SCHEMA_VERSION } from '@app/shared/rich-text-editor/rich-text-document';
+import type { Chapter } from '@app/chapter/chapter';
+import { ChapterRepository } from '@app/chapter/chapter.repository';
+import { ChapterService } from '@app/chapter/chapter.service';
 
 describe('ChapterService', () => {
   const chapters = [chapter('first-id', 0), chapter('second-id', 1), chapter('third-id', 2)];

@@ -1,6 +1,6 @@
 import { Injectable, signal } from '@angular/core';
 
-import { initialPlayerDisplayState, type PlayerDisplayState } from './player-display-state';
+import { initialPlayerDisplayState, type PlayerDisplayState } from '@app/display/player-display-state';
 
 @Injectable({ providedIn: 'root' })
 export class PlayerDisplayStore {

@@ -1,7 +1,7 @@
 import {
   createEmptyRichTextDocument,
   type RichTextDocument,
-} from '../shared/rich-text-editor/rich-text-document';
+} from '@app/shared/rich-text-editor/rich-text-document';
 
 export const NARRATIVE_ITEM_STATUSES = ['active', 'lost', 'destroyed', 'retired'] as const;
 export type NarrativeItemStatus = (typeof NARRATIVE_ITEM_STATUSES)[number];

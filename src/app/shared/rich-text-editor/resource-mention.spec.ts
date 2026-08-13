@@ -1,6 +1,6 @@
 import type { JSONContent } from '@tiptap/core';
 
-import { extractResourceMentions } from './resource-mention';
+import { extractResourceMentions } from '@app/shared/rich-text-editor/resource-mention';
 
 describe('resource mentions', () => {
   it('extracts unique valid relations while keeping their labels', () => {

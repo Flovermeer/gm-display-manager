@@ -1,4 +1,4 @@
-import { createLocation, updateLocation, type LocationFactoryDependencies } from './location';
+import { createLocation, updateLocation, type LocationFactoryDependencies } from '@app/location/location';
 
 describe('Location', () => {
   const dependencies: LocationFactoryDependencies = {

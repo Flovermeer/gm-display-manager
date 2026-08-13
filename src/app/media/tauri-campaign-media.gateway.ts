@@ -1,6 +1,6 @@
 import { BaseDirectory, exists, remove } from '@tauri-apps/plugin-fs';
 
-import { CampaignMediaGateway } from './campaign-media.gateway';
+import { CampaignMediaGateway } from '@app/media/campaign-media.gateway';
 
 export class TauriCampaignMediaGateway extends CampaignMediaGateway {
   override async discardCampaign(campaignId: string): Promise<void> {

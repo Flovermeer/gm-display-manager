@@ -1,5 +1,5 @@
-import type { Chapter } from '../chapter/chapter';
-import { ChapterRepository, type ChapterOrder } from '../chapter/chapter.repository';
+import type { Chapter } from '@app/chapter/chapter';
+import { ChapterRepository, type ChapterOrder } from '@app/chapter/chapter.repository';
 
 export class InMemoryChapterRepository extends ChapterRepository {
   private readonly chapters = new Map<string, Chapter>();

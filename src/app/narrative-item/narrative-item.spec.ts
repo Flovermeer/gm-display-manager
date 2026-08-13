@@ -1,5 +1,5 @@
-import { createEmptyRichTextDocument } from '../shared/rich-text-editor/rich-text-document';
-import { createNarrativeItem, updateNarrativeItem } from './narrative-item';
+import { createEmptyRichTextDocument } from '@app/shared/rich-text-editor/rich-text-document';
+import { createNarrativeItem, updateNarrativeItem } from '@app/narrative-item/narrative-item';
 
 describe('NarrativeItem', () => {
   const input = {

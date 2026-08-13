@@ -1,5 +1,5 @@
-import type { Campaign } from '../campaign/campaign';
-import { CampaignRepository } from '../campaign/campaign.repository';
+import type { Campaign } from '@app/campaign/campaign';
+import { CampaignRepository } from '@app/campaign/campaign.repository';
 
 export class InMemoryCampaignRepository extends CampaignRepository {
   private readonly campaigns = new Map<string, Campaign>();

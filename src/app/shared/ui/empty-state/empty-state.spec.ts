@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 
-import { EmptyState } from './empty-state';
+import { EmptyState } from '@app/shared/ui/empty-state/empty-state';
 
 describe('EmptyState', () => {
   it('renders the shared empty-state contract', () => {

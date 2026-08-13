@@ -1,6 +1,6 @@
 import { inject, Injectable } from '@angular/core';
 
-import { AppSettingRepository } from '../persistence/app-setting.repository';
+import { AppSettingRepository } from '@app/persistence/app-setting.repository';
 
 const ACTIVE_SCENE_KEY_PREFIX = 'campaign.active_scene.';
 

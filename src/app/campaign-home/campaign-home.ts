@@ -2,11 +2,11 @@ import { Component, inject, OnInit, signal } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 
-import type { Campaign } from '../campaign/campaign';
-import { CampaignService } from '../campaign/campaign.service';
-import { ButtonDirective } from '../shared/ui/button/button.directive';
-import { Dialog } from '../shared/ui/dialog/dialog';
-import { FormField, type FormFieldOption } from '../shared/ui/form-field/form-field';
+import type { Campaign } from '@app/campaign/campaign';
+import { CampaignService } from '@app/campaign/campaign.service';
+import { ButtonDirective } from '@app/shared/ui/button/button.directive';
+import { Dialog } from '@app/shared/ui/dialog/dialog';
+import { FormField, type FormFieldOption } from '@app/shared/ui/form-field/form-field';
 
 @Component({
   selector: 'app-campaign-home',

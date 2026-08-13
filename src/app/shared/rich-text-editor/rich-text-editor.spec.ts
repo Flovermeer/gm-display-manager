@@ -1,8 +1,8 @@
 import { TestBed } from '@angular/core/testing';
 import { Editor } from '@tiptap/core';
 
-import { RICH_TEXT_SCHEMA_VERSION, type RichTextDocument } from './rich-text-document';
-import { RichTextEditor } from './rich-text-editor';
+import { RICH_TEXT_SCHEMA_VERSION, type RichTextDocument } from '@app/shared/rich-text-editor/rich-text-document';
+import { RichTextEditor } from '@app/shared/rich-text-editor/rich-text-editor';
 
 const FIRST_DOCUMENT: RichTextDocument = {
   schemaVersion: RICH_TEXT_SCHEMA_VERSION,

@@ -6,8 +6,8 @@ import {
   type JournalEntry,
   type JournalTarget,
   type UpdateJournalEntryInput,
-} from './journal-entry';
-import { JournalEntryRepository } from './journal-entry.repository';
+} from '@app/journal/journal-entry';
+import { JournalEntryRepository } from '@app/journal/journal-entry.repository';
 
 @Injectable({ providedIn: 'root' })
 export class JournalEntryService {

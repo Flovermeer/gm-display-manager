@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 
-import { TagInput } from './tag-input';
+import { TagInput } from '@app/shared/tag-input/tag-input';
 
 describe('TagInput', () => {
   it('adds unique tags and removes one with its button', async () => {

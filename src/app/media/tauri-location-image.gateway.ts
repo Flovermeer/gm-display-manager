@@ -3,7 +3,7 @@ import { appDataDir, join } from '@tauri-apps/api/path';
 import { open } from '@tauri-apps/plugin-dialog';
 import { BaseDirectory, copyFile, mkdir, remove } from '@tauri-apps/plugin-fs';
 
-import { LocationImageGateway } from './location-image.gateway';
+import { LocationImageGateway } from '@app/media/location-image.gateway';
 
 const SUPPORTED_EXTENSIONS = ['png', 'jpg', 'jpeg', 'webp'] as const;
 const MEDIA_ROOT = 'campaigns';

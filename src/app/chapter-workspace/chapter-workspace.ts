@@ -2,22 +2,22 @@ import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import type { JSONContent } from '@tiptap/core';
 
-import { CampaignContext } from '../campaign-layout/campaign-context';
-import { emptyChapterInput, type Chapter, type UpdateChapterInput } from '../chapter/chapter';
-import { ChapterService } from '../chapter/chapter.service';
-import { LocationService } from '../location/location.service';
-import type { PendingChangesAware } from '../navigation/pending-changes.guard';
-import { NpcService } from '../npc/npc.service';
-import { PlayerCharacterService } from '../player-character/player-character.service';
-import type { RichTextDocument } from '../shared/rich-text-editor/rich-text-document';
-import { RichTextEditor } from '../shared/rich-text-editor/rich-text-editor';
-import type { ResourceMentionCandidate } from '../shared/rich-text-editor/resource-mention';
-import { ResourceMentionNavigationService } from '../shared/rich-text-editor/resource-mention-navigation.service';
-import { ButtonDirective } from '../shared/ui/button/button.directive';
-import { Dialog } from '../shared/ui/dialog/dialog';
-import { EmptyState } from '../shared/ui/empty-state/empty-state';
-import { EntityTitle } from '../shared/ui/entity-title/entity-title';
-import { FormField } from '../shared/ui/form-field/form-field';
+import { CampaignContext } from '@app/campaign-layout/campaign-context';
+import { emptyChapterInput, type Chapter, type UpdateChapterInput } from '@app/chapter/chapter';
+import { ChapterService } from '@app/chapter/chapter.service';
+import { LocationService } from '@app/location/location.service';
+import type { PendingChangesAware } from '@app/navigation/pending-changes.guard';
+import { NpcService } from '@app/npc/npc.service';
+import { PlayerCharacterService } from '@app/player-character/player-character.service';
+import type { RichTextDocument } from '@app/shared/rich-text-editor/rich-text-document';
+import { RichTextEditor } from '@app/shared/rich-text-editor/rich-text-editor';
+import type { ResourceMentionCandidate } from '@app/shared/rich-text-editor/resource-mention';
+import { ResourceMentionNavigationService } from '@app/shared/rich-text-editor/resource-mention-navigation.service';
+import { ButtonDirective } from '@app/shared/ui/button/button.directive';
+import { Dialog } from '@app/shared/ui/dialog/dialog';
+import { EmptyState } from '@app/shared/ui/empty-state/empty-state';
+import { EntityTitle } from '@app/shared/ui/entity-title/entity-title';
+import { FormField } from '@app/shared/ui/form-field/form-field';
 
 type PendingDecisionResolver = (canLeave: boolean) => void;
 

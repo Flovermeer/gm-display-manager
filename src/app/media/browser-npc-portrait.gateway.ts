@@ -1,4 +1,4 @@
-import { NpcPortraitGateway } from './npc-portrait.gateway';
+import { NpcPortraitGateway } from '@app/media/npc-portrait.gateway';
 
 export class BrowserNpcPortraitGateway extends NpcPortraitGateway {
   override chooseAndImport(): Promise<string | null> {

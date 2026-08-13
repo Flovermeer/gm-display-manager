@@ -1,5 +1,5 @@
-import type { Location } from '../location/location';
-import { LocationRepository } from '../location/location.repository';
+import type { Location } from '@app/location/location';
+import { LocationRepository } from '@app/location/location.repository';
 
 export class InMemoryLocationRepository extends LocationRepository {
   private readonly locations = new Map<string, Location>();

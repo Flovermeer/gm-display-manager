@@ -1,9 +1,9 @@
 import { TestBed } from '@angular/core/testing';
 
-import { InMemoryLocationRepository } from '../persistence/in-memory-location.repository';
-import type { Location } from './location';
-import { LocationRepository } from './location.repository';
-import { LocationService } from './location.service';
+import { InMemoryLocationRepository } from '@app/persistence/in-memory-location.repository';
+import type { Location } from '@app/location/location';
+import { LocationRepository } from '@app/location/location.repository';
+import { LocationService } from '@app/location/location.service';
 
 describe('LocationService', () => {
   let service: LocationService;

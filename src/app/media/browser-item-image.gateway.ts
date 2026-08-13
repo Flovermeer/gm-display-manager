@@ -1,4 +1,4 @@
-import { ItemImageGateway } from './item-image.gateway';
+import { ItemImageGateway } from '@app/media/item-image.gateway';
 
 export class BrowserItemImageGateway extends ItemImageGateway {
   override chooseAndImport(): Promise<string | null> {

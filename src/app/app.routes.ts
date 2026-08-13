@@ -1,36 +1,36 @@
 import { Routes } from '@angular/router';
 
-import { pendingChangesGuard } from './navigation/pending-changes.guard';
+import { pendingChangesGuard } from '@app/navigation/pending-changes.guard';
 
 export const routes: Routes = [
   {
     path: 'campaigns',
     loadComponent: () =>
-      import('./campaign-home/campaign-home').then(({ CampaignHome }) => CampaignHome),
+      import('@app/campaign-home/campaign-home').then(({ CampaignHome }) => CampaignHome),
     title: "Beholder's Inn — Campagnes",
   },
   {
     path: 'campaigns/:campaignId',
     loadComponent: () =>
-      import('./campaign-layout/campaign-layout').then(({ CampaignLayout }) => CampaignLayout),
+      import('@app/campaign-layout/campaign-layout').then(({ CampaignLayout }) => CampaignLayout),
     children: [
       {
         path: '',
         pathMatch: 'full',
-        loadComponent: () => import('./control/control').then(({ Control }) => Control),
+        loadComponent: () => import('@app/control/control').then(({ Control }) => Control),
         title: "Beholder's Inn — Panneau MJ",
       },
       {
         path: 'scenes',
         loadComponent: () =>
-          import('./scene-workspace/scene-workspace').then(({ SceneWorkspace }) => SceneWorkspace),
+          import('@app/scene-workspace/scene-workspace').then(({ SceneWorkspace }) => SceneWorkspace),
         canDeactivate: [pendingChangesGuard],
         title: "Beholder's Inn — Scènes",
       },
       {
         path: 'chapters',
         loadComponent: () =>
-          import('./chapter-workspace/chapter-workspace').then(
+          import('@app/chapter-workspace/chapter-workspace').then(
             ({ ChapterWorkspace }) => ChapterWorkspace,
           ),
         canDeactivate: [pendingChangesGuard],
@@ -39,7 +39,7 @@ export const routes: Routes = [
       {
         path: 'locations',
         loadComponent: () =>
-          import('./location-workspace/location-workspace').then(
+          import('@app/location-workspace/location-workspace').then(
             ({ LocationWorkspace }) => LocationWorkspace,
           ),
         canDeactivate: [pendingChangesGuard],
@@ -48,14 +48,14 @@ export const routes: Routes = [
       {
         path: 'npcs',
         loadComponent: () =>
-          import('./npc-workspace/npc-workspace').then(({ NpcWorkspace }) => NpcWorkspace),
+          import('@app/npc-workspace/npc-workspace').then(({ NpcWorkspace }) => NpcWorkspace),
         canDeactivate: [pendingChangesGuard],
         title: "Beholder's Inn — PNJ",
       },
       {
         path: 'player-characters',
         loadComponent: () =>
-          import('./player-character-workspace/player-character-workspace').then(
+          import('@app/player-character-workspace/player-character-workspace').then(
             ({ PlayerCharacterWorkspace }) => PlayerCharacterWorkspace,
           ),
         canDeactivate: [pendingChangesGuard],
@@ -64,7 +64,7 @@ export const routes: Routes = [
       {
         path: 'items',
         loadComponent: () =>
-          import('./narrative-item-workspace/narrative-item-workspace').then(
+          import('@app/narrative-item-workspace/narrative-item-workspace').then(
             ({ NarrativeItemWorkspace }) => NarrativeItemWorkspace,
           ),
         canDeactivate: [pendingChangesGuard],
@@ -73,7 +73,7 @@ export const routes: Routes = [
       {
         path: 'journal',
         loadComponent: () =>
-          import('./journal-workspace/journal-workspace').then(
+          import('@app/journal-workspace/journal-workspace').then(
             ({ JournalWorkspace }) => JournalWorkspace,
           ),
         canDeactivate: [pendingChangesGuard],
@@ -82,7 +82,7 @@ export const routes: Routes = [
       {
         path: 'configuration',
         loadComponent: () =>
-          import('./campaign-configuration-workspace/campaign-configuration-workspace').then(
+          import('@app/campaign-configuration-workspace/campaign-configuration-workspace').then(
             ({ CampaignConfigurationWorkspace }) => CampaignConfigurationWorkspace,
           ),
         title: "Beholder's Inn — Configuration",
@@ -92,7 +92,7 @@ export const routes: Routes = [
   {
     path: 'player-display',
     loadComponent: () =>
-      import('./player-display/player-display').then(({ PlayerDisplay }) => PlayerDisplay),
+      import('@app/player-display/player-display').then(({ PlayerDisplay }) => PlayerDisplay),
     title: "Beholder's Inn — Écran joueurs",
   },
   { path: 'control', pathMatch: 'full', redirectTo: 'campaigns' },

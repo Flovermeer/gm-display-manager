@@ -2,20 +2,20 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ActivatedRoute, convertToParamMap } from '@angular/router';
 import { of } from 'rxjs';
 
-import type { Campaign } from '../campaign/campaign';
-import { CampaignContext } from '../campaign-layout/campaign-context';
-import { DisplayGateway } from '../display/display.gateway';
-import { JournalEntryService } from '../journal/journal-entry.service';
-import { LocationService } from '../location/location.service';
-import { ItemImageGateway } from '../media/item-image.gateway';
-import { ItemConfigurationService } from '../narrative-item/item-configuration.service';
-import type { NarrativeItem } from '../narrative-item/narrative-item';
-import { NarrativeItemService } from '../narrative-item/narrative-item.service';
-import { NpcService } from '../npc/npc.service';
-import { PlayerCharacterService } from '../player-character/player-character.service';
-import { createEmptyRichTextDocument } from '../shared/rich-text-editor/rich-text-document';
-import { ResourceMentionNavigationService } from '../shared/rich-text-editor/resource-mention-navigation.service';
-import { NarrativeItemWorkspace } from './narrative-item-workspace';
+import type { Campaign } from '@app/campaign/campaign';
+import { CampaignContext } from '@app/campaign-layout/campaign-context';
+import { DisplayGateway } from '@app/display/display.gateway';
+import { JournalEntryService } from '@app/journal/journal-entry.service';
+import { LocationService } from '@app/location/location.service';
+import { ItemImageGateway } from '@app/media/item-image.gateway';
+import { ItemConfigurationService } from '@app/narrative-item/item-configuration.service';
+import type { NarrativeItem } from '@app/narrative-item/narrative-item';
+import { NarrativeItemService } from '@app/narrative-item/narrative-item.service';
+import { NpcService } from '@app/npc/npc.service';
+import { PlayerCharacterService } from '@app/player-character/player-character.service';
+import { createEmptyRichTextDocument } from '@app/shared/rich-text-editor/rich-text-document';
+import { ResourceMentionNavigationService } from '@app/shared/rich-text-editor/resource-mention-navigation.service';
+import { NarrativeItemWorkspace } from '@app/narrative-item-workspace/narrative-item-workspace';
 
 describe('NarrativeItemWorkspace', () => {
   const campaign: Campaign = {

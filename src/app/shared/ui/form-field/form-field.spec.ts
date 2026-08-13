@@ -2,7 +2,7 @@ import { Component } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
 
-import { FormField } from './form-field';
+import { FormField } from '@app/shared/ui/form-field/form-field';
 
 @Component({
   imports: [ReactiveFormsModule, FormField],

@@ -1,4 +1,4 @@
-import { AppSettingRepository } from './app-setting.repository';
+import { AppSettingRepository } from '@app/persistence/app-setting.repository';
 
 export class InMemoryAppSettingRepository extends AppSettingRepository {
   private readonly values = new Map<string, string>();

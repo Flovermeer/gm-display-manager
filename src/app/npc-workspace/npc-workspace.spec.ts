@@ -2,18 +2,18 @@ import { provideRouter } from '@angular/router';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ActivatedRoute } from '@angular/router';
 
-import type { Campaign } from '../campaign/campaign';
-import { CampaignService } from '../campaign/campaign.service';
-import { CampaignContext } from '../campaign-layout/campaign-context';
-import { DisplayGateway } from '../display/display.gateway';
-import { NpcPortraitGateway } from '../media/npc-portrait.gateway';
-import { NpcIdleVideoGateway } from '../media/npc-idle-video.gateway';
-import { createEmptyNpcSheet, type Npc } from '../npc/npc';
-import { NpcService } from '../npc/npc.service';
-import { JournalEntryService } from '../journal/journal-entry.service';
-import { createEmptyRichTextDocument } from '../shared/rich-text-editor/rich-text-document';
-import { ResourceMentionNavigationService } from '../shared/rich-text-editor/resource-mention-navigation.service';
-import { NpcWorkspace } from './npc-workspace';
+import type { Campaign } from '@app/campaign/campaign';
+import { CampaignService } from '@app/campaign/campaign.service';
+import { CampaignContext } from '@app/campaign-layout/campaign-context';
+import { DisplayGateway } from '@app/display/display.gateway';
+import { NpcPortraitGateway } from '@app/media/npc-portrait.gateway';
+import { NpcIdleVideoGateway } from '@app/media/npc-idle-video.gateway';
+import { createEmptyNpcSheet, type Npc } from '@app/npc/npc';
+import { NpcService } from '@app/npc/npc.service';
+import { JournalEntryService } from '@app/journal/journal-entry.service';
+import { createEmptyRichTextDocument } from '@app/shared/rich-text-editor/rich-text-document';
+import { ResourceMentionNavigationService } from '@app/shared/rich-text-editor/resource-mention-navigation.service';
+import { NpcWorkspace } from '@app/npc-workspace/npc-workspace';
 
 describe('NpcWorkspace', () => {
   const campaign: Campaign = {

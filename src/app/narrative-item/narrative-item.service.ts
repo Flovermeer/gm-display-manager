@@ -1,16 +1,16 @@
 import { inject, Injectable } from '@angular/core';
 
-import { LocationService } from '../location/location.service';
-import { NpcService } from '../npc/npc.service';
-import { PlayerCharacterService } from '../player-character/player-character.service';
-import { ItemConfigurationRepository } from './item-configuration.repository';
+import { LocationService } from '@app/location/location.service';
+import { NpcService } from '@app/npc/npc.service';
+import { PlayerCharacterService } from '@app/player-character/player-character.service';
+import { ItemConfigurationRepository } from '@app/narrative-item/item-configuration.repository';
 import {
   createNarrativeItem,
   updateNarrativeItem,
   type NarrativeItem,
   type UpdateNarrativeItemInput,
-} from './narrative-item';
-import { NarrativeItemRepository } from './narrative-item.repository';
+} from '@app/narrative-item/narrative-item';
+import { NarrativeItemRepository } from '@app/narrative-item/narrative-item.repository';
 
 @Injectable({ providedIn: 'root' })
 export class NarrativeItemService {

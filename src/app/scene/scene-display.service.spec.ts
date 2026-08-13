@@ -1,15 +1,15 @@
 import { TestBed } from '@angular/core/testing';
 
-import { LocationRepository } from '../location/location.repository';
-import { LocationService } from '../location/location.service';
-import { LocationImageGateway } from '../media/location-image.gateway';
-import { NarrativeItemService } from '../narrative-item/narrative-item.service';
-import { NpcService } from '../npc/npc.service';
-import { InMemoryLocationRepository } from '../persistence/in-memory-location.repository';
-import { ActiveSceneService } from './active-scene.service';
-import type { Scene } from './scene';
-import { SceneDisplayService } from './scene-display.service';
-import { SceneService } from './scene.service';
+import { LocationRepository } from '@app/location/location.repository';
+import { LocationService } from '@app/location/location.service';
+import { LocationImageGateway } from '@app/media/location-image.gateway';
+import { NarrativeItemService } from '@app/narrative-item/narrative-item.service';
+import { NpcService } from '@app/npc/npc.service';
+import { InMemoryLocationRepository } from '@app/persistence/in-memory-location.repository';
+import { ActiveSceneService } from '@app/scene/active-scene.service';
+import type { Scene } from '@app/scene/scene';
+import { SceneDisplayService } from '@app/scene/scene-display.service';
+import { SceneService } from '@app/scene/scene.service';
 
 describe('SceneDisplayService', () => {
   const activeScene = { get: vi.fn(), set: vi.fn(), clear: vi.fn() };

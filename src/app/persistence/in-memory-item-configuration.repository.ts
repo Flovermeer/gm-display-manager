@@ -1,8 +1,8 @@
 import type {
   ItemConfigurationKind,
   ItemConfigurationOption,
-} from '../narrative-item/item-configuration';
-import { ItemConfigurationRepository } from '../narrative-item/item-configuration.repository';
+} from '@app/narrative-item/item-configuration';
+import { ItemConfigurationRepository } from '@app/narrative-item/item-configuration.repository';
 
 export class InMemoryItemConfigurationRepository extends ItemConfigurationRepository {
   private readonly options = new Map<string, ItemConfigurationOption>();

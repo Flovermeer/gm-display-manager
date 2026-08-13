@@ -1,8 +1,8 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { Router, RouterOutlet } from '@angular/router';
 
-import { CampaignNavigation } from '../campaign-navigation/campaign-navigation';
-import { CampaignContext } from './campaign-context';
+import { CampaignNavigation } from '@app/campaign-navigation/campaign-navigation';
+import { CampaignContext } from '@app/campaign-layout/campaign-context';
 
 @Component({
   selector: 'app-campaign-layout',

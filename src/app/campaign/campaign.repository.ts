@@ -1,4 +1,4 @@
-import type { Campaign } from './campaign';
+import type { Campaign } from '@app/campaign/campaign';
 
 export abstract class CampaignRepository {
   abstract list(): Promise<readonly Campaign[]>;

@@ -1,7 +1,7 @@
 import {
   createEmptyRichTextDocument,
   type RichTextDocument,
-} from '../shared/rich-text-editor/rich-text-document';
+} from '@app/shared/rich-text-editor/rich-text-document';
 
 export const NPC_STATUSES = ['active', 'dead', 'retired', 'missing'] as const;
 export const NPC_SHEET_SCHEMA_VERSION = 3 as const;

@@ -1,8 +1,8 @@
 import { TestBed } from '@angular/core/testing';
 
-import { AppSettingRepository } from '../persistence/app-setting.repository';
-import type { MonitorDescriptor } from './display.models';
-import { PlayerDisplayPreferenceService } from './player-display-preference.service';
+import { AppSettingRepository } from '@app/persistence/app-setting.repository';
+import type { MonitorDescriptor } from '@app/display/display.models';
+import { PlayerDisplayPreferenceService } from '@app/display/player-display-preference.service';
 
 class InMemoryAppSettingRepository extends AppSettingRepository {
   readonly values = new Map<string, string>();

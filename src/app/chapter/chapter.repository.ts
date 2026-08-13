@@ -1,4 +1,4 @@
-import type { Chapter } from './chapter';
+import type { Chapter } from '@app/chapter/chapter';
 
 export type ChapterOrder = Pick<Chapter, 'id' | 'campaignId' | 'position' | 'updatedAt'>;
 

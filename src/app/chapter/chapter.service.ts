@@ -1,7 +1,7 @@
 import { inject, Injectable } from '@angular/core';
 
-import { createChapter, updateChapter, type Chapter, type UpdateChapterInput } from './chapter';
-import { ChapterRepository } from './chapter.repository';
+import { createChapter, updateChapter, type Chapter, type UpdateChapterInput } from '@app/chapter/chapter';
+import { ChapterRepository } from '@app/chapter/chapter.repository';
 
 @Injectable({ providedIn: 'root' })
 export class ChapterService {

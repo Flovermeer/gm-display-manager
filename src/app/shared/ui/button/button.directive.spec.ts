@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 
-import { ButtonDirective } from './button.directive';
+import { ButtonDirective } from '@app/shared/ui/button/button.directive';
 
 @Component({
   imports: [ButtonDirective],

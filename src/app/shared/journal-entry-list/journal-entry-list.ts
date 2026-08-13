@@ -1,18 +1,18 @@
 import { Component, computed, effect, inject, input, output, signal } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 
-import type { JournalEntry, JournalResourceType, JournalTarget } from '../../journal/journal-entry';
-import { JournalEntryService } from '../../journal/journal-entry.service';
+import type { JournalEntry, JournalResourceType, JournalTarget } from '@app/journal/journal-entry';
+import { JournalEntryService } from '@app/journal/journal-entry.service';
 import {
   createEmptyRichTextDocument,
   type RichTextDocument,
-} from '../rich-text-editor/rich-text-document';
-import { RichTextEditor } from '../rich-text-editor/rich-text-editor';
-import { ResourceMentionNavigationService } from '../rich-text-editor/resource-mention-navigation.service';
-import type { ResourceMentionCandidate } from '../rich-text-editor/resource-mention';
-import { ButtonDirective } from '../ui/button/button.directive';
-import { Dialog } from '../ui/dialog/dialog';
-import { FormField } from '../ui/form-field/form-field';
+} from '@app/shared/rich-text-editor/rich-text-document';
+import { RichTextEditor } from '@app/shared/rich-text-editor/rich-text-editor';
+import { ResourceMentionNavigationService } from '@app/shared/rich-text-editor/resource-mention-navigation.service';
+import type { ResourceMentionCandidate } from '@app/shared/rich-text-editor/resource-mention';
+import { ButtonDirective } from '@app/shared/ui/button/button.directive';
+import { Dialog } from '@app/shared/ui/dialog/dialog';
+import { FormField } from '@app/shared/ui/form-field/form-field';
 
 @Component({
   selector: 'app-journal-entry-list',

@@ -1,4 +1,4 @@
-import type { NarrativeItem } from './narrative-item';
+import type { NarrativeItem } from '@app/narrative-item/narrative-item';
 
 export abstract class NarrativeItemRepository {
   abstract listByCampaign(campaignId: string): Promise<readonly NarrativeItem[]>;

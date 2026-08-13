@@ -1,4 +1,4 @@
-import type { JournalEntry, JournalTarget } from './journal-entry';
+import type { JournalEntry, JournalTarget } from '@app/journal/journal-entry';
 
 export abstract class JournalEntryRepository {
   abstract listByCampaign(campaignId: string): Promise<readonly JournalEntry[]>;

@@ -1,7 +1,7 @@
 import { inject, Injectable } from '@angular/core';
 
-import { AppSettingRepository } from '../persistence/app-setting.repository';
-import type { MonitorDescriptor } from './display.models';
+import { AppSettingRepository } from '@app/persistence/app-setting.repository';
+import type { MonitorDescriptor } from '@app/display/display.models';
 
 const PLAYER_DISPLAY_MONITOR_KEY = 'player_display.monitor_fingerprint';
 

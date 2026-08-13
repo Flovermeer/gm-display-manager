@@ -1,11 +1,11 @@
 import { inject, Injectable } from '@angular/core';
 
-import type { PlayerDisplayForeground, PlayerDisplayState } from '../display/player-display-state';
-import { LocationService } from '../location/location.service';
-import { LocationImageGateway } from '../media/location-image.gateway';
-import type { Scene } from './scene';
-import { ActiveSceneService } from './active-scene.service';
-import { SceneService } from './scene.service';
+import type { PlayerDisplayForeground, PlayerDisplayState } from '@app/display/player-display-state';
+import { LocationService } from '@app/location/location.service';
+import { LocationImageGateway } from '@app/media/location-image.gateway';
+import type { Scene } from '@app/scene/scene';
+import { ActiveSceneService } from '@app/scene/active-scene.service';
+import { SceneService } from '@app/scene/scene.service';
 
 @Injectable({ providedIn: 'root' })
 export class SceneDisplayService {

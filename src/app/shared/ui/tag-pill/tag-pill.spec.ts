@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 
-import { TagPill } from './tag-pill';
+import { TagPill } from '@app/shared/ui/tag-pill/tag-pill';
 
 describe('TagPill', () => {
   it('renders its label and emits a remove request', () => {

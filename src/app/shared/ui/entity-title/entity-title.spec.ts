@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 
-import { EntityTitle } from './entity-title';
+import { EntityTitle } from '@app/shared/ui/entity-title/entity-title';
 
 describe('EntityTitle', () => {
   it('renders a kicker and an identified title', () => {

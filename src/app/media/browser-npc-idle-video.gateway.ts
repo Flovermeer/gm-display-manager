@@ -1,4 +1,4 @@
-import { NpcIdleVideoGateway } from './npc-idle-video.gateway';
+import { NpcIdleVideoGateway } from '@app/media/npc-idle-video.gateway';
 
 export class BrowserNpcIdleVideoGateway extends NpcIdleVideoGateway {
   override chooseAndImport(): Promise<string | null> {

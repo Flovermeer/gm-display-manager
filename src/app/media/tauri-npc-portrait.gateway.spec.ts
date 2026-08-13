@@ -3,7 +3,7 @@ import { appDataDir, join } from '@tauri-apps/api/path';
 import { open } from '@tauri-apps/plugin-dialog';
 import { copyFile, mkdir, remove } from '@tauri-apps/plugin-fs';
 
-import { TauriNpcPortraitGateway } from './tauri-npc-portrait.gateway';
+import { TauriNpcPortraitGateway } from '@app/media/tauri-npc-portrait.gateway';
 
 vi.mock('@tauri-apps/api/core', () => ({ convertFileSrc: vi.fn() }));
 vi.mock('@tauri-apps/api/path', () => ({ appDataDir: vi.fn(), join: vi.fn() }));

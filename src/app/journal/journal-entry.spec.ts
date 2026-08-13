@@ -1,5 +1,5 @@
-import { createEmptyRichTextDocument } from '../shared/rich-text-editor/rich-text-document';
-import { createJournalEntry, updateJournalEntry } from './journal-entry';
+import { createEmptyRichTextDocument } from '@app/shared/rich-text-editor/rich-text-document';
+import { createJournalEntry, updateJournalEntry } from '@app/journal/journal-entry';
 
 describe('JournalEntry', () => {
   const dependencies = {

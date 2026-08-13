@@ -6,8 +6,8 @@ import {
   updatePlayerCharacterHitPoints,
   type PlayerCharacter,
   type UpdatePlayerCharacterInput,
-} from './player-character';
-import { PlayerCharacterRepository } from './player-character.repository';
+} from '@app/player-character/player-character';
+import { PlayerCharacterRepository } from '@app/player-character/player-character.repository';
 
 @Injectable({ providedIn: 'root' })
 export class PlayerCharacterService {

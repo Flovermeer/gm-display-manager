@@ -3,8 +3,8 @@ import Database from '@tauri-apps/plugin-sql';
 import {
   EMPTY_PLAYER_CHARACTER_SHEET,
   type PlayerCharacter,
-} from '../player-character/player-character';
-import { TauriPlayerCharacterRepository } from './tauri-player-character.repository';
+} from '@app/player-character/player-character';
+import { TauriPlayerCharacterRepository } from '@app/persistence/tauri-player-character.repository';
 
 vi.mock('@tauri-apps/plugin-sql', () => ({ default: { load: vi.fn() } }));
 

@@ -1,5 +1,5 @@
-import type { JournalEntry, JournalTarget } from '../journal/journal-entry';
-import { JournalEntryRepository } from '../journal/journal-entry.repository';
+import type { JournalEntry, JournalTarget } from '@app/journal/journal-entry';
+import { JournalEntryRepository } from '@app/journal/journal-entry.repository';
 
 export class InMemoryJournalEntryRepository extends JournalEntryRepository {
   private readonly entries = new Map<string, JournalEntry>();

@@ -1,7 +1,7 @@
 import { inject, Injectable } from '@angular/core';
 
-import { createNpc, updateNpc, type Npc, type UpdateNpcInput } from './npc';
-import { NpcRepository } from './npc.repository';
+import { createNpc, updateNpc, type Npc, type UpdateNpcInput } from '@app/npc/npc';
+import { NpcRepository } from '@app/npc/npc.repository';
 
 @Injectable({ providedIn: 'root' })
 export class NpcService {

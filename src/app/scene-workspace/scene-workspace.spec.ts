@@ -2,23 +2,23 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ActivatedRoute } from '@angular/router';
 import { BehaviorSubject } from 'rxjs';
 
-import type { Campaign } from '../campaign/campaign';
-import { CampaignContext } from '../campaign-layout/campaign-context';
-import { JournalEntryService } from '../journal/journal-entry.service';
-import { LocationService } from '../location/location.service';
-import { NarrativeItemService } from '../narrative-item/narrative-item.service';
-import { NpcService } from '../npc/npc.service';
-import type { Scene } from '../scene/scene';
-import { SceneService } from '../scene/scene.service';
-import { ActiveSceneService } from '../scene/active-scene.service';
-import { SceneDisplayService } from '../scene/scene-display.service';
-import { DisplayGateway } from '../display/display.gateway';
-import { PlayerDisplayStore } from '../display/player-display.store';
-import { NpcPortraitGateway } from '../media/npc-portrait.gateway';
-import { NpcIdleVideoGateway } from '../media/npc-idle-video.gateway';
-import { ItemImageGateway } from '../media/item-image.gateway';
-import { ResourceMentionNavigationService } from '../shared/rich-text-editor/resource-mention-navigation.service';
-import { SceneWorkspace } from './scene-workspace';
+import type { Campaign } from '@app/campaign/campaign';
+import { CampaignContext } from '@app/campaign-layout/campaign-context';
+import { JournalEntryService } from '@app/journal/journal-entry.service';
+import { LocationService } from '@app/location/location.service';
+import { NarrativeItemService } from '@app/narrative-item/narrative-item.service';
+import { NpcService } from '@app/npc/npc.service';
+import type { Scene } from '@app/scene/scene';
+import { SceneService } from '@app/scene/scene.service';
+import { ActiveSceneService } from '@app/scene/active-scene.service';
+import { SceneDisplayService } from '@app/scene/scene-display.service';
+import { DisplayGateway } from '@app/display/display.gateway';
+import { PlayerDisplayStore } from '@app/display/player-display.store';
+import { NpcPortraitGateway } from '@app/media/npc-portrait.gateway';
+import { NpcIdleVideoGateway } from '@app/media/npc-idle-video.gateway';
+import { ItemImageGateway } from '@app/media/item-image.gateway';
+import { ResourceMentionNavigationService } from '@app/shared/rich-text-editor/resource-mention-navigation.service';
+import { SceneWorkspace } from '@app/scene-workspace/scene-workspace';
 
 describe('SceneWorkspace', () => {
   const campaign: Campaign = {

@@ -4,8 +4,8 @@ import Database from '@tauri-apps/plugin-sql';
 import type {
   ItemConfigurationKind,
   ItemConfigurationOption,
-} from '../narrative-item/item-configuration';
-import { ItemConfigurationRepository } from '../narrative-item/item-configuration.repository';
+} from '@app/narrative-item/item-configuration';
+import { ItemConfigurationRepository } from '@app/narrative-item/item-configuration.repository';
 
 const DATABASE_URL = 'sqlite:beholders-inn.db';
 type OptionRow = Readonly<{

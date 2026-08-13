@@ -1,5 +1,5 @@
-import type { Npc } from '../npc/npc';
-import { NpcRepository } from '../npc/npc.repository';
+import type { Npc } from '@app/npc/npc';
+import { NpcRepository } from '@app/npc/npc.repository';
 
 export class InMemoryNpcRepository extends NpcRepository {
   private readonly npcs = new Map<string, Npc>();

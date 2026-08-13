@@ -1,8 +1,8 @@
 import { Injectable } from '@angular/core';
 import Database from '@tauri-apps/plugin-sql';
 
-import type { Location } from '../location/location';
-import { LocationRepository } from '../location/location.repository';
+import type { Location } from '@app/location/location';
+import { LocationRepository } from '@app/location/location.repository';
 
 const DATABASE_URL = 'sqlite:beholders-inn.db';
 

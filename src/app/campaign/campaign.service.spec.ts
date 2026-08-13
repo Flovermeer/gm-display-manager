@@ -1,11 +1,11 @@
 import { TestBed } from '@angular/core/testing';
 
-import { AppSettingRepository } from '../persistence/app-setting.repository';
-import { InMemoryAppSettingRepository } from '../persistence/in-memory-app-setting.repository';
-import { InMemoryCampaignRepository } from '../persistence/in-memory-campaign.repository';
-import { CampaignMediaGateway } from '../media/campaign-media.gateway';
-import { CampaignRepository } from './campaign.repository';
-import { CampaignService } from './campaign.service';
+import { AppSettingRepository } from '@app/persistence/app-setting.repository';
+import { InMemoryAppSettingRepository } from '@app/persistence/in-memory-app-setting.repository';
+import { InMemoryCampaignRepository } from '@app/persistence/in-memory-campaign.repository';
+import { CampaignMediaGateway } from '@app/media/campaign-media.gateway';
+import { CampaignRepository } from '@app/campaign/campaign.repository';
+import { CampaignService } from '@app/campaign/campaign.service';
 
 describe('CampaignService', () => {
   let service: CampaignService;

@@ -1,7 +1,7 @@
 import Database from '@tauri-apps/plugin-sql';
 
-import { createEmptyNpcSheet, type Npc } from '../npc/npc';
-import { TauriNpcRepository } from './tauri-npc.repository';
+import { createEmptyNpcSheet, type Npc } from '@app/npc/npc';
+import { TauriNpcRepository } from '@app/persistence/tauri-npc.repository';
 
 vi.mock('@tauri-apps/plugin-sql', () => ({
   default: { load: vi.fn() },

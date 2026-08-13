@@ -8,7 +8,7 @@ import {
 } from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 
-import { TagPill } from '../tag-pill/tag-pill';
+import { TagPill } from '@app/shared/ui/tag-pill/tag-pill';
 
 export type SearchableSelectOption = Readonly<{ value: string; label: string }>;
 type SearchableSelectValue = string | readonly string[] | null;

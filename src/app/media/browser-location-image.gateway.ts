@@ -1,4 +1,4 @@
-import { LocationImageGateway } from './location-image.gateway';
+import { LocationImageGateway } from '@app/media/location-image.gateway';
 
 export class BrowserLocationImageGateway extends LocationImageGateway {
   override chooseAndImport(): Promise<string | null> {

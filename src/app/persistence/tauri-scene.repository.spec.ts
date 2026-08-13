@@ -1,7 +1,7 @@
 import Database from '@tauri-apps/plugin-sql';
 
-import type { Scene } from '../scene/scene';
-import { TauriSceneRepository } from './tauri-scene.repository';
+import type { Scene } from '@app/scene/scene';
+import { TauriSceneRepository } from '@app/persistence/tauri-scene.repository';
 
 vi.mock('@tauri-apps/plugin-sql', () => ({ default: { load: vi.fn() } }));
 

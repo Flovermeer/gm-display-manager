@@ -1,5 +1,5 @@
-import type { Scene } from '../scene/scene';
-import { SceneRepository } from '../scene/scene.repository';
+import type { Scene } from '@app/scene/scene';
+import { SceneRepository } from '@app/scene/scene.repository';
 
 export class InMemorySceneRepository extends SceneRepository {
   private readonly scenes = new Map<string, Scene>();

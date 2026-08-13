@@ -1,4 +1,4 @@
-import type { Npc } from './npc';
+import type { Npc } from '@app/npc/npc';
 
 export abstract class NpcRepository {
   abstract listByCampaign(campaignId: string): Promise<readonly Npc[]>;

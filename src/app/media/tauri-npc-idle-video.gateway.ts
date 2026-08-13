@@ -3,7 +3,7 @@ import { appDataDir, join } from '@tauri-apps/api/path';
 import { open } from '@tauri-apps/plugin-dialog';
 import { BaseDirectory, copyFile, mkdir, remove } from '@tauri-apps/plugin-fs';
 
-import { NpcIdleVideoGateway } from './npc-idle-video.gateway';
+import { NpcIdleVideoGateway } from '@app/media/npc-idle-video.gateway';
 
 const SUPPORTED_EXTENSIONS = ['webm', 'mp4'] as const;
 

@@ -5,9 +5,9 @@ import {
   renameItemConfigurationOption,
   type ItemConfigurationKind,
   type ItemConfigurationOption,
-} from './item-configuration';
-import { ItemConfigurationRepository } from './item-configuration.repository';
-import { NarrativeItemRepository } from './narrative-item.repository';
+} from '@app/narrative-item/item-configuration';
+import { ItemConfigurationRepository } from '@app/narrative-item/item-configuration.repository';
+import { NarrativeItemRepository } from '@app/narrative-item/narrative-item.repository';
 
 @Injectable({ providedIn: 'root' })
 export class ItemConfigurationService {

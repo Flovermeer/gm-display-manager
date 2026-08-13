@@ -1,4 +1,4 @@
-import type { RichTextDocument } from '../shared/rich-text-editor/rich-text-document';
+import type { RichTextDocument } from '@app/shared/rich-text-editor/rich-text-document';
 
 export type JournalResourceType = 'npc' | 'location' | 'player-character' | 'item' | 'scene';
 

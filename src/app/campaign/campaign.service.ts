@@ -1,15 +1,15 @@
 import { inject, Injectable } from '@angular/core';
 
-import { AppSettingRepository } from '../persistence/app-setting.repository';
-import { CampaignMediaGateway } from '../media/campaign-media.gateway';
+import { AppSettingRepository } from '@app/persistence/app-setting.repository';
+import { CampaignMediaGateway } from '@app/media/campaign-media.gateway';
 import {
   createCampaign,
   updateCampaign,
   type Campaign,
   type CreateCampaignInput,
   type UpdateCampaignInput,
-} from './campaign';
-import { CampaignRepository } from './campaign.repository';
+} from '@app/campaign/campaign';
+import { CampaignRepository } from '@app/campaign/campaign.repository';
 
 const ACTIVE_CAMPAIGN_KEY = 'campaign.active_id';
 

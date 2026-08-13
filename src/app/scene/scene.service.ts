@@ -1,10 +1,10 @@
 import { inject, Injectable } from '@angular/core';
 
-import { LocationService } from '../location/location.service';
-import { NarrativeItemService } from '../narrative-item/narrative-item.service';
-import { NpcService } from '../npc/npc.service';
-import { createScene, updateScene, type Scene, type UpdateSceneInput } from './scene';
-import { SceneRepository } from './scene.repository';
+import { LocationService } from '@app/location/location.service';
+import { NarrativeItemService } from '@app/narrative-item/narrative-item.service';
+import { NpcService } from '@app/npc/npc.service';
+import { createScene, updateScene, type Scene, type UpdateSceneInput } from '@app/scene/scene';
+import { SceneRepository } from '@app/scene/scene.repository';
 
 @Injectable({ providedIn: 'root' })
 export class SceneService {

@@ -1,4 +1,4 @@
-import type { ItemConfigurationKind, ItemConfigurationOption } from './item-configuration';
+import type { ItemConfigurationKind, ItemConfigurationOption } from '@app/narrative-item/item-configuration';
 
 export abstract class ItemConfigurationRepository {
   abstract list(

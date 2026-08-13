@@ -2,17 +2,17 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { ActivatedRoute } from '@angular/router';
 
-import type { Campaign } from '../campaign/campaign';
-import { CampaignService } from '../campaign/campaign.service';
-import { CampaignContext } from '../campaign-layout/campaign-context';
-import type { Chapter } from '../chapter/chapter';
-import { ChapterService } from '../chapter/chapter.service';
-import { LocationService } from '../location/location.service';
-import { NpcService } from '../npc/npc.service';
-import { NarrativeItemService } from '../narrative-item/narrative-item.service';
-import { PlayerCharacterService } from '../player-character/player-character.service';
-import { RICH_TEXT_SCHEMA_VERSION } from '../shared/rich-text-editor/rich-text-document';
-import { ChapterWorkspace } from './chapter-workspace';
+import type { Campaign } from '@app/campaign/campaign';
+import { CampaignService } from '@app/campaign/campaign.service';
+import { CampaignContext } from '@app/campaign-layout/campaign-context';
+import type { Chapter } from '@app/chapter/chapter';
+import { ChapterService } from '@app/chapter/chapter.service';
+import { LocationService } from '@app/location/location.service';
+import { NpcService } from '@app/npc/npc.service';
+import { NarrativeItemService } from '@app/narrative-item/narrative-item.service';
+import { PlayerCharacterService } from '@app/player-character/player-character.service';
+import { RICH_TEXT_SCHEMA_VERSION } from '@app/shared/rich-text-editor/rich-text-document';
+import { ChapterWorkspace } from '@app/chapter-workspace/chapter-workspace';
 
 describe('ChapterWorkspace', () => {
   const campaign: Campaign = {

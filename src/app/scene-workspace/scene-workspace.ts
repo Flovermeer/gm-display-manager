@@ -3,35 +3,35 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 
-import { CampaignContext } from '../campaign-layout/campaign-context';
-import { DisplayGateway } from '../display/display.gateway';
-import type { PlayerDisplayState } from '../display/player-display-state';
-import { PlayerDisplayStore } from '../display/player-display.store';
-import type { Location } from '../location/location';
-import { LocationService } from '../location/location.service';
-import { ItemImageGateway } from '../media/item-image.gateway';
-import { NpcIdleVideoGateway } from '../media/npc-idle-video.gateway';
-import { NpcPortraitGateway } from '../media/npc-portrait.gateway';
-import type { NarrativeItem } from '../narrative-item/narrative-item';
-import { NarrativeItemService } from '../narrative-item/narrative-item.service';
-import type { PendingChangesAware } from '../navigation/pending-changes.guard';
-import type { Npc } from '../npc/npc';
-import { NpcService } from '../npc/npc.service';
-import type { Scene, UpdateSceneInput } from '../scene/scene';
-import { SceneService } from '../scene/scene.service';
-import { ActiveSceneService } from '../scene/active-scene.service';
-import { defaultSceneState, SceneDisplayService } from '../scene/scene-display.service';
-import { JournalEntryList } from '../shared/journal-entry-list/journal-entry-list';
-import { errorMessage as resolveErrorMessage } from '../shared/error-message';
-import { ButtonDirective } from '../shared/ui/button/button.directive';
-import { Dialog } from '../shared/ui/dialog/dialog';
-import { EmptyState } from '../shared/ui/empty-state/empty-state';
-import { EntityTitle } from '../shared/ui/entity-title/entity-title';
-import { FormField } from '../shared/ui/form-field/form-field';
+import { CampaignContext } from '@app/campaign-layout/campaign-context';
+import { DisplayGateway } from '@app/display/display.gateway';
+import type { PlayerDisplayState } from '@app/display/player-display-state';
+import { PlayerDisplayStore } from '@app/display/player-display.store';
+import type { Location } from '@app/location/location';
+import { LocationService } from '@app/location/location.service';
+import { ItemImageGateway } from '@app/media/item-image.gateway';
+import { NpcIdleVideoGateway } from '@app/media/npc-idle-video.gateway';
+import { NpcPortraitGateway } from '@app/media/npc-portrait.gateway';
+import type { NarrativeItem } from '@app/narrative-item/narrative-item';
+import { NarrativeItemService } from '@app/narrative-item/narrative-item.service';
+import type { PendingChangesAware } from '@app/navigation/pending-changes.guard';
+import type { Npc } from '@app/npc/npc';
+import { NpcService } from '@app/npc/npc.service';
+import type { Scene, UpdateSceneInput } from '@app/scene/scene';
+import { SceneService } from '@app/scene/scene.service';
+import { ActiveSceneService } from '@app/scene/active-scene.service';
+import { defaultSceneState, SceneDisplayService } from '@app/scene/scene-display.service';
+import { JournalEntryList } from '@app/shared/journal-entry-list/journal-entry-list';
+import { errorMessage as resolveErrorMessage } from '@app/shared/error-message';
+import { ButtonDirective } from '@app/shared/ui/button/button.directive';
+import { Dialog } from '@app/shared/ui/dialog/dialog';
+import { EmptyState } from '@app/shared/ui/empty-state/empty-state';
+import { EntityTitle } from '@app/shared/ui/entity-title/entity-title';
+import { FormField } from '@app/shared/ui/form-field/form-field';
 import {
   SearchableSelect,
   type SearchableSelectOption,
-} from '../shared/ui/searchable-select/searchable-select';
+} from '@app/shared/ui/searchable-select/searchable-select';
 
 type PendingDecisionResolver = (canLeave: boolean) => void;
 

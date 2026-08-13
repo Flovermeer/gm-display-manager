@@ -1,12 +1,12 @@
 import { inject, Injectable } from '@angular/core';
 import { Router } from '@angular/router';
 
-import { LocationService } from '../../location/location.service';
-import { NpcService } from '../../npc/npc.service';
-import { PlayerCharacterService } from '../../player-character/player-character.service';
-import { NarrativeItemService } from '../../narrative-item/narrative-item.service';
-import { SceneService } from '../../scene/scene.service';
-import type { ResourceMentionCandidate } from './resource-mention';
+import { LocationService } from '@app/location/location.service';
+import { NpcService } from '@app/npc/npc.service';
+import { PlayerCharacterService } from '@app/player-character/player-character.service';
+import { NarrativeItemService } from '@app/narrative-item/narrative-item.service';
+import { SceneService } from '@app/scene/scene.service';
+import type { ResourceMentionCandidate } from '@app/shared/rich-text-editor/resource-mention';
 
 @Injectable({ providedIn: 'root' })
 export class ResourceMentionNavigationService {

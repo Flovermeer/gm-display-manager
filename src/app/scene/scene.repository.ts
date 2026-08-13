@@ -1,4 +1,4 @@
-import type { Scene } from './scene';
+import type { Scene } from '@app/scene/scene';
 
 export abstract class SceneRepository {
   abstract listByCampaign(campaignId: string): Promise<readonly Scene[]>;

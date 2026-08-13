@@ -1,9 +1,9 @@
 import { TestBed } from '@angular/core/testing';
 import { ActivatedRoute } from '@angular/router';
 
-import type { Campaign } from '../campaign/campaign';
-import { CampaignService } from '../campaign/campaign.service';
-import { CampaignContext } from './campaign-context';
+import type { Campaign } from '@app/campaign/campaign';
+import { CampaignService } from '@app/campaign/campaign.service';
+import { CampaignContext } from '@app/campaign-layout/campaign-context';
 
 describe('CampaignContext', () => {
   it('loads and activates the parent campaign only once for all child pages', async () => {

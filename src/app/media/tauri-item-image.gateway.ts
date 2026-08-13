@@ -3,7 +3,7 @@ import { appDataDir, join } from '@tauri-apps/api/path';
 import { open } from '@tauri-apps/plugin-dialog';
 import { BaseDirectory, copyFile, mkdir, remove } from '@tauri-apps/plugin-fs';
 
-import { ItemImageGateway } from './item-image.gateway';
+import { ItemImageGateway } from '@app/media/item-image.gateway';
 
 const SUPPORTED_EXTENSIONS = ['png', 'jpg', 'jpeg', 'webp'] as const;
 

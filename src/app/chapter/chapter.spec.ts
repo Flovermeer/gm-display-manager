@@ -1,5 +1,5 @@
-import { createEmptyRichTextDocument } from '../shared/rich-text-editor/rich-text-document';
-import { createChapter, updateChapter } from './chapter';
+import { createEmptyRichTextDocument } from '@app/shared/rich-text-editor/rich-text-document';
+import { createChapter, updateChapter } from '@app/chapter/chapter';
 
 describe('chapter', () => {
   it('normalizes editable metadata while preserving rich content', () => {

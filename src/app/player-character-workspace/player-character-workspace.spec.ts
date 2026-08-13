@@ -1,18 +1,18 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ActivatedRoute, provideRouter } from '@angular/router';
 
-import type { Campaign } from '../campaign/campaign';
-import { CampaignService } from '../campaign/campaign.service';
-import { CampaignContext } from '../campaign-layout/campaign-context';
+import type { Campaign } from '@app/campaign/campaign';
+import { CampaignService } from '@app/campaign/campaign.service';
+import { CampaignContext } from '@app/campaign-layout/campaign-context';
 import {
   EMPTY_PLAYER_CHARACTER_SHEET,
   type PlayerCharacter,
-} from '../player-character/player-character';
-import { PlayerCharacterService } from '../player-character/player-character.service';
-import { JournalEntryService } from '../journal/journal-entry.service';
-import { PlayerCharacterPortraitGateway } from '../media/player-character-portrait.gateway';
-import { PlayerCharacterWorkspace } from './player-character-workspace';
-import { ResourceMentionNavigationService } from '../shared/rich-text-editor/resource-mention-navigation.service';
+} from '@app/player-character/player-character';
+import { PlayerCharacterService } from '@app/player-character/player-character.service';
+import { JournalEntryService } from '@app/journal/journal-entry.service';
+import { PlayerCharacterPortraitGateway } from '@app/media/player-character-portrait.gateway';
+import { PlayerCharacterWorkspace } from '@app/player-character-workspace/player-character-workspace';
+import { ResourceMentionNavigationService } from '@app/shared/rich-text-editor/resource-mention-navigation.service';
 
 describe('PlayerCharacterWorkspace', () => {
   const campaign: Campaign = {

@@ -1,4 +1,4 @@
-import { PlayerCharacterPortraitGateway } from './player-character-portrait.gateway';
+import { PlayerCharacterPortraitGateway } from '@app/media/player-character-portrait.gateway';
 
 export class BrowserPlayerCharacterPortraitGateway extends PlayerCharacterPortraitGateway {
   override chooseAndImport(): Promise<string | null> {

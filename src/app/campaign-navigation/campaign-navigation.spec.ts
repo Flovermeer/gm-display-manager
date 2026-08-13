@@ -2,7 +2,7 @@ import { Location } from '@angular/common';
 import { provideRouter } from '@angular/router';
 import { TestBed } from '@angular/core/testing';
 
-import { CampaignNavigation } from './campaign-navigation';
+import { CampaignNavigation } from '@app/campaign-navigation/campaign-navigation';
 
 describe('CampaignNavigation', () => {
   const location = { back: vi.fn() };

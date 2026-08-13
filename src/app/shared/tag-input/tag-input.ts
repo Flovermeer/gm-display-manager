@@ -1,6 +1,6 @@
 import { Component, input, output, signal } from '@angular/core';
 
-import { TagPill } from '../ui/tag-pill/tag-pill';
+import { TagPill } from '@app/shared/ui/tag-pill/tag-pill';
 
 @Component({
   selector: 'app-tag-input',

@@ -2,16 +2,16 @@ import { provideRouter } from '@angular/router';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ActivatedRoute } from '@angular/router';
 
-import type { Campaign } from '../campaign/campaign';
-import { CampaignService } from '../campaign/campaign.service';
-import { CampaignContext } from '../campaign-layout/campaign-context';
-import { DisplayGateway } from '../display/display.gateway';
-import type { Location } from '../location/location';
-import { LocationService } from '../location/location.service';
-import { JournalEntryService } from '../journal/journal-entry.service';
-import { LocationImageGateway } from '../media/location-image.gateway';
-import { LocationWorkspace } from './location-workspace';
-import { ResourceMentionNavigationService } from '../shared/rich-text-editor/resource-mention-navigation.service';
+import type { Campaign } from '@app/campaign/campaign';
+import { CampaignService } from '@app/campaign/campaign.service';
+import { CampaignContext } from '@app/campaign-layout/campaign-context';
+import { DisplayGateway } from '@app/display/display.gateway';
+import type { Location } from '@app/location/location';
+import { LocationService } from '@app/location/location.service';
+import { JournalEntryService } from '@app/journal/journal-entry.service';
+import { LocationImageGateway } from '@app/media/location-image.gateway';
+import { LocationWorkspace } from '@app/location-workspace/location-workspace';
+import { ResourceMentionNavigationService } from '@app/shared/rich-text-editor/resource-mention-navigation.service';
 
 describe('LocationWorkspace', () => {
   const campaign: Campaign = {

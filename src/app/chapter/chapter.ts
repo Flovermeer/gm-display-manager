@@ -1,7 +1,7 @@
 import {
   createEmptyRichTextDocument,
   type RichTextDocument,
-} from '../shared/rich-text-editor/rich-text-document';
+} from '@app/shared/rich-text-editor/rich-text-document';
 
 export type Chapter = Readonly<{
   id: string;

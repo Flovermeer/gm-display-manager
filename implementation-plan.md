@@ -342,6 +342,17 @@ Critère de validation :
 
 > Lieu -> PNJ -> masquer le PNJ -> retour au lieu fonctionne sans autre action du MJ.
 
+### Extension différée — Bestiaire
+
+Objectif envisagé : ajouter un onglet **Bestiaire** distinct des PNJ pour
+cataloguer les monstres et créatures réutilisables.
+
+Cette extension est volontairement différée. Le modèle de données, le contenu
+exact de la fiche de monstre et les éventuelles données de référence seront
+définis avec le MJ avant son implémentation. Le bestiaire devra ensuite pouvoir
+alimenter le suivi de combat et être relié aux chapitres sans alourdir la fiche
+PNJ actuelle.
+
 ### Extension différée — Suivi de combat léger
 
 Objectif envisagé : fournir au MJ un onglet **Combat** avec un panneau superposé

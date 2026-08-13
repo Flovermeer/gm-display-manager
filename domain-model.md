@@ -164,6 +164,13 @@ avec l'instant courant ; le titre et la date en jeu restent facultatifs, tandis 
 riche est obligatoire. Une modification met à jour l'entrée existante sans créer un historique de
 versions.
 
+Dans le Journal global, les entrées restent indépendantes en persistance mais sont regroupées
+visuellement par journée locale. Les journées sont affichées de la plus récente à la plus ancienne
+et leurs entrées sont insérées chronologiquement selon leur timestamp. Le titre de l'accordéon est
+celui de la première entrée chronologique de la journée, ou un libellé générique si cette entrée
+n'a pas de titre. Une entrée globale affiche son contenu complet ; une entrée rattachée affiche un
+aperçu cliquable qui redirige vers la fiche et la note ciblées.
+
 Les anciens champs de note libre des fiches PNJ, lieux et PJ sont abandonnés sans migration de
 leur contenu.
 

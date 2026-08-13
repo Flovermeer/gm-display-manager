@@ -1,10 +1,13 @@
 <main class="journal-workspace">
   <header class="journal-workspace__heading">
-    <p class="entity-workspace__kicker">Campagne</p>
-    <h1>Journal</h1>
-    <p>
-      Consigne les événements de la partie et retrouve les notes liées aux personnages et aux lieux.
-    </p>
+    <div>
+      <p class="entity-workspace__kicker">Campagne</p>
+      <h1>Journal</h1>
+      <p>Les notes sont regroupées par journée et replacées selon leur heure de session.</p>
+    </div>
+    <button appButton="primary" type="button" [disabled]="!campaign()" (click)="addNote()">
+      + Ajouter une note
+    </button>
   </header>
 
   @if (error(); as errorMessage) {
@@ -12,44 +15,93 @@
   }
 
   @if (campaign(); as activeCampaign) {
-    <app-journal-entry-list [campaignId]="activeCampaign.id" heading="Notes générales" />
+    <app-journal-entry-list
+      [campaignId]="activeCampaign.id"
+      [showHeading]="false"
+      [showEntries]="false"
+      [showAddButton]="false"
+      (entriesChanged)="reloadJournal()"
+    />
   }
 
-  <section class="resource-journal" aria-labelledby="resource-journal-title">
-    <header>
-      <p class="entity-workspace__kicker">Fiches</p>
-      <h2 id="resource-journal-title">Notes liées</h2>
-      <p>Ces raccourcis sont ajoutés automatiquement depuis les fiches PNJ, lieux et PJ.</p>
-    </header>
-
-    @if (isLoading()) {
-      <p>Chargement des notes…</p>
-    } @else if (!hasReferences()) {
-      <app-empty-state
-        icon="⌁"
-        title="Aucune note liée"
-        description="Les notes créées dans les fiches apparaîtront automatiquement ici."
-      />
-    } @else {
-      <div class="resource-journal__list">
-        @for (reference of references(); track reference.entry.id) {
-          <button class="resource-note-link" type="button" (click)="openReference(reference)">
-            <span class="resource-note-link__type">{{ reference.resourceTypeLabel }}</span>
-            <span class="resource-note-link__content">
-              <strong>{{ reference.resourceName }}</strong>
-              @if (reference.entry.title) {
-                <span>{{ reference.entry.title }}</span>
-              }
-              <span class="resource-note-link__preview">{{ reference.preview }}</span>
-            </span>
-            <time [attr.datetime]="reference.entry.sessionAt">{{
-              formattedSessionDate(reference.entry.sessionAt)
-            }}</time>
+  @if (isLoading()) {
+    <p>Chargement des notes…</p>
+  } @else if (journalDays().length === 0) {
+    <app-empty-state
+      icon="⌁"
+      title="Le journal est vide"
+      description="Ajoute une première note générale ou écris depuis une fiche PNJ, lieu ou PJ."
+    />
+  } @else {
+    <section class="journal-timeline" aria-label="Chronologie du journal">
+      @for (day of journalDays(); track day.key) {
+        <article class="journal-day" [class.journal-day--expanded]="isDayExpanded(day.key)">
+          <button
+            class="journal-day__toggle"
+            type="button"
+            [attr.aria-expanded]="isDayExpanded(day.key)"
+            [attr.aria-controls]="'journal-day-' + day.key"
+            (click)="toggleDay(day.key)"
+          >
+            <time>{{ day.dateLabel }}</time>
+            <strong>{{ day.title }}</strong>
+            <span class="journal-day__chevron" aria-hidden="true">⌃</span>
           </button>
-        }
-      </div>
-    }
-  </section>
+
+          @if (isDayExpanded(day.key)) {
+            <div class="journal-day__content" [id]="'journal-day-' + day.key">
+              @for (item of day.entries; track item.entry.id) {
+                @if (item.reference; as reference) {
+                  <button class="journal-reference" type="button" (click)="openReference(item)">
+                    <span class="journal-reference__type">{{ reference.resourceTypeLabel }}</span>
+                    <span class="journal-reference__content">
+                      <strong>{{ reference.resourceName }}</strong>
+                      @if (item.entry.title) {
+                        <span>{{ item.entry.title }}</span>
+                      }
+                      <span class="journal-reference__preview">{{ reference.preview }}</span>
+                    </span>
+                    <time [attr.datetime]="item.entry.sessionAt">{{
+                      formattedTime(item.entry.sessionAt)
+                    }}</time>
+                  </button>
+                } @else {
+                  <section class="journal-note">
+                    <header class="journal-note__heading">
+                      <div>
+                        <time [attr.datetime]="item.entry.sessionAt">{{
+                          formattedTime(item.entry.sessionAt)
+                        }}</time>
+                        @if (item.entry.title) {
+                          <h2>{{ item.entry.title }}</h2>
+                        }
+                        @if (item.entry.inGameDate) {
+                          <span>En jeu : {{ item.entry.inGameDate }}</span>
+                        }
+                      </div>
+                      <div class="journal-note__actions">
+                        <button appButton="secondary" type="button" (click)="editNote(item.entry)">
+                          Modifier
+                        </button>
+                        <button
+                          appButton="secondary-danger"
+                          type="button"
+                          (click)="deleteNote(item.entry)"
+                        >
+                          Supprimer
+                        </button>
+                      </div>
+                    </header>
+                    <app-rich-text-editor [value]="item.entry.content" [editable]="false" />
+                  </section>
+                }
+              }
+            </div>
+          }
+        </article>
+      }
+    </section>
+  }
 </main>
 
 @if (showPendingChangesDialog()) {

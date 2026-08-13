@@ -40,6 +40,20 @@ describe('JournalWorkspace', () => {
     createdAt: '2026-08-13T18:30:00.000Z',
     updatedAt: '2026-08-13T18:30:00.000Z',
   };
+  const globalEntry: JournalEntry = {
+    ...linkedEntry,
+    id: 'global-entry-id',
+    target: null,
+    sessionAt: '2026-08-13T17:00:00.000Z',
+    title: 'Arrivée à Port Nyanzaru',
+    content: {
+      schemaVersion: 1,
+      content: {
+        type: 'doc',
+        content: [{ type: 'paragraph', content: [{ type: 'text', text: 'Le groupe débarque.' }] }],
+      },
+    },
+  };
   const journalEntryService = {
     list: vi.fn(),
     listGlobal: vi.fn(),
@@ -54,8 +68,8 @@ describe('JournalWorkspace', () => {
 
   beforeEach(async () => {
     vi.clearAllMocks();
-    journalEntryService.list.mockResolvedValue([linkedEntry]);
-    journalEntryService.listGlobal.mockResolvedValue([]);
+    journalEntryService.list.mockResolvedValue([linkedEntry, globalEntry]);
+    journalEntryService.listGlobal.mockResolvedValue([globalEntry]);
     npcService.list.mockResolvedValue([{ id: 'npc-id', name: 'Syndra Silvane' }]);
     emptyResourceService.list.mockResolvedValue([]);
     router.navigate.mockResolvedValue(true);
@@ -73,13 +87,29 @@ describe('JournalWorkspace', () => {
     }).compileComponents();
   });
 
-  it('lists resource notes as compact links and opens the referenced entry', async () => {
+  it('groups same-day notes chronologically and uses the first note title', async () => {
+    const fixture = TestBed.createComponent(JournalWorkspace);
+    fixture.detectChanges();
+    await renderUntil(fixture, 'Syndra Silvane');
+
+    const element = fixture.nativeElement as HTMLElement;
+    expect(element.querySelectorAll('.journal-day')).toHaveLength(1);
+    expect(element.querySelector('.journal-day__toggle')?.textContent).toContain(
+      'Arrivée à Port Nyanzaru',
+    );
+    const content = element.querySelector('.journal-day__content')?.textContent ?? '';
+    expect(content.indexOf('Le groupe débarque.')).toBeLessThan(
+      content.indexOf('Syndra explique tout.'),
+    );
+  });
+
+  it('opens a linked note from its timeline preview', async () => {
     const fixture = TestBed.createComponent(JournalWorkspace);
     fixture.detectChanges();
     await renderUntil(fixture, 'Syndra Silvane');
 
     const link = (fixture.nativeElement as HTMLElement).querySelector<HTMLButtonElement>(
-      '.resource-note-link',
+      '.journal-reference',
     );
     expect(link?.textContent).toContain('PNJ');
     expect(link?.textContent).toContain('Syndra explique tout.');
@@ -95,14 +125,14 @@ describe('JournalWorkspace', () => {
   it('asks what to do before leaving a dirty global note', async () => {
     const fixture = TestBed.createComponent(JournalWorkspace);
     fixture.detectChanges();
-    await renderUntil(fixture, 'Notes générales');
+    await renderUntil(fixture, 'Arrivée à Port Nyanzaru');
     const journal = fixture.debugElement.query(By.directive(JournalEntryList))
       .componentInstance as JournalEntryList;
     const editable = journal as unknown as {
-      createEntry(): void;
+      startCreate(): void;
       entryForm: { markAsDirty(): void };
     };
-    editable.createEntry();
+    editable.startCreate();
     editable.entryForm.markAsDirty();
 
     expect(fixture.componentInstance.canDeactivate()).toBeInstanceOf(Promise);

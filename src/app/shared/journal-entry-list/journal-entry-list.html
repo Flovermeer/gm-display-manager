@@ -1,13 +1,21 @@
-<section class="journal-entries" aria-labelledby="journal-entries-title">
-  <header class="journal-entries__heading">
-    <div>
-      <p class="entity-workspace__kicker">Journal</p>
-      <h3 id="journal-entries-title">{{ heading() }}</h3>
-    </div>
-    @if (!isEditing()) {
-      <button appButton="primary" type="button" (click)="createEntry()">+ Ajouter une note</button>
-    }
-  </header>
+<section
+  class="journal-entries"
+  [attr.aria-labelledby]="showHeading() ? 'journal-entries-title' : null"
+  [attr.aria-label]="showHeading() ? null : 'Éditeur de note générale'"
+>
+  @if (showHeading()) {
+    <header class="journal-entries__heading">
+      <div>
+        <p class="entity-workspace__kicker">Journal</p>
+        <h3 id="journal-entries-title">{{ heading() }}</h3>
+      </div>
+      @if (!isEditing() && showAddButton()) {
+        <button appButton="primary" type="button" (click)="startCreate()">
+          + Ajouter une note
+        </button>
+      }
+    </header>
+  }
 
   @if (error(); as errorMessage) {
     <p class="journal-entries__error" role="alert">{{ errorMessage }}</p>
@@ -47,9 +55,9 @@
     </form>
   }
 
-  @if (entries().length === 0 && !isEditing()) {
+  @if (showEntries() && entries().length === 0 && !isEditing()) {
     <p class="journal-entries__empty">Aucune note journalisée pour le moment.</p>
-  } @else {
+  } @else if (showEntries()) {
     <div class="journal-entries__list">
       @for (entry of entries(); track entry.id) {
         <article
@@ -70,7 +78,7 @@
               }
             </div>
             <div class="journal-entry__actions">
-              <button appButton="secondary" type="button" (click)="editEntry(entry)">
+              <button appButton="secondary" type="button" (click)="startEdit(entry)">
                 Modifier
               </button>
               <button appButton="secondary-danger" type="button" (click)="requestDelete(entry)">

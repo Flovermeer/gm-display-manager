@@ -1,4 +1,4 @@
-import { Component, computed, effect, inject, input, signal } from '@angular/core';
+import { Component, computed, effect, inject, input, output, signal } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 
 import type { JournalEntry, JournalResourceType, JournalTarget } from '../../journal/journal-entry';
@@ -25,6 +25,10 @@ export class JournalEntryList {
   readonly resourceType = input<JournalResourceType | null>(null);
   readonly resourceId = input<string | null>(null);
   readonly focusEntryId = input<string | null>(null);
+  readonly showHeading = input(true);
+  readonly showEntries = input(true);
+  readonly showAddButton = input(true);
+  readonly entriesChanged = output<void>();
 
   protected readonly entries = signal<readonly JournalEntry[]>([]);
   protected readonly editingEntry = signal<JournalEntry | null>(null);
@@ -54,7 +58,7 @@ export class JournalEntryList {
     void this.loadEntries(campaignId, target);
   });
 
-  protected createEntry(): void {
+  startCreate(): void {
     this.isCreating.set(true);
     this.editingEntry.set(null);
     this.draftContent.set(createEmptyRichTextDocument());
@@ -62,7 +66,7 @@ export class JournalEntryList {
     this.entryForm.reset({ sessionAt: currentLocalDateTime(), inGameDate: '', title: '' });
   }
 
-  protected editEntry(entry: JournalEntry): void {
+  startEdit(entry: JournalEntry): void {
     this.isCreating.set(false);
     this.editingEntry.set(entry);
     this.draftContent.set(entry.content);
@@ -115,6 +119,7 @@ export class JournalEntryList {
       else await this.journalEntryService.create(this.campaignId(), this.target(), input);
       this.cancelEditing();
       await this.loadEntries(this.campaignId(), this.target());
+      this.entriesChanged.emit();
       return true;
     } catch (error) {
       this.error.set(errorMessage(error));
@@ -128,7 +133,7 @@ export class JournalEntryList {
     void this.savePendingChanges();
   }
 
-  protected requestDelete(entry: JournalEntry): void {
+  requestDelete(entry: JournalEntry): void {
     this.entryPendingDeletion.set(entry);
   }
 
@@ -145,6 +150,7 @@ export class JournalEntryList {
       await this.journalEntryService.delete(entry);
       this.entryPendingDeletion.set(null);
       await this.loadEntries(this.campaignId(), this.target());
+      this.entriesChanged.emit();
     } catch (error) {
       this.error.set(errorMessage(error));
     } finally {

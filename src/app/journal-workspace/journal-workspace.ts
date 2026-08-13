@@ -7,6 +7,7 @@ import { JournalEntryService } from '../journal/journal-entry.service';
 import { LocationService } from '../location/location.service';
 import type { PendingChangesAware } from '../navigation/pending-changes.guard';
 import { NpcService } from '../npc/npc.service';
+import { NarrativeItemService } from '../narrative-item/narrative-item.service';
 import { PlayerCharacterService } from '../player-character/player-character.service';
 import { JournalEntryList } from '../shared/journal-entry-list/journal-entry-list';
 import { RichTextEditor } from '../shared/rich-text-editor/rich-text-editor';
@@ -48,6 +49,7 @@ export class JournalWorkspace implements OnInit, PendingChangesAware {
   private readonly npcService = inject(NpcService);
   private readonly locationService = inject(LocationService);
   private readonly characterService = inject(PlayerCharacterService);
+  private readonly itemService = inject(NarrativeItemService);
   private readonly router = inject(Router);
   private readonly mentionNavigation = inject(ResourceMentionNavigationService);
   private readonly globalEntryEditor = viewChild<JournalEntryList>(JournalEntryList);
@@ -127,6 +129,7 @@ export class JournalWorkspace implements OnInit, PendingChangesAware {
       npc: 'npcs',
       location: 'locations',
       'player-character': 'player-characters',
+      item: 'items',
     }[target.resourceType];
     await this.router.navigate(['/campaigns', campaign.id, segment], {
       queryParams: { resourceId: target.resourceId, entryId: item.entry.id },
@@ -158,16 +161,18 @@ export class JournalWorkspace implements OnInit, PendingChangesAware {
     const campaign = this.campaign();
     if (!campaign) return;
     try {
-      const [entries, npcs, locations, characters] = await Promise.all([
+      const [entries, npcs, locations, characters, items] = await Promise.all([
         this.journalEntryService.list(campaign.id),
         this.npcService.list(campaign.id),
         this.locationService.list(campaign.id),
         this.characterService.list(campaign.id),
+        this.itemService.list(campaign.id),
       ]);
       const names: Record<JournalResourceType, Map<string, string>> = {
         npc: new Map(npcs.map(({ id, name }) => [id, name])),
         location: new Map(locations.map(({ id, name }) => [id, name])),
         'player-character': new Map(characters.map(({ id, name }) => [id, name])),
+        item: new Map(items.map(({ id, name }) => [id, name])),
       };
       this.mentionCandidates.set([
         ...characters.map(({ id, name }) => ({
@@ -185,6 +190,11 @@ export class JournalWorkspace implements OnInit, PendingChangesAware {
           resourceId: id,
           label: name,
         })),
+        ...items.map(({ id, name }) => ({
+          resourceType: 'item' as const,
+          resourceId: id,
+          label: name,
+        })),
       ]);
       this.timelineEntries.set(
         entries.map((entry) => ({
@@ -198,6 +208,7 @@ export class JournalWorkspace implements OnInit, PendingChangesAware {
                   npc: 'PNJ',
                   location: 'Lieu',
                   'player-character': 'PJ',
+                  item: 'Objet',
                 }[entry.target.resourceType],
                 preview: richTextPreview(entry),
               }

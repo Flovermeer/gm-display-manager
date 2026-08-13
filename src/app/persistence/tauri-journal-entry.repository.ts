@@ -13,6 +13,7 @@ type JournalEntryRow = Readonly<{
   npc_id: string | null;
   location_id: string | null;
   player_character_id: string | null;
+  item_id: string | null;
   session_at: string;
   in_game_date: string;
   title: string;
@@ -35,8 +36,8 @@ export class TauriJournalEntryRepository extends JournalEntryRepository {
   override async listGlobalByCampaign(campaignId: string): Promise<readonly JournalEntry[]> {
     return this.select(
       `${JOURNAL_COLUMNS} FROM journal_entry
-       WHERE campaign_id = $1 AND npc_id IS NULL AND location_id IS NULL
-         AND player_character_id IS NULL ${ORDER}`,
+         WHERE campaign_id = $1 AND npc_id IS NULL AND location_id IS NULL
+         AND player_character_id IS NULL AND item_id IS NULL ${ORDER}`,
       [campaignId],
     );
   }
@@ -67,12 +68,13 @@ export class TauriJournalEntryRepository extends JournalEntryRepository {
       location: entry.target?.resourceType === 'location' ? entry.target.resourceId : null,
       playerCharacter:
         entry.target?.resourceType === 'player-character' ? entry.target.resourceId : null,
+      item: entry.target?.resourceType === 'item' ? entry.target.resourceId : null,
     };
     await database.execute(
       `INSERT INTO journal_entry (
-         id, campaign_id, npc_id, location_id, player_character_id, session_at,
+         id, campaign_id, npc_id, location_id, player_character_id, item_id, session_at,
          in_game_date, title, content_json, content_schema_version, created_at, updated_at
-       ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+       ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
        ON CONFLICT(id) DO UPDATE SET
          session_at = excluded.session_at,
          in_game_date = excluded.in_game_date,
@@ -87,6 +89,7 @@ export class TauriJournalEntryRepository extends JournalEntryRepository {
         targetIds.npc,
         targetIds.location,
         targetIds.playerCharacter,
+        targetIds.item,
         entry.sessionAt,
         entry.inGameDate,
         entry.title,
@@ -125,7 +128,7 @@ export class TauriJournalEntryRepository extends JournalEntryRepository {
 }
 
 const JOURNAL_COLUMNS = `SELECT id, campaign_id, npc_id, location_id, player_character_id,
-  session_at, in_game_date, title, content_json, content_schema_version, created_at, updated_at`;
+  item_id, session_at, in_game_date, title, content_json, content_schema_version, created_at, updated_at`;
 const ORDER = 'ORDER BY session_at DESC, created_at DESC, id DESC';
 
 function targetColumn(resourceType: JournalTarget['resourceType']): string {
@@ -133,6 +136,7 @@ function targetColumn(resourceType: JournalTarget['resourceType']): string {
     npc: 'npc_id',
     location: 'location_id',
     'player-character': 'player_character_id',
+    item: 'item_id',
   }[resourceType];
 }
 
@@ -146,7 +150,9 @@ function mapRow(row: JournalEntryRow): JournalEntry {
         ? { resourceType: 'location', resourceId: row.location_id }
         : row.player_character_id
           ? { resourceType: 'player-character', resourceId: row.player_character_id }
-          : null,
+          : row.item_id
+            ? { resourceType: 'item', resourceId: row.item_id }
+            : null,
     sessionAt: row.session_at,
     inGameDate: row.in_game_date,
     title: row.title,

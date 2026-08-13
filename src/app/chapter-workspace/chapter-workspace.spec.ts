@@ -9,6 +9,7 @@ import type { Chapter } from '../chapter/chapter';
 import { ChapterService } from '../chapter/chapter.service';
 import { LocationService } from '../location/location.service';
 import { NpcService } from '../npc/npc.service';
+import { NarrativeItemService } from '../narrative-item/narrative-item.service';
 import { PlayerCharacterService } from '../player-character/player-character.service';
 import { RICH_TEXT_SCHEMA_VERSION } from '../shared/rich-text-editor/rich-text-document';
 import { ChapterWorkspace } from './chapter-workspace';
@@ -57,6 +58,7 @@ describe('ChapterWorkspace', () => {
         { provide: LocationService, useValue: emptyResourceService },
         { provide: NpcService, useValue: emptyResourceService },
         { provide: PlayerCharacterService, useValue: emptyResourceService },
+        { provide: NarrativeItemService, useValue: emptyResourceService },
         {
           provide: ActivatedRoute,
           useValue: { snapshot: { paramMap: { get: () => campaign.id } } },

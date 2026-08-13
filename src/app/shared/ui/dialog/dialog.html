@@ -1,0 +1,8 @@
+<div class="dialog-backdrop" role="presentation">
+  <section class="dialog" role="dialog" aria-modal="true" [attr.aria-labelledby]="headingId()">
+    <p class="section-kicker">{{ kicker() }}</p>
+    <h2 [id]="headingId()">{{ title() }}</h2>
+    <ng-content />
+    <ng-content select="[dialog-actions]" />
+  </section>
+</div>

@@ -1,0 +1,8 @@
+<div class="entity-title" [class.entity-title--compact]="compact()">
+  <p class="entity-workspace__kicker">{{ kicker() }}</p>
+  <div class="entity-title__row">
+    <h2 class="entity-workspace__title" [id]="headingId()">{{ title() }}</h2>
+    <ng-content select="[entity-title-trailing]" />
+  </div>
+  <ng-content />
+</div>

@@ -16,7 +16,7 @@
 
       @if (isDesktop) {
         <button
-          class="secondary-button"
+          appButton="secondary"
           type="button"
           (click)="refreshMonitors()"
           [disabled]="isLoading()"
@@ -55,7 +55,7 @@
 
       <div class="actions">
         <button
-          class="primary-button"
+          appButton="primary"
           type="button"
           (click)="openPlayerDisplay()"
           [disabled]="!selectedMonitor() || isLoading() || isSelectedPlayerMonitor()"
@@ -70,7 +70,7 @@
         </button>
         @if (isPlayerDisplayOpen()) {
           <button
-            class="secondary-button"
+            appButton="secondary"
             type="button"
             (click)="closePlayerDisplay()"
             [disabled]="isLoading()"

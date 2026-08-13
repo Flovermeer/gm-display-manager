@@ -105,7 +105,7 @@
         <div class="form-actions">
           @if (editingCampaign()) {
             <button
-              class="cancel-button"
+              appButton="secondary"
               type="button"
               [disabled]="isSubmitting()"
               (click)="cancelEditing()"
@@ -114,7 +114,7 @@
             </button>
           }
           <button
-            class="create-button"
+            appButton="primary"
             type="submit"
             [disabled]="campaignForm.invalid || isSubmitting()"
           >
@@ -135,25 +135,25 @@
 </main>
 
 @if (campaignPendingDeletion(); as campaign) {
-  <div class="dialog-backdrop" role="presentation">
-    <section class="dialog" role="dialog" aria-modal="true" aria-labelledby="delete-title">
-      <p class="section-kicker">Suppression définitive</p>
-      <h2 id="delete-title">Supprimer {{ campaign.name }} ?</h2>
-      <p>
-        Cette action supprimera la campagne, ses PJ, ses PNJ, ses lieux et tous les médias importés.
-        Elle ne pourra pas être annulée.
-      </p>
-      <div class="dialog-actions">
-        <button class="cancel-button" type="button" (click)="cancelDelete()">Annuler</button>
-        <button
-          class="delete-confirm"
-          type="button"
-          [disabled]="isSubmitting()"
-          (click)="confirmDeleteCampaign()"
-        >
-          {{ isSubmitting() ? 'Suppression…' : 'Supprimer définitivement' }}
-        </button>
-      </div>
-    </section>
-  </div>
+  <app-dialog
+    kicker="Suppression définitive"
+    [title]="'Supprimer ' + campaign.name + ' ?'"
+    headingId="delete-title"
+  >
+    <p>
+      Cette action supprimera la campagne, ses PJ, ses PNJ, ses lieux et tous les médias importés.
+      Elle ne pourra pas être annulée.
+    </p>
+    <div dialog-actions class="dialog-actions">
+      <button appButton="secondary" type="button" (click)="cancelDelete()">Annuler</button>
+      <button
+        appButton="danger"
+        type="button"
+        [disabled]="isSubmitting()"
+        (click)="confirmDeleteCampaign()"
+      >
+        {{ isSubmitting() ? 'Suppression…' : 'Supprimer définitivement' }}
+      </button>
+    </div>
+  </app-dialog>
 }

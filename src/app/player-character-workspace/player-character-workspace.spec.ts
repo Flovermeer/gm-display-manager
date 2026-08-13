@@ -125,7 +125,7 @@ describe('PlayerCharacterWorkspace', () => {
     if (!input) throw new Error('Current hit points field not found.');
     input.value = '9';
     input.dispatchEvent(new Event('input'));
-    element.querySelector<HTMLButtonElement>('.hit-point-editor .primary-button')?.click();
+    element.querySelector<HTMLButtonElement>('.hit-point-editor .ui-button--primary')?.click();
 
     await vi.waitFor(() => {
       expect(characterService.updateHitPoints).toHaveBeenCalledWith(character, 9);
@@ -234,7 +234,7 @@ describe('PlayerCharacterWorkspace', () => {
 
     element.querySelector<HTMLButtonElement>('.character-list-item')?.click();
     await renderUntil(fixture, 'Modifier');
-    element.querySelector<HTMLButtonElement>('.detail-actions .primary-button')?.click();
+    element.querySelector<HTMLButtonElement>('.detail-actions .ui-button--primary')?.click();
     fixture.detectChanges();
     element.querySelector<HTMLButtonElement>('.portrait-action')?.click();
 

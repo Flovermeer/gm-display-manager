@@ -21,12 +21,16 @@ import {
 } from '../player-character/player-character';
 import { PlayerCharacterService } from '../player-character/player-character.service';
 import { TagInput } from '../shared/tag-input/tag-input';
+import { ButtonDirective } from '../shared/ui/button/button.directive';
+import { Dialog } from '../shared/ui/dialog/dialog';
+import { EmptyState } from '../shared/ui/empty-state/empty-state';
+import { EntityTitle } from '../shared/ui/entity-title/entity-title';
 
 type PendingDecisionResolver = (canLeave: boolean) => void;
 
 @Component({
   selector: 'app-player-character-workspace',
-  imports: [ReactiveFormsModule, TagInput],
+  imports: [ReactiveFormsModule, TagInput, ButtonDirective, Dialog, EmptyState, EntityTitle],
   templateUrl: './player-character-workspace.html',
   styleUrl: './player-character-workspace.scss',
 })

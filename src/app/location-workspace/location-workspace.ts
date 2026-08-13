@@ -8,6 +8,10 @@ import type { Location } from '../location/location';
 import { LocationService } from '../location/location.service';
 import { LocationImageGateway } from '../media/location-image.gateway';
 import type { PendingChangesAware } from '../navigation/pending-changes.guard';
+import { ButtonDirective } from '../shared/ui/button/button.directive';
+import { Dialog } from '../shared/ui/dialog/dialog';
+import { EmptyState } from '../shared/ui/empty-state/empty-state';
+import { EntityTitle } from '../shared/ui/entity-title/entity-title';
 
 type PendingDecisionResolver = (canLeave: boolean) => void;
 type LocationListEntry = Readonly<{ location: Location; depth: number; path: string }>;
@@ -16,7 +20,7 @@ const DEMO_LOCATION_IMAGE_URL = '/demo/tavern.svg';
 
 @Component({
   selector: 'app-location-workspace',
-  imports: [ReactiveFormsModule],
+  imports: [ReactiveFormsModule, ButtonDirective, Dialog, EmptyState, EntityTitle],
   templateUrl: './location-workspace.html',
   styleUrl: './location-workspace.scss',
 })

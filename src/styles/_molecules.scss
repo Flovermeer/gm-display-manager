@@ -1,3 +1,21 @@
+.entity-title {
+  min-width: 0;
+}
+
+.entity-title__row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.entity-title--compact .entity-workspace__title {
+  overflow: hidden;
+  font-size: clamp(1.5rem, 3vw, 2.25rem);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .entity-workspace__sidebar-tools {
   padding: 1rem;
   border-bottom: 1px solid #423d35;

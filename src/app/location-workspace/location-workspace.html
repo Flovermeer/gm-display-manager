@@ -22,7 +22,9 @@
       </div>
 
       <button
-        class="create-button entity-workspace__button entity-workspace__button--primary entity-workspace__button--full"
+        class="create-button"
+        appButton="primary"
+        appButtonFull
         type="button"
         (click)="requestCreateLocation()"
       >
@@ -78,7 +80,8 @@
         <div class="detail-actions entity-workspace__actions">
           @if (!isEditing()) {
             <button
-              class="secondary-button display-button"
+              class="display-button"
+              appButton="secondary"
               type="button"
               [disabled]="!isPlayerDisplayOpen() || isPublishing()"
               [attr.title]="playerDisplayActionTitle()"
@@ -86,20 +89,14 @@
             >
               {{ isPublishing() ? 'Envoi…' : 'Afficher aux joueurs' }}
             </button>
-            <button class="primary-button" type="button" (click)="editLocation()">Modifier</button>
-            <button
-              class="secondary-button danger-button"
-              type="button"
-              (click)="requestDeleteLocation()"
-            >
+            <button appButton="primary" type="button" (click)="editLocation()">Modifier</button>
+            <button appButton="secondary-danger" type="button" (click)="requestDeleteLocation()">
               Supprimer
             </button>
           } @else {
-            <button class="secondary-button" type="button" (click)="cancelEditing()">
-              Annuler
-            </button>
+            <button appButton="secondary" type="button" (click)="cancelEditing()">Annuler</button>
             <button
-              class="primary-button"
+              appButton="primary"
               type="button"
               [disabled]="locationForm.invalid || isSaving() || isImportingImage()"
               (click)="saveLocation()"
@@ -111,14 +108,11 @@
       </div>
 
       <header class="detail-heading">
-        <div>
-          <p class="section-kicker entity-workspace__kicker">
-            {{ isCreating() ? 'Nouveau décor' : 'Fiche du lieu' }}
-          </p>
-          <h2 class="entity-workspace__title" id="location-detail-title">
-            {{ isCreating() ? 'Créer un lieu' : selectedLocation()?.name }}
-          </h2>
-        </div>
+        <app-entity-title
+          [kicker]="isCreating() ? 'Nouveau décor' : 'Fiche du lieu'"
+          [title]="isCreating() ? 'Créer un lieu' : (selectedLocation()?.name ?? '')"
+          headingId="location-detail-title"
+        />
 
         <div class="location-image-frame" [class.editable]="isEditing()">
           <img
@@ -199,68 +193,57 @@
         </article>
       }
     } @else {
-      <div class="empty-detail entity-workspace__empty-state">
-        <span class="entity-workspace__empty-icon" aria-hidden="true">⌂</span>
-        <h2
-          class="entity-workspace__title entity-workspace__empty-title"
-          id="location-detail-title"
-        >
-          Aucun lieu sélectionné
-        </h2>
-        <p class="entity-workspace__empty-description">
-          Sélectionne un lieu dans la liste ou crée-en un nouveau.
-        </p>
-      </div>
+      <app-empty-state
+        icon="⌂"
+        title="Aucun lieu sélectionné"
+        description="Sélectionne un lieu dans la liste ou crée-en un nouveau."
+        headingId="location-detail-title"
+      />
     }
   </section>
 </main>
 
 @if (showPendingChangesDialog()) {
-  <div class="dialog-backdrop" role="presentation">
-    <section class="dialog" role="dialog" aria-modal="true" aria-labelledby="pending-title">
-      <p class="section-kicker">Modifications non enregistrées</p>
-      <h2 id="pending-title">Que veux-tu faire ?</h2>
-      <p>Tes dernières modifications seront perdues si tu quittes cette fiche.</p>
-      <div class="dialog-actions three-actions">
-        <button
-          class="primary-button"
-          type="button"
-          [disabled]="isSaving()"
-          (click)="saveAndLeave()"
-        >
-          Enregistrer et quitter
-        </button>
-        <button class="secondary-button danger-button" type="button" (click)="leaveWithoutSaving()">
-          Quitter sans enregistrer
-        </button>
-        <button class="secondary-button" type="button" (click)="continueEditing()">
-          Continuer la modification
-        </button>
-      </div>
-    </section>
-  </div>
+  <app-dialog
+    kicker="Modifications non enregistrées"
+    title="Que veux-tu faire ?"
+    headingId="pending-title"
+  >
+    <p>Tes dernières modifications seront perdues si tu quittes cette fiche.</p>
+    <div dialog-actions class="dialog-actions three-actions">
+      <button appButton="primary" type="button" [disabled]="isSaving()" (click)="saveAndLeave()">
+        Enregistrer et quitter
+      </button>
+      <button appButton="secondary-danger" type="button" (click)="leaveWithoutSaving()">
+        Quitter sans enregistrer
+      </button>
+      <button appButton="secondary" type="button" (click)="continueEditing()">
+        Continuer la modification
+      </button>
+    </div>
+  </app-dialog>
 }
 
 @if (showDeleteDialog()) {
-  <div class="dialog-backdrop" role="presentation">
-    <section class="dialog" role="dialog" aria-modal="true" aria-labelledby="delete-title">
-      <p class="section-kicker">Suppression définitive</p>
-      <h2 id="delete-title">Supprimer {{ selectedLocation()?.name }} ?</h2>
-      <p>
-        Cette action supprimera définitivement ce lieu. Ses lieux enfants seront replacés à la
-        racine de la campagne.
-      </p>
-      <div class="dialog-actions">
-        <button class="secondary-button" type="button" (click)="cancelDelete()">Annuler</button>
-        <button
-          class="primary-button delete-confirm"
-          type="button"
-          [disabled]="isSaving()"
-          (click)="confirmDeleteLocation()"
-        >
-          Supprimer définitivement
-        </button>
-      </div>
-    </section>
-  </div>
+  <app-dialog
+    kicker="Suppression définitive"
+    [title]="'Supprimer ' + selectedLocation()?.name + ' ?'"
+    headingId="delete-title"
+  >
+    <p>
+      Cette action supprimera définitivement ce lieu. Ses lieux enfants seront replacés à la racine
+      de la campagne.
+    </p>
+    <div dialog-actions class="dialog-actions">
+      <button appButton="secondary" type="button" (click)="cancelDelete()">Annuler</button>
+      <button
+        appButton="danger"
+        type="button"
+        [disabled]="isSaving()"
+        (click)="confirmDeleteLocation()"
+      >
+        Supprimer définitivement
+      </button>
+    </div>
+  </app-dialog>
 }

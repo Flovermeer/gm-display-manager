@@ -180,7 +180,9 @@ describe('NpcWorkspace', () => {
     element.querySelector<HTMLButtonElement>('.npc-list-item')?.click();
     await renderUntil(fixture, 'Fiche PNJ');
 
-    expect(element.querySelector('.npc-title-row .status-badge')?.textContent).toContain('Actif');
+    expect(element.querySelector('.entity-title__row .status-badge')?.textContent).toContain(
+      'Actif',
+    );
     expect(element.querySelector('.npc-overview')?.textContent).toContain('Commanditaire');
     expect(element.querySelector('.npc-overview')?.textContent).toContain('Portrait statique');
     expect(element.querySelector('.stat-block')?.textContent).toContain('14');
@@ -249,7 +251,7 @@ describe('NpcWorkspace', () => {
 
     element.querySelector<HTMLButtonElement>('.npc-list-item')?.click();
     await renderUntil(fixture, 'Modifier');
-    element.querySelector<HTMLButtonElement>('.primary-button')?.click();
+    element.querySelector<HTMLButtonElement>('.detail-actions .ui-button--primary')?.click();
     fixture.detectChanges();
     element.querySelector<HTMLButtonElement>('.portrait-action')?.click();
 

@@ -21,7 +21,9 @@
         <span>{{ chapters().length }}</span>
       </div>
       <button
-        class="create-button entity-workspace__button entity-workspace__button--primary entity-workspace__button--full"
+        class="create-button"
+        appButton="primary"
+        appButtonFull
         type="button"
         (click)="requestCreateChapter()"
       >
@@ -75,7 +77,7 @@
           @if (!isEditing()) {
             <div class="order-actions" aria-label="Ordre du chapitre">
               <button
-                class="secondary-button"
+                appButton="secondary"
                 type="button"
                 [disabled]="!canMoveChapterUp() || isSaving()"
                 title="Déplacer ce chapitre avant le précédent"
@@ -84,7 +86,7 @@
                 ↑ Monter
               </button>
               <button
-                class="secondary-button"
+                appButton="secondary"
                 type="button"
                 [disabled]="!canMoveChapterDown() || isSaving()"
                 title="Déplacer ce chapitre après le suivant"
@@ -93,20 +95,14 @@
                 ↓ Descendre
               </button>
             </div>
-            <button class="primary-button" type="button" (click)="editChapter()">Modifier</button>
-            <button
-              class="secondary-button danger-button"
-              type="button"
-              (click)="requestDeleteChapter()"
-            >
+            <button appButton="primary" type="button" (click)="editChapter()">Modifier</button>
+            <button appButton="secondary-danger" type="button" (click)="requestDeleteChapter()">
               Supprimer
             </button>
           } @else {
-            <button class="secondary-button" type="button" (click)="cancelEditing()">
-              Annuler
-            </button>
+            <button appButton="secondary" type="button" (click)="cancelEditing()">Annuler</button>
             <button
-              class="primary-button"
+              appButton="primary"
               type="button"
               [disabled]="chapterForm.invalid || isSaving()"
               (click)="saveChapter()"
@@ -153,10 +149,11 @@
       } @else if (selectedChapter(); as chapter) {
         <article class="chapter-sheet">
           <header class="chapter-heading">
-            <p class="section-kicker entity-workspace__kicker">
-              Chapitre {{ selectedChapterIndex() + 1 }}
-            </p>
-            <h2 class="entity-workspace__title" id="chapter-detail-title">{{ chapter.title }}</h2>
+            <app-entity-title
+              [kicker]="'Chapitre ' + (selectedChapterIndex() + 1)"
+              [title]="chapter.title"
+              headingId="chapter-detail-title"
+            />
             @if (chapter.summary) {
               <p class="chapter-summary">{{ chapter.summary }}</p>
             }
@@ -196,62 +193,54 @@
         </ol>
       </section>
     } @else {
-      <div class="empty-detail entity-workspace__empty-state">
-        <span class="entity-workspace__empty-icon" aria-hidden="true">✦</span>
-        <h2 class="entity-workspace__title entity-workspace__empty-title" id="chapter-detail-title">
-          Aucun chapitre sélectionné
-        </h2>
-        <p class="entity-workspace__empty-description">
-          Sélectionne un chapitre dans la liste ou commence une nouvelle note.
-        </p>
-      </div>
+      <app-empty-state
+        icon="✦"
+        title="Aucun chapitre sélectionné"
+        description="Sélectionne un chapitre dans la liste ou commence une nouvelle note."
+        headingId="chapter-detail-title"
+      />
     }
   </section>
 </main>
 
 @if (showPendingChangesDialog()) {
-  <div class="dialog-backdrop" role="presentation">
-    <section class="dialog" role="dialog" aria-modal="true" aria-labelledby="pending-title">
-      <p class="section-kicker">Modifications non enregistrées</p>
-      <h2 id="pending-title">Que veux-tu faire ?</h2>
-      <p>Le contenu ajouté à ce chapitre sera perdu si tu quittes maintenant.</p>
-      <div class="dialog-actions three-actions">
-        <button
-          class="primary-button"
-          type="button"
-          [disabled]="isSaving()"
-          (click)="saveAndLeave()"
-        >
-          Enregistrer et quitter
-        </button>
-        <button class="secondary-button danger-button" type="button" (click)="leaveWithoutSaving()">
-          Quitter sans enregistrer
-        </button>
-        <button class="secondary-button" type="button" (click)="continueEditing()">
-          Continuer la modification
-        </button>
-      </div>
-    </section>
-  </div>
+  <app-dialog
+    kicker="Modifications non enregistrées"
+    title="Que veux-tu faire ?"
+    headingId="pending-title"
+  >
+    <p>Le contenu ajouté à ce chapitre sera perdu si tu quittes maintenant.</p>
+    <div dialog-actions class="dialog-actions three-actions">
+      <button appButton="primary" type="button" [disabled]="isSaving()" (click)="saveAndLeave()">
+        Enregistrer et quitter
+      </button>
+      <button appButton="secondary-danger" type="button" (click)="leaveWithoutSaving()">
+        Quitter sans enregistrer
+      </button>
+      <button appButton="secondary" type="button" (click)="continueEditing()">
+        Continuer la modification
+      </button>
+    </div>
+  </app-dialog>
 }
 
 @if (showDeleteDialog()) {
-  <div class="dialog-backdrop" role="presentation">
-    <section class="dialog" role="dialog" aria-modal="true" aria-labelledby="delete-title">
-      <p class="section-kicker">Suppression définitive</p>
-      <h2 id="delete-title">Supprimer {{ selectedChapter()?.title }} ?</h2>
-      <p>Le texte du chapitre sera définitivement supprimé.</p>
-      <div class="dialog-actions">
-        <button class="secondary-button" type="button" (click)="cancelDelete()">Annuler</button>
-        <button
-          class="delete-confirm"
-          type="button"
-          [disabled]="isSaving()"
-          (click)="confirmDeleteChapter()"
-        >
-          Supprimer définitivement
-        </button>
-      </div>
-    </section>
-  </div>
+  <app-dialog
+    kicker="Suppression définitive"
+    [title]="'Supprimer ' + selectedChapter()?.title + ' ?'"
+    headingId="delete-title"
+  >
+    <p>Le texte du chapitre sera définitivement supprimé.</p>
+    <div dialog-actions class="dialog-actions">
+      <button appButton="secondary" type="button" (click)="cancelDelete()">Annuler</button>
+      <button
+        appButton="danger"
+        type="button"
+        [disabled]="isSaving()"
+        (click)="confirmDeleteChapter()"
+      >
+        Supprimer définitivement
+      </button>
+    </div>
+  </app-dialog>
 }

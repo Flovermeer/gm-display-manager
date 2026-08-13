@@ -141,7 +141,7 @@ describe('LocationWorkspace', () => {
 
     element.querySelector<HTMLButtonElement>('.location-list-item')?.click();
     await renderUntil(fixture, 'Modifier');
-    element.querySelector<HTMLButtonElement>('.primary-button')?.click();
+    element.querySelector<HTMLButtonElement>('.detail-actions .ui-button--primary')?.click();
     fixture.detectChanges();
     element.querySelector<HTMLButtonElement>('.image-action')?.click();
 

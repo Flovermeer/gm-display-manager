@@ -42,24 +42,39 @@
   line-height: 1.6;
 }
 
+.ui-button,
 .entity-workspace__button {
   padding: 0.7rem 0.9rem;
   border-radius: 0.4rem;
   cursor: pointer;
 }
 
+.ui-button--primary,
 .entity-workspace__button--primary {
   border: 1px solid #906bad;
   color: #fff;
   background: var(--color-workspace-accent);
 }
 
+.ui-button--secondary,
+.ui-button--secondary-danger,
 .entity-workspace__button--secondary {
   border: 1px solid #aca398;
   color: #453f38;
   background: transparent;
 }
 
+.ui-button--danger {
+  border: 1px solid #a7464e;
+  color: #f5f0f7;
+  background: #8d363e;
+}
+
+.ui-button--secondary-danger {
+  color: #a43e46;
+}
+
+.ui-button--full,
 .entity-workspace__button--full {
   width: 100%;
   font-weight: 700;

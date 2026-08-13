@@ -77,17 +77,22 @@ Les feuilles SCSS des composants conservent uniquement leurs styles métier spé
 élément du layout commun utilise le bloc BEM `.entity-workspace` plutôt qu'une nouvelle copie de
 la structure dans chaque vue.
 
+Les primitives Angular réutilisables sont regroupées dans `src/app/shared/ui/`. Les éléments qui
+doivent conserver leur sémantique HTML native, comme les boutons, utilisent une directive
+d'attribut. Les compositions répétées, comme un titre de fiche, un état vide ou un dialogue,
+utilisent des composants standalone de présentation avec projection de contenu.
+
 Pas de NgRx au départ.
 
 Exemples d'état global :
 
 ```ts
-currentCampaign
-currentScene
-currentLocation
-activeNpc
-playerDisplayState
-selectedDisplay
+currentCampaign;
+currentScene;
+currentLocation;
+activeNpc;
+playerDisplayState;
+selectedDisplay;
 ```
 
 Principales vues prévues :
@@ -593,7 +598,7 @@ portrait.webp
 idle.webm
 ```
 
-+ fallback automatique.
+- fallback automatique.
 
 ## Étape 7 — Relations dynamiques
 

@@ -4,10 +4,12 @@ import { Router } from '@angular/router';
 
 import type { Campaign } from '../campaign/campaign';
 import { CampaignService } from '../campaign/campaign.service';
+import { ButtonDirective } from '../shared/ui/button/button.directive';
+import { Dialog } from '../shared/ui/dialog/dialog';
 
 @Component({
   selector: 'app-campaign-home',
-  imports: [ReactiveFormsModule],
+  imports: [ReactiveFormsModule, ButtonDirective, Dialog],
   templateUrl: './campaign-home.html',
   styleUrl: './campaign-home.scss',
 })

@@ -12,12 +12,16 @@ import { PlayerCharacterService } from '../player-character/player-character.ser
 import type { RichTextDocument } from '../shared/rich-text-editor/rich-text-document';
 import { RichTextEditor } from '../shared/rich-text-editor/rich-text-editor';
 import type { ResourceMentionCandidate } from '../shared/rich-text-editor/resource-mention';
+import { ButtonDirective } from '../shared/ui/button/button.directive';
+import { Dialog } from '../shared/ui/dialog/dialog';
+import { EmptyState } from '../shared/ui/empty-state/empty-state';
+import { EntityTitle } from '../shared/ui/entity-title/entity-title';
 
 type PendingDecisionResolver = (canLeave: boolean) => void;
 
 @Component({
   selector: 'app-chapter-workspace',
-  imports: [ReactiveFormsModule, RichTextEditor],
+  imports: [ReactiveFormsModule, RichTextEditor, ButtonDirective, Dialog, EmptyState, EntityTitle],
   templateUrl: './chapter-workspace.html',
   styleUrl: './chapter-workspace.scss',
 })

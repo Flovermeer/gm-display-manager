@@ -8,10 +8,11 @@ import type { MonitorDescriptor } from '../display/display.models';
 import { PlayerDisplayPreferenceService } from '../display/player-display-preference.service';
 import type { PlayerDisplayState } from '../display/player-display-state';
 import { PlayerDisplayStore } from '../display/player-display.store';
+import { ButtonDirective } from '../shared/ui/button/button.directive';
 
 @Component({
   selector: 'app-control',
-  imports: [RouterLink],
+  imports: [RouterLink, ButtonDirective],
   templateUrl: './control.html',
   styleUrl: './control.scss',
 })

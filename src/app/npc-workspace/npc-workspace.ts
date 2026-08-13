@@ -31,6 +31,10 @@ import {
   type RichTextDocument,
 } from '../shared/rich-text-editor/rich-text-document';
 import { TagInput } from '../shared/tag-input/tag-input';
+import { ButtonDirective } from '../shared/ui/button/button.directive';
+import { Dialog } from '../shared/ui/dialog/dialog';
+import { EmptyState } from '../shared/ui/empty-state/empty-state';
+import { EntityTitle } from '../shared/ui/entity-title/entity-title';
 
 type PendingDecisionResolver = (canLeave: boolean) => void;
 const DEMO_NPC_PORTRAIT_URL = '/demo/innkeeper.svg';
@@ -48,7 +52,15 @@ type NpcFeatureDrafts = Readonly<Record<NpcFeatureSection, readonly NpcFeature[]
 
 @Component({
   selector: 'app-npc-workspace',
-  imports: [ReactiveFormsModule, RichTextEditor, TagInput],
+  imports: [
+    ReactiveFormsModule,
+    RichTextEditor,
+    TagInput,
+    ButtonDirective,
+    Dialog,
+    EmptyState,
+    EntityTitle,
+  ],
   templateUrl: './npc-workspace.html',
   styleUrl: './npc-workspace.scss',
 })

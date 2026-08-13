@@ -22,7 +22,9 @@
       </div>
 
       <button
-        class="create-button entity-workspace__button entity-workspace__button--primary entity-workspace__button--full"
+        class="create-button"
+        appButton="primary"
+        appButtonFull
         type="button"
         (click)="requestCreateCharacter()"
       >
@@ -80,34 +82,30 @@
     @if (isCreating() || selectedCharacter()) {
       <div class="detail-toolbar entity-workspace__toolbar">
         <div class="toolbar-identity">
-          <p class="section-kicker entity-workspace__kicker">
-            {{ isCreating() ? 'Nouveau héros' : 'Référence du MJ' }}
-          </p>
-          <h2 class="entity-workspace__title" id="character-detail-title">
-            {{ isCreating() ? 'Créer un PJ' : selectedCharacter()?.name }}
-          </h2>
-          @if (!isCreating() && selectedCharacter(); as character) {
-            <p class="character-subtitle">
-              {{ character.playerName || 'Joueur non renseigné' }} · {{ classAndLevel(character) }}
-            </p>
-          }
+          <app-entity-title
+            [kicker]="isCreating() ? 'Nouveau héros' : 'Référence du MJ'"
+            [title]="isCreating() ? 'Créer un PJ' : (selectedCharacter()?.name ?? '')"
+            headingId="character-detail-title"
+            [compact]="true"
+          >
+            @if (!isCreating() && selectedCharacter(); as character) {
+              <p class="character-subtitle">
+                {{ character.playerName || 'Joueur non renseigné' }} ·
+                {{ classAndLevel(character) }}
+              </p>
+            }
+          </app-entity-title>
         </div>
         <div class="detail-actions entity-workspace__actions">
           @if (!isEditing()) {
-            <button class="primary-button" type="button" (click)="editCharacter()">Modifier</button>
-            <button
-              class="secondary-button danger-button"
-              type="button"
-              (click)="requestDeleteCharacter()"
-            >
+            <button appButton="primary" type="button" (click)="editCharacter()">Modifier</button>
+            <button appButton="secondary-danger" type="button" (click)="requestDeleteCharacter()">
               Supprimer
             </button>
           } @else {
-            <button class="secondary-button" type="button" (click)="cancelEditing()">
-              Annuler
-            </button>
+            <button appButton="secondary" type="button" (click)="cancelEditing()">Annuler</button>
             <button
-              class="primary-button"
+              appButton="primary"
               type="button"
               [disabled]="characterForm.invalid || isSaving() || isImportingPortrait()"
               (click)="saveCharacter()"
@@ -166,7 +164,7 @@
                 [formControl]="hitPointsControl"
               />
               <button
-                class="primary-button"
+                appButton="primary"
                 type="button"
                 [disabled]="
                   hitPointsControl.invalid || hitPointsControl.value === null || isSaving()
@@ -176,7 +174,7 @@
                 Appliquer
               </button>
               <button
-                class="secondary-button"
+                appButton="secondary"
                 type="button"
                 [disabled]="character.maxHitPoints === null || isSaving()"
                 (click)="requestResetHitPoints()"
@@ -509,93 +507,75 @@
         </article>
       }
     } @else {
-      <div class="empty-detail entity-workspace__empty-state">
-        <span class="entity-workspace__empty-icon" aria-hidden="true">⚔</span>
-        <h2
-          class="entity-workspace__title entity-workspace__empty-title"
-          id="character-detail-title"
-        >
-          Aucun PJ sélectionné
-        </h2>
-        <p class="entity-workspace__empty-description">
-          Sélectionne un personnage dans le groupe ou crée-en un nouveau.
-        </p>
-      </div>
+      <app-empty-state
+        icon="⚔"
+        title="Aucun PJ sélectionné"
+        description="Sélectionne un personnage dans le groupe ou crée-en un nouveau."
+        headingId="character-detail-title"
+      />
     }
   </section>
 </main>
 
 @if (showPendingChangesDialog()) {
-  <div class="dialog-backdrop" role="presentation">
-    <section class="dialog" role="dialog" aria-modal="true" aria-labelledby="pending-title">
-      <p class="section-kicker">Modifications non enregistrées</p>
-      <h2 id="pending-title">Que veux-tu faire ?</h2>
-      <p>Tes dernières modifications seront perdues si tu quittes cette fiche.</p>
-      <div class="dialog-actions three-actions">
-        <button
-          class="primary-button"
-          type="button"
-          [disabled]="isSaving()"
-          (click)="saveAndLeave()"
-        >
-          Enregistrer et quitter
-        </button>
-        <button class="secondary-button danger-button" type="button" (click)="leaveWithoutSaving()">
-          Quitter sans enregistrer
-        </button>
-        <button class="secondary-button" type="button" (click)="continueEditing()">
-          Continuer la modification
-        </button>
-      </div>
-    </section>
-  </div>
+  <app-dialog
+    kicker="Modifications non enregistrées"
+    title="Que veux-tu faire ?"
+    headingId="pending-title"
+  >
+    <p>Tes dernières modifications seront perdues si tu quittes cette fiche.</p>
+    <div dialog-actions class="dialog-actions three-actions">
+      <button appButton="primary" type="button" [disabled]="isSaving()" (click)="saveAndLeave()">
+        Enregistrer et quitter
+      </button>
+      <button appButton="secondary-danger" type="button" (click)="leaveWithoutSaving()">
+        Quitter sans enregistrer
+      </button>
+      <button appButton="secondary" type="button" (click)="continueEditing()">
+        Continuer la modification
+      </button>
+    </div>
+  </app-dialog>
 }
 
 @if (showDeleteDialog()) {
-  <div class="dialog-backdrop" role="presentation">
-    <section class="dialog" role="dialog" aria-modal="true" aria-labelledby="delete-title">
-      <p class="section-kicker">Suppression définitive</p>
-      <h2 id="delete-title">Supprimer {{ selectedCharacter()?.name }} ?</h2>
-      <p>Cette action supprimera définitivement la fiche et son état courant.</p>
-      <div class="dialog-actions">
-        <button class="secondary-button" type="button" (click)="cancelDelete()">Annuler</button>
-        <button
-          class="primary-button delete-confirm"
-          type="button"
-          [disabled]="isSaving()"
-          (click)="confirmDeleteCharacter()"
-        >
-          Supprimer définitivement
-        </button>
-      </div>
-    </section>
-  </div>
+  <app-dialog
+    kicker="Suppression définitive"
+    [title]="'Supprimer ' + selectedCharacter()?.name + ' ?'"
+    headingId="delete-title"
+  >
+    <p>Cette action supprimera définitivement la fiche et son état courant.</p>
+    <div dialog-actions class="dialog-actions">
+      <button appButton="secondary" type="button" (click)="cancelDelete()">Annuler</button>
+      <button
+        appButton="danger"
+        type="button"
+        [disabled]="isSaving()"
+        (click)="confirmDeleteCharacter()"
+      >
+        Supprimer définitivement
+      </button>
+    </div>
+  </app-dialog>
 }
 
 @if (showResetHitPointsDialog()) {
-  <div class="dialog-backdrop" role="presentation">
-    <section
-      class="dialog"
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="reset-hit-points-title"
-    >
-      <p class="section-kicker">Mise à jour des PV</p>
-      <h2 id="reset-hit-points-title">Remettre les PV au maximum ?</h2>
-      <p>Les PV actuels de {{ selectedCharacter()?.name }} seront remplacés par ses PV maximum.</p>
-      <div class="dialog-actions">
-        <button class="secondary-button" type="button" (click)="cancelResetHitPoints()">
-          Annuler
-        </button>
-        <button
-          class="primary-button"
-          type="button"
-          [disabled]="isSaving()"
-          (click)="confirmResetHitPoints()"
-        >
-          Confirmer
-        </button>
-      </div>
-    </section>
-  </div>
+  <app-dialog
+    kicker="Mise à jour des PV"
+    title="Remettre les PV au maximum ?"
+    headingId="reset-hit-points-title"
+  >
+    <p>Les PV actuels de {{ selectedCharacter()?.name }} seront remplacés par ses PV maximum.</p>
+    <div dialog-actions class="dialog-actions">
+      <button appButton="secondary" type="button" (click)="cancelResetHitPoints()">Annuler</button>
+      <button
+        appButton="primary"
+        type="button"
+        [disabled]="isSaving()"
+        (click)="confirmResetHitPoints()"
+      >
+        Confirmer
+      </button>
+    </div>
+  </app-dialog>
 }

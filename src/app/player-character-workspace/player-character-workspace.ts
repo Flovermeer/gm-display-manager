@@ -14,12 +14,13 @@ import {
   type UpdatePlayerCharacterInput,
 } from '../player-character/player-character';
 import { PlayerCharacterService } from '../player-character/player-character.service';
+import { TagInput } from '../shared/tag-input/tag-input';
 
 type PendingDecisionResolver = (canLeave: boolean) => void;
 
 @Component({
   selector: 'app-player-character-workspace',
-  imports: [CampaignNavigation, ReactiveFormsModule],
+  imports: [CampaignNavigation, ReactiveFormsModule, TagInput],
   templateUrl: './player-character-workspace.html',
   styleUrl: './player-character-workspace.scss',
 })
@@ -71,9 +72,9 @@ export class PlayerCharacterWorkspace implements OnInit, PendingChangesAware {
     passivePerception: new FormControl<number | null>(null, [Validators.min(0)]),
     passiveInsight: new FormControl<number | null>(null, [Validators.min(0)]),
     passiveInvestigation: new FormControl<number | null>(null, [Validators.min(0)]),
-    senses: new FormControl('', { nonNullable: true }),
-    languages: new FormControl('', { nonNullable: true }),
-    conditions: new FormControl('', { nonNullable: true }),
+    senses: new FormControl<readonly string[]>([], { nonNullable: true }),
+    languages: new FormControl<readonly string[]>([], { nonNullable: true }),
+    conditions: new FormControl<readonly string[]>([], { nonNullable: true }),
     exhaustionLevel: new FormControl(0, {
       nonNullable: true,
       validators: [Validators.min(0), Validators.max(6)],
@@ -245,6 +246,14 @@ export class PlayerCharacterWorkspace implements OnInit, PendingChangesAware {
 
   protected valueOrDash(value: string | number | null): string | number {
     return value === '' || value === null ? '—' : value;
+  }
+
+  protected updateTags(
+    field: 'senses' | 'languages' | 'conditions',
+    tags: readonly string[],
+  ): void {
+    this.characterForm.controls[field].setValue(tags);
+    this.characterForm.controls[field].markAsDirty();
   }
 
   private async initialize(): Promise<void> {

@@ -25,6 +25,7 @@ describe('PlayerCharacter', () => {
           ...EMPTY_PLAYER_CHARACTER_SHEET,
           className: '  Rôdeuse  ',
           level: 3,
+          languages: [' Commun ', 'commun', ' Elfique '],
           privateNotes: '  Porte la clé.  ',
         },
       },
@@ -38,8 +39,13 @@ describe('PlayerCharacter', () => {
       playerName: 'Flore',
       currentHitPoints: 18,
       maxHitPoints: 24,
-      sheet: { className: 'Rôdeuse', level: 3, privateNotes: 'Porte la clé.' },
-      sheetSchemaVersion: 1,
+      sheet: {
+        className: 'Rôdeuse',
+        level: 3,
+        languages: ['Commun', 'Elfique'],
+        privateNotes: 'Porte la clé.',
+      },
+      sheetSchemaVersion: 2,
     });
   });
 

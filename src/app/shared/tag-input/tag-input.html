@@ -1,0 +1,27 @@
+<label [for]="inputId()">{{ label() }}</label>
+<div class="tag-field" (click)="tagInput.focus()">
+  @for (tag of value(); track tag; let index = $index) {
+    <span class="tag">
+      {{ tag }}
+      <button
+        type="button"
+        [attr.aria-label]="'Retirer ' + tag"
+        [attr.title]="'Retirer ' + tag"
+        (click)="$event.stopPropagation(); removeTag(index)"
+      >
+        ×
+      </button>
+    </span>
+  }
+  <input
+    #tagInput
+    [id]="inputId()"
+    type="text"
+    [placeholder]="value().length === 0 ? placeholder() : ''"
+    [value]="draft()"
+    (input)="updateDraft($event)"
+    (keydown)="handleKeydown($event)"
+    (blur)="commitDraft()"
+  />
+</div>
+<small>Entrée ou virgule pour ajouter.</small>

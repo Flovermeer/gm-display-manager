@@ -11,9 +11,9 @@ export type PlayerCharacterSheet = Readonly<{
   passivePerception: number | null;
   passiveInsight: number | null;
   passiveInvestigation: number | null;
-  senses: string;
-  languages: string;
-  conditions: string;
+  senses: readonly string[];
+  languages: readonly string[];
+  conditions: readonly string[];
   exhaustionLevel: number;
   privateNotes: string;
 }>;
@@ -60,9 +60,9 @@ export const EMPTY_PLAYER_CHARACTER_SHEET: PlayerCharacterSheet = {
   passivePerception: null,
   passiveInsight: null,
   passiveInvestigation: null,
-  senses: '',
-  languages: '',
-  conditions: '',
+  senses: [],
+  languages: [],
+  conditions: [],
   exhaustionLevel: 0,
   privateNotes: '',
 };
@@ -79,7 +79,7 @@ export function createPlayerCharacter(
     id: dependencies.createId(),
     campaignId,
     ...normalized,
-    sheetSchemaVersion: 1,
+    sheetSchemaVersion: 2,
     createdAt: now,
     updatedAt: now,
   };
@@ -93,6 +93,7 @@ export function updatePlayerCharacter(
   return {
     ...character,
     ...normalizeInput(input),
+    sheetSchemaVersion: 2,
     updatedAt: now().toISOString(),
   };
 }
@@ -108,6 +109,7 @@ export function updatePlayerCharacterHitPoints(
   return {
     ...character,
     currentHitPoints: normalizedCurrent,
+    sheetSchemaVersion: 2,
     updatedAt: now().toISOString(),
   };
 }
@@ -138,9 +140,9 @@ function normalizeInput(input: UpdatePlayerCharacterInput): UpdatePlayerCharacte
         input.sheet.passiveInvestigation,
         'Passive investigation',
       ),
-      senses: input.sheet.senses.trim(),
-      languages: input.sheet.languages.trim(),
-      conditions: input.sheet.conditions.trim(),
+      senses: normalizeTags(input.sheet.senses),
+      languages: normalizeTags(input.sheet.languages),
+      conditions: normalizeTags(input.sheet.conditions),
       exhaustionLevel: integerInRange(input.sheet.exhaustionLevel, 0, 6, 'Exhaustion level'),
       privateNotes: input.sheet.privateNotes.trim(),
     },
@@ -181,4 +183,17 @@ function assertHitPointRange(current: number | null, maximum: number | null): vo
   if (current !== null && maximum !== null && current > maximum) {
     throw new Error('Current hit points cannot exceed maximum hit points.');
   }
+}
+
+function normalizeTags(values: readonly string[]): readonly string[] {
+  const unique = new Set<string>();
+  const normalized: string[] = [];
+  for (const value of values) {
+    const tag = value.trim();
+    const key = tag.toLocaleLowerCase('fr');
+    if (!tag || unique.has(key)) continue;
+    unique.add(key);
+    normalized.push(tag);
+  }
+  return normalized;
 }

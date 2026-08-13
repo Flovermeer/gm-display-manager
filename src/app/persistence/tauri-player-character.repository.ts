@@ -127,5 +127,21 @@ function parseSheet(value: string): PlayerCharacterSheet {
   if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) {
     throw new Error('Invalid player character sheet data.');
   }
-  return { ...EMPTY_PLAYER_CHARACTER_SHEET, ...(parsed as Partial<PlayerCharacterSheet>) };
+  const sheet = parsed as Record<string, unknown>;
+  return {
+    ...EMPTY_PLAYER_CHARACTER_SHEET,
+    ...sheet,
+    senses: parseTags(sheet['senses']),
+    languages: parseTags(sheet['languages']),
+    conditions: parseTags(sheet['conditions']),
+  } as PlayerCharacterSheet;
+}
+
+function parseTags(value: unknown): readonly string[] {
+  if (Array.isArray(value)) return value.filter((tag): tag is string => typeof tag === 'string');
+  if (typeof value === 'string') {
+    const normalized = value.trim();
+    return normalized ? [normalized] : [];
+  }
+  return [];
 }

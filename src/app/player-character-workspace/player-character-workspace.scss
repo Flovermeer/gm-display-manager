@@ -209,6 +209,20 @@ dd {
   margin: 0;
 }
 
+.readonly-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.readonly-tags span {
+  padding: 0.28rem 0.55rem;
+  border-radius: 999px;
+  color: #fff;
+  background: #76538d;
+  font-size: 0.78rem;
+}
+
 .notes-readonly {
   margin-top: 2rem;
   padding-top: 1.5rem;

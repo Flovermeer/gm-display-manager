@@ -48,10 +48,14 @@ jeu. Les données fréquemment affichées et mises à jour restent relationnelle
 - le futur tracker de combat réutilisera ces mêmes valeurs pour les PJ et ne créera pas une copie
   concurrente de leur état.
 
-Le JSON de fiche D&D 5e version 1 contient uniquement les informations utiles au MJ : espèce,
+Le JSON de fiche D&D 5e version 2 contient uniquement les informations utiles au MJ : espèce,
 classe, niveau, classe d'armure, vitesse, perceptions passives, sens, langues, conditions,
 épuisement et notes privées. Les caractéristiques, compétences, sorts, attaques et l'inventaire
 générique détaillés restent hors périmètre initial.
+
+Les sens, langues et conditions sont stockés comme des tableaux de libellés libres. L'interface les
+édite sous forme de tags supprimables et convertit à la lecture les anciennes valeurs texte de la
+version 1 afin de préserver les fiches déjà enregistrées.
 
 Plusieurs personnages, y compris de même nom, peuvent appartenir à la même campagne. Une table séparée pour les joueurs humains n'est pas nécessaire au MVP.
 

@@ -264,25 +264,30 @@
             <h3 id="campaign-fields">Informations utiles au MJ</h3>
             <div class="form-grid two-columns">
               <div class="field">
-                <label for="character-senses">Sens particuliers</label>
-                <input
-                  id="character-senses"
-                  type="text"
-                  formControlName="senses"
-                  placeholder="Vision dans le noir 18 m…"
+                <app-tag-input
+                  inputId="character-senses"
+                  label="Sens particuliers"
+                  placeholder="Vision dans le noir 18 m"
+                  [value]="characterForm.controls.senses.value"
+                  (valueChange)="updateTags('senses', $event)"
                 />
               </div>
               <div class="field">
-                <label for="character-languages">Langues</label>
-                <input id="character-languages" type="text" formControlName="languages" />
+                <app-tag-input
+                  inputId="character-languages"
+                  label="Langues"
+                  placeholder="Commun"
+                  [value]="characterForm.controls.languages.value"
+                  (valueChange)="updateTags('languages', $event)"
+                />
               </div>
               <div class="field">
-                <label for="character-conditions">Conditions</label>
-                <input
-                  id="character-conditions"
-                  type="text"
-                  formControlName="conditions"
-                  placeholder="Empoisonné, à terre…"
+                <app-tag-input
+                  inputId="character-conditions"
+                  label="Conditions"
+                  placeholder="Empoisonné"
+                  [value]="characterForm.controls.conditions.value"
+                  (valueChange)="updateTags('conditions', $event)"
                 />
               </div>
               <div class="field">
@@ -339,15 +344,33 @@
             </div>
             <div>
               <dt>Sens</dt>
-              <dd>{{ valueOrDash(character.sheet.senses) }}</dd>
+              <dd class="readonly-tags">
+                @for (sense of character.sheet.senses; track sense) {
+                  <span>{{ sense }}</span>
+                } @empty {
+                  —
+                }
+              </dd>
             </div>
             <div>
               <dt>Langues</dt>
-              <dd>{{ valueOrDash(character.sheet.languages) }}</dd>
+              <dd class="readonly-tags">
+                @for (language of character.sheet.languages; track language) {
+                  <span>{{ language }}</span>
+                } @empty {
+                  —
+                }
+              </dd>
             </div>
             <div>
               <dt>Conditions</dt>
-              <dd>{{ valueOrDash(character.sheet.conditions) }}</dd>
+              <dd class="readonly-tags">
+                @for (condition of character.sheet.conditions; track condition) {
+                  <span>{{ condition }}</span>
+                } @empty {
+                  —
+                }
+              </dd>
             </div>
           </dl>
 

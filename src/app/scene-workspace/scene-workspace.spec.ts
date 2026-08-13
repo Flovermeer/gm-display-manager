@@ -41,6 +41,12 @@ describe('SceneWorkspace', () => {
     updatedAt: '2026-08-13T08:00:00.000Z',
   };
   const sceneService = { list: vi.fn(), create: vi.fn(), update: vi.fn(), delete: vi.fn() };
+  const activeSceneService = {
+    get: vi.fn(),
+    clear: vi.fn(),
+    clearIfActive: vi.fn(),
+  };
+  const displayStore = { state: vi.fn(), setState: vi.fn() };
   const journalEntryService = {
     listByTarget: vi.fn(),
     listForTarget: vi.fn(),
@@ -53,6 +59,10 @@ describe('SceneWorkspace', () => {
   beforeEach(async () => {
     vi.clearAllMocks();
     sceneService.list.mockResolvedValue([scene]);
+    activeSceneService.get.mockResolvedValue(null);
+    activeSceneService.clear.mockResolvedValue(undefined);
+    activeSceneService.clearIfActive.mockResolvedValue(false);
+    displayStore.state.mockReturnValue({ mode: 'blank' });
     journalEntryService.listForTarget.mockResolvedValue([]);
     const queryParams = new BehaviorSubject({ get: () => null });
     await TestBed.configureTestingModule({
@@ -61,10 +71,10 @@ describe('SceneWorkspace', () => {
         { provide: CampaignContext, useValue: { campaign: () => campaign, load: () => campaign } },
         { provide: ActivatedRoute, useValue: { queryParamMap: queryParams, snapshot: { queryParamMap: { get: () => null } } } },
         { provide: SceneService, useValue: sceneService },
-        { provide: ActiveSceneService, useValue: { get: () => Promise.resolve(null), clearIfActive: () => Promise.resolve(false) } },
+        { provide: ActiveSceneService, useValue: activeSceneService },
         { provide: SceneDisplayService, useValue: { activate: vi.fn(), build: vi.fn() } },
         { provide: DisplayGateway, useValue: { isDesktop: false } },
-        { provide: PlayerDisplayStore, useValue: { state: () => ({ mode: 'blank' }), setState: vi.fn() } },
+        { provide: PlayerDisplayStore, useValue: displayStore },
         { provide: NpcPortraitGateway, useValue: { resolveUrl: vi.fn() } },
         { provide: NpcIdleVideoGateway, useValue: { resolveUrl: vi.fn() } },
         { provide: ItemImageGateway, useValue: { resolveUrl: vi.fn() } },
@@ -87,6 +97,28 @@ describe('SceneWorkspace', () => {
     const content = (fixture.nativeElement as HTMLElement).textContent ?? '';
     expect(content).toContain('Wakanga');
     expect(content).toContain("Anneau de l'Hiver");
+  });
+
+  it('deactivates the active scene and restores the default player screen', async () => {
+    activeSceneService.get.mockResolvedValue(scene.id);
+    const fixture = TestBed.createComponent(SceneWorkspace);
+    fixture.detectChanges();
+    await renderUntil(fixture, scene.name);
+    (fixture.nativeElement as HTMLElement).querySelector<HTMLButtonElement>('.scene-list__entry')?.click();
+    await renderUntil(fixture, 'Désactiver la scène');
+
+    const deactivateButton = [...(fixture.nativeElement as HTMLElement).querySelectorAll('button')]
+      .find((button) => button.textContent?.includes('Désactiver la scène'));
+    deactivateButton?.click();
+
+    await vi.waitFor(() => {
+      expect(activeSceneService.clear).toHaveBeenCalledWith(campaign.id);
+      expect(displayStore.setState).toHaveBeenCalledWith({
+        mode: 'scene',
+        sceneId: null,
+        background: { type: 'default' },
+      });
+    });
   });
 });
 

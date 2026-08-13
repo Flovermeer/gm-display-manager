@@ -198,6 +198,24 @@ export class SceneWorkspace implements OnInit, PendingChangesAware {
     });
   }
 
+  protected async deactivateScene(): Promise<void> {
+    const campaign = this.campaign();
+    const scene = this.selectedScene();
+    if (
+      !campaign ||
+      !scene ||
+      this.activeSceneId() !== scene.id ||
+      this.isPublishing()
+    ) {
+      return;
+    }
+    await this.publish(async () => {
+      await this.activeSceneService.clear(campaign.id);
+      this.activeSceneId.set(null);
+      await this.sendState(defaultSceneState());
+    });
+  }
+
   protected async showNpc(npc: Npc): Promise<void> {
     const scene = this.selectedScene();
     if (!scene || !npc.portraitPath || this.isPublishing()) return;

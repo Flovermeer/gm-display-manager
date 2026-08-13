@@ -28,6 +28,9 @@
           <button appButton="primary" type="button" [disabled]="sceneForm.invalid || isSaving()" (click)="saveScene()">{{ isSaving() ? 'Enregistrement…' : 'Enregistrer' }}</button>
         } @else {
           <button appButton="secondary" type="button" [disabled]="isPublishing()" (click)="activateScene()">{{ activeSceneId() === selectedScene()?.id ? 'Réactiver la scène' : 'Activer la scène' }}</button>
+          @if (activeSceneId() === selectedScene()?.id) {
+            <button appButton="secondary" type="button" [disabled]="isPublishing()" (click)="deactivateScene()">Désactiver la scène</button>
+          }
           <button appButton="primary" type="button" (click)="editScene()">Modifier</button>
           <button appButton="secondary-danger" type="button" (click)="requestDeleteScene()">Supprimer</button>
         }

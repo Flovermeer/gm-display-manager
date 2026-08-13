@@ -1,0 +1,102 @@
+<section class="journal-entries" aria-labelledby="journal-entries-title">
+  <header class="journal-entries__heading">
+    <div>
+      <p class="entity-workspace__kicker">Journal</p>
+      <h3 id="journal-entries-title">{{ heading() }}</h3>
+    </div>
+    @if (!isEditing()) {
+      <button appButton="primary" type="button" (click)="createEntry()">+ Ajouter une note</button>
+    }
+  </header>
+
+  @if (error(); as errorMessage) {
+    <p class="journal-entries__error" role="alert">{{ errorMessage }}</p>
+  }
+
+  @if (isEditing()) {
+    <form class="journal-entry-form" [formGroup]="entryForm" (ngSubmit)="saveEntry()">
+      <div class="journal-entry-form__metadata">
+        <label>
+          Date et heure
+          <input type="datetime-local" formControlName="sessionAt" />
+        </label>
+        <label>
+          Date en jeu
+          <input type="text" formControlName="inGameDate" placeholder="Facultatif" />
+        </label>
+      </div>
+      <label>
+        Titre
+        <input type="text" formControlName="title" placeholder="Facultatif" />
+      </label>
+      <label>Contenu</label>
+      <app-rich-text-editor [value]="draftContent()" (valueChange)="updateContent($event)" />
+      @if (!contentIsValid() && contentDirty()) {
+        <p class="journal-entries__error">Le contenu de la note est obligatoire.</p>
+      }
+      <div class="journal-entry-form__actions">
+        <button appButton="secondary" type="button" (click)="cancelEditing()">Annuler</button>
+        <button
+          appButton="primary"
+          type="submit"
+          [disabled]="entryForm.invalid || !contentIsValid() || isSaving()"
+        >
+          {{ isSaving() ? 'Enregistrement…' : 'Enregistrer la note' }}
+        </button>
+      </div>
+    </form>
+  }
+
+  @if (entries().length === 0 && !isEditing()) {
+    <p class="journal-entries__empty">Aucune note journalisée pour le moment.</p>
+  } @else {
+    <div class="journal-entries__list">
+      @for (entry of entries(); track entry.id) {
+        <article
+          class="journal-entry"
+          [class.journal-entry--focused]="focusEntryId() === entry.id"
+          [id]="'journal-entry-' + entry.id"
+        >
+          <header class="journal-entry__heading">
+            <div>
+              <time [attr.datetime]="entry.sessionAt">{{
+                formattedSessionDate(entry.sessionAt)
+              }}</time>
+              @if (entry.inGameDate) {
+                <span>En jeu : {{ entry.inGameDate }}</span>
+              }
+              @if (entry.title) {
+                <h4>{{ entry.title }}</h4>
+              }
+            </div>
+            <div class="journal-entry__actions">
+              <button appButton="secondary" type="button" (click)="editEntry(entry)">
+                Modifier
+              </button>
+              <button appButton="secondary-danger" type="button" (click)="requestDelete(entry)">
+                Supprimer
+              </button>
+            </div>
+          </header>
+          <app-rich-text-editor [value]="entry.content" [editable]="false" />
+        </article>
+      }
+    </div>
+  }
+</section>
+
+@if (entryPendingDeletion(); as entry) {
+  <app-dialog
+    kicker="Suppression définitive"
+    [title]="entry.title ? 'Supprimer « ' + entry.title + ' » ?' : 'Supprimer cette note ?'"
+    headingId="delete-journal-entry-title"
+  >
+    <p>Cette entrée sera retirée définitivement du journal.</p>
+    <div dialog-actions class="dialog-actions">
+      <button appButton="secondary" type="button" (click)="cancelDelete()">Annuler</button>
+      <button appButton="danger" type="button" [disabled]="isSaving()" (click)="confirmDelete()">
+        Supprimer définitivement
+      </button>
+    </div>
+  </app-dialog>
+}

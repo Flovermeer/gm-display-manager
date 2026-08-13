@@ -164,8 +164,7 @@
   margin-bottom: 2rem;
 }
 
-.form-section h3,
-.notes-readonly h3 {
+.form-section h3 {
   margin: 0 0 1rem;
   font-size: 1rem;
 }
@@ -296,16 +295,6 @@ dd {
   color: #fff;
   background: #76538d;
   font-size: 0.78rem;
-}
-
-.notes-readonly {
-  margin-top: 2rem;
-  padding-top: 1.5rem;
-  border-top: 1px solid #d2cbc0;
-}
-
-.notes-readonly p {
-  white-space: pre-wrap;
 }
 
 @media (max-width: 65rem) {

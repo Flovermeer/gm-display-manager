@@ -54,6 +54,15 @@ export const routes: Routes = [
         canDeactivate: [pendingChangesGuard],
         title: "Beholder's Inn — PJ",
       },
+      {
+        path: 'journal',
+        loadComponent: () =>
+          import('./journal-workspace/journal-workspace').then(
+            ({ JournalWorkspace }) => JournalWorkspace,
+          ),
+        canDeactivate: [pendingChangesGuard],
+        title: "Beholder's Inn — Journal",
+      },
     ],
   },
   {

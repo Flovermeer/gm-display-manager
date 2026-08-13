@@ -442,11 +442,6 @@
               (valueChange)="updateOfficialDescription($event)"
             />
           </section>
-
-          <div class="field notes-field">
-            <label for="npc-notes">Notes privées du MJ</label>
-            <textarea id="npc-notes" formControlName="notes" rows="14"></textarea>
-          </div>
         </form>
       } @else if (selectedNpc(); as npc) {
         <article class="npc-sheet">
@@ -572,10 +567,14 @@
             <app-rich-text-editor [value]="npc.sheet.officialDescription" [editable]="false" />
           </section>
 
-          <section class="notes-readonly">
-            <h3>Notes privées du MJ</h3>
-            <p>{{ npc.notes || 'Aucune note pour le moment.' }}</p>
-          </section>
+          @if (campaign(); as activeCampaign) {
+            <app-journal-entry-list
+              [campaignId]="activeCampaign.id"
+              resourceType="npc"
+              [resourceId]="npc.id"
+              [focusEntryId]="focusedJournalEntryId()"
+            />
+          }
         </article>
       }
     } @else {
@@ -595,7 +594,7 @@
     title="Que veux-tu faire ?"
     headingId="pending-title"
   >
-    <p>Tes dernières modifications seront perdues si tu quittes cette fiche.</p>
+    <p>Tes dernières modifications de fiche ou de note seront perdues si tu quittes.</p>
     <div dialog-actions class="dialog-actions three-actions">
       <button appButton="primary" type="button" [disabled]="isSaving()" (click)="saveAndLeave()">
         Enregistrer et quitter

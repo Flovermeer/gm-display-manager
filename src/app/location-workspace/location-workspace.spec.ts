@@ -8,6 +8,7 @@ import { CampaignContext } from '../campaign-layout/campaign-context';
 import { DisplayGateway } from '../display/display.gateway';
 import type { Location } from '../location/location';
 import { LocationService } from '../location/location.service';
+import { JournalEntryService } from '../journal/journal-entry.service';
 import { LocationImageGateway } from '../media/location-image.gateway';
 import { LocationWorkspace } from './location-workspace';
 
@@ -37,6 +38,13 @@ describe('LocationWorkspace', () => {
     update: vi.fn(),
     delete: vi.fn(),
   };
+  const journalEntryService = {
+    listForTarget: vi.fn(),
+    listGlobal: vi.fn(),
+    create: vi.fn(),
+    update: vi.fn(),
+    delete: vi.fn(),
+  };
   const imageGateway = {
     chooseAndImport: vi.fn(),
     resolveUrl: vi.fn(),
@@ -56,6 +64,8 @@ describe('LocationWorkspace', () => {
     locationService.create.mockResolvedValue(chult);
     locationService.update.mockResolvedValue(chult);
     locationService.delete.mockResolvedValue(undefined);
+    journalEntryService.listForTarget.mockResolvedValue([]);
+    journalEntryService.listGlobal.mockResolvedValue([]);
     imageGateway.chooseAndImport.mockResolvedValue(null);
     imageGateway.resolveUrl.mockResolvedValue('asset://location');
     imageGateway.discard.mockResolvedValue(undefined);
@@ -72,6 +82,7 @@ describe('LocationWorkspace', () => {
           useValue: { campaign: () => campaign, load: () => Promise.resolve(campaign) },
         },
         { provide: LocationService, useValue: locationService },
+        { provide: JournalEntryService, useValue: journalEntryService },
         { provide: LocationImageGateway, useValue: imageGateway },
         { provide: DisplayGateway, useValue: displayGateway },
         {

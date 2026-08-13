@@ -25,7 +25,7 @@
       PJ
     </a>
     <span aria-disabled="true" title="Bientôt disponible">Objets</span>
-    <span aria-disabled="true" title="Bientôt disponible">Journal</span>
+    <a [routerLink]="['/campaigns', campaignId(), 'journal']" routerLinkActive="active">Journal</a>
     <a class="home-link" routerLink="/campaigns">Accueil</a>
   </div>
 </nav>

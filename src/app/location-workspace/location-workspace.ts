@@ -1,4 +1,5 @@
-import { Component, computed, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, inject, OnInit, signal, viewChild } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 
 import { CampaignContext } from '../campaign-layout/campaign-context';
@@ -8,6 +9,7 @@ import type { Location } from '../location/location';
 import { LocationService } from '../location/location.service';
 import { LocationImageGateway } from '../media/location-image.gateway';
 import type { PendingChangesAware } from '../navigation/pending-changes.guard';
+import { JournalEntryList } from '../shared/journal-entry-list/journal-entry-list';
 import { ButtonDirective } from '../shared/ui/button/button.directive';
 import { Dialog } from '../shared/ui/dialog/dialog';
 import { EmptyState } from '../shared/ui/empty-state/empty-state';
@@ -20,17 +22,26 @@ const DEMO_LOCATION_IMAGE_URL = '/demo/tavern.svg';
 
 @Component({
   selector: 'app-location-workspace',
-  imports: [ReactiveFormsModule, ButtonDirective, Dialog, EmptyState, EntityTitle],
+  imports: [
+    ReactiveFormsModule,
+    JournalEntryList,
+    ButtonDirective,
+    Dialog,
+    EmptyState,
+    EntityTitle,
+  ],
   templateUrl: './location-workspace.html',
   styleUrl: './location-workspace.scss',
 })
 export class LocationWorkspace implements OnInit, PendingChangesAware {
   private readonly campaignContext = inject(CampaignContext);
+  private readonly route = inject(ActivatedRoute);
   private readonly locationService = inject(LocationService);
   private readonly locationImageGateway = inject(LocationImageGateway);
   private readonly displayGateway = inject(DisplayGateway);
   private readonly playerDisplayStore = inject(PlayerDisplayStore);
   private pendingDecisionResolver?: PendingDecisionResolver;
+  private readonly journalEntries = viewChild<JournalEntryList>(JournalEntryList);
 
   protected readonly campaign = this.campaignContext.campaign;
   protected readonly locations = signal<readonly Location[]>([]);
@@ -49,6 +60,7 @@ export class LocationWorkspace implements OnInit, PendingChangesAware {
   protected readonly showPendingChangesDialog = signal(false);
   protected readonly showDeleteDialog = signal(false);
   protected readonly error = signal<string | null>(null);
+  protected readonly focusedJournalEntryId = signal<string | null>(null);
   protected readonly effectiveImagePath = computed(
     () => this.draftImagePath() ?? this.selectedLocation()?.imagePath ?? null,
   );
@@ -303,12 +315,16 @@ export class LocationWorkspace implements OnInit, PendingChangesAware {
   }
 
   protected async leaveWithoutSaving(): Promise<void> {
-    await this.abandonChanges();
+    if (this.journalEntries()?.hasPendingChanges()) this.journalEntries()?.discardPendingChanges();
+    if (this.isEditing() && this.locationForm.dirty) await this.abandonChanges();
     this.resolvePendingDecision(true);
   }
 
   protected async saveAndLeave(): Promise<void> {
-    if (await this.saveLocation()) {
+    const saved = this.journalEntries()?.hasPendingChanges()
+      ? await this.journalEntries()!.savePendingChanges()
+      : await this.saveLocation();
+    if (saved) {
       this.resolvePendingDecision(true);
     }
   }
@@ -323,6 +339,12 @@ export class LocationWorkspace implements OnInit, PendingChangesAware {
     try {
       if (!(await this.campaignContext.load())) return;
       await this.reloadLocations();
+      const resourceId = this.route.snapshot.queryParamMap?.get('resourceId');
+      const requested = this.locations().find(({ id }) => id === resourceId);
+      if (requested) {
+        this.focusedJournalEntryId.set(this.route.snapshot.queryParamMap?.get('entryId'));
+        this.openReadOnly(requested);
+      }
       if (this.displayGateway.isDesktop) {
         this.isPlayerDisplayOpen.set(await this.displayGateway.isPlayerDisplayOpen());
       }
@@ -356,7 +378,7 @@ export class LocationWorkspace implements OnInit, PendingChangesAware {
       name: location.name,
       parentLocationId: location.parentLocationId,
       summary: location.summary,
-      notes: location.notes,
+      notes: '',
     });
     this.locationForm.markAsPristine();
   }
@@ -424,7 +446,10 @@ export class LocationWorkspace implements OnInit, PendingChangesAware {
   }
 
   private confirmPendingChanges(): boolean | Promise<boolean> {
-    if (!this.isEditing() || !this.locationForm.dirty) {
+    if (
+      !(this.isEditing() && this.locationForm.dirty) &&
+      !this.journalEntries()?.hasPendingChanges()
+    ) {
       return true;
     }
 

@@ -1,4 +1,5 @@
-import { Component, computed, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, inject, OnInit, signal, viewChild } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
 import {
   type AbstractControl,
   FormControl,
@@ -25,6 +26,7 @@ import {
   type UpdateNpcInput,
 } from '../npc/npc';
 import { NpcService } from '../npc/npc.service';
+import { JournalEntryList } from '../shared/journal-entry-list/journal-entry-list';
 import { RichTextEditor } from '../shared/rich-text-editor/rich-text-editor';
 import {
   createEmptyRichTextDocument,
@@ -56,6 +58,7 @@ type NpcFeatureDrafts = Readonly<Record<NpcFeatureSection, readonly NpcFeature[]
     ReactiveFormsModule,
     RichTextEditor,
     TagInput,
+    JournalEntryList,
     ButtonDirective,
     Dialog,
     EmptyState,
@@ -66,12 +69,14 @@ type NpcFeatureDrafts = Readonly<Record<NpcFeatureSection, readonly NpcFeature[]
 })
 export class NpcWorkspace implements OnInit, PendingChangesAware {
   private readonly campaignContext = inject(CampaignContext);
+  private readonly route = inject(ActivatedRoute);
   private readonly npcService = inject(NpcService);
   private readonly npcPortraitGateway = inject(NpcPortraitGateway);
   private readonly npcIdleVideoGateway = inject(NpcIdleVideoGateway);
   private readonly displayGateway = inject(DisplayGateway);
   private readonly playerDisplayStore = inject(PlayerDisplayStore);
   private pendingDecisionResolver?: PendingDecisionResolver;
+  private readonly journalEntries = viewChild<JournalEntryList>(JournalEntryList);
 
   protected readonly campaign = this.campaignContext.campaign;
   protected readonly npcs = signal<readonly Npc[]>([]);
@@ -92,6 +97,7 @@ export class NpcWorkspace implements OnInit, PendingChangesAware {
   protected readonly showPendingChangesDialog = signal(false);
   protected readonly showDeleteDialog = signal(false);
   protected readonly error = signal<string | null>(null);
+  protected readonly focusedJournalEntryId = signal<string | null>(null);
   protected readonly statuses = NPC_STATUSES;
   protected readonly featureSections: readonly Readonly<{
     key: NpcFeatureSection;
@@ -414,12 +420,16 @@ export class NpcWorkspace implements OnInit, PendingChangesAware {
   }
 
   protected async leaveWithoutSaving(): Promise<void> {
-    await this.abandonChanges();
+    if (this.journalEntries()?.hasPendingChanges()) this.journalEntries()?.discardPendingChanges();
+    if (this.isEditing() && this.npcForm.dirty) await this.abandonChanges();
     this.resolvePendingDecision(true);
   }
 
   protected async saveAndLeave(): Promise<void> {
-    if (await this.saveNpc()) {
+    const saved = this.journalEntries()?.hasPendingChanges()
+      ? await this.journalEntries()!.savePendingChanges()
+      : await this.saveNpc();
+    if (saved) {
       this.resolvePendingDecision(true);
     }
   }
@@ -534,6 +544,12 @@ export class NpcWorkspace implements OnInit, PendingChangesAware {
     try {
       if (!(await this.campaignContext.load())) return;
       await this.reloadNpcs();
+      const resourceId = this.route.snapshot.queryParamMap?.get('resourceId');
+      const requested = this.npcs().find(({ id }) => id === resourceId);
+      if (requested) {
+        this.focusedJournalEntryId.set(this.route.snapshot.queryParamMap?.get('entryId'));
+        this.openReadOnly(requested);
+      }
       if (this.displayGateway.isDesktop) {
         this.isPlayerDisplayOpen.set(await this.displayGateway.isPlayerDisplayOpen());
       }
@@ -568,7 +584,7 @@ export class NpcWorkspace implements OnInit, PendingChangesAware {
       name: npc.name,
       status: npc.status,
       summary: npc.summary,
-      notes: npc.notes,
+      notes: '',
       size: sheet.size,
       creatureType: sheet.creatureType,
       alignment: sheet.alignment,
@@ -674,7 +690,7 @@ export class NpcWorkspace implements OnInit, PendingChangesAware {
       name: value.name,
       status: value.status,
       summary: value.summary,
-      notes: value.notes,
+      notes: '',
       sheet: {
         size: value.size,
         creatureType: value.creatureType,
@@ -761,7 +777,7 @@ export class NpcWorkspace implements OnInit, PendingChangesAware {
   }
 
   private confirmPendingChanges(): boolean | Promise<boolean> {
-    if (!this.isEditing() || !this.npcForm.dirty) {
+    if (!(this.isEditing() && this.npcForm.dirty) && !this.journalEntries()?.hasPendingChanges()) {
       return true;
     }
 

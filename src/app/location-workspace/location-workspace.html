@@ -167,11 +167,6 @@
               placeholder="Ville portuaire, temple oublié, auberge animée…"
             />
           </div>
-
-          <div class="field notes-field">
-            <label for="location-notes">Notes</label>
-            <textarea id="location-notes" formControlName="notes" rows="14"></textarea>
-          </div>
         </form>
       } @else if (selectedLocation(); as location) {
         <article class="location-sheet">
@@ -186,10 +181,14 @@
             </div>
           </dl>
 
-          <section class="notes-readonly">
-            <h3>Notes</h3>
-            <p>{{ location.notes || 'Aucune note pour le moment.' }}</p>
-          </section>
+          @if (campaign(); as activeCampaign) {
+            <app-journal-entry-list
+              [campaignId]="activeCampaign.id"
+              resourceType="location"
+              [resourceId]="location.id"
+              [focusEntryId]="focusedJournalEntryId()"
+            />
+          }
         </article>
       }
     } @else {
@@ -209,7 +208,7 @@
     title="Que veux-tu faire ?"
     headingId="pending-title"
   >
-    <p>Tes dernières modifications seront perdues si tu quittes cette fiche.</p>
+    <p>Tes dernières modifications de fiche ou de note seront perdues si tu quittes.</p>
     <div dialog-actions class="dialog-actions three-actions">
       <button appButton="primary" type="button" [disabled]="isSaving()" (click)="saveAndLeave()">
         Enregistrer et quitter

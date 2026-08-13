@@ -150,7 +150,8 @@ Les notes de partie forment un journal chronologique unifié. Une entrée contie
 - une date en jeu facultative, stockée comme texte pour rester indépendante du système ;
 - un titre facultatif ;
 - un contenu riche ;
-- une position stable pour ordonner plusieurs entrées d'une même session.
+- un horodatage technique de création pour stabiliser l'ordre lorsque plusieurs entrées partagent
+  la même date de session.
 
 Une entrée est soit globale à la campagne, soit rattachée à exactement une ressource : PNJ, lieu
 ou PJ. Les notes rattachées apparaissent automatiquement dans le Journal global sous forme d'un

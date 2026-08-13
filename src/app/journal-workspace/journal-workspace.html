@@ -1,0 +1,74 @@
+<main class="journal-workspace">
+  <header class="journal-workspace__heading">
+    <p class="entity-workspace__kicker">Campagne</p>
+    <h1>Journal</h1>
+    <p>
+      Consigne les événements de la partie et retrouve les notes liées aux personnages et aux lieux.
+    </p>
+  </header>
+
+  @if (error(); as errorMessage) {
+    <p class="journal-workspace__error" role="alert">{{ errorMessage }}</p>
+  }
+
+  @if (campaign(); as activeCampaign) {
+    <app-journal-entry-list [campaignId]="activeCampaign.id" heading="Notes générales" />
+  }
+
+  <section class="resource-journal" aria-labelledby="resource-journal-title">
+    <header>
+      <p class="entity-workspace__kicker">Fiches</p>
+      <h2 id="resource-journal-title">Notes liées</h2>
+      <p>Ces raccourcis sont ajoutés automatiquement depuis les fiches PNJ, lieux et PJ.</p>
+    </header>
+
+    @if (isLoading()) {
+      <p>Chargement des notes…</p>
+    } @else if (!hasReferences()) {
+      <app-empty-state
+        icon="⌁"
+        title="Aucune note liée"
+        description="Les notes créées dans les fiches apparaîtront automatiquement ici."
+      />
+    } @else {
+      <div class="resource-journal__list">
+        @for (reference of references(); track reference.entry.id) {
+          <button class="resource-note-link" type="button" (click)="openReference(reference)">
+            <span class="resource-note-link__type">{{ reference.resourceTypeLabel }}</span>
+            <span class="resource-note-link__content">
+              <strong>{{ reference.resourceName }}</strong>
+              @if (reference.entry.title) {
+                <span>{{ reference.entry.title }}</span>
+              }
+              <span class="resource-note-link__preview">{{ reference.preview }}</span>
+            </span>
+            <time [attr.datetime]="reference.entry.sessionAt">{{
+              formattedSessionDate(reference.entry.sessionAt)
+            }}</time>
+          </button>
+        }
+      </div>
+    }
+  </section>
+</main>
+
+@if (showPendingChangesDialog()) {
+  <app-dialog
+    kicker="Modifications non enregistrées"
+    title="Que veux-tu faire ?"
+    headingId="pending-journal-title"
+  >
+    <p>Le contenu ajouté à cette note sera perdu si tu quittes maintenant.</p>
+    <div dialog-actions class="dialog-actions three-actions">
+      <button appButton="primary" type="button" (click)="saveAndLeave()">
+        Enregistrer et quitter
+      </button>
+      <button appButton="secondary-danger" type="button" (click)="leaveWithoutSaving()">
+        Quitter sans enregistrer
+      </button>
+      <button appButton="secondary" type="button" (click)="continueEditing()">
+        Continuer la modification
+      </button>
+    </div>
+  </app-dialog>
+}

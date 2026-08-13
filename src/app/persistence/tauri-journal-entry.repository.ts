@@ -32,6 +32,15 @@ export class TauriJournalEntryRepository extends JournalEntryRepository {
     ]);
   }
 
+  override async listGlobalByCampaign(campaignId: string): Promise<readonly JournalEntry[]> {
+    return this.select(
+      `${JOURNAL_COLUMNS} FROM journal_entry
+       WHERE campaign_id = $1 AND npc_id IS NULL AND location_id IS NULL
+         AND player_character_id IS NULL ${ORDER}`,
+      [campaignId],
+    );
+  }
+
   override async listByTarget(
     campaignId: string,
     target: JournalTarget,

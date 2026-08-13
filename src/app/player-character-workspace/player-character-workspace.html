@@ -427,10 +427,6 @@
                 }
               </div>
             </div>
-            <div class="field">
-              <label for="character-notes">Notes privées, secrets et éléments narratifs</label>
-              <textarea id="character-notes" formControlName="privateNotes" rows="9"></textarea>
-            </div>
           </section>
         </form>
       } @else if (selectedCharacter(); as character) {
@@ -500,10 +496,14 @@
             </div>
           </dl>
 
-          <section class="notes-readonly">
-            <h3>Notes privées du MJ</h3>
-            <p>{{ character.sheet.privateNotes || 'Aucune note pour le moment.' }}</p>
-          </section>
+          @if (campaign(); as activeCampaign) {
+            <app-journal-entry-list
+              [campaignId]="activeCampaign.id"
+              resourceType="player-character"
+              [resourceId]="character.id"
+              [focusEntryId]="focusedJournalEntryId()"
+            />
+          }
         </article>
       }
     } @else {
@@ -523,7 +523,7 @@
     title="Que veux-tu faire ?"
     headingId="pending-title"
   >
-    <p>Tes dernières modifications seront perdues si tu quittes cette fiche.</p>
+    <p>Tes dernières modifications de fiche ou de note seront perdues si tu quittes.</p>
     <div dialog-actions class="dialog-actions three-actions">
       <button appButton="primary" type="button" [disabled]="isSaving()" (click)="saveAndLeave()">
         Enregistrer et quitter

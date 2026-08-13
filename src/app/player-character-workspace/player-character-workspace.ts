@@ -1,4 +1,5 @@
-import { Component, computed, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, inject, OnInit, signal, viewChild } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
 import {
   type AbstractControl,
   FormControl,
@@ -20,6 +21,7 @@ import {
   type UpdatePlayerCharacterInput,
 } from '../player-character/player-character';
 import { PlayerCharacterService } from '../player-character/player-character.service';
+import { JournalEntryList } from '../shared/journal-entry-list/journal-entry-list';
 import { TagInput } from '../shared/tag-input/tag-input';
 import { ButtonDirective } from '../shared/ui/button/button.directive';
 import { Dialog } from '../shared/ui/dialog/dialog';
@@ -30,15 +32,25 @@ type PendingDecisionResolver = (canLeave: boolean) => void;
 
 @Component({
   selector: 'app-player-character-workspace',
-  imports: [ReactiveFormsModule, TagInput, ButtonDirective, Dialog, EmptyState, EntityTitle],
+  imports: [
+    ReactiveFormsModule,
+    TagInput,
+    JournalEntryList,
+    ButtonDirective,
+    Dialog,
+    EmptyState,
+    EntityTitle,
+  ],
   templateUrl: './player-character-workspace.html',
   styleUrl: './player-character-workspace.scss',
 })
 export class PlayerCharacterWorkspace implements OnInit, PendingChangesAware {
   private readonly campaignContext = inject(CampaignContext);
+  private readonly route = inject(ActivatedRoute);
   private readonly characterService = inject(PlayerCharacterService);
   private readonly portraitGateway = inject(PlayerCharacterPortraitGateway);
   private pendingDecisionResolver?: PendingDecisionResolver;
+  private readonly journalEntries = viewChild<JournalEntryList>(JournalEntryList);
 
   protected readonly campaign = this.campaignContext.campaign;
   protected readonly characters = signal<readonly PlayerCharacter[]>([]);
@@ -57,6 +69,7 @@ export class PlayerCharacterWorkspace implements OnInit, PendingChangesAware {
   protected readonly showResetHitPointsDialog = signal(false);
   protected readonly showValidationErrors = signal(false);
   protected readonly error = signal<string | null>(null);
+  protected readonly focusedJournalEntryId = signal<string | null>(null);
   protected readonly statuses = PLAYER_CHARACTER_STATUSES;
   protected readonly effectivePortraitPath = computed(
     () => this.draftPortraitPath() ?? this.selectedCharacter()?.portraitPath ?? null,
@@ -284,12 +297,17 @@ export class PlayerCharacterWorkspace implements OnInit, PendingChangesAware {
     this.resolvePendingDecision(false);
   }
 
-  protected leaveWithoutSaving(): void {
-    void this.abandonChanges().then(() => this.resolvePendingDecision(true));
+  protected async leaveWithoutSaving(): Promise<void> {
+    if (this.journalEntries()?.hasPendingChanges()) this.journalEntries()?.discardPendingChanges();
+    if (this.isEditing() && this.characterForm.dirty) await this.abandonChanges();
+    this.resolvePendingDecision(true);
   }
 
   protected async saveAndLeave(): Promise<void> {
-    if (await this.saveCharacter()) this.resolvePendingDecision(true);
+    const saved = this.journalEntries()?.hasPendingChanges()
+      ? await this.journalEntries()!.savePendingChanges()
+      : await this.saveCharacter();
+    if (saved) this.resolvePendingDecision(true);
   }
 
   protected statusLabel(status: PlayerCharacterStatus): string {
@@ -369,6 +387,12 @@ export class PlayerCharacterWorkspace implements OnInit, PendingChangesAware {
     try {
       if (!(await this.campaignContext.load())) return;
       await this.reloadCharacters();
+      const resourceId = this.route.snapshot.queryParamMap?.get('resourceId');
+      const requested = this.characters().find(({ id }) => id === resourceId);
+      if (requested) {
+        this.focusedJournalEntryId.set(this.route.snapshot.queryParamMap?.get('entryId'));
+        this.openReadOnly(requested);
+      }
     } catch (error) {
       this.error.set(this.errorMessage(error));
     } finally {
@@ -401,6 +425,7 @@ export class PlayerCharacterWorkspace implements OnInit, PendingChangesAware {
       currentHitPoints: character.currentHitPoints,
       maxHitPoints: character.maxHitPoints,
       ...character.sheet,
+      privateNotes: '',
     });
     this.characterForm.markAsPristine();
   }
@@ -413,6 +438,7 @@ export class PlayerCharacterWorkspace implements OnInit, PendingChangesAware {
       currentHitPoints: null,
       maxHitPoints: null,
       ...EMPTY_PLAYER_CHARACTER_SHEET,
+      privateNotes: '',
     });
     this.characterForm.markAsPristine();
     this.showValidationErrors.set(false);
@@ -439,7 +465,7 @@ export class PlayerCharacterWorkspace implements OnInit, PendingChangesAware {
         languages: value.languages,
         conditions: value.conditions,
         exhaustionLevel: value.exhaustionLevel,
-        privateNotes: value.privateNotes,
+        privateNotes: '',
       },
     };
   }
@@ -485,7 +511,11 @@ export class PlayerCharacterWorkspace implements OnInit, PendingChangesAware {
   }
 
   private confirmPendingChanges(): boolean | Promise<boolean> {
-    if (!this.isEditing() || !this.characterForm.dirty) return true;
+    if (
+      !(this.isEditing() && this.characterForm.dirty) &&
+      !this.journalEntries()?.hasPendingChanges()
+    )
+      return true;
     if (this.pendingDecisionResolver) return false;
     this.showPendingChangesDialog.set(true);
     return new Promise<boolean>((resolve) => {

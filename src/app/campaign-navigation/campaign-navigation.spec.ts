@@ -23,8 +23,9 @@ describe('CampaignNavigation', () => {
       'Lieux',
       'PNJ',
       'PJ',
+      'Journal',
       'Accueil',
     ]);
-    expect([...element.querySelectorAll('[aria-disabled="true"]')]).toHaveLength(2);
+    expect([...element.querySelectorAll('[aria-disabled="true"]')]).toHaveLength(1);
   });
 });

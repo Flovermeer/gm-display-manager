@@ -10,6 +10,7 @@ import { NpcPortraitGateway } from '../media/npc-portrait.gateway';
 import { NpcIdleVideoGateway } from '../media/npc-idle-video.gateway';
 import { createEmptyNpcSheet, type Npc } from '../npc/npc';
 import { NpcService } from '../npc/npc.service';
+import { JournalEntryService } from '../journal/journal-entry.service';
 import { createEmptyRichTextDocument } from '../shared/rich-text-editor/rich-text-document';
 import { NpcWorkspace } from './npc-workspace';
 
@@ -83,6 +84,13 @@ describe('NpcWorkspace', () => {
     update: vi.fn(),
     delete: vi.fn(),
   };
+  const journalEntryService = {
+    listForTarget: vi.fn(),
+    listGlobal: vi.fn(),
+    create: vi.fn(),
+    update: vi.fn(),
+    delete: vi.fn(),
+  };
   const portraitGateway = {
     chooseAndImport: vi.fn(),
     resolveUrl: vi.fn(),
@@ -107,6 +115,8 @@ describe('NpcWorkspace', () => {
     npcService.create.mockResolvedValue(npc);
     npcService.update.mockResolvedValue(npc);
     npcService.delete.mockResolvedValue(undefined);
+    journalEntryService.listForTarget.mockResolvedValue([]);
+    journalEntryService.listGlobal.mockResolvedValue([]);
     portraitGateway.chooseAndImport.mockResolvedValue(null);
     portraitGateway.resolveUrl.mockResolvedValue('asset://portrait');
     portraitGateway.discard.mockResolvedValue(undefined);
@@ -126,6 +136,7 @@ describe('NpcWorkspace', () => {
           useValue: { campaign: () => campaign, load: () => Promise.resolve(campaign) },
         },
         { provide: NpcService, useValue: npcService },
+        { provide: JournalEntryService, useValue: journalEntryService },
         { provide: NpcPortraitGateway, useValue: portraitGateway },
         { provide: NpcIdleVideoGateway, useValue: idleVideoGateway },
         { provide: DisplayGateway, useValue: displayGateway },
@@ -191,7 +202,7 @@ describe('NpcWorkspace', () => {
     expect(element.querySelector('.npc-sheet > dl')).toBeNull();
     const sheet = element.querySelector('.npc-character-sheet');
     const description = element.querySelector('.official-description-readonly');
-    const notes = element.querySelector('.notes-readonly');
+    const notes = element.querySelector('app-journal-entry-list');
     if (!sheet || !description || !notes) throw new Error('NPC sheet sections not found.');
     expect(description.textContent).toContain('Description canonique.');
     expect(sheet.compareDocumentPosition(description) & Node.DOCUMENT_POSITION_FOLLOWING).toBe(

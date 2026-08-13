@@ -1,0 +1,101 @@
+:host {
+  display: block;
+  min-height: 100dvh;
+  background: #211f1c;
+}
+.journal-workspace {
+  width: min(74rem, calc(100% - 3rem));
+  margin: 1.5rem auto;
+  padding: clamp(1.5rem, 4vw, 3rem);
+  border: 1px solid #3c3832;
+  border-radius: 0.75rem;
+  color: #25221e;
+  background: #f0ece5;
+}
+.journal-workspace__heading h1 {
+  margin: 0;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: clamp(2rem, 5vw, 3.5rem);
+  font-weight: 500;
+}
+.journal-workspace__heading > p:last-child,
+.resource-journal > header p:last-child {
+  color: #71685e;
+  line-height: 1.6;
+}
+.resource-journal {
+  margin-top: 3rem;
+  padding-top: 2rem;
+  border-top: 1px solid #d2cbc0;
+}
+.resource-journal h2 {
+  margin: 0;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 2rem;
+  font-weight: 500;
+}
+.resource-journal__list {
+  display: grid;
+  gap: 0.75rem;
+  margin-top: 1.5rem;
+}
+.resource-note-link {
+  display: grid;
+  align-items: start;
+  width: 100%;
+  padding: 1rem;
+  border: 1px solid #cfc6bb;
+  border-radius: 0.65rem;
+  color: #302b26;
+  background: #faf8f4;
+  text-align: left;
+  cursor: pointer;
+  grid-template-columns: 4rem minmax(0, 1fr) auto;
+  gap: 1rem;
+}
+.resource-note-link:hover {
+  border-color: #87669b;
+  box-shadow: 0 0.5rem 1.2rem rgb(58 40 66 / 12%);
+}
+.resource-note-link__type {
+  padding: 0.25rem 0.45rem;
+  border-radius: 999px;
+  color: #fff;
+  background: #76538d;
+  font-size: 0.7rem;
+  font-weight: 800;
+  text-align: center;
+}
+.resource-note-link__content {
+  display: grid;
+  min-width: 0;
+  gap: 0.25rem;
+}
+.resource-note-link__preview {
+  display: -webkit-box;
+  overflow: hidden;
+  color: #746b60;
+  line-height: 1.45;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+.resource-note-link time {
+  color: #746b60;
+  font-size: 0.75rem;
+  white-space: nowrap;
+}
+.journal-workspace__error {
+  color: #a43e46;
+}
+@media (max-width: 52rem) {
+  .journal-workspace {
+    width: calc(100% - 1.5rem);
+    padding: 1.25rem;
+  }
+  .resource-note-link {
+    grid-template-columns: 3.5rem minmax(0, 1fr);
+  }
+  .resource-note-link time {
+    grid-column: 2;
+  }
+}

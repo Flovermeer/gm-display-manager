@@ -147,8 +147,7 @@ textarea {
 
 .form-section-heading h3,
 .feature-section-heading h3,
-.official-description-readonly h3,
-.notes-readonly h3 {
+.official-description-readonly h3 {
   margin: 0;
   font-family: Georgia, 'Times New Roman', serif;
   font-size: 1.35rem;
@@ -380,8 +379,7 @@ dd {
   padding: 0;
 }
 
-.official-description-readonly,
-.notes-readonly {
+.official-description-readonly {
   margin-top: 2.5rem;
   padding-top: 1.5rem;
   border-top: 1px solid #d2cbc0;
@@ -396,10 +394,6 @@ dd {
 .official-description-readonly .rich-text-content.readonly .tiptap {
   min-height: 4rem;
   padding: 0;
-}
-
-.notes-readonly p {
-  white-space: pre-wrap;
 }
 
 @media (max-width: 52rem) {

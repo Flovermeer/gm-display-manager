@@ -17,6 +17,10 @@ export class JournalEntryService {
     return this.repository.listByCampaign(campaignId);
   }
 
+  listGlobal(campaignId: string): Promise<readonly JournalEntry[]> {
+    return this.repository.listGlobalByCampaign(campaignId);
+  }
+
   listForTarget(campaignId: string, target: JournalTarget): Promise<readonly JournalEntry[]> {
     return this.repository.listByTarget(campaignId, target);
   }

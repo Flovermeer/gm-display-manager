@@ -160,8 +160,7 @@ app-npc-workspace {
     border-bottom: 1px solid #d2cbc0;
   }
 
-  .npc-character-sheet h3,
-  .notes-readonly h3 {
+  .npc-character-sheet h3 {
     margin: 0 0 1rem;
     font-size: 1rem;
   }
@@ -169,10 +168,6 @@ app-npc-workspace {
   .npc-character-sheet p {
     margin: 0;
     color: #746b60;
-  }
-
-  .notes-readonly {
-    margin-top: 2rem;
   }
 }
 
@@ -195,21 +190,6 @@ app-npc-workspace {
 .status-badge[data-status='missing'] {
   color: #6d5628;
   background: #eee2c8;
-}
-
-.notes-readonly {
-  margin-top: 2.5rem;
-}
-
-.notes-readonly h3 {
-  margin-bottom: 0.8rem;
-  font-size: 1rem;
-}
-
-.notes-readonly p {
-  color: #4c453e;
-  line-height: 1.7;
-  white-space: pre-wrap;
 }
 
 .field-error,

@@ -9,6 +9,7 @@ import {
   type PlayerCharacter,
 } from '../player-character/player-character';
 import { PlayerCharacterService } from '../player-character/player-character.service';
+import { JournalEntryService } from '../journal/journal-entry.service';
 import { PlayerCharacterPortraitGateway } from '../media/player-character-portrait.gateway';
 import { PlayerCharacterWorkspace } from './player-character-workspace';
 
@@ -50,6 +51,13 @@ describe('PlayerCharacterWorkspace', () => {
     updateHitPoints: vi.fn(),
     delete: vi.fn(),
   };
+  const journalEntryService = {
+    listForTarget: vi.fn(),
+    listGlobal: vi.fn(),
+    create: vi.fn(),
+    update: vi.fn(),
+    delete: vi.fn(),
+  };
   const portraitGateway = {
     chooseAndImport: vi.fn(),
     resolveUrl: vi.fn(),
@@ -65,6 +73,8 @@ describe('PlayerCharacterWorkspace', () => {
     characterService.update.mockResolvedValue(character);
     characterService.updateHitPoints.mockResolvedValue(character);
     characterService.delete.mockResolvedValue(undefined);
+    journalEntryService.listForTarget.mockResolvedValue([]);
+    journalEntryService.listGlobal.mockResolvedValue([]);
     portraitGateway.chooseAndImport.mockResolvedValue(null);
     portraitGateway.resolveUrl.mockResolvedValue('asset://portrait');
     portraitGateway.discard.mockResolvedValue(undefined);
@@ -79,6 +89,7 @@ describe('PlayerCharacterWorkspace', () => {
           useValue: { campaign: () => campaign, load: () => Promise.resolve(campaign) },
         },
         { provide: PlayerCharacterService, useValue: characterService },
+        { provide: JournalEntryService, useValue: journalEntryService },
         { provide: PlayerCharacterPortraitGateway, useValue: portraitGateway },
         {
           provide: ActivatedRoute,

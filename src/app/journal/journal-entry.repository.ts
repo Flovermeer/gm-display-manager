@@ -2,6 +2,7 @@ import type { JournalEntry, JournalTarget } from './journal-entry';
 
 export abstract class JournalEntryRepository {
   abstract listByCampaign(campaignId: string): Promise<readonly JournalEntry[]>;
+  abstract listGlobalByCampaign(campaignId: string): Promise<readonly JournalEntry[]>;
   abstract listByTarget(
     campaignId: string,
     target: JournalTarget,

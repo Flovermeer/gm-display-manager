@@ -8,6 +8,12 @@ export class InMemoryJournalEntryRepository extends JournalEntryRepository {
     return Promise.resolve(this.sorted((entry) => entry.campaignId === campaignId));
   }
 
+  override listGlobalByCampaign(campaignId: string): Promise<readonly JournalEntry[]> {
+    return Promise.resolve(
+      this.sorted((entry) => entry.campaignId === campaignId && entry.target === null),
+    );
+  }
+
   override listByTarget(
     campaignId: string,
     target: JournalTarget,

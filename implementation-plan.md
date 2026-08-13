@@ -2,6 +2,41 @@
 
 Date de cadrage : 12 août 2026
 
+Dernière consolidation : 13 août 2026
+
+## Statut consolidé
+
+| Jalon                      | Statut                                   | État réel                                                                                                                                                                                                        |
+| -------------------------- | ---------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 0 — Environnement          | Terminé                                  | Node 24 épinglé avec Volta, Angular 22, Rust stable MSVC, Build Tools et WebView2 validés.                                                                                                                       |
+| 1 — Shell Angular + Tauri  | Terminé                                  | Application standalone zoneless, routes Angular, fenêtre principale maximisée et capabilities Tauri en place.                                                                                                    |
+| 2 — Multi-écran            | Fonctionnel, validation avancée restante | Détection, choix persistant du moniteur et fenêtre joueurs dédiée plein écran validés sur le matériel nominal. Restent les cas de déconnexion, remplacement, coordonnées négatives et facteurs d’échelle variés. |
+| 3 — Régie verticale        | Terminé                                  | Écran noir, lieux, PNJ et objets peuvent être envoyés au Player Display ; synchronisation `ready` et fallback statique des PNJ en place.                                                                         |
+| 4 — SQLite                 | Terminé pour les tranches livrées        | Onze migrations couvrent réglages, campagnes, lieux, PNJ, PJ, chapitres, journal, objets, types et raretés. Repositories Tauri et mémoire isolés derrière des interfaces.                                        |
+| 5 — Gestion de campagne    | Terminé et étendu                        | CRUD campagnes, lieux hiérarchiques, PNJ structurés, PJ orientés MJ et objets narratifs. Navigation campagne persistante et protection des modifications non enregistrées.                                       |
+| 6 — Médias locaux          | Terminé pour images et portraits animés  | Import/copie locale des portraits PNJ/PJ, images de lieux et d’objets, vidéo idle PNJ et nettoyage des médias. Une validation plus large des fichiers cassés reste à inclure au durcissement.                    |
+| 7 — Tiptap et journal      | Terminé pour l’usage actuel              | Chapitres et descriptions riches, notes journalisées éditables, regroupement quotidien, mentions `@` cliquables vers PJ/PNJ/lieux/objets et fallback texte si la cible disparaît.                                |
+| 8 — Scènes                 | Non commencé                             | Composition lieu + PNJ, état de scène et transitions coordonnées restent à concevoir et implémenter.                                                                                                             |
+| 9 — Durcissement/livraison | Non commencé                             | Sauvegarde/restauration, tests matériels dégradés, session longue, journal technique, installeur Windows et guide de dépannage restent à faire.                                                                  |
+
+### Tranches supplémentaires déjà livrées
+
+- écran d’accueil et CRUD complet des campagnes ;
+- fiches PNJ D&D 5e structurées, tags, capacités/actions riches et description officielle ;
+- fiches PJ ciblées MJ avec portrait, statistiques utiles, validations explicites et suivi persistant des PV ;
+- arborescence et réordonnancement manuel des chapitres ;
+- journal global chronologique et notes liées aux ressources ;
+- objets narratifs avec type et rareté configurables par campagne, statut, harmonisation, détenteur unique, image et notes ;
+- panneau Configuration avec navigation latérale et accordéons ;
+- composants UI partagés pour boutons, dialogues, titres, états vides, champs Reactive Forms, tags et pills ;
+- navigation Retour commune aux écrans d’une campagne.
+
+### Prochaine priorité recommandée
+
+Le meilleur prochain jalon fonctionnel est le **jalon 8 — Scènes**, car les briques nécessaires sont désormais présentes : lieux, PNJ, objets, médias et Player Display. Avant de l’implémenter, il faut définir avec le MJ le comportement exact d’une scène et la place des objets dans sa composition.
+
+Les extensions **Bestiaire**, **Combat léger**, **mini-historique des dernières ressources** et **carte heuristique automatique des chapitres** restent volontairement différées. Elles ne doivent pas retarder la composition de scènes ni le durcissement Windows.
+
 ## 1. Résultat recherché
 
 Construire progressivement une application Windows locale qui permet au MJ de :

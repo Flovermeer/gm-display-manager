@@ -41,6 +41,23 @@ describe('TauriChapterRepository', () => {
       '2026-08-13T08:00:00.000Z',
     ]);
   });
+
+  it('swaps two positions in one scoped update', async () => {
+    const repository = new TauriChapterRepository();
+    await repository.updateOrder([
+      { id: 'second-id', campaignId: 'campaign-id', position: 0, updatedAt: 'now' },
+      { id: 'first-id', campaignId: 'campaign-id', position: 1, updatedAt: 'now' },
+    ]);
+
+    expect(database.execute).toHaveBeenCalledWith(expect.stringContaining('CASE id'), [
+      'campaign-id',
+      'second-id',
+      0,
+      'first-id',
+      1,
+      'now',
+    ]);
+  });
 });
 
 const chapter: Chapter = {

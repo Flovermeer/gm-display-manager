@@ -27,6 +27,7 @@ describe('ChapterWorkspace', () => {
     list: vi.fn(),
     create: vi.fn(),
     update: vi.fn(),
+    move: vi.fn(),
     delete: vi.fn(),
   };
   const emptyResourceService = { list: vi.fn() };
@@ -38,6 +39,7 @@ describe('ChapterWorkspace', () => {
     chapterService.list.mockResolvedValue([chapter]);
     chapterService.create.mockResolvedValue(chapter);
     chapterService.update.mockResolvedValue(chapter);
+    chapterService.move.mockResolvedValue(chapter);
     chapterService.delete.mockResolvedValue(undefined);
     emptyResourceService.list.mockResolvedValue([]);
 
@@ -93,6 +95,30 @@ describe('ChapterWorkspace', () => {
 
     const canLeave = fixture.componentInstance.canDeactivate();
     expect(canLeave).toBeInstanceOf(Promise);
+  });
+
+  it('shows ordering actions only for the selected chapter', async () => {
+    const secondChapter = { ...chapter, id: 'second-id', title: 'La jungle', position: 1 };
+    chapterService.list.mockResolvedValue([chapter, secondChapter]);
+    chapterService.move.mockResolvedValue({ ...chapter, position: 1 });
+    const fixture = TestBed.createComponent(ChapterWorkspace);
+    fixture.detectChanges();
+    await renderUntil(fixture, 'La jungle');
+    const element = fixture.nativeElement as HTMLElement;
+
+    expect(element.querySelector('.order-actions')).toBeNull();
+    element.querySelector<HTMLButtonElement>('.chapter-list-item')?.click();
+    await renderUntil(fixture, 'Bienvenue à Chult');
+
+    const buttons = [...element.querySelectorAll<HTMLButtonElement>('.order-actions button')];
+    expect(buttons.map((button) => button.textContent?.trim())).toEqual([
+      '↑ Monter',
+      '↓ Descendre',
+    ]);
+    expect(buttons[0]?.disabled).toBe(true);
+    expect(buttons[1]?.disabled).toBe(false);
+    buttons[1]?.click();
+    await vi.waitFor(() => expect(chapterService.move).toHaveBeenCalledWith(chapter, 1));
   });
 });
 

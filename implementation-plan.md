@@ -286,6 +286,7 @@ Périmètre initial :
 - citations et liens ;
 - sauvegarde du JSON Tiptap avec un numéro de version de schéma ;
 - lecture seule fiable.
+- ordre manuel persistant avec actions Monter et Descendre sur le chapitre sélectionné ;
 
 Contrat retenu pour les liens réactifs :
 

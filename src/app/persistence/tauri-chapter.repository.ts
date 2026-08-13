@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import Database from '@tauri-apps/plugin-sql';
 
 import type { Chapter } from '../chapter/chapter';
-import { ChapterRepository } from '../chapter/chapter.repository';
+import { ChapterRepository, type ChapterOrder } from '../chapter/chapter.repository';
 import type { RichTextDocument } from '../shared/rich-text-editor/rich-text-document';
 
 const DATABASE_URL = 'sqlite:beholders-inn.db';
@@ -72,6 +72,26 @@ export class TauriChapterRepository extends ChapterRepository {
         chapter.createdAt,
         chapter.updatedAt,
       ],
+    );
+  }
+
+  override async updateOrder(chapters: readonly ChapterOrder[]): Promise<void> {
+    if (chapters.length !== 2) throw new Error('Exactly two chapters are required to swap order.');
+    const [first, second] = chapters;
+    if (!first || !second || first.campaignId !== second.campaignId) {
+      throw new Error('Chapters must belong to the same campaign.');
+    }
+
+    const database = await this.getDatabase();
+    await database.execute(
+      `UPDATE chapter
+       SET position = CASE id
+         WHEN $2 THEN $3
+         WHEN $4 THEN $5
+       END,
+       updated_at = $6
+       WHERE campaign_id = $1 AND id IN ($2, $4)`,
+      [first.campaignId, first.id, first.position, second.id, second.position, first.updatedAt],
     );
   }
 

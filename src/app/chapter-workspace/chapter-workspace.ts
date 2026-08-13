@@ -64,6 +64,15 @@ export class ChapterWorkspace implements OnInit, PendingChangesAware {
       ),
     );
   });
+  protected readonly selectedChapterIndex = computed(() => {
+    const selectedId = this.selectedChapter()?.id;
+    return selectedId ? this.chapters().findIndex((chapter) => chapter.id === selectedId) : -1;
+  });
+  protected readonly canMoveChapterUp = computed(() => this.selectedChapterIndex() > 0);
+  protected readonly canMoveChapterDown = computed(() => {
+    const index = this.selectedChapterIndex();
+    return index >= 0 && index < this.chapters().length - 1;
+  });
 
   ngOnInit(): void {
     void this.initialize();
@@ -140,6 +149,30 @@ export class ChapterWorkspace implements OnInit, PendingChangesAware {
     } catch (error) {
       this.error.set(errorMessage(error));
       return false;
+    } finally {
+      this.isSaving.set(false);
+    }
+  }
+
+  protected async moveSelectedChapter(direction: -1 | 1): Promise<void> {
+    const chapter = this.selectedChapter();
+    if (
+      !chapter ||
+      this.isSaving() ||
+      (direction === -1 && !this.canMoveChapterUp()) ||
+      (direction === 1 && !this.canMoveChapterDown())
+    ) {
+      return;
+    }
+
+    this.isSaving.set(true);
+    this.error.set(null);
+    try {
+      const movedChapter = await this.chapterService.move(chapter, direction);
+      await this.reloadChapters();
+      this.openReadOnly(movedChapter);
+    } catch (error) {
+      this.error.set(errorMessage(error));
     } finally {
       this.isSaving.set(false);
     }

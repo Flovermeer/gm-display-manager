@@ -69,6 +69,26 @@
       <div class="detail-toolbar">
         <div class="detail-actions">
           @if (!isEditing()) {
+            <div class="order-actions" aria-label="Ordre du chapitre">
+              <button
+                class="secondary-button"
+                type="button"
+                [disabled]="!canMoveChapterUp() || isSaving()"
+                title="Déplacer ce chapitre avant le précédent"
+                (click)="moveSelectedChapter(-1)"
+              >
+                ↑ Monter
+              </button>
+              <button
+                class="secondary-button"
+                type="button"
+                [disabled]="!canMoveChapterDown() || isSaving()"
+                title="Déplacer ce chapitre après le suivant"
+                (click)="moveSelectedChapter(1)"
+              >
+                ↓ Descendre
+              </button>
+            </div>
             <button class="primary-button" type="button" (click)="editChapter()">Modifier</button>
             <button
               class="secondary-button danger-button"
@@ -127,7 +147,7 @@
       } @else if (selectedChapter(); as chapter) {
         <article class="chapter-sheet">
           <header class="chapter-heading">
-            <p class="section-kicker">Chapitre {{ chapter.position + 1 }}</p>
+            <p class="section-kicker">Chapitre {{ selectedChapterIndex() + 1 }}</p>
             <h2 id="chapter-detail-title">{{ chapter.title }}</h2>
             @if (chapter.summary) {
               <p class="chapter-summary">{{ chapter.summary }}</p>

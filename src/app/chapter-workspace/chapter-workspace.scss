@@ -179,6 +179,12 @@ input {
   gap: 0.65rem;
 }
 
+.order-actions {
+  display: flex;
+  margin-right: auto;
+  gap: 0.45rem;
+}
+
 .chapter-heading {
   padding: 2rem 0;
   border-bottom: 1px solid #d2cbc0;

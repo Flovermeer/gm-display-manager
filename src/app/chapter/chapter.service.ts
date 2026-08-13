@@ -28,6 +28,19 @@ export class ChapterService {
     return updatedChapter;
   }
 
+  async move(chapter: Chapter, direction: -1 | 1): Promise<Chapter> {
+    const chapters = await this.repository.listByCampaign(chapter.campaignId);
+    const currentIndex = chapters.findIndex((candidate) => candidate.id === chapter.id);
+    const neighbour = chapters[currentIndex + direction];
+    if (currentIndex < 0 || !neighbour) return chapter;
+
+    const updatedAt = new Date().toISOString();
+    const movedChapter = { ...chapter, position: neighbour.position, updatedAt };
+    const movedNeighbour = { ...neighbour, position: chapter.position, updatedAt };
+    await this.repository.updateOrder([movedChapter, movedNeighbour]);
+    return movedChapter;
+  }
+
   delete(chapter: Chapter): Promise<void> {
     return this.repository.delete(chapter.campaignId, chapter.id);
   }

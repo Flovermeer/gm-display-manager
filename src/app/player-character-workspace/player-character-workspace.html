@@ -90,7 +90,7 @@
             <button
               class="primary-button"
               type="button"
-              [disabled]="characterForm.invalid || isSaving()"
+              [disabled]="isSaving()"
               (click)="saveCharacter()"
             >
               {{ isSaving() ? 'Enregistrement…' : 'Enregistrer' }}
@@ -152,6 +152,11 @@
 
       @if (isEditing()) {
         <form class="character-form" [formGroup]="characterForm" (ngSubmit)="saveCharacter()">
+          @if (showValidationErrors() && characterForm.invalid) {
+            <p class="validation-summary" role="alert">
+              Vérifie les champs suivants : {{ invalidFieldLabels().join(', ') }}.
+            </p>
+          }
           <section class="form-section" aria-labelledby="identity-fields">
             <h3 id="identity-fields">Identité</h3>
             <div class="form-grid three-columns">

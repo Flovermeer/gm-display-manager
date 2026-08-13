@@ -43,6 +43,7 @@ export class PlayerCharacterWorkspace implements OnInit, PendingChangesAware {
   protected readonly showPendingChangesDialog = signal(false);
   protected readonly showDeleteDialog = signal(false);
   protected readonly showResetHitPointsDialog = signal(false);
+  protected readonly showValidationErrors = signal(false);
   protected readonly error = signal<string | null>(null);
   protected readonly statuses = PLAYER_CHARACTER_STATUSES;
   protected readonly filteredCharacters = computed(() => {
@@ -127,6 +128,7 @@ export class PlayerCharacterWorkspace implements OnInit, PendingChangesAware {
   protected async saveCharacter(): Promise<boolean> {
     if (this.characterForm.invalid || this.isSaving()) {
       this.characterForm.markAllAsTouched();
+      this.showValidationErrors.set(true);
       return false;
     }
     const campaign = this.campaign();
@@ -142,6 +144,7 @@ export class PlayerCharacterWorkspace implements OnInit, PendingChangesAware {
           ? await this.characterService.update(selected, this.formInput())
           : null;
       if (!saved) return false;
+      this.showValidationErrors.set(false);
       await this.reloadCharacters();
       this.openReadOnly(saved);
       return true;
@@ -248,6 +251,33 @@ export class PlayerCharacterWorkspace implements OnInit, PendingChangesAware {
     return value === '' || value === null ? '—' : value;
   }
 
+  protected invalidFieldLabels(): readonly string[] {
+    const labels: Readonly<Record<keyof typeof this.characterForm.controls, string>> = {
+      name: 'Personnage',
+      playerName: 'Joueur ou joueuse',
+      status: 'Statut',
+      currentHitPoints: 'PV actuels',
+      maxHitPoints: 'PV maximum',
+      species: 'Espèce',
+      className: 'Classe',
+      level: 'Niveau (1 à 20)',
+      armorClass: "Classe d'armure",
+      speed: 'Vitesse',
+      passivePerception: 'Perception passive',
+      passiveInsight: 'Intuition passive',
+      passiveInvestigation: 'Investigation passive',
+      senses: 'Sens particuliers',
+      languages: 'Langues',
+      conditions: 'Conditions',
+      exhaustionLevel: 'Épuisement (0 à 6)',
+      privateNotes: 'Notes privées',
+    };
+
+    return Object.entries(this.characterForm.controls)
+      .filter(([, control]) => control.invalid)
+      .map(([name]) => labels[name as keyof typeof labels]);
+  }
+
   protected updateTags(
     field: 'senses' | 'languages' | 'conditions',
     tags: readonly string[],
@@ -289,6 +319,7 @@ export class PlayerCharacterWorkspace implements OnInit, PendingChangesAware {
     this.selectedCharacter.set(refreshed);
     this.isCreating.set(false);
     this.isEditing.set(false);
+    this.showValidationErrors.set(false);
     this.populateForm(refreshed);
     this.hitPointsControl.reset(refreshed.currentHitPoints);
   }
@@ -315,6 +346,7 @@ export class PlayerCharacterWorkspace implements OnInit, PendingChangesAware {
       ...EMPTY_PLAYER_CHARACTER_SHEET,
     });
     this.characterForm.markAsPristine();
+    this.showValidationErrors.set(false);
   }
 
   private formInput(): UpdatePlayerCharacterInput {
@@ -364,6 +396,7 @@ export class PlayerCharacterWorkspace implements OnInit, PendingChangesAware {
     const selected = this.selectedCharacter();
     this.isEditing.set(false);
     this.isCreating.set(false);
+    this.showValidationErrors.set(false);
     if (selected) this.populateForm(selected);
     else this.populateEmptyForm();
   }

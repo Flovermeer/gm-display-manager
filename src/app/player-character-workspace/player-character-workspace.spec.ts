@@ -128,6 +128,34 @@ describe('PlayerCharacterWorkspace', () => {
       expect(characterService.updateHitPoints).toHaveBeenCalledWith(character, 24);
     });
   });
+
+  it('keeps save actionable and explains which field is invalid', async () => {
+    const fixture = TestBed.createComponent(PlayerCharacterWorkspace);
+    fixture.detectChanges();
+    await renderUntil(fixture, 'Nyssa');
+    const element = fixture.nativeElement as HTMLElement;
+
+    element.querySelector<HTMLButtonElement>('.create-button')?.click();
+    await renderUntil(fixture, 'Créer un PJ');
+    const levelInput = element.querySelector<HTMLInputElement>('#character-level');
+    const nameInput = element.querySelector<HTMLInputElement>('#character-name');
+    if (!levelInput || !nameInput) throw new Error('Character form fields not found.');
+    nameInput.value = 'Ariane';
+    nameInput.dispatchEvent(new Event('input'));
+    levelInput.value = '21';
+    levelInput.dispatchEvent(new Event('input'));
+    fixture.detectChanges();
+
+    const saveButton = [
+      ...element.querySelectorAll<HTMLButtonElement>('.detail-actions button'),
+    ].find((button) => button.textContent?.includes('Enregistrer'));
+    expect(saveButton?.disabled).toBe(false);
+    saveButton?.click();
+    fixture.detectChanges();
+
+    expect(element.querySelector('.validation-summary')?.textContent).toContain('Niveau (1 à 20)');
+    expect(characterService.create).not.toHaveBeenCalled();
+  });
 });
 
 async function renderUntil(fixture: ComponentFixture<PlayerCharacterWorkspace>, text: string) {

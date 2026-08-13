@@ -1,4 +1,4 @@
-<main class="player-display" [class.blank]="state().mode === 'blank'">
+<main class="player-display" [class.blank]="state().mode === 'blank'" [class.player-display--hidden]="!contentVisible()">
   @if (isPreview) {
     <a class="back-link" routerLink="/control">Retour au panneau MJ</a>
   }
@@ -15,6 +15,29 @@
           <figcaption>{{ display.name }}</figcaption>
         }
       </figure>
+    }
+    @case ('scene') {
+      <section class="scene-display">
+        @if (display.background.type === 'image') {
+          <img class="scene-display__background" [src]="display.background.imagePath" [alt]="display.background.name ?? 'Illustration du lieu'" />
+        } @else {
+          <div class="scene-display__default-background" aria-hidden="true"></div>
+        }
+        @if (display.foreground; as foreground) {
+          <figure class="scene-display__foreground" [class.scene-display__foreground--hidden]="!foregroundVisible()">
+            <img [src]="foreground.imagePath" [alt]="foreground.name" />
+            @if (foreground.type === 'npc' && foreground.idleVideoPath && !videoFailed()) {
+              <video [src]="foreground.idleVideoPath" [poster]="foreground.imagePath" autoplay muted loop playsinline (error)="handleVideoError()"></video>
+            }
+            <figcaption>
+              {{ foreground.name }}
+              @if (foreground.type === 'item' && foreground.summary) { <small>{{ foreground.summary }}</small> }
+            </figcaption>
+          </figure>
+        } @else if (display.background.type === 'image' && display.background.name) {
+          <p class="scene-display__location-name">{{ display.background.name }}</p>
+        }
+      </section>
     }
     @case ('npc') {
       <section class="npc-display">

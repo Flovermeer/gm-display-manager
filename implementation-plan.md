@@ -372,11 +372,24 @@ type Scene = {
   id: string;
   campaignId: string;
   name: string;
-  locationId: string;
+  locationId: string | null;
   npcIds: string[];
-  handoutIds: string[];
+  itemIds: string[];
 };
 ```
+
+Décisions V1 confirmées :
+
+- le lieu est facultatif dans le formulaire, mais la régie encourage son association ;
+- les PNJ et objets narratifs associés sont triés alphabétiquement ; les monstres seront ajoutés au jalon Bestiaire ;
+- sélectionner une scène ouvre seulement sa fiche ; une action explicite l'active sur le Player Display ;
+- l'activation affiche le lieu en fond lorsqu'il possède une image, sinon le brouillard Vanta violet par défaut ;
+- un seul PNJ, monstre ou objet peut occuper le premier plan ; il n'apparaît jamais automatiquement ;
+- masquer le premier plan conserve le fond de la scène ; l'écran noir reste une action de sécurité explicite ;
+- la scène active est persistée, mais la fenêtre joueurs ne se rouvre pas automatiquement ; à sa réouverture, le fond est restauré sans premier plan ;
+- supprimer la scène active ramène le Player Display au fond par défaut sans fermer sa fenêtre ;
+- les changements utilisent une sortie à opacité `0` puis une entrée à opacité `1`, en 300 ms, et respectent `prefers-reduced-motion` ;
+- les scènes possèdent des notes journalisées et sont disponibles dans les mentions `@`.
 
 Travail :
 

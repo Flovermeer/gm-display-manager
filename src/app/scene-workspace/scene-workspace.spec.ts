@@ -10,6 +10,13 @@ import { NarrativeItemService } from '../narrative-item/narrative-item.service';
 import { NpcService } from '../npc/npc.service';
 import type { Scene } from '../scene/scene';
 import { SceneService } from '../scene/scene.service';
+import { ActiveSceneService } from '../scene/active-scene.service';
+import { SceneDisplayService } from '../scene/scene-display.service';
+import { DisplayGateway } from '../display/display.gateway';
+import { PlayerDisplayStore } from '../display/player-display.store';
+import { NpcPortraitGateway } from '../media/npc-portrait.gateway';
+import { NpcIdleVideoGateway } from '../media/npc-idle-video.gateway';
+import { ItemImageGateway } from '../media/item-image.gateway';
 import { ResourceMentionNavigationService } from '../shared/rich-text-editor/resource-mention-navigation.service';
 import { SceneWorkspace } from './scene-workspace';
 
@@ -54,6 +61,13 @@ describe('SceneWorkspace', () => {
         { provide: CampaignContext, useValue: { campaign: () => campaign, load: () => campaign } },
         { provide: ActivatedRoute, useValue: { queryParamMap: queryParams, snapshot: { queryParamMap: { get: () => null } } } },
         { provide: SceneService, useValue: sceneService },
+        { provide: ActiveSceneService, useValue: { get: () => Promise.resolve(null), clearIfActive: () => Promise.resolve(false) } },
+        { provide: SceneDisplayService, useValue: { activate: vi.fn(), build: vi.fn() } },
+        { provide: DisplayGateway, useValue: { isDesktop: false } },
+        { provide: PlayerDisplayStore, useValue: { state: () => ({ mode: 'blank' }), setState: vi.fn() } },
+        { provide: NpcPortraitGateway, useValue: { resolveUrl: vi.fn() } },
+        { provide: NpcIdleVideoGateway, useValue: { resolveUrl: vi.fn() } },
+        { provide: ItemImageGateway, useValue: { resolveUrl: vi.fn() } },
         { provide: LocationService, useValue: { list: () => Promise.resolve([{ id: 'location-id', name: 'Villa de Wakanga' }]) } },
         { provide: NpcService, useValue: { list: () => Promise.resolve([{ id: 'npc-id', name: 'Wakanga' }]) } },
         { provide: NarrativeItemService, useValue: { list: () => Promise.resolve([{ id: 'item-id', name: "Anneau de l'Hiver" }]) } },

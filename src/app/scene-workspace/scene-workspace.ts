@@ -4,8 +4,14 @@ import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angula
 import { ActivatedRoute } from '@angular/router';
 
 import { CampaignContext } from '../campaign-layout/campaign-context';
+import { DisplayGateway } from '../display/display.gateway';
+import type { PlayerDisplayState } from '../display/player-display-state';
+import { PlayerDisplayStore } from '../display/player-display.store';
 import type { Location } from '../location/location';
 import { LocationService } from '../location/location.service';
+import { ItemImageGateway } from '../media/item-image.gateway';
+import { NpcIdleVideoGateway } from '../media/npc-idle-video.gateway';
+import { NpcPortraitGateway } from '../media/npc-portrait.gateway';
 import type { NarrativeItem } from '../narrative-item/narrative-item';
 import { NarrativeItemService } from '../narrative-item/narrative-item.service';
 import type { PendingChangesAware } from '../navigation/pending-changes.guard';
@@ -13,6 +19,8 @@ import type { Npc } from '../npc/npc';
 import { NpcService } from '../npc/npc.service';
 import type { Scene, UpdateSceneInput } from '../scene/scene';
 import { SceneService } from '../scene/scene.service';
+import { ActiveSceneService } from '../scene/active-scene.service';
+import { defaultSceneState, SceneDisplayService } from '../scene/scene-display.service';
 import { JournalEntryList } from '../shared/journal-entry-list/journal-entry-list';
 import { ButtonDirective } from '../shared/ui/button/button.directive';
 import { Dialog } from '../shared/ui/dialog/dialog';
@@ -44,6 +52,13 @@ export class SceneWorkspace implements OnInit, PendingChangesAware {
   private readonly locationService = inject(LocationService);
   private readonly npcService = inject(NpcService);
   private readonly itemService = inject(NarrativeItemService);
+  private readonly activeSceneService = inject(ActiveSceneService);
+  private readonly displayGateway = inject(DisplayGateway);
+  private readonly displayStore = inject(PlayerDisplayStore);
+  private readonly sceneDisplayService = inject(SceneDisplayService);
+  private readonly npcPortraitGateway = inject(NpcPortraitGateway);
+  private readonly npcIdleVideoGateway = inject(NpcIdleVideoGateway);
+  private readonly itemImageGateway = inject(ItemImageGateway);
   private readonly journalEntries = viewChild<JournalEntryList>(JournalEntryList);
   private pendingDecisionResolver?: PendingDecisionResolver;
 
@@ -62,6 +77,9 @@ export class SceneWorkspace implements OnInit, PendingChangesAware {
   protected readonly showPendingChangesDialog = signal(false);
   protected readonly showDeleteDialog = signal(false);
   protected readonly error = signal<string | null>(null);
+  protected readonly activeSceneId = signal<string | null>(null);
+  protected readonly isPlayerDisplayOpen = signal(false);
+  protected readonly isPublishing = signal(false);
   protected readonly focusedJournalEntryId = signal<string | null>(null);
   protected readonly filteredScenes = computed(() => {
     const term = this.searchTerm().trim().toLocaleLowerCase('fr');
@@ -165,6 +183,56 @@ export class SceneWorkspace implements OnInit, PendingChangesAware {
     }
   }
 
+  protected async activateScene(): Promise<void> {
+    const campaign = this.campaign();
+    const scene = this.selectedScene();
+    if (!campaign || !scene || this.isPublishing()) return;
+    await this.publish(async () => {
+      const state = await this.sceneDisplayService.activate(scene);
+      this.activeSceneId.set(scene.id);
+      await this.sendState(state);
+    });
+  }
+
+  protected async showNpc(npc: Npc): Promise<void> {
+    const scene = this.selectedScene();
+    if (!scene || !npc.portraitPath || this.isPublishing()) return;
+    await this.publish(async () => {
+      const state = await this.sceneDisplayService.build(scene, {
+        type: 'npc',
+        resourceId: npc.id,
+        name: npc.name,
+        imagePath: await this.npcPortraitGateway.resolveUrl(npc.portraitPath!),
+        idleVideoPath: npc.idleVideoPath
+          ? await this.npcIdleVideoGateway.resolveUrl(npc.idleVideoPath)
+          : undefined,
+      });
+      await this.sendState(state);
+    });
+  }
+
+  protected async showItem(item: NarrativeItem): Promise<void> {
+    const scene = this.selectedScene();
+    if (!scene || !item.imagePath || this.isPublishing()) return;
+    await this.publish(async () => {
+      await this.sendState(
+        await this.sceneDisplayService.build(scene, {
+          type: 'item',
+          resourceId: item.id,
+          name: item.name,
+          imagePath: await this.itemImageGateway.resolveUrl(item.imagePath!),
+          summary: item.summary,
+        }),
+      );
+    });
+  }
+
+  protected async hideForeground(): Promise<void> {
+    const scene = this.selectedScene();
+    if (!scene || this.isPublishing()) return;
+    await this.publish(async () => this.sendState(await this.sceneDisplayService.build(scene)));
+  }
+
   protected requestDeleteScene(): void {
     if (this.selectedScene()) this.showDeleteDialog.set(true);
   }
@@ -179,7 +247,13 @@ export class SceneWorkspace implements OnInit, PendingChangesAware {
     this.isSaving.set(true);
     this.error.set(null);
     try {
+      const wasActive = this.activeSceneId() === scene.id;
       await this.sceneService.delete(scene);
+      if (wasActive) {
+        await this.activeSceneService.clear(scene.campaignId);
+        this.activeSceneId.set(null);
+        await this.sendState(defaultSceneState());
+      }
       await this.reloadScenes();
       this.selectedScene.set(null);
       this.showDeleteDialog.set(false);
@@ -233,6 +307,10 @@ export class SceneWorkspace implements OnInit, PendingChangesAware {
       this.locations.set(locations);
       this.npcs.set(npcs);
       this.items.set(items);
+      this.activeSceneId.set(await this.activeSceneService.get(campaign.id));
+      if (this.displayGateway.isDesktop) {
+        this.isPlayerDisplayOpen.set(await this.displayGateway.isPlayerDisplayOpen());
+      }
       await this.openRequestedScene(
         this.route.snapshot.queryParamMap.get('resourceId'),
         this.route.snapshot.queryParamMap.get('entryId'),
@@ -255,6 +333,25 @@ export class SceneWorkspace implements OnInit, PendingChangesAware {
   private async reloadScenes(): Promise<void> {
     const campaign = this.campaign();
     if (campaign) this.scenes.set(await this.sceneService.list(campaign.id));
+  }
+
+  private async sendState(state: PlayerDisplayState): Promise<void> {
+    this.displayStore.setState(state);
+    if (this.displayGateway.isDesktop && this.isPlayerDisplayOpen()) {
+      await this.displayGateway.sendPlayerDisplayState(state);
+    }
+  }
+
+  private async publish(action: () => Promise<void>): Promise<void> {
+    this.isPublishing.set(true);
+    this.error.set(null);
+    try {
+      await action();
+    } catch (error) {
+      this.error.set(errorMessage(error));
+    } finally {
+      this.isPublishing.set(false);
+    }
   }
 
   private openReadOnly(scene: Scene): void {

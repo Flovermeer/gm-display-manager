@@ -19,6 +19,9 @@ app-entity-title { display: block; padding: 2rem 0; border-bottom: 1px solid #d2
 .scene-resources { display: grid; margin-top: 2rem; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 2rem; }
 .scene-resources > div { padding: 1rem; border: 1px solid #d2cbc0; border-radius: .5rem; }
 .scene-resources h3 { margin-top: 0; font-family: Georgia, serif; }
+.scene-resources ul { display: grid; padding: 0; list-style: none; gap: .6rem; }
+.scene-resources li, .scene-active { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
+.scene-active { margin-top: 1.5rem; padding: .8rem 1rem; border-radius: .45rem; color: #275e44; background: #d9ebdf; }
 .scene-dialog-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: .65rem; }
 .scene-error { padding: .8rem; border: 1px solid #d9a3a7; border-radius: .4rem; color: #8b2831; background: #fff0f1; }
 @media (max-width: 60rem) { .scene-form, .scene-facts, .scene-resources { grid-template-columns: 1fr; } .scene-form__summary { grid-column: auto; } }

@@ -27,6 +27,7 @@
           <button appButton="secondary" type="button" (click)="cancelEditing()">Annuler</button>
           <button appButton="primary" type="button" [disabled]="sceneForm.invalid || isSaving()" (click)="saveScene()">{{ isSaving() ? 'Enregistrement…' : 'Enregistrer' }}</button>
         } @else {
+          <button appButton="secondary" type="button" [disabled]="isPublishing()" (click)="activateScene()">{{ activeSceneId() === selectedScene()?.id ? 'Réactiver la scène' : 'Activer la scène' }}</button>
           <button appButton="primary" type="button" (click)="editScene()">Modifier</button>
           <button appButton="secondary-danger" type="button" (click)="requestDeleteScene()">Supprimer</button>
         }
@@ -49,7 +50,8 @@
       } @else if (selectedScene(); as scene) {
         <article class="scene-sheet">
           <dl class="scene-facts"><div><dt>Lieu</dt><dd>{{ locationName(scene.locationId) }}</dd></div><div><dt>Résumé</dt><dd>{{ scene.summary || 'Non renseigné' }}</dd></div></dl>
-          <section class="scene-resources"><div><h3>PNJ</h3>@if (selectedNpcs(scene).length) { <ul>@for (npc of selectedNpcs(scene); track npc.id) { <li>{{ npc.name }}</li> }</ul> } @else { <p>Aucun PNJ associé.</p> }</div><div><h3>Objets</h3>@if (selectedItems(scene).length) { <ul>@for (item of selectedItems(scene); track item.id) { <li>{{ item.name }}</li> }</ul> } @else { <p>Aucun objet associé.</p> }</div></section>
+          @if (activeSceneId() === scene.id) { <div class="scene-active"><strong>Scène active</strong><button appButton="secondary" type="button" [disabled]="isPublishing()" (click)="hideForeground()">Masquer le premier plan</button></div> }
+          <section class="scene-resources"><div><h3>PNJ</h3>@if (selectedNpcs(scene).length) { <ul>@for (npc of selectedNpcs(scene); track npc.id) { <li><span>{{ npc.name }}</span><button appButton="secondary" type="button" [disabled]="activeSceneId() !== scene.id || !npc.portraitPath || isPublishing()" (click)="showNpc(npc)">Afficher</button></li> }</ul> } @else { <p>Aucun PNJ associé.</p> }</div><div><h3>Objets</h3>@if (selectedItems(scene).length) { <ul>@for (item of selectedItems(scene); track item.id) { <li><span>{{ item.name }}</span><button appButton="secondary" type="button" [disabled]="activeSceneId() !== scene.id || !item.imagePath || isPublishing()" (click)="showItem(item)">Afficher</button></li> }</ul> } @else { <p>Aucun objet associé.</p> }</div></section>
           @if (campaign(); as activeCampaign) { <app-journal-entry-list [campaignId]="activeCampaign.id" resourceType="scene" [resourceId]="scene.id" [focusEntryId]="focusedJournalEntryId()" /> }
         </article>
       }

@@ -8,6 +8,7 @@ import type { MonitorDescriptor } from '../display/display.models';
 import { PlayerDisplayPreferenceService } from '../display/player-display-preference.service';
 import type { PlayerDisplayState } from '../display/player-display-state';
 import { PlayerDisplayStore } from '../display/player-display.store';
+import { SceneDisplayService } from '../scene/scene-display.service';
 import { ButtonDirective } from '../shared/ui/button/button.directive';
 
 @Component({
@@ -21,6 +22,7 @@ export class Control implements OnInit, OnDestroy {
   private readonly displayGateway = inject(DisplayGateway);
   private readonly playerDisplayPreference = inject(PlayerDisplayPreferenceService);
   private readonly playerDisplayStore = inject(PlayerDisplayStore);
+  private readonly sceneDisplayService = inject(SceneDisplayService);
   private unlistenPlayerDisplayReady?: UnlistenFn;
 
   protected readonly isDesktop = this.displayGateway.isDesktop;
@@ -127,6 +129,8 @@ export class Control implements OnInit, OnDestroy {
         return state.name ?? 'Document';
       case 'item':
         return state.name;
+      case 'scene':
+        return state.foreground?.name ?? state.sceneName ?? 'Fond par défaut';
     }
   }
 
@@ -164,7 +168,9 @@ export class Control implements OnInit, OnDestroy {
 
   private async initializeCampaign(): Promise<void> {
     try {
-      if (!(await this.campaignContext.load())) return;
+      const campaign = await this.campaignContext.load();
+      if (!campaign) return;
+      this.playerDisplayStore.setState(await this.sceneDisplayService.restore(campaign.id));
       if (this.isDesktop) {
         await this.initializeDesktop();
       }

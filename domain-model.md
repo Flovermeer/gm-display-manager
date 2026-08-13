@@ -40,6 +40,19 @@ campagne supprimée.
 - `sheet_json` contient les données propres au système de jeu ;
 - `sheet_schema_version` permet de migrer ce JSON.
 
+La fiche PJ est une référence ciblée pour le MJ, pas une reproduction complète de la fiche de
+jeu. Les données fréquemment affichées et mises à jour restent relationnelles :
+
+- `current_hit_points` et `max_hit_points` portent l'état persistant entre combats et sessions ;
+- le MJ peut corriger les PV actuels ou les remettre au maximum avec confirmation ;
+- le futur tracker de combat réutilisera ces mêmes valeurs pour les PJ et ne créera pas une copie
+  concurrente de leur état.
+
+Le JSON de fiche D&D 5e version 1 contient uniquement les informations utiles au MJ : espèce,
+classe, niveau, classe d'armure, vitesse, perceptions passives, sens, langues, conditions,
+épuisement et notes privées. Les caractéristiques, compétences, sorts, attaques et l'inventaire
+générique détaillés restent hors périmètre initial.
+
 Plusieurs personnages, y compris de même nom, peuvent appartenir à la même campagne. Une table séparée pour les joueurs humains n'est pas nécessaire au MVP.
 
 ### PNJ

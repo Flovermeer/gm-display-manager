@@ -48,6 +48,8 @@ Routes actuelles :
 - `http://localhost:4200/campaigns/:campaignId` : panneau du maître de jeu pour une campagne ;
 - `http://localhost:4200/campaigns/:campaignId/locations` : gestion hiérarchique des lieux ;
 - `http://localhost:4200/campaigns/:campaignId/npcs` : gestion des PNJ de la campagne ;
+- `http://localhost:4200/campaigns/:campaignId/player-characters` : fiches PJ utiles au MJ et
+  suivi persistant de leurs points de vie ;
 - `http://localhost:4200/player-display` : rendu sans contrôles pour les joueurs.
 
 Lancer Angular dans la fenêtre desktop Tauri :

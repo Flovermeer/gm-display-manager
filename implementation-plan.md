@@ -428,6 +428,12 @@ Avant chaque ligne de ce tableau, l'agent doit présenter les paquets exacts, le
 
 ### Nice to have après le MVP
 
+- remplacer certains champs texte des fiches système (espèce, classe et futurs référentiels) par
+  des sélecteurs avec recherche et saisie libre de secours ;
+- évaluer un catalogue local versionné et une récupération par API, en tenant compte du
+  fonctionnement hors ligne, de la version du système, de la langue et de la licence des données ;
+- isoler la source de ces référentiels derrière un service afin que les fiches enregistrées ne
+  dépendent pas directement d'un fournisseur externe ;
 - génération optionnelle d'une animation de PNJ à partir de son portrait statique avec LTX ;
 - conserver l'import vidéo manuel et le portrait statique comme fallback, indépendamment de LTX ;
 - explorer en premier un connecteur expérimental vers LTX Desktop lancé localement, isolé derrière

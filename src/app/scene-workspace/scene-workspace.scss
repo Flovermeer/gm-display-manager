@@ -8,9 +8,6 @@
 app-entity-title { display: block; padding: 2rem 0; border-bottom: 1px solid #d2cbc0; }
 .scene-form { display: grid; padding-top: 2rem; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.5rem; }
 .scene-form__summary { grid-column: 1 / -1; }
-.scene-relations { display: grid; align-content: start; max-height: 20rem; margin: 0; padding: 1rem; overflow-y: auto; border: 1px solid #c8c0b5; border-radius: .5rem; gap: .5rem; }
-.scene-relations legend { padding: 0 .35rem; font-weight: 800; }
-.scene-relations label { display: flex; align-items: center; padding: .35rem; gap: .6rem; }
 .scene-sheet { padding-top: 2rem; }
 .scene-facts { display: grid; margin: 0; grid-template-columns: 1fr 2fr; gap: 1rem; }
 .scene-facts div { padding: .9rem 0; border-bottom: 1px solid #ddd5c9; }

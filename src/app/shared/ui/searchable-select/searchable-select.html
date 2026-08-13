@@ -1,0 +1,55 @@
+<div class="searchable-select" (focusin)="open()" (focusout)="scheduleClose()">
+  <label class="searchable-select__label" [for]="inputId()">{{ label() }}</label>
+
+  @if (selectedOptions().length > 0) {
+    <div class="searchable-select__pills" aria-label="Sélection actuelle">
+      @for (option of selectedOptions(); track option.value) {
+        <app-tag-pill
+          [label]="option.label"
+          (remove)="removeOption(option.value)"
+        />
+      }
+    </div>
+  }
+
+  <div class="searchable-select__control">
+    <input
+      [id]="inputId()"
+      type="search"
+      role="combobox"
+      autocomplete="off"
+      [disabled]="disabled()"
+      [placeholder]="placeholder()"
+      [value]="query()"
+      [attr.aria-expanded]="isOpen()"
+      [attr.aria-controls]="inputId() + '-options'"
+      (input)="updateQuery($event)"
+      (keydown.escape)="handleEscape()"
+    />
+    <span class="searchable-select__chevron" aria-hidden="true">⌄</span>
+  </div>
+
+  @if (isOpen()) {
+    <div
+      class="searchable-select__options"
+      [id]="inputId() + '-options'"
+      role="listbox"
+      [attr.aria-multiselectable]="multiple() || null"
+    >
+      @for (option of filteredOptions(); track option.value) {
+        <button
+          class="searchable-select__option"
+          type="button"
+          role="option"
+          [attr.aria-selected]="false"
+          (mousedown)="$event.preventDefault()"
+          (click)="selectOption(option.value)"
+        >
+          {{ option.label }}
+        </button>
+      } @empty {
+        <p class="searchable-select__empty">{{ emptyMessage() }}</p>
+      }
+    </div>
+  }
+</div>

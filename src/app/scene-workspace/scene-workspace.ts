@@ -27,7 +27,11 @@ import { ButtonDirective } from '../shared/ui/button/button.directive';
 import { Dialog } from '../shared/ui/dialog/dialog';
 import { EmptyState } from '../shared/ui/empty-state/empty-state';
 import { EntityTitle } from '../shared/ui/entity-title/entity-title';
-import { FormField, type FormFieldOption } from '../shared/ui/form-field/form-field';
+import { FormField } from '../shared/ui/form-field/form-field';
+import {
+  SearchableSelect,
+  type SearchableSelectOption,
+} from '../shared/ui/searchable-select/searchable-select';
 
 type PendingDecisionResolver = (canLeave: boolean) => void;
 
@@ -41,6 +45,7 @@ type PendingDecisionResolver = (canLeave: boolean) => void;
     EmptyState,
     EntityTitle,
     FormField,
+    SearchableSelect,
   ],
   templateUrl: './scene-workspace.html',
   styleUrl: './scene-workspace.scss',
@@ -90,8 +95,14 @@ export class SceneWorkspace implements OnInit, PendingChangesAware {
         )
       : this.scenes();
   });
-  protected readonly locationOptions = computed<readonly FormFieldOption[]>(() =>
+  protected readonly locationOptions = computed<readonly SearchableSelectOption[]>(() =>
     this.locations().map(({ id, name }) => ({ value: id, label: name })),
+  );
+  protected readonly npcOptions = computed<readonly SearchableSelectOption[]>(() =>
+    this.npcs().map(({ id, name }) => ({ value: id, label: name })),
+  );
+  protected readonly itemOptions = computed<readonly SearchableSelectOption[]>(() =>
+    this.items().map(({ id, name }) => ({ value: id, label: name })),
   );
   protected readonly sceneForm = new FormGroup({
     name: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
@@ -145,14 +156,6 @@ export class SceneWorkspace implements OnInit, PendingChangesAware {
 
   protected cancelEditing(): void {
     void this.abandonChanges();
-  }
-
-  protected toggleNpc(npcId: string, checked: boolean): void {
-    this.toggleRelation(this.sceneForm.controls.npcIds, npcId, checked);
-  }
-
-  protected toggleItem(itemId: string, checked: boolean): void {
-    this.toggleRelation(this.sceneForm.controls.itemIds, itemId, checked);
   }
 
   protected async saveScene(): Promise<boolean> {
@@ -376,12 +379,6 @@ export class SceneWorkspace implements OnInit, PendingChangesAware {
 
   private formInput(): UpdateSceneInput {
     return this.sceneForm.getRawValue();
-  }
-
-  private toggleRelation(control: FormControl<readonly string[]>, id: string, checked: boolean): void {
-    const ids = checked ? [...control.value, id] : control.value.filter((value) => value !== id);
-    control.setValue([...new Set(ids)]);
-    control.markAsDirty();
   }
 
   private async abandonChanges(): Promise<void> {

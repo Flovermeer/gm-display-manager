@@ -6,18 +6,20 @@ Dernière consolidation : 13 août 2026
 
 ## Statut consolidé
 
-| Jalon                      | Statut                                   | État réel                                                                                                                                                                                                        |
-| -------------------------- | ---------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 0 — Environnement          | Terminé                                  | Node 24 épinglé avec Volta, Angular 22, Rust stable MSVC, Build Tools et WebView2 validés.                                                                                                                       |
-| 1 — Shell Angular + Tauri  | Terminé                                  | Application standalone zoneless, routes Angular, fenêtre principale maximisée et capabilities Tauri en place.                                                                                                    |
-| 2 — Multi-écran            | Fonctionnel, validation avancée restante | Détection, choix persistant du moniteur et fenêtre joueurs dédiée plein écran validés sur le matériel nominal. Restent les cas de déconnexion, remplacement, coordonnées négatives et facteurs d’échelle variés. |
-| 3 — Régie verticale        | Terminé                                  | Écran noir, lieux, PNJ et objets peuvent être envoyés au Player Display ; synchronisation `ready` et fallback statique des PNJ en place.                                                                         |
-| 4 — SQLite                 | Terminé pour les tranches livrées        | Onze migrations couvrent réglages, campagnes, lieux, PNJ, PJ, chapitres, journal, objets, types et raretés. Repositories Tauri et mémoire isolés derrière des interfaces.                                        |
-| 5 — Gestion de campagne    | Terminé et étendu                        | CRUD campagnes, lieux hiérarchiques, PNJ structurés, PJ orientés MJ et objets narratifs. Navigation campagne persistante et protection des modifications non enregistrées.                                       |
-| 6 — Médias locaux          | Terminé pour images et portraits animés  | Import/copie locale des portraits PNJ/PJ, images de lieux et d’objets, vidéo idle PNJ et nettoyage des médias. Une validation plus large des fichiers cassés reste à inclure au durcissement.                    |
-| 7 — Tiptap et journal      | Terminé pour l’usage actuel              | Chapitres et descriptions riches, notes journalisées éditables, regroupement quotidien, mentions `@` cliquables vers PJ/PNJ/lieux/objets et fallback texte si la cible disparaît.                                |
-| 8 — Scènes                 | Non commencé                             | Composition lieu + PNJ, état de scène et transitions coordonnées restent à concevoir et implémenter.                                                                                                             |
-| 9 — Durcissement/livraison | Non commencé                             | Sauvegarde/restauration, tests matériels dégradés, session longue, journal technique, installeur Windows et guide de dépannage restent à faire.                                                                  |
+| Jalon                       | Statut                                   | État réel                                                                                                                                                                                                        |
+| --------------------------- | ---------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 0 — Environnement           | Terminé                                  | Node 24 épinglé avec Volta, Angular 22, Rust stable MSVC, Build Tools et WebView2 validés.                                                                                                                       |
+| 1 — Shell Angular + Tauri   | Terminé                                  | Application standalone zoneless, routes Angular, fenêtre principale maximisée et capabilities Tauri en place.                                                                                                    |
+| 2 — Multi-écran             | Fonctionnel, validation avancée restante | Détection, choix persistant du moniteur et fenêtre joueurs dédiée plein écran validés sur le matériel nominal. Restent les cas de déconnexion, remplacement, coordonnées négatives et facteurs d’échelle variés. |
+| 3 — Régie verticale         | Terminé                                  | Écran noir, lieux, PNJ et objets peuvent être envoyés au Player Display ; synchronisation `ready` et fallback statique des PNJ en place.                                                                         |
+| 4 — SQLite                  | Terminé pour les tranches livrées        | Onze migrations couvrent réglages, campagnes, lieux, PNJ, PJ, chapitres, journal, objets, types et raretés. Repositories Tauri et mémoire isolés derrière des interfaces.                                        |
+| 5 — Gestion de campagne     | Terminé et étendu                        | CRUD campagnes, lieux hiérarchiques, PNJ structurés, PJ orientés MJ et objets narratifs. Navigation campagne persistante et protection des modifications non enregistrées.                                       |
+| 6 — Médias locaux           | Terminé pour images et portraits animés  | Import/copie locale des portraits PNJ/PJ, images de lieux et d’objets, vidéo idle PNJ et nettoyage des médias. Une validation plus large des fichiers cassés reste à inclure au durcissement.                    |
+| 7 — Tiptap et journal       | Terminé pour l’usage actuel              | Chapitres et descriptions riches, notes journalisées éditables, regroupement quotidien, mentions `@` cliquables vers PJ/PNJ/lieux/objets et fallback texte si la cible disparaît.                                |
+| 8 — Scènes                  | Prochaine tranche                        | Composition lieu + PNJ, état de scène et transitions coordonnées restent à concevoir et implémenter.                                                                                                             |
+| 9 — Bestiaire               | Planifié après les scènes                | Réutilisation des composants et champs communs aux PNJ, avec un modèle et une fiche détaillée propres aux monstres.                                                                                              |
+| 10 — Combat léger           | Planifié après le bestiaire              | Le tracker réunira les PJ, PNJ et monstres ; le bestiaire doit donc être disponible avant cette tranche.                                                                                                         |
+| 11 — Durcissement/livraison | Non commencé                             | Sauvegarde/restauration, tests matériels dégradés, session longue, journal technique, installeur Windows et guide de dépannage restent à faire.                                                                  |
 
 ### Tranches supplémentaires déjà livrées
 
@@ -33,9 +35,16 @@ Dernière consolidation : 13 août 2026
 
 ### Prochaine priorité recommandée
 
-Le meilleur prochain jalon fonctionnel est le **jalon 8 — Scènes**, car les briques nécessaires sont désormais présentes : lieux, PNJ, objets, médias et Player Display. Avant de l’implémenter, il faut définir avec le MJ le comportement exact d’une scène et la place des objets dans sa composition.
+Le prochain ordre de livraison retenu est :
 
-Les extensions **Bestiaire**, **Combat léger**, **mini-historique des dernières ressources** et **carte heuristique automatique des chapitres** restent volontairement différées. Elles ne doivent pas retarder la composition de scènes ni le durcissement Windows.
+1. **Jalon 8 — Scènes**, car les briques nécessaires sont désormais présentes : lieux, PNJ, objets, médias et Player Display ;
+2. **Jalon 9 — Bestiaire**, en réutilisant les fondations de la tranche PNJ sans recopier sa fiche détaillée ;
+3. **Jalon 10 — Combat léger**, alimenté par les PJ, les PNJ et le Bestiaire ;
+4. **Jalon 11 — Durcissement et livraison Windows**.
+
+Avant d’implémenter les scènes, il faut définir avec le MJ leur comportement exact et la place des objets dans leur composition.
+
+Le **mini-historique des dernières ressources** et la **carte heuristique automatique des chapitres** restent volontairement différés.
 
 ## 1. Résultat recherché
 
@@ -377,20 +386,24 @@ Critère de validation :
 
 > Lieu -> PNJ -> masquer le PNJ -> retour au lieu fonctionne sans autre action du MJ.
 
-### Extension différée — Bestiaire
+### Jalon 9 — Bestiaire
 
-Objectif envisagé : ajouter un onglet **Bestiaire** distinct des PNJ pour
+Objectif : ajouter un onglet **Bestiaire** distinct des PNJ pour
 cataloguer les monstres et créatures réutilisables.
 
-Cette extension est volontairement différée. Le modèle de données, le contenu
-exact de la fiche de monstre et les éventuelles données de référence seront
-définis avec le MJ avant son implémentation. Le bestiaire devra ensuite pouvoir
-alimenter le suivi de combat et être relié aux chapitres sans alourdir la fiche
-PNJ actuelle.
+Principes retenus :
 
-### Extension différée — Suivi de combat léger
+- réutiliser les composants partagés et les champs communs déjà éprouvés dans la tranche PNJ ;
+- ne pas dupliquer `NpcWorkspace` ni créer une hiérarchie de classes artificielle entre PNJ et monstres ;
+- conserver un modèle de monstre séparé, car sa fiche détaillée et son cycle de vie diffèrent de ceux d’un PNJ narratif ;
+- permettre de relier les monstres aux chapitres et notes avec le même contrat de mentions `@` ;
+- préparer explicitement l’ajout d’un ou plusieurs exemplaires d’un monstre au suivi de combat.
 
-Objectif envisagé : fournir au MJ un onglet **Combat** avec un panneau superposé
+Le contenu exact de la fiche de monstre et les éventuelles données de référence seront définis avec le MJ avant l’implémentation.
+
+### Jalon 10 — Suivi de combat léger
+
+Objectif : fournir au MJ un onglet **Combat** avec un panneau superposé
 permettant de suivre rapidement les points de vie pendant une rencontre, sans
 remplacer la gestion de combat de Foundry ni implémenter les règles complètes de
 D&D.
@@ -413,7 +426,7 @@ persistance d'une rencontre après fermeture, gestion des ajouts en double et de
 plusieurs exemplaires d'un même monstre, initiative, états temporaires et contenu
 éventuellement visible sur le Player Display.
 
-### Jalon 9 — Durcissement et livraison Windows
+### Jalon 11 — Durcissement et livraison Windows
 
 Objectif : rendre l'application fiable pendant une session réelle.
 
@@ -514,8 +527,10 @@ Avant chaque ligne de ce tableau, l'agent doit présenter les paquets exacts, le
 ```text
 Jalons 0 à 3  -> preuve de concept multi-écran
 Jalons 4 à 6  -> MVP de régie avec contenu réel
-Jalons 7 à 8  -> gestion de campagne et scènes narratives
-Jalon 9       -> version Windows distribuable
+Jalons 7 à 8   -> gestion de campagne et scènes narratives
+Jalon 9        -> bestiaire réutilisable
+Jalon 10       -> suivi de combat léger
+Jalon 11       -> version Windows distribuable
 ```
 
 On ne passe pas de la preuve de concept au gestionnaire de campagne tant que le flux `clic MJ -> écran joueurs` n'a pas été validé sur deux moniteurs physiques.

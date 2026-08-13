@@ -19,7 +19,10 @@ Dernière consolidation : 13 août 2026
 | 8 — Scènes                  | Prochaine tranche                        | Composition lieu + PNJ, état de scène et transitions coordonnées restent à concevoir et implémenter.                                                                                                             |
 | 9 — Bestiaire               | Planifié après les scènes                | Réutilisation des composants et champs communs aux PNJ, avec un modèle et une fiche détaillée propres aux monstres.                                                                                              |
 | 10 — Combat léger           | Planifié après le bestiaire              | Le tracker réunira les PJ, PNJ et monstres ; le bestiaire doit donc être disponible avant cette tranche.                                                                                                         |
-| 11 — Durcissement/livraison | Non commencé                             | Sauvegarde/restauration, tests matériels dégradés, session longue, journal technique, installeur Windows et guide de dépannage restent à faire.                                                                  |
+| 11 — Historique récent      | Planifié après le combat                 | Pills cliquables des dernières ressources consultées sous la navigation de campagne.                                                                                                                             |
+| 12 — Carte heuristique      | Planifiée après l’historique             | Graphe automatique et navigable des chapitres, ressources liées et mentions `@`, sans édition manuelle du graphe.                                                                                                |
+| 13 — Tables aléatoires      | À cadrer après la carte                  | Outil de préparation et de tirage pour les tables propres à la campagne ; modèle, types de résultats et historique des tirages restent à définir.                                                                |
+| 14 — Durcissement/livraison | Non commencé                             | Sauvegarde/restauration, tests matériels dégradés, session longue, journal technique, installeur Windows et guide de dépannage restent à faire.                                                                  |
 
 ### Tranches supplémentaires déjà livrées
 
@@ -40,11 +43,14 @@ Le prochain ordre de livraison retenu est :
 1. **Jalon 8 — Scènes**, car les briques nécessaires sont désormais présentes : lieux, PNJ, objets, médias et Player Display ;
 2. **Jalon 9 — Bestiaire**, en réutilisant les fondations de la tranche PNJ sans recopier sa fiche détaillée ;
 3. **Jalon 10 — Combat léger**, alimenté par les PJ, les PNJ et le Bestiaire ;
-4. **Jalon 11 — Durcissement et livraison Windows**.
+4. **Jalon 11 — Historique récent**, pour accélérer la navigation pendant la partie ;
+5. **Jalon 12 — Carte heuristique**, générée depuis les chapitres, les ressources liées et les mentions `@` ;
+6. **Jalon 13 — Tables aléatoires**, à cadrer fonctionnellement après la carte ;
+7. **Jalon 14 — Durcissement et livraison Windows**.
 
 Avant d’implémenter les scènes, il faut définir avec le MJ leur comportement exact et la place des objets dans leur composition.
 
-Le **mini-historique des dernières ressources** et la **carte heuristique automatique des chapitres** restent volontairement différés.
+Les tables aléatoires sont désormais inscrites dans la séquence, mais leur modèle et leur expérience d’utilisation seront décidés avec le MJ au début du jalon 13.
 
 ## 1. Résultat recherché
 
@@ -426,7 +432,36 @@ persistance d'une rencontre après fermeture, gestion des ajouts en double et de
 plusieurs exemplaires d'un même monstre, initiative, états temporaires et contenu
 éventuellement visible sur le Player Display.
 
-### Jalon 11 — Durcissement et livraison Windows
+### Jalon 11 — Historique récent
+
+Objectif : retrouver rapidement les dernières ressources consultées pendant une partie.
+
+Périmètre initial à confirmer au début du jalon :
+
+- afficher sous la barre de navigation des pills cliquables pour les dernières ressources consultées ;
+- couvrir PNJ, PJ, lieux, chapitres, objets, scènes et monstres ;
+- dédupliquer une ressource revisitée et la replacer en tête ;
+- décider du nombre maximum d’entrées, de la suppression manuelle et de la persistance entre lancements.
+
+### Jalon 12 — Carte heuristique automatique
+
+Objectif : fournir une vue navigable de la structure d’une campagne sans entretenir un second modèle manuel.
+
+La carte est générée depuis l’arborescence des chapitres, leurs relations explicites et les mentions `@`. Les nœuds ouvrent les ressources correspondantes. Une cible supprimée reste lisible sous forme de texte et ne casse pas le graphe.
+
+### Jalon 13 — Tables aléatoires
+
+Objectif : permettre au MJ de préparer et utiliser des tables aléatoires propres à une campagne.
+
+Cette tranche doit être cadrée avant implémentation. Il faudra notamment décider :
+
+- si une table contient uniquement du texte ou peut cibler des ressources de campagne ;
+- si les plages sont pondérées, basées sur une formule de dés ou les deux ;
+- si les tables peuvent s’appeler entre elles ;
+- si les tirages doivent être historisés dans le Journal ;
+- si un résultat peut être envoyé au Player Display.
+
+### Jalon 14 — Durcissement et livraison Windows
 
 Objectif : rendre l'application fiable pendant une session réelle.
 
@@ -500,11 +535,6 @@ Avant chaque ligne de ce tableau, l'agent doit présenter les paquets exacts, le
 
 ### Nice to have après le MVP
 
-- ajouter sous la barre de navigation un mini-historique de ressources récemment consultées sous
-  forme de pills cliquables (PNJ, PJ, lieux, chapitres, objets et futurs types de ressources) afin de
-  revenir rapidement à une fiche pendant la partie ;
-- décider au moment de l'implémentation du nombre d'entrées, de la gestion des doublons, de l'action
-  de retrait et de la persistance éventuelle entre deux lancements ;
 - remplacer certains champs texte des fiches système (espèce, classe et futurs référentiels) par
   des sélecteurs avec recherche et saisie libre de secours ;
 - évaluer un catalogue local versionné et une récupération par API, en tenant compte du
@@ -530,7 +560,10 @@ Jalons 4 à 6  -> MVP de régie avec contenu réel
 Jalons 7 à 8   -> gestion de campagne et scènes narratives
 Jalon 9        -> bestiaire réutilisable
 Jalon 10       -> suivi de combat léger
-Jalon 11       -> version Windows distribuable
+Jalon 11       -> historique récent des ressources
+Jalon 12       -> carte heuristique automatique
+Jalon 13       -> tables aléatoires
+Jalon 14       -> version Windows distribuable
 ```
 
 On ne passe pas de la preuve de concept au gestionnaire de campagne tant que le flux `clic MJ -> écran joueurs` n'a pas été validé sur deux moniteurs physiques.

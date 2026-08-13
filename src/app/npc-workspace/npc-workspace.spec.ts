@@ -145,7 +145,30 @@ describe('NpcWorkspace', () => {
 
     const element = fixture.nativeElement as HTMLElement;
     expect(element.querySelector('.npc-list-item')).toBeTruthy();
+    expect(element.querySelector('.npc-status-icon[data-status="active"]')?.textContent).toContain(
+      'V',
+    );
     expect(element.textContent).toContain('Aucun PNJ sélectionné');
+  });
+
+  it('shows the expected icon for every NPC status', async () => {
+    npcService.list.mockResolvedValue([
+      npc,
+      { ...npc, id: 'dead-id', name: 'Décédé', status: 'dead' },
+      { ...npc, id: 'missing-id', name: 'Disparu', status: 'missing' },
+      { ...npc, id: 'retired-id', name: 'Retiré', status: 'retired' },
+    ]);
+    const fixture = TestBed.createComponent(NpcWorkspace);
+    fixture.detectChanges();
+    await renderUntil(fixture, 'Décédé');
+
+    const element = fixture.nativeElement as HTMLElement;
+    const icon = (status: Npc['status']) =>
+      element.querySelector(`.npc-status-icon[data-status="${status}"]`)?.textContent?.trim();
+    expect(icon('active')).toBe('V');
+    expect(icon('dead')).toBe('☠');
+    expect(icon('missing')).toBe('?');
+    expect(icon('retired')).toBe('X');
   });
 
   it('uses the portrait row for the selected NPC overview before sheet and notes', async () => {

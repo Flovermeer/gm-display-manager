@@ -144,6 +144,23 @@ select:focus-visible {
   font-size: 0.78rem;
 }
 
+.npc-list-heading {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+}
+
+.npc-list-item .npc-status-icon {
+  display: grid;
+  flex: 0 0 1.45rem;
+  height: 1.45rem;
+  border-radius: 50%;
+  color: #fff;
+  background: #5d5850;
+  font-weight: 900;
+  place-items: center;
+}
+
 .list-message {
   padding: 1rem 0.5rem;
   line-height: 1.5;

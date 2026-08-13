@@ -422,6 +422,16 @@ export class NpcWorkspace implements OnInit, PendingChangesAware {
     return labels[status];
   }
 
+  protected statusIcon(status: NpcStatus): string {
+    const icons: Record<NpcStatus, string> = {
+      active: 'V',
+      dead: '☠',
+      missing: '?',
+      retired: 'X',
+    };
+    return icons[status];
+  }
+
   protected updateTags(field: NpcTagField, value: readonly string[]): void {
     this.npcForm.controls[field].setValue(value);
     this.npcForm.controls[field].markAsDirty();

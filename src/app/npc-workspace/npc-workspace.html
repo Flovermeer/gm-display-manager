@@ -37,8 +37,18 @@
             [class.active]="selectedNpc()?.id === npc.id && !isCreating()"
             (click)="requestSelectNpc(npc)"
           >
-            <strong>{{ npc.name }}</strong>
-            <span>{{ npc.summary || statusLabel(npc.status) }}</span>
+            <span class="npc-list-heading">
+              <span
+                class="npc-status-icon"
+                [attr.data-status]="npc.status"
+                [attr.aria-label]="'Statut : ' + statusLabel(npc.status)"
+                [attr.title]="statusLabel(npc.status)"
+              >
+                {{ statusIcon(npc.status) }}
+              </span>
+              <strong>{{ npc.name }}</strong>
+            </span>
+            <span class="npc-list-summary">{{ npc.summary || statusLabel(npc.status) }}</span>
           </button>
         }
       }

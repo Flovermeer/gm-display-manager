@@ -21,7 +21,7 @@
         @if (display.background.type === 'image') {
           <img class="scene-display__background" [src]="display.background.imagePath" [alt]="display.background.name ?? 'Illustration du lieu'" />
         } @else {
-          <div class="scene-display__default-background" aria-hidden="true"></div>
+          <app-default-display-background class="scene-display__default-background" />
         }
         @if (display.foreground; as foreground) {
           <figure class="scene-display__foreground" [class.scene-display__foreground--hidden]="!foregroundVisible()">

@@ -81,12 +81,7 @@
 }
 
 .scene-display__default-background {
-  background:
-    radial-gradient(circle at 30% 25%, #633078 0, transparent 36%),
-    radial-gradient(circle at 72% 68%, #292250 0, transparent 44%),
-    linear-gradient(135deg, #06060b, #1d1028 55%, #080711);
-  background-size: 140% 140%;
-  animation: fog-drift 14s ease-in-out infinite alternate;
+  display: block;
 }
 
 .scene-display__foreground {
@@ -132,10 +127,6 @@
   text-shadow: 0 0.2rem 1rem #000;
 }
 
-@keyframes fog-drift {
-  from { background-position: 0% 0%; }
-  to { background-position: 100% 65%; }
-}
 
 .item-display img {
   width: 100%;
@@ -245,9 +236,6 @@ figcaption,
     transition: none;
   }
 
-  .scene-display__default-background {
-    animation: none;
-  }
   .blank-screen,
   .location-display,
   .npc-display,

@@ -28,6 +28,7 @@ import { NpcRepository } from './npc/npc.repository';
 import { PlayerCharacterRepository } from './player-character/player-character.repository';
 import { ItemConfigurationRepository } from './narrative-item/item-configuration.repository';
 import { NarrativeItemRepository } from './narrative-item/narrative-item.repository';
+import { SceneRepository } from './scene/scene.repository';
 import { routes } from './app.routes';
 import { AppSettingRepository } from './persistence/app-setting.repository';
 import { InMemoryAppSettingRepository } from './persistence/in-memory-app-setting.repository';
@@ -39,6 +40,7 @@ import { InMemoryNpcRepository } from './persistence/in-memory-npc.repository';
 import { InMemoryPlayerCharacterRepository } from './persistence/in-memory-player-character.repository';
 import { InMemoryItemConfigurationRepository } from './persistence/in-memory-item-configuration.repository';
 import { InMemoryNarrativeItemRepository } from './persistence/in-memory-narrative-item.repository';
+import { InMemorySceneRepository } from './persistence/in-memory-scene.repository';
 import { TauriAppSettingRepository } from './persistence/tauri-app-setting.repository';
 import { TauriCampaignRepository } from './persistence/tauri-campaign.repository';
 import { TauriChapterRepository } from './persistence/tauri-chapter.repository';
@@ -48,6 +50,7 @@ import { TauriNpcRepository } from './persistence/tauri-npc.repository';
 import { TauriPlayerCharacterRepository } from './persistence/tauri-player-character.repository';
 import { TauriItemConfigurationRepository } from './persistence/tauri-item-configuration.repository';
 import { TauriNarrativeItemRepository } from './persistence/tauri-narrative-item.repository';
+import { TauriSceneRepository } from './persistence/tauri-scene.repository';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -103,6 +106,10 @@ export const appConfig: ApplicationConfig = {
       provide: NarrativeItemRepository,
       useFactory: () =>
         isTauri() ? new TauriNarrativeItemRepository() : new InMemoryNarrativeItemRepository(),
+    },
+    {
+      provide: SceneRepository,
+      useFactory: () => (isTauri() ? new TauriSceneRepository() : new InMemorySceneRepository()),
     },
     {
       provide: LocationImageGateway,

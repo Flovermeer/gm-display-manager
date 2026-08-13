@@ -1,0 +1,99 @@
+.entity-workspace__visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.entity-workspace__kicker {
+  margin: 0 0 0.4rem;
+  color: var(--color-workspace-accent);
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+}
+
+.entity-workspace__title {
+  margin: 0;
+  color: var(--color-workspace-ink);
+  font-family: var(--font-workspace-display);
+  font-size: clamp(1.8rem, 4vw, 2.8rem);
+  font-weight: 500;
+}
+
+.entity-workspace input,
+.entity-workspace textarea,
+.entity-workspace select {
+  width: 100%;
+  padding: 0.75rem 0.85rem;
+  border: 1px solid #4c463d;
+  border-radius: 0.4rem;
+  color: #f3efe6;
+  background: #161512;
+  font: inherit;
+}
+
+.entity-workspace textarea {
+  resize: vertical;
+  line-height: 1.6;
+}
+
+.entity-workspace__button {
+  padding: 0.7rem 0.9rem;
+  border-radius: 0.4rem;
+  cursor: pointer;
+}
+
+.entity-workspace__button--primary {
+  border: 1px solid #906bad;
+  color: #fff;
+  background: var(--color-workspace-accent);
+}
+
+.entity-workspace__button--secondary {
+  border: 1px solid #aca398;
+  color: #453f38;
+  background: transparent;
+}
+
+.entity-workspace__button--full {
+  width: 100%;
+  font-weight: 700;
+}
+
+// Transitional aliases: feature templates keep their semantic hooks while the
+// visual contract now lives in the global BEM layer.
+.entity-workspace :is(.primary-button, .secondary-button) {
+  padding: 0.7rem 0.9rem;
+  border-radius: 0.4rem;
+  cursor: pointer;
+}
+
+.entity-workspace .primary-button {
+  border: 1px solid #906bad;
+  color: #fff;
+  background: var(--color-workspace-accent);
+}
+
+.entity-workspace .secondary-button {
+  border: 1px solid #aca398;
+  color: #453f38;
+  background: transparent;
+}
+
+.entity-workspace button:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.entity-workspace button:focus-visible,
+.entity-workspace input:focus-visible,
+.entity-workspace textarea:focus-visible,
+.entity-workspace select:focus-visible {
+  outline: 2px solid var(--color-workspace-focus);
+  outline-offset: 2px;
+}

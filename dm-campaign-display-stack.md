@@ -65,6 +65,18 @@ Architecture :
 - Signals pour l'état applicatif ;
 - composants réutilisables.
 
+Les styles partagés suivent une convention BEM et sont rangés par niveau Atomic Design dans
+`src/styles/` :
+
+- `_tokens.scss` centralise les variables visuelles ;
+- `_atoms.scss` contient les éléments indivisibles (titres, boutons, champs) ;
+- `_molecules.scss` assemble les petits groupes d'interface (barres d'actions, états vides) ;
+- `_organisms.scss` définit les grands layouts réutilisés, notamment `.entity-workspace`.
+
+Les feuilles SCSS des composants conservent uniquement leurs styles métier spécifiques. Un
+élément du layout commun utilise le bloc BEM `.entity-workspace` plutôt qu'une nouvelle copie de
+la structure dans chaque vue.
+
 Pas de NgRx au départ.
 
 Exemples d'état global :

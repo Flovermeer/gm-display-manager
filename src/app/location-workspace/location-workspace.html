@@ -1,7 +1,13 @@
-<main class="workspace" [class.sidebar-collapsed]="isSidebarCollapsed()">
-  <aside class="sidebar" aria-label="Liste des lieux">
-    <div class="sidebar-tools">
-      <label class="search-label" for="location-search">Rechercher un lieu</label>
+<main
+  class="workspace entity-workspace entity-workspace--location"
+  [class.sidebar-collapsed]="isSidebarCollapsed()"
+  [class.entity-workspace--sidebar-collapsed]="isSidebarCollapsed()"
+>
+  <aside class="sidebar entity-workspace__sidebar" aria-label="Liste des lieux">
+    <div class="sidebar-tools entity-workspace__sidebar-tools">
+      <label class="search-label entity-workspace__visually-hidden" for="location-search">
+        Rechercher un lieu
+      </label>
       <input
         id="location-search"
         type="search"
@@ -10,12 +16,16 @@
         (input)="updateSearch($event)"
       />
 
-      <div class="sidebar-heading">
+      <div class="sidebar-heading entity-workspace__sidebar-heading">
         <h1>Lieux</h1>
         <span>{{ locationEntries().length }}</span>
       </div>
 
-      <button class="create-button" type="button" (click)="requestCreateLocation()">
+      <button
+        class="create-button entity-workspace__button entity-workspace__button--primary entity-workspace__button--full"
+        type="button"
+        (click)="requestCreateLocation()"
+      >
         + Nouveau lieu
       </button>
     </div>
@@ -47,7 +57,7 @@
   </aside>
 
   <button
-    class="sidebar-toggle"
+    class="sidebar-toggle entity-workspace__sidebar-toggle"
     type="button"
     [attr.aria-label]="
       isSidebarCollapsed() ? 'Afficher la liste des lieux' : 'Replier la liste des lieux'
@@ -58,14 +68,14 @@
     {{ isSidebarCollapsed() ? '→' : '←' }}
   </button>
 
-  <section class="detail-panel" aria-labelledby="location-detail-title">
+  <section class="detail-panel entity-workspace__detail" aria-labelledby="location-detail-title">
     @if (error(); as errorMessage) {
       <p class="error" role="alert">{{ errorMessage }}</p>
     }
 
     @if (isCreating() || selectedLocation()) {
-      <div class="detail-toolbar">
-        <div class="detail-actions">
+      <div class="detail-toolbar entity-workspace__toolbar">
+        <div class="detail-actions entity-workspace__actions">
           @if (!isEditing()) {
             <button
               class="secondary-button display-button"
@@ -102,8 +112,10 @@
 
       <header class="detail-heading">
         <div>
-          <p class="section-kicker">{{ isCreating() ? 'Nouveau décor' : 'Fiche du lieu' }}</p>
-          <h2 id="location-detail-title">
+          <p class="section-kicker entity-workspace__kicker">
+            {{ isCreating() ? 'Nouveau décor' : 'Fiche du lieu' }}
+          </p>
+          <h2 class="entity-workspace__title" id="location-detail-title">
             {{ isCreating() ? 'Créer un lieu' : selectedLocation()?.name }}
           </h2>
         </div>
@@ -187,10 +199,17 @@
         </article>
       }
     } @else {
-      <div class="empty-detail">
-        <span aria-hidden="true">⌂</span>
-        <h2 id="location-detail-title">Aucun lieu sélectionné</h2>
-        <p>Sélectionne un lieu dans la liste ou crée-en un nouveau.</p>
+      <div class="empty-detail entity-workspace__empty-state">
+        <span class="entity-workspace__empty-icon" aria-hidden="true">⌂</span>
+        <h2
+          class="entity-workspace__title entity-workspace__empty-title"
+          id="location-detail-title"
+        >
+          Aucun lieu sélectionné
+        </h2>
+        <p class="entity-workspace__empty-description">
+          Sélectionne un lieu dans la liste ou crée-en un nouveau.
+        </p>
       </div>
     }
   </section>

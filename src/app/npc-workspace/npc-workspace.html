@@ -1,7 +1,13 @@
-<main class="workspace" [class.sidebar-collapsed]="isSidebarCollapsed()">
-  <aside class="sidebar" aria-label="Liste des PNJ">
-    <div class="sidebar-tools">
-      <label class="search-label" for="npc-search">Rechercher un PNJ</label>
+<main
+  class="workspace entity-workspace entity-workspace--npc"
+  [class.sidebar-collapsed]="isSidebarCollapsed()"
+  [class.entity-workspace--sidebar-collapsed]="isSidebarCollapsed()"
+>
+  <aside class="sidebar entity-workspace__sidebar" aria-label="Liste des PNJ">
+    <div class="sidebar-tools entity-workspace__sidebar-tools">
+      <label class="search-label entity-workspace__visually-hidden" for="npc-search">
+        Rechercher un PNJ
+      </label>
       <input
         id="npc-search"
         type="search"
@@ -10,12 +16,16 @@
         (input)="updateSearch($event)"
       />
 
-      <div class="sidebar-heading">
+      <div class="sidebar-heading entity-workspace__sidebar-heading">
         <h1>PNJ</h1>
         <span>{{ filteredNpcs().length }}</span>
       </div>
 
-      <button class="create-button" type="button" (click)="requestCreateNpc()">
+      <button
+        class="create-button entity-workspace__button entity-workspace__button--primary entity-workspace__button--full"
+        type="button"
+        (click)="requestCreateNpc()"
+      >
         + Nouveau PNJ
       </button>
     </div>
@@ -56,7 +66,7 @@
   </aside>
 
   <button
-    class="sidebar-toggle"
+    class="sidebar-toggle entity-workspace__sidebar-toggle"
     type="button"
     [attr.aria-label]="
       isSidebarCollapsed() ? 'Afficher la liste des PNJ' : 'Replier la liste des PNJ'
@@ -67,14 +77,14 @@
     {{ isSidebarCollapsed() ? '→' : '←' }}
   </button>
 
-  <section class="detail-panel" aria-labelledby="npc-detail-title">
+  <section class="detail-panel entity-workspace__detail" aria-labelledby="npc-detail-title">
     @if (error(); as errorMessage) {
       <p class="error" role="alert">{{ errorMessage }}</p>
     }
 
     @if (isCreating() || selectedNpc()) {
-      <div class="detail-toolbar">
-        <div class="detail-actions">
+      <div class="detail-toolbar entity-workspace__toolbar">
+        <div class="detail-actions entity-workspace__actions">
           @if (!isEditing()) {
             <button
               class="secondary-button display-button"
@@ -113,9 +123,11 @@
 
       <header class="detail-heading">
         <div class="npc-identity">
-          <p class="section-kicker">{{ isCreating() ? 'Nouveau personnage' : 'Fiche du PNJ' }}</p>
+          <p class="section-kicker entity-workspace__kicker">
+            {{ isCreating() ? 'Nouveau personnage' : 'Fiche du PNJ' }}
+          </p>
           <div class="npc-title-row">
-            <h2 id="npc-detail-title">
+            <h2 class="entity-workspace__title" id="npc-detail-title">
               {{ isCreating() ? 'Créer un PNJ' : selectedNpc()?.name }}
             </h2>
             @if (!isEditing() && selectedNpc(); as npc) {
@@ -572,10 +584,14 @@
         </article>
       }
     } @else {
-      <div class="empty-detail">
-        <span aria-hidden="true">◉</span>
-        <h2 id="npc-detail-title">Aucun PNJ sélectionné</h2>
-        <p>Sélectionne un PNJ dans la liste ou crée-en un nouveau.</p>
+      <div class="empty-detail entity-workspace__empty-state">
+        <span class="entity-workspace__empty-icon" aria-hidden="true">◉</span>
+        <h2 class="entity-workspace__title entity-workspace__empty-title" id="npc-detail-title">
+          Aucun PNJ sélectionné
+        </h2>
+        <p class="entity-workspace__empty-description">
+          Sélectionne un PNJ dans la liste ou crée-en un nouveau.
+        </p>
       </div>
     }
   </section>

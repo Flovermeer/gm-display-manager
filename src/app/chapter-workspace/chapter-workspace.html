@@ -1,7 +1,13 @@
-<main class="workspace" [class.sidebar-collapsed]="isSidebarCollapsed()">
-  <aside class="sidebar" aria-label="Liste des chapitres">
-    <div class="sidebar-tools">
-      <label class="search-label" for="chapter-search">Rechercher dans les chapitres</label>
+<main
+  class="workspace entity-workspace entity-workspace--chapter"
+  [class.sidebar-collapsed]="isSidebarCollapsed()"
+  [class.entity-workspace--sidebar-collapsed]="isSidebarCollapsed()"
+>
+  <aside class="sidebar entity-workspace__sidebar" aria-label="Liste des chapitres">
+    <div class="sidebar-tools entity-workspace__sidebar-tools">
+      <label class="search-label entity-workspace__visually-hidden" for="chapter-search">
+        Rechercher dans les chapitres
+      </label>
       <input
         id="chapter-search"
         type="search"
@@ -10,11 +16,15 @@
         (input)="updateSearch($event)"
       />
 
-      <div class="sidebar-heading">
+      <div class="sidebar-heading entity-workspace__sidebar-heading">
         <h1>Chapitres</h1>
         <span>{{ chapters().length }}</span>
       </div>
-      <button class="create-button" type="button" (click)="requestCreateChapter()">
+      <button
+        class="create-button entity-workspace__button entity-workspace__button--primary entity-workspace__button--full"
+        type="button"
+        (click)="requestCreateChapter()"
+      >
         + Nouveau chapitre
       </button>
     </div>
@@ -44,7 +54,7 @@
   </aside>
 
   <button
-    class="sidebar-toggle"
+    class="sidebar-toggle entity-workspace__sidebar-toggle"
     type="button"
     [attr.aria-label]="
       isSidebarCollapsed() ? 'Afficher la liste des chapitres' : 'Replier la liste des chapitres'
@@ -54,14 +64,14 @@
     {{ isSidebarCollapsed() ? '→' : '←' }}
   </button>
 
-  <section class="detail-panel" aria-labelledby="chapter-detail-title">
+  <section class="detail-panel entity-workspace__detail" aria-labelledby="chapter-detail-title">
     @if (error(); as errorMessage) {
       <p class="error" role="alert">{{ errorMessage }}</p>
     }
 
     @if (isCreating() || selectedChapter()) {
-      <div class="detail-toolbar">
-        <div class="detail-actions">
+      <div class="detail-toolbar entity-workspace__toolbar">
+        <div class="detail-actions entity-workspace__actions">
           @if (!isEditing()) {
             <div class="order-actions" aria-label="Ordre du chapitre">
               <button
@@ -110,7 +120,9 @@
       @if (isEditing()) {
         <form class="chapter-form" [formGroup]="chapterForm" (ngSubmit)="saveChapter()">
           <header class="chapter-heading">
-            <p class="section-kicker">{{ isCreating() ? 'Nouveau chapitre' : 'Modification' }}</p>
+            <p class="section-kicker entity-workspace__kicker">
+              {{ isCreating() ? 'Nouveau chapitre' : 'Modification' }}
+            </p>
             <div class="field">
               <label for="chapter-title">Titre</label>
               <input id="chapter-title" type="text" formControlName="title" autocomplete="off" />
@@ -141,8 +153,10 @@
       } @else if (selectedChapter(); as chapter) {
         <article class="chapter-sheet">
           <header class="chapter-heading">
-            <p class="section-kicker">Chapitre {{ selectedChapterIndex() + 1 }}</p>
-            <h2 id="chapter-detail-title">{{ chapter.title }}</h2>
+            <p class="section-kicker entity-workspace__kicker">
+              Chapitre {{ selectedChapterIndex() + 1 }}
+            </p>
+            <h2 class="entity-workspace__title" id="chapter-detail-title">{{ chapter.title }}</h2>
             @if (chapter.summary) {
               <p class="chapter-summary">{{ chapter.summary }}</p>
             }
@@ -157,8 +171,10 @@
     } @else if (chapters().length > 0) {
       <section class="chapter-overview" aria-labelledby="chapter-detail-title">
         <header>
-          <p class="section-kicker">Vue d'ensemble</p>
-          <h2 id="chapter-detail-title">Arborescence des chapitres</h2>
+          <p class="section-kicker entity-workspace__kicker">Vue d'ensemble</p>
+          <h2 class="entity-workspace__title" id="chapter-detail-title">
+            Arborescence des chapitres
+          </h2>
           <p>Sélectionne une étape pour ouvrir directement son contenu.</p>
         </header>
 
@@ -180,10 +196,14 @@
         </ol>
       </section>
     } @else {
-      <div class="empty-detail">
-        <span aria-hidden="true">✦</span>
-        <h2 id="chapter-detail-title">Aucun chapitre sélectionné</h2>
-        <p>Sélectionne un chapitre dans la liste ou commence une nouvelle note.</p>
+      <div class="empty-detail entity-workspace__empty-state">
+        <span class="entity-workspace__empty-icon" aria-hidden="true">✦</span>
+        <h2 class="entity-workspace__title entity-workspace__empty-title" id="chapter-detail-title">
+          Aucun chapitre sélectionné
+        </h2>
+        <p class="entity-workspace__empty-description">
+          Sélectionne un chapitre dans la liste ou commence une nouvelle note.
+        </p>
       </div>
     }
   </section>

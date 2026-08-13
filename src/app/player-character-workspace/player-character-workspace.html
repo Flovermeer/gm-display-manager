@@ -1,7 +1,13 @@
-<main class="workspace" [class.sidebar-collapsed]="isSidebarCollapsed()">
-  <aside class="sidebar" aria-label="Résumé du groupe">
-    <div class="sidebar-tools">
-      <label class="search-label" for="character-search">Rechercher un personnage</label>
+<main
+  class="workspace entity-workspace entity-workspace--player-character"
+  [class.sidebar-collapsed]="isSidebarCollapsed()"
+  [class.entity-workspace--sidebar-collapsed]="isSidebarCollapsed()"
+>
+  <aside class="sidebar entity-workspace__sidebar" aria-label="Résumé du groupe">
+    <div class="sidebar-tools entity-workspace__sidebar-tools">
+      <label class="search-label entity-workspace__visually-hidden" for="character-search">
+        Rechercher un personnage
+      </label>
       <input
         id="character-search"
         type="search"
@@ -10,12 +16,16 @@
         (input)="updateSearch($event)"
       />
 
-      <div class="sidebar-heading">
+      <div class="sidebar-heading entity-workspace__sidebar-heading">
         <h1>Groupe</h1>
         <span>{{ characters().length }}</span>
       </div>
 
-      <button class="create-button" type="button" (click)="requestCreateCharacter()">
+      <button
+        class="create-button entity-workspace__button entity-workspace__button--primary entity-workspace__button--full"
+        type="button"
+        (click)="requestCreateCharacter()"
+      >
         + Nouveau PJ
       </button>
     </div>
@@ -51,7 +61,7 @@
   </aside>
 
   <button
-    class="sidebar-toggle"
+    class="sidebar-toggle entity-workspace__sidebar-toggle"
     type="button"
     [attr.aria-label]="
       isSidebarCollapsed() ? 'Afficher le résumé du groupe' : 'Replier le résumé du groupe'
@@ -62,16 +72,18 @@
     {{ isSidebarCollapsed() ? '→' : '←' }}
   </button>
 
-  <section class="detail-panel" aria-labelledby="character-detail-title">
+  <section class="detail-panel entity-workspace__detail" aria-labelledby="character-detail-title">
     @if (error(); as errorMessage) {
       <p class="error" role="alert">{{ errorMessage }}</p>
     }
 
     @if (isCreating() || selectedCharacter()) {
-      <div class="detail-toolbar">
+      <div class="detail-toolbar entity-workspace__toolbar">
         <div class="toolbar-identity">
-          <p class="section-kicker">{{ isCreating() ? 'Nouveau héros' : 'Référence du MJ' }}</p>
-          <h2 id="character-detail-title">
+          <p class="section-kicker entity-workspace__kicker">
+            {{ isCreating() ? 'Nouveau héros' : 'Référence du MJ' }}
+          </p>
+          <h2 class="entity-workspace__title" id="character-detail-title">
             {{ isCreating() ? 'Créer un PJ' : selectedCharacter()?.name }}
           </h2>
           @if (!isCreating() && selectedCharacter(); as character) {
@@ -80,7 +92,7 @@
             </p>
           }
         </div>
-        <div class="detail-actions">
+        <div class="detail-actions entity-workspace__actions">
           @if (!isEditing()) {
             <button class="primary-button" type="button" (click)="editCharacter()">Modifier</button>
             <button
@@ -497,10 +509,17 @@
         </article>
       }
     } @else {
-      <div class="empty-detail">
-        <span aria-hidden="true">⚔</span>
-        <h2 id="character-detail-title">Aucun PJ sélectionné</h2>
-        <p>Sélectionne un personnage dans le groupe ou crée-en un nouveau.</p>
+      <div class="empty-detail entity-workspace__empty-state">
+        <span class="entity-workspace__empty-icon" aria-hidden="true">⚔</span>
+        <h2
+          class="entity-workspace__title entity-workspace__empty-title"
+          id="character-detail-title"
+        >
+          Aucun PJ sélectionné
+        </h2>
+        <p class="entity-workspace__empty-description">
+          Sélectionne un personnage dans le groupe ou crée-en un nouveau.
+        </p>
       </div>
     }
   </section>

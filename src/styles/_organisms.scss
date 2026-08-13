@@ -1,0 +1,89 @@
+.entity-workspace {
+  --entity-sidebar-width: 19rem;
+  --entity-sidebar-width-compact: 15rem;
+  --entity-toggle-width: 2.8rem;
+  --entity-detail-max-width: 68rem;
+
+  display: grid;
+  min-height: calc(100dvh - 4rem);
+  color: #f3efe6;
+  background: var(--color-workspace-canvas);
+  grid-template-columns: var(--entity-sidebar-width) var(--entity-toggle-width) minmax(0, 1fr);
+  transition: grid-template-columns 160ms ease;
+}
+
+.entity-workspace--npc {
+  --entity-sidebar-width: 18rem;
+  --entity-detail-max-width: 65rem;
+}
+
+.entity-workspace--player-character {
+  --entity-sidebar-width: 20rem;
+  --entity-sidebar-width-compact: 16rem;
+  --entity-detail-max-width: 72rem;
+}
+
+.entity-workspace--chapter {
+  --entity-detail-max-width: 74rem;
+}
+
+.entity-workspace--sidebar-collapsed {
+  grid-template-columns: 0 var(--entity-toggle-width) minmax(0, 1fr);
+}
+
+.entity-workspace__sidebar {
+  display: grid;
+  min-width: 0;
+  overflow: hidden;
+  border-right: 1px solid var(--color-workspace-sidebar-border);
+  background: var(--color-workspace-sidebar);
+  grid-template-rows: auto minmax(0, 1fr);
+}
+
+.entity-workspace__sidebar-toggle {
+  align-self: start;
+  height: 3rem;
+  border: 0;
+  border-radius: 0 0 0.4rem 0.4rem;
+  color: #f3efe6;
+  background: #3a3630;
+  cursor: pointer;
+  font-size: 1.35rem;
+}
+
+.entity-workspace__detail {
+  width: min(var(--entity-detail-max-width), calc(100% - 3rem));
+  min-height: calc(100dvh - 8rem);
+  margin: 1.5rem auto;
+  padding: clamp(1.5rem, 4vw, 3rem);
+  border: 1px solid #3c3832;
+  border-radius: var(--radius-workspace-panel);
+  color: var(--color-workspace-ink);
+  background: var(--color-workspace-paper);
+  box-shadow: 0 1.5rem 4rem rgb(0 0 0 / 20%);
+}
+
+@media (max-width: 65rem) {
+  .entity-workspace {
+    --entity-toggle-width: 2.5rem;
+
+    grid-template-columns:
+      var(--entity-sidebar-width-compact) var(--entity-toggle-width)
+      minmax(0, 1fr);
+  }
+
+  .entity-workspace--sidebar-collapsed {
+    grid-template-columns: 0 var(--entity-toggle-width) minmax(0, 1fr);
+  }
+
+  .entity-workspace__detail {
+    width: calc(100% - 1.5rem);
+    padding: 1.25rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .entity-workspace {
+    transition: none;
+  }
+}

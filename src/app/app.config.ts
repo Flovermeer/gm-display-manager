@@ -23,6 +23,8 @@ import { TauriPlayerCharacterPortraitGateway } from './media/tauri-player-charac
 import { TauriNpcIdleVideoGateway } from './media/tauri-npc-idle-video.gateway';
 import { NpcRepository } from './npc/npc.repository';
 import { PlayerCharacterRepository } from './player-character/player-character.repository';
+import { ItemConfigurationRepository } from './narrative-item/item-configuration.repository';
+import { NarrativeItemRepository } from './narrative-item/narrative-item.repository';
 import { routes } from './app.routes';
 import { AppSettingRepository } from './persistence/app-setting.repository';
 import { InMemoryAppSettingRepository } from './persistence/in-memory-app-setting.repository';
@@ -32,6 +34,8 @@ import { InMemoryJournalEntryRepository } from './persistence/in-memory-journal-
 import { InMemoryLocationRepository } from './persistence/in-memory-location.repository';
 import { InMemoryNpcRepository } from './persistence/in-memory-npc.repository';
 import { InMemoryPlayerCharacterRepository } from './persistence/in-memory-player-character.repository';
+import { InMemoryItemConfigurationRepository } from './persistence/in-memory-item-configuration.repository';
+import { InMemoryNarrativeItemRepository } from './persistence/in-memory-narrative-item.repository';
 import { TauriAppSettingRepository } from './persistence/tauri-app-setting.repository';
 import { TauriCampaignRepository } from './persistence/tauri-campaign.repository';
 import { TauriChapterRepository } from './persistence/tauri-chapter.repository';
@@ -39,6 +43,8 @@ import { TauriJournalEntryRepository } from './persistence/tauri-journal-entry.r
 import { TauriLocationRepository } from './persistence/tauri-location.repository';
 import { TauriNpcRepository } from './persistence/tauri-npc.repository';
 import { TauriPlayerCharacterRepository } from './persistence/tauri-player-character.repository';
+import { TauriItemConfigurationRepository } from './persistence/tauri-item-configuration.repository';
+import { TauriNarrativeItemRepository } from './persistence/tauri-narrative-item.repository';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -82,6 +88,18 @@ export const appConfig: ApplicationConfig = {
       provide: PlayerCharacterRepository,
       useFactory: () =>
         isTauri() ? new TauriPlayerCharacterRepository() : new InMemoryPlayerCharacterRepository(),
+    },
+    {
+      provide: ItemConfigurationRepository,
+      useFactory: () =>
+        isTauri()
+          ? new TauriItemConfigurationRepository()
+          : new InMemoryItemConfigurationRepository(),
+    },
+    {
+      provide: NarrativeItemRepository,
+      useFactory: () =>
+        isTauri() ? new TauriNarrativeItemRepository() : new InMemoryNarrativeItemRepository(),
     },
     {
       provide: LocationImageGateway,

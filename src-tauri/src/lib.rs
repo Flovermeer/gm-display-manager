@@ -78,5 +78,11 @@ fn migrations() -> Vec<Migration> {
             sql: include_str!("../migrations/0010_create_journal_entry.sql"),
             kind: MigrationKind::Up,
         },
+        Migration {
+            version: 11,
+            description: "create_narrative_item",
+            sql: include_str!("../migrations/0011_create_narrative_item.sql"),
+            kind: MigrationKind::Up,
+        },
     ]
 }

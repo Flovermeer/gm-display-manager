@@ -95,9 +95,24 @@ racine de la campagne afin d'éviter une suppression implicite de toute une bran
 
 ## Objets narratifs
 
-`item` constitue un catalogue des objets remarquables liés à l'histoire : artefacts, clés, documents, objets de quête ou récompenses uniques.
+`narrative_item` constitue un catalogue des objets remarquables liés à l'histoire : artefacts, clés,
+documents, objets de quête ou récompenses uniques. Un objet contient un nom, un résumé, une
+description officielle riche, une illustration facultative et un statut parmi `active`, `lost`,
+`destroyed` et `retired`.
 
-Le catalogue n'a pas vocation à recopier tous les objets génériques d'un système comme D&D. Les possessions génériques pourront rester dans les fiches JSON ou en texte libre. Le suivi des propriétaires et quantités sera ajouté dans une tranche dédiée lorsqu'un véritable inventaire sera implémenté.
+Chaque objet référence un type obligatoire et une rareté facultative configurables par campagne.
+Une campagne D&D reçoit automatiquement un catalogue initial de types et raretés, que le MJ peut
+ajouter, renommer ou supprimer. La suppression est refusée lorsqu'une valeur est utilisée par un
+objet. L'harmonisation vaut `none`, `required` ou `conditional`; le dernier cas exige une condition
+en texte libre.
+
+Un objet peut avoir au maximum un détenteur actuel : un PJ, un PNJ ou un lieu. Ces relations sont
+des clés étrangères facultatives et ne constituent pas encore un inventaire quantitatif ou un
+historique des possessions.
+
+Le catalogue n'a pas vocation à recopier tous les objets génériques d'un système comme D&D. Les
+possessions génériques pourront rester dans les fiches JSON ou en texte libre. Le suivi des
+quantités sera ajouté dans une tranche dédiée lorsqu'un véritable inventaire sera implémenté.
 
 ## Chapitres et sections
 

@@ -5,6 +5,7 @@ import { LocationService } from '../../location/location.service';
 import { NpcService } from '../../npc/npc.service';
 import { PlayerCharacterService } from '../../player-character/player-character.service';
 import { NarrativeItemService } from '../../narrative-item/narrative-item.service';
+import { SceneService } from '../../scene/scene.service';
 import { ResourceMentionNavigationService } from './resource-mention-navigation.service';
 
 describe('ResourceMentionNavigationService', () => {
@@ -13,6 +14,7 @@ describe('ResourceMentionNavigationService', () => {
   const locationService = { list: vi.fn() };
   const characterService = { list: vi.fn() };
   const itemService = { list: vi.fn() };
+  const sceneService = { list: vi.fn() };
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -20,6 +22,7 @@ describe('ResourceMentionNavigationService', () => {
     locationService.list.mockResolvedValue([{ id: 'location-id', name: 'Port Nyanzaru' }]);
     characterService.list.mockResolvedValue([{ id: 'character-id', name: 'Flore' }]);
     itemService.list.mockResolvedValue([{ id: 'item-id', name: "Anneau de l'Hiver" }]);
+    sceneService.list.mockResolvedValue([{ id: 'scene-id', name: 'Audience à la villa' }]);
     router.navigate.mockResolvedValue(true);
     TestBed.configureTestingModule({
       providers: [
@@ -28,6 +31,7 @@ describe('ResourceMentionNavigationService', () => {
         { provide: LocationService, useValue: locationService },
         { provide: PlayerCharacterService, useValue: characterService },
         { provide: NarrativeItemService, useValue: itemService },
+        { provide: SceneService, useValue: sceneService },
         { provide: Router, useValue: router },
       ],
     });
@@ -41,6 +45,7 @@ describe('ResourceMentionNavigationService', () => {
       { resourceType: 'npc', resourceId: 'npc-id', label: 'Syndra' },
       { resourceType: 'location', resourceId: 'location-id', label: 'Port Nyanzaru' },
       { resourceType: 'item', resourceId: 'item-id', label: "Anneau de l'Hiver" },
+      { resourceType: 'scene', resourceId: 'scene-id', label: 'Audience à la villa' },
     ]);
     await service.open('campaign-id', {
       resourceType: 'npc',

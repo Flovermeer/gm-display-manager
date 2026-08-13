@@ -21,6 +21,13 @@ export const routes: Routes = [
         title: "Beholder's Inn — Panneau MJ",
       },
       {
+        path: 'scenes',
+        loadComponent: () =>
+          import('./scene-workspace/scene-workspace').then(({ SceneWorkspace }) => SceneWorkspace),
+        canDeactivate: [pendingChangesGuard],
+        title: "Beholder's Inn — Scènes",
+      },
+      {
         path: 'chapters',
         loadComponent: () =>
           import('./chapter-workspace/chapter-workspace').then(

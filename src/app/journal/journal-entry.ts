@@ -1,6 +1,6 @@
 import type { RichTextDocument } from '../shared/rich-text-editor/rich-text-document';
 
-export type JournalResourceType = 'npc' | 'location' | 'player-character' | 'item';
+export type JournalResourceType = 'npc' | 'location' | 'player-character' | 'item' | 'scene';
 
 export type JournalTarget = Readonly<{
   resourceType: JournalResourceType;

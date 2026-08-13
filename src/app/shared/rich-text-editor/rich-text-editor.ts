@@ -201,6 +201,7 @@ export class RichTextEditor implements AfterViewInit, OnDestroy {
       npc: 'PNJ',
       location: 'Lieu',
       item: 'Objet',
+      scene: 'Scène',
     } as const;
     return labels[candidate.resourceType];
   }

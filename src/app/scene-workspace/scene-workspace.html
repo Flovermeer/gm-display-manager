@@ -1,0 +1,60 @@
+<main class="entity-workspace entity-workspace--scene" [class.entity-workspace--sidebar-collapsed]="isSidebarCollapsed()">
+  <aside class="entity-workspace__sidebar" aria-label="Liste des scènes">
+    <div class="entity-workspace__sidebar-tools">
+      <label class="entity-workspace__visually-hidden" for="scene-search">Rechercher une scène</label>
+      <input id="scene-search" type="search" placeholder="Nom ou résumé…" [value]="searchTerm()" (input)="updateSearch($event)" />
+      <div class="entity-workspace__sidebar-heading"><h1>Scènes</h1><span>{{ scenes().length }}</span></div>
+      <button appButton="primary" appButtonFull type="button" (click)="requestCreateScene()">+ Nouvelle scène</button>
+    </div>
+    <div class="scene-list">
+      @if (isLoading()) { <p class="scene-list__message">Chargement…</p> }
+      @else if (filteredScenes().length === 0) { <p class="scene-list__message">{{ searchTerm() ? 'Aucune scène ne correspond à la recherche.' : 'Aucune scène pour le moment.' }}</p> }
+      @else {
+        @for (scene of filteredScenes(); track scene.id) {
+          <button class="scene-list__entry" [class.scene-list__entry--active]="selectedScene()?.id === scene.id && !isCreating()" type="button" (click)="requestSelectScene(scene)">
+            <strong>{{ scene.name }}</strong><small>{{ scene.summary || locationName(scene.locationId) }}</small>
+          </button>
+        }
+      }
+    </div>
+  </aside>
+  <button class="entity-workspace__sidebar-toggle" type="button" [attr.aria-label]="isSidebarCollapsed() ? 'Afficher la liste des scènes' : 'Replier la liste des scènes'" (click)="toggleSidebar()">{{ isSidebarCollapsed() ? '→' : '←' }}</button>
+  <section class="entity-workspace__detail" aria-labelledby="scene-detail-title">
+    @if (error(); as message) { <p class="scene-error" role="alert">{{ message }}</p> }
+    @if (isCreating() || selectedScene()) {
+      <div class="entity-workspace__toolbar"><div class="entity-workspace__actions">
+        @if (isEditing()) {
+          <button appButton="secondary" type="button" (click)="cancelEditing()">Annuler</button>
+          <button appButton="primary" type="button" [disabled]="sceneForm.invalid || isSaving()" (click)="saveScene()">{{ isSaving() ? 'Enregistrement…' : 'Enregistrer' }}</button>
+        } @else {
+          <button appButton="primary" type="button" (click)="editScene()">Modifier</button>
+          <button appButton="secondary-danger" type="button" (click)="requestDeleteScene()">Supprimer</button>
+        }
+      </div></div>
+      <app-entity-title [kicker]="isCreating() ? 'Nouvelle scène' : 'Scène narrative'" [title]="isCreating() ? 'Créer une scène' : (selectedScene()?.name ?? '')" headingId="scene-detail-title" />
+      @if (isEditing()) {
+        <form class="scene-form" [formGroup]="sceneForm" (ngSubmit)="saveScene()">
+          <app-form-field inputId="scene-name" label="Nom" formControlName="name" [errorMessage]="sceneForm.controls.name.touched && sceneForm.controls.name.invalid ? 'Le nom est obligatoire.' : null" />
+          <app-form-field inputId="scene-location" label="Lieu" controlType="select" formControlName="locationId" emptyLabel="Aucun lieu" [emptyValue]="null" [options]="locationOptions()" />
+          <app-form-field class="scene-form__summary" inputId="scene-summary" label="Résumé" controlType="textarea" formControlName="summary" />
+          <fieldset class="scene-relations"><legend>PNJ disponibles</legend>
+            @if (npcs().length === 0) { <p>Aucun PNJ dans cette campagne.</p> }
+            @for (npc of npcs(); track npc.id) { <label><input type="checkbox" [checked]="sceneForm.controls.npcIds.value.includes(npc.id)" (change)="toggleNpc(npc.id, $any($event.target).checked)" /> <span>{{ npc.name }}</span></label> }
+          </fieldset>
+          <fieldset class="scene-relations"><legend>Objets disponibles</legend>
+            @if (items().length === 0) { <p>Aucun objet narratif dans cette campagne.</p> }
+            @for (item of items(); track item.id) { <label><input type="checkbox" [checked]="sceneForm.controls.itemIds.value.includes(item.id)" (change)="toggleItem(item.id, $any($event.target).checked)" /> <span>{{ item.name }}</span></label> }
+          </fieldset>
+        </form>
+      } @else if (selectedScene(); as scene) {
+        <article class="scene-sheet">
+          <dl class="scene-facts"><div><dt>Lieu</dt><dd>{{ locationName(scene.locationId) }}</dd></div><div><dt>Résumé</dt><dd>{{ scene.summary || 'Non renseigné' }}</dd></div></dl>
+          <section class="scene-resources"><div><h3>PNJ</h3>@if (selectedNpcs(scene).length) { <ul>@for (npc of selectedNpcs(scene); track npc.id) { <li>{{ npc.name }}</li> }</ul> } @else { <p>Aucun PNJ associé.</p> }</div><div><h3>Objets</h3>@if (selectedItems(scene).length) { <ul>@for (item of selectedItems(scene); track item.id) { <li>{{ item.name }}</li> }</ul> } @else { <p>Aucun objet associé.</p> }</div></section>
+          @if (campaign(); as activeCampaign) { <app-journal-entry-list [campaignId]="activeCampaign.id" resourceType="scene" [resourceId]="scene.id" [focusEntryId]="focusedJournalEntryId()" /> }
+        </article>
+      }
+    } @else { <app-empty-state icon="◈" title="Aucune scène sélectionnée" description="Sélectionne une scène dans la liste ou prépare-en une nouvelle." headingId="scene-detail-title" /> }
+  </section>
+</main>
+@if (showPendingChangesDialog()) { <app-dialog kicker="Modifications non enregistrées" title="Que veux-tu faire ?" headingId="scene-pending-title"><p>Tes dernières modifications de scène ou de note seront perdues si tu quittes.</p><div dialog-actions class="scene-dialog-actions"><button appButton="primary" type="button" [disabled]="isSaving()" (click)="saveAndLeave()">Enregistrer et quitter</button><button appButton="secondary-danger" type="button" (click)="leaveWithoutSaving()">Quitter sans enregistrer</button><button appButton="secondary" type="button" (click)="continueEditing()">Continuer la modification</button></div></app-dialog> }
+@if (showDeleteDialog()) { <app-dialog kicker="Suppression définitive" [title]="'Supprimer ' + selectedScene()?.name + ' ?'" headingId="scene-delete-title"><p>Cette action supprimera définitivement la scène et ses notes. Si elle est active, l’écran joueurs reviendra au fond par défaut.</p><div dialog-actions class="scene-dialog-actions"><button appButton="secondary" type="button" (click)="cancelDelete()">Annuler</button><button appButton="danger" type="button" [disabled]="isSaving()" (click)="confirmDeleteScene()">Supprimer définitivement</button></div></app-dialog> }

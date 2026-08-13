@@ -1,0 +1,314 @@
+import { Component, computed, DestroyRef, inject, OnInit, signal, viewChild } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { ActivatedRoute } from '@angular/router';
+
+import { CampaignContext } from '../campaign-layout/campaign-context';
+import type { Location } from '../location/location';
+import { LocationService } from '../location/location.service';
+import type { NarrativeItem } from '../narrative-item/narrative-item';
+import { NarrativeItemService } from '../narrative-item/narrative-item.service';
+import type { PendingChangesAware } from '../navigation/pending-changes.guard';
+import type { Npc } from '../npc/npc';
+import { NpcService } from '../npc/npc.service';
+import type { Scene, UpdateSceneInput } from '../scene/scene';
+import { SceneService } from '../scene/scene.service';
+import { JournalEntryList } from '../shared/journal-entry-list/journal-entry-list';
+import { ButtonDirective } from '../shared/ui/button/button.directive';
+import { Dialog } from '../shared/ui/dialog/dialog';
+import { EmptyState } from '../shared/ui/empty-state/empty-state';
+import { EntityTitle } from '../shared/ui/entity-title/entity-title';
+import { FormField, type FormFieldOption } from '../shared/ui/form-field/form-field';
+
+type PendingDecisionResolver = (canLeave: boolean) => void;
+
+@Component({
+  selector: 'app-scene-workspace',
+  imports: [
+    ReactiveFormsModule,
+    JournalEntryList,
+    ButtonDirective,
+    Dialog,
+    EmptyState,
+    EntityTitle,
+    FormField,
+  ],
+  templateUrl: './scene-workspace.html',
+  styleUrl: './scene-workspace.scss',
+})
+export class SceneWorkspace implements OnInit, PendingChangesAware {
+  private readonly campaignContext = inject(CampaignContext);
+  private readonly route = inject(ActivatedRoute);
+  private readonly destroyRef = inject(DestroyRef);
+  private readonly sceneService = inject(SceneService);
+  private readonly locationService = inject(LocationService);
+  private readonly npcService = inject(NpcService);
+  private readonly itemService = inject(NarrativeItemService);
+  private readonly journalEntries = viewChild<JournalEntryList>(JournalEntryList);
+  private pendingDecisionResolver?: PendingDecisionResolver;
+
+  protected readonly campaign = this.campaignContext.campaign;
+  protected readonly scenes = signal<readonly Scene[]>([]);
+  protected readonly locations = signal<readonly Location[]>([]);
+  protected readonly npcs = signal<readonly Npc[]>([]);
+  protected readonly items = signal<readonly NarrativeItem[]>([]);
+  protected readonly selectedScene = signal<Scene | null>(null);
+  protected readonly searchTerm = signal('');
+  protected readonly isSidebarCollapsed = signal(false);
+  protected readonly isLoading = signal(true);
+  protected readonly isSaving = signal(false);
+  protected readonly isEditing = signal(false);
+  protected readonly isCreating = signal(false);
+  protected readonly showPendingChangesDialog = signal(false);
+  protected readonly showDeleteDialog = signal(false);
+  protected readonly error = signal<string | null>(null);
+  protected readonly focusedJournalEntryId = signal<string | null>(null);
+  protected readonly filteredScenes = computed(() => {
+    const term = this.searchTerm().trim().toLocaleLowerCase('fr');
+    return term
+      ? this.scenes().filter((scene) =>
+          [scene.name, scene.summary].join(' ').toLocaleLowerCase('fr').includes(term),
+        )
+      : this.scenes();
+  });
+  protected readonly locationOptions = computed<readonly FormFieldOption[]>(() =>
+    this.locations().map(({ id, name }) => ({ value: id, label: name })),
+  );
+  protected readonly sceneForm = new FormGroup({
+    name: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
+    summary: new FormControl('', { nonNullable: true }),
+    locationId: new FormControl<string | null>(null),
+    npcIds: new FormControl<readonly string[]>([], { nonNullable: true }),
+    itemIds: new FormControl<readonly string[]>([], { nonNullable: true }),
+  });
+
+  ngOnInit(): void {
+    this.route.queryParamMap
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((params) =>
+        void this.openRequestedScene(params.get('resourceId'), params.get('entryId')),
+      );
+    void this.initialize();
+  }
+
+  canDeactivate(): boolean | Promise<boolean> {
+    return this.confirmPendingChanges();
+  }
+
+  protected toggleSidebar(): void {
+    this.isSidebarCollapsed.update((value) => !value);
+  }
+
+  protected updateSearch(event: Event): void {
+    this.searchTerm.set((event.target as HTMLInputElement).value);
+  }
+
+  protected async requestSelectScene(scene: Scene): Promise<void> {
+    if (scene.id === this.selectedScene()?.id && !this.isCreating()) return;
+    if (await this.confirmPendingChanges()) this.openReadOnly(scene);
+  }
+
+  protected async requestCreateScene(): Promise<void> {
+    if (!(await this.confirmPendingChanges())) return;
+    this.selectedScene.set(null);
+    this.isCreating.set(true);
+    this.isEditing.set(true);
+    this.sceneForm.reset({ name: '', summary: '', locationId: null, npcIds: [], itemIds: [] });
+    this.sceneForm.markAsPristine();
+  }
+
+  protected editScene(): void {
+    const scene = this.selectedScene();
+    if (!scene) return;
+    this.isEditing.set(true);
+    this.populateForm(scene);
+  }
+
+  protected cancelEditing(): void {
+    void this.abandonChanges();
+  }
+
+  protected toggleNpc(npcId: string, checked: boolean): void {
+    this.toggleRelation(this.sceneForm.controls.npcIds, npcId, checked);
+  }
+
+  protected toggleItem(itemId: string, checked: boolean): void {
+    this.toggleRelation(this.sceneForm.controls.itemIds, itemId, checked);
+  }
+
+  protected async saveScene(): Promise<boolean> {
+    if (this.sceneForm.invalid || this.isSaving()) {
+      this.sceneForm.markAllAsTouched();
+      return false;
+    }
+    const campaign = this.campaign();
+    if (!campaign) return false;
+    this.isSaving.set(true);
+    this.error.set(null);
+    try {
+      const selected = this.selectedScene();
+      const input = this.formInput();
+      const saved = this.isCreating()
+        ? await this.sceneService.create(campaign.id, input)
+        : selected
+          ? await this.sceneService.update(selected, input)
+          : null;
+      if (!saved) return false;
+      await this.reloadScenes();
+      this.openReadOnly(saved);
+      return true;
+    } catch (error) {
+      this.error.set(errorMessage(error));
+      return false;
+    } finally {
+      this.isSaving.set(false);
+    }
+  }
+
+  protected requestDeleteScene(): void {
+    if (this.selectedScene()) this.showDeleteDialog.set(true);
+  }
+
+  protected cancelDelete(): void {
+    this.showDeleteDialog.set(false);
+  }
+
+  protected async confirmDeleteScene(): Promise<void> {
+    const scene = this.selectedScene();
+    if (!scene || this.isSaving()) return;
+    this.isSaving.set(true);
+    this.error.set(null);
+    try {
+      await this.sceneService.delete(scene);
+      await this.reloadScenes();
+      this.selectedScene.set(null);
+      this.showDeleteDialog.set(false);
+    } catch (error) {
+      this.error.set(errorMessage(error));
+    } finally {
+      this.isSaving.set(false);
+    }
+  }
+
+  protected locationName(id: string | null): string {
+    return id ? (this.locations().find((location) => location.id === id)?.name ?? 'Lieu inconnu') : 'Aucun lieu';
+  }
+
+  protected selectedNpcs(scene: Scene): readonly Npc[] {
+    return this.npcs().filter((npc) => scene.npcIds.includes(npc.id));
+  }
+
+  protected selectedItems(scene: Scene): readonly NarrativeItem[] {
+    return this.items().filter((item) => scene.itemIds.includes(item.id));
+  }
+
+  protected continueEditing(): void {
+    this.resolvePendingDecision(false);
+  }
+
+  protected async leaveWithoutSaving(): Promise<void> {
+    if (this.journalEntries()?.hasPendingChanges()) this.journalEntries()?.discardPendingChanges();
+    if (this.isEditing()) await this.abandonChanges();
+    this.resolvePendingDecision(true);
+  }
+
+  protected async saveAndLeave(): Promise<void> {
+    let saved = true;
+    if (this.journalEntries()?.hasPendingChanges()) saved = await this.journalEntries()!.savePendingChanges();
+    if (saved && this.isEditing()) saved = await this.saveScene();
+    if (saved) this.resolvePendingDecision(true);
+  }
+
+  private async initialize(): Promise<void> {
+    try {
+      const campaign = await this.campaignContext.load();
+      if (!campaign) return;
+      const [scenes, locations, npcs, items] = await Promise.all([
+        this.sceneService.list(campaign.id),
+        this.locationService.list(campaign.id),
+        this.npcService.list(campaign.id),
+        this.itemService.list(campaign.id),
+      ]);
+      this.scenes.set(scenes);
+      this.locations.set(locations);
+      this.npcs.set(npcs);
+      this.items.set(items);
+      await this.openRequestedScene(
+        this.route.snapshot.queryParamMap.get('resourceId'),
+        this.route.snapshot.queryParamMap.get('entryId'),
+      );
+    } catch (error) {
+      this.error.set(errorMessage(error));
+    } finally {
+      this.isLoading.set(false);
+    }
+  }
+
+  private async openRequestedScene(resourceId: string | null, entryId: string | null): Promise<void> {
+    const scene = this.scenes().find(({ id }) => id === resourceId);
+    if (!scene || scene.id === this.selectedScene()?.id) return;
+    if (!(await this.confirmPendingChanges())) return;
+    this.focusedJournalEntryId.set(entryId);
+    this.openReadOnly(scene);
+  }
+
+  private async reloadScenes(): Promise<void> {
+    const campaign = this.campaign();
+    if (campaign) this.scenes.set(await this.sceneService.list(campaign.id));
+  }
+
+  private openReadOnly(scene: Scene): void {
+    const refreshed = this.scenes().find(({ id }) => id === scene.id) ?? scene;
+    this.selectedScene.set(refreshed);
+    this.isCreating.set(false);
+    this.isEditing.set(false);
+    this.populateForm(refreshed);
+  }
+
+  private populateForm(scene: Scene): void {
+    this.sceneForm.reset({
+      name: scene.name,
+      summary: scene.summary,
+      locationId: scene.locationId,
+      npcIds: scene.npcIds,
+      itemIds: scene.itemIds,
+    });
+    this.sceneForm.markAsPristine();
+  }
+
+  private formInput(): UpdateSceneInput {
+    return this.sceneForm.getRawValue();
+  }
+
+  private toggleRelation(control: FormControl<readonly string[]>, id: string, checked: boolean): void {
+    const ids = checked ? [...control.value, id] : control.value.filter((value) => value !== id);
+    control.setValue([...new Set(ids)]);
+    control.markAsDirty();
+  }
+
+  private async abandonChanges(): Promise<void> {
+    const selected = this.selectedScene();
+    this.isEditing.set(false);
+    this.isCreating.set(false);
+    if (selected) this.populateForm(selected);
+    else this.sceneForm.reset({ name: '', summary: '', locationId: null, npcIds: [], itemIds: [] });
+  }
+
+  private confirmPendingChanges(): boolean | Promise<boolean> {
+    if (!(this.isEditing() && this.sceneForm.dirty) && !this.journalEntries()?.hasPendingChanges()) return true;
+    if (this.pendingDecisionResolver) return false;
+    this.showPendingChangesDialog.set(true);
+    return new Promise((resolve) => (this.pendingDecisionResolver = resolve));
+  }
+
+  private resolvePendingDecision(value: boolean): void {
+    const resolve = this.pendingDecisionResolver;
+    this.pendingDecisionResolver = undefined;
+    this.showPendingChangesDialog.set(false);
+    resolve?.(value);
+  }
+}
+
+function errorMessage(error: unknown): string {
+  return error instanceof Error ? error.message : "Impossible d'enregistrer cette scène.";
+}

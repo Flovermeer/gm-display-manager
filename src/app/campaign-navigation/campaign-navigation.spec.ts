@@ -24,6 +24,7 @@ describe('CampaignNavigation', () => {
     expect([...element.querySelectorAll('a')].map((link) => link.textContent?.trim())).toEqual([
       "Beholder's Inn",
       'Régie',
+      'Scènes',
       'Chapitres',
       'Lieux',
       'PNJ',

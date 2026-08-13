@@ -10,6 +10,7 @@ import { LocationService } from '../location/location.service';
 import { NpcService } from '../npc/npc.service';
 import { NarrativeItemService } from '../narrative-item/narrative-item.service';
 import { PlayerCharacterService } from '../player-character/player-character.service';
+import { SceneService } from '../scene/scene.service';
 import { JournalEntryList } from '../shared/journal-entry-list/journal-entry-list';
 import { JournalWorkspace } from './journal-workspace';
 
@@ -84,6 +85,7 @@ describe('JournalWorkspace', () => {
         { provide: LocationService, useValue: emptyResourceService },
         { provide: PlayerCharacterService, useValue: emptyResourceService },
         { provide: NarrativeItemService, useValue: emptyResourceService },
+        { provide: SceneService, useValue: emptyResourceService },
         { provide: Router, useValue: router },
       ],
     }).compileComponents();

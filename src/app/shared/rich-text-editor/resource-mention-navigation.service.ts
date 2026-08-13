@@ -5,6 +5,7 @@ import { LocationService } from '../../location/location.service';
 import { NpcService } from '../../npc/npc.service';
 import { PlayerCharacterService } from '../../player-character/player-character.service';
 import { NarrativeItemService } from '../../narrative-item/narrative-item.service';
+import { SceneService } from '../../scene/scene.service';
 import type { ResourceMentionCandidate } from './resource-mention';
 
 @Injectable({ providedIn: 'root' })
@@ -14,13 +15,15 @@ export class ResourceMentionNavigationService {
   private readonly characterService = inject(PlayerCharacterService);
   private readonly router = inject(Router);
   private readonly itemService = inject(NarrativeItemService);
+  private readonly sceneService = inject(SceneService, { optional: true });
 
   async listCandidates(campaignId: string): Promise<readonly ResourceMentionCandidate[]> {
-    const [npcs, locations, characters, items] = await Promise.all([
+    const [npcs, locations, characters, items, scenes] = await Promise.all([
       this.npcService.list(campaignId),
       this.locationService.list(campaignId),
       this.characterService.list(campaignId),
       this.itemService.list(campaignId),
+      this.sceneService?.list(campaignId) ?? Promise.resolve([]),
     ]);
     return [
       ...characters.map(({ id, name }) => ({
@@ -43,6 +46,11 @@ export class ResourceMentionNavigationService {
         resourceId: id,
         label: name,
       })),
+      ...scenes.map(({ id, name }) => ({
+        resourceType: 'scene' as const,
+        resourceId: id,
+        label: name,
+      })),
     ];
   }
 
@@ -52,6 +60,7 @@ export class ResourceMentionNavigationService {
       location: 'locations',
       'player-character': 'player-characters',
       item: 'items',
+      scene: 'scenes',
     }[mention.resourceType];
     if (!segment) return Promise.resolve(false);
     return this.router.navigate(['/campaigns', campaignId, segment], {

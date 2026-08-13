@@ -139,34 +139,34 @@
       @if (isEditing()) {
         <form class="location-form" [formGroup]="locationForm" (ngSubmit)="saveLocation()">
           <div class="form-row">
-            <div class="field field-wide">
-              <label for="location-name">Nom</label>
-              <input id="location-name" type="text" formControlName="name" autocomplete="off" />
-              @if (locationForm.controls.name.touched && locationForm.controls.name.invalid) {
-                <p class="field-error">Le nom est obligatoire.</p>
-              }
-            </div>
+            <app-form-field
+              class="field-wide"
+              inputId="location-name"
+              label="Nom"
+              formControlName="name"
+              [errorMessage]="
+                locationForm.controls.name.touched && locationForm.controls.name.invalid
+                  ? 'Le nom est obligatoire.'
+                  : null
+              "
+            />
 
-            <div class="field">
-              <label for="location-parent">Lieu parent</label>
-              <select id="location-parent" formControlName="parentLocationId">
-                <option [ngValue]="null">Racine de la campagne</option>
-                @for (entry of parentOptions(); track entry.location.id) {
-                  <option [value]="entry.location.id">{{ entry.path }}</option>
-                }
-              </select>
-            </div>
-          </div>
-
-          <div class="field">
-            <label for="location-summary">Résumé</label>
-            <input
-              id="location-summary"
-              type="text"
-              formControlName="summary"
-              placeholder="Ville portuaire, temple oublié, auberge animée…"
+            <app-form-field
+              inputId="location-parent"
+              label="Lieu parent"
+              controlType="select"
+              formControlName="parentLocationId"
+              emptyLabel="Racine de la campagne"
+              [options]="parentFieldOptions()"
             />
           </div>
+
+          <app-form-field
+            inputId="location-summary"
+            label="Résumé"
+            formControlName="summary"
+            placeholder="Ville portuaire, temple oublié, auberge animée…"
+          />
         </form>
       } @else if (selectedLocation(); as location) {
         <article class="location-sheet">

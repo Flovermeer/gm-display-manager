@@ -28,6 +28,7 @@ import { ButtonDirective } from '../shared/ui/button/button.directive';
 import { Dialog } from '../shared/ui/dialog/dialog';
 import { EmptyState } from '../shared/ui/empty-state/empty-state';
 import { EntityTitle } from '../shared/ui/entity-title/entity-title';
+import { FormField, type FormFieldOption } from '../shared/ui/form-field/form-field';
 
 type PendingDecisionResolver = (canLeave: boolean) => void;
 
@@ -41,6 +42,7 @@ type PendingDecisionResolver = (canLeave: boolean) => void;
     Dialog,
     EmptyState,
     EntityTitle,
+    FormField,
   ],
   templateUrl: './player-character-workspace.html',
   styleUrl: './player-character-workspace.scss',
@@ -73,6 +75,9 @@ export class PlayerCharacterWorkspace implements OnInit, PendingChangesAware {
   protected readonly error = signal<string | null>(null);
   protected readonly focusedJournalEntryId = signal<string | null>(null);
   protected readonly statuses = PLAYER_CHARACTER_STATUSES;
+  protected readonly statusFieldOptions: readonly FormFieldOption[] = PLAYER_CHARACTER_STATUSES.map(
+    (status) => ({ value: status, label: this.statusLabel(status) }),
+  );
   protected readonly effectivePortraitPath = computed(
     () => this.draftPortraitPath() ?? this.selectedCharacter()?.portraitPath ?? null,
   );

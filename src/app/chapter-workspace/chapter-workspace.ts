@@ -17,12 +17,21 @@ import { ButtonDirective } from '../shared/ui/button/button.directive';
 import { Dialog } from '../shared/ui/dialog/dialog';
 import { EmptyState } from '../shared/ui/empty-state/empty-state';
 import { EntityTitle } from '../shared/ui/entity-title/entity-title';
+import { FormField } from '../shared/ui/form-field/form-field';
 
 type PendingDecisionResolver = (canLeave: boolean) => void;
 
 @Component({
   selector: 'app-chapter-workspace',
-  imports: [ReactiveFormsModule, RichTextEditor, ButtonDirective, Dialog, EmptyState, EntityTitle],
+  imports: [
+    ReactiveFormsModule,
+    RichTextEditor,
+    ButtonDirective,
+    Dialog,
+    EmptyState,
+    EntityTitle,
+    FormField,
+  ],
   templateUrl: './chapter-workspace.html',
   styleUrl: './chapter-workspace.scss',
 })

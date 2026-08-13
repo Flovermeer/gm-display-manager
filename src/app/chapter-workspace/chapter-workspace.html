@@ -119,22 +119,22 @@
             <p class="section-kicker entity-workspace__kicker">
               {{ isCreating() ? 'Nouveau chapitre' : 'Modification' }}
             </p>
-            <div class="field">
-              <label for="chapter-title">Titre</label>
-              <input id="chapter-title" type="text" formControlName="title" autocomplete="off" />
-              @if (chapterForm.controls.title.touched && chapterForm.controls.title.invalid) {
-                <p class="field-error">Le titre est obligatoire.</p>
-              }
-            </div>
-            <div class="field">
-              <label for="chapter-summary">Résumé</label>
-              <input
-                id="chapter-summary"
-                type="text"
-                formControlName="summary"
-                placeholder="Une phrase pour retrouver rapidement ce chapitre"
-              />
-            </div>
+            <app-form-field
+              inputId="chapter-title"
+              label="Titre"
+              formControlName="title"
+              [errorMessage]="
+                chapterForm.controls.title.touched && chapterForm.controls.title.invalid
+                  ? 'Le titre est obligatoire.'
+                  : null
+              "
+            />
+            <app-form-field
+              inputId="chapter-summary"
+              label="Résumé"
+              formControlName="summary"
+              placeholder="Une phrase pour retrouver rapidement ce chapitre"
+            />
           </header>
 
           <div class="field editor-field">

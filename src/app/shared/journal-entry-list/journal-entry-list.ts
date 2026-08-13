@@ -12,10 +12,11 @@ import { ResourceMentionNavigationService } from '../rich-text-editor/resource-m
 import type { ResourceMentionCandidate } from '../rich-text-editor/resource-mention';
 import { ButtonDirective } from '../ui/button/button.directive';
 import { Dialog } from '../ui/dialog/dialog';
+import { FormField } from '../ui/form-field/form-field';
 
 @Component({
   selector: 'app-journal-entry-list',
-  imports: [ReactiveFormsModule, RichTextEditor, ButtonDirective, Dialog],
+  imports: [ReactiveFormsModule, RichTextEditor, ButtonDirective, Dialog, FormField],
   templateUrl: './journal-entry-list.html',
   styleUrl: './journal-entry-list.scss',
 })

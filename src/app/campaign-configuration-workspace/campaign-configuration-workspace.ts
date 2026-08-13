@@ -9,6 +9,7 @@ import type {
 import { ItemConfigurationService } from '../narrative-item/item-configuration.service';
 import { ButtonDirective } from '../shared/ui/button/button.directive';
 import { Dialog } from '../shared/ui/dialog/dialog';
+import { FormField } from '../shared/ui/form-field/form-field';
 
 type ConfigurationSection = Readonly<{
   kind: ItemConfigurationKind;
@@ -18,7 +19,7 @@ type ConfigurationSection = Readonly<{
 
 @Component({
   selector: 'app-campaign-configuration-workspace',
-  imports: [ReactiveFormsModule, ButtonDirective, Dialog],
+  imports: [ReactiveFormsModule, ButtonDirective, Dialog, FormField],
   templateUrl: './campaign-configuration-workspace.html',
   styleUrl: './campaign-configuration-workspace.scss',
 })

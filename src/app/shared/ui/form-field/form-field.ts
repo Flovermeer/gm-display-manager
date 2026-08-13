@@ -1,13 +1,23 @@
-import { ChangeDetectionStrategy, Component, forwardRef, input, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  effect,
+  forwardRef,
+  input,
+  output,
+  signal,
+} from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 
-export type FormFieldControlType = 'text' | 'select' | 'textarea';
+export type FormFieldControlType = 'text' | 'number' | 'datetime-local' | 'select' | 'textarea';
 export type FormFieldOption = Readonly<{ value: string; label: string }>;
+export type FormFieldValue = string | number | null;
 
 const EMPTY_OPTION_VALUE = '__form_field_empty_option__';
 
 @Component({
   selector: 'app-form-field',
+  host: { class: 'field' },
   templateUrl: './form-field.html',
   styleUrl: './form-field.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -29,19 +39,32 @@ export class FormField implements ControlValueAccessor {
   readonly placeholder = input('');
   readonly autocomplete = input('off');
   readonly errorMessage = input<string | null>(null);
+  readonly min = input<number | null>(null);
+  readonly max = input<number | null>(null);
+  readonly step = input<number | null>(null);
+  readonly value = input<FormFieldValue | undefined>(undefined);
+  readonly valueChange = output<FormFieldValue>();
+  readonly enterKey = output<void>();
 
-  protected readonly value = signal<string | null>('');
+  protected readonly controlValue = signal<FormFieldValue>('');
   protected readonly disabled = signal(false);
   protected readonly emptyOptionValue = EMPTY_OPTION_VALUE;
 
-  private onChange: (value: string | null) => void = () => undefined;
+  private onChange: (value: FormFieldValue) => void = () => undefined;
   private onTouched: () => void = () => undefined;
 
-  writeValue(value: string | null): void {
-    this.value.set(value);
+  constructor() {
+    effect(() => {
+      const value = this.value();
+      if (value !== undefined) this.controlValue.set(value);
+    });
   }
 
-  registerOnChange(onChange: (value: string | null) => void): void {
+  writeValue(value: FormFieldValue): void {
+    this.controlValue.set(value);
+  }
+
+  registerOnChange(onChange: (value: FormFieldValue) => void): void {
     this.onChange = onChange;
   }
 
@@ -57,24 +80,30 @@ export class FormField implements ControlValueAccessor {
     this.updateValue((event.target as HTMLInputElement | HTMLTextAreaElement).value);
   }
 
+  protected updateNumber(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    this.updateValue(input.value === '' ? null : input.valueAsNumber);
+  }
+
   protected updateSelect(event: Event): void {
     const value = (event.target as HTMLSelectElement).value;
     this.updateValue(value === EMPTY_OPTION_VALUE ? this.emptyValue() : value);
   }
 
-  protected selectValue(): string | null {
-    if (this.emptyLabel() !== null && this.value() === this.emptyValue()) {
+  protected selectValue(): FormFieldValue {
+    if (this.emptyLabel() !== null && this.controlValue() === this.emptyValue()) {
       return EMPTY_OPTION_VALUE;
     }
-    return this.value();
+    return this.controlValue();
   }
 
   protected markTouched(): void {
     this.onTouched();
   }
 
-  private updateValue(value: string | null): void {
-    this.value.set(value);
+  private updateValue(value: FormFieldValue): void {
+    this.controlValue.set(value);
     this.onChange(value);
+    this.valueChange.emit(value);
   }
 }

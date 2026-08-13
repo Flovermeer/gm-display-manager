@@ -12,6 +12,7 @@
         [attr.aria-describedby]="errorMessage() ? inputId() + '-error' : null"
         (change)="updateSelect($event)"
         (blur)="markTouched()"
+        (keydown.enter)="enterKey.emit()"
       >
         @if (emptyLabel(); as label) {
           <option [value]="emptyOptionValue">{{ label }}</option>
@@ -25,21 +26,40 @@
       <textarea
         class="form-field__control form-field__control--textarea"
         [id]="inputId()"
-        [value]="value() ?? ''"
+        [value]="controlValue() ?? ''"
         [disabled]="disabled()"
         [placeholder]="placeholder()"
         [attr.aria-invalid]="errorMessage() ? true : null"
         [attr.aria-describedby]="errorMessage() ? inputId() + '-error' : null"
         (input)="updateText($event)"
         (blur)="markTouched()"
+        (keydown.enter)="enterKey.emit()"
       ></textarea>
+    }
+    @case ('number') {
+      <input
+        class="form-field__control"
+        [id]="inputId()"
+        type="number"
+        [value]="controlValue() ?? ''"
+        [disabled]="disabled()"
+        [min]="min()"
+        [max]="max()"
+        [step]="step()"
+        [placeholder]="placeholder()"
+        [attr.aria-invalid]="errorMessage() ? true : null"
+        [attr.aria-describedby]="errorMessage() ? inputId() + '-error' : null"
+        (input)="updateNumber($event)"
+        (blur)="markTouched()"
+        (keydown.enter)="enterKey.emit()"
+      />
     }
     @default {
       <input
         class="form-field__control"
         [id]="inputId()"
-        type="text"
-        [value]="value() ?? ''"
+        [type]="controlType()"
+        [value]="controlValue() ?? ''"
         [disabled]="disabled()"
         [placeholder]="placeholder()"
         [attr.autocomplete]="autocomplete()"
@@ -47,11 +67,12 @@
         [attr.aria-describedby]="errorMessage() ? inputId() + '-error' : null"
         (input)="updateText($event)"
         (blur)="markTouched()"
+        (keydown.enter)="enterKey.emit()"
       />
     }
   }
 
   @if (errorMessage(); as message) {
-    <p class="form-field__error" [id]="inputId() + '-error'">{{ message }}</p>
+    <p class="form-field__error field-error" [id]="inputId() + '-error'">{{ message }}</p>
   }
 </div>

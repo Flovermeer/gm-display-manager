@@ -155,12 +155,12 @@
               <strong>{{ hitPointLabel(character) }}</strong>
             </div>
             <div class="hit-point-editor">
-              <label for="current-hit-points">Corriger les PV</label>
-              <input
-                id="current-hit-points"
-                type="number"
-                min="0"
-                [max]="character.maxHitPoints ?? null"
+              <app-form-field
+                inputId="current-hit-points"
+                label="Corriger les PV"
+                controlType="number"
+                [min]="0"
+                [max]="character.maxHitPoints"
                 [formControl]="hitPointsControl"
               />
               <button
@@ -196,184 +196,165 @@
           <section class="form-section" aria-labelledby="identity-fields">
             <h3 id="identity-fields">Identité</h3>
             <div class="form-grid three-columns">
-              <div class="field">
-                <label for="character-name">Personnage</label>
-                <input id="character-name" type="text" formControlName="name" autocomplete="off" />
-                @if (characterForm.controls.name.touched && characterForm.controls.name.invalid) {
-                  <p class="field-error">Le nom du personnage est obligatoire.</p>
-                }
-              </div>
-              <div class="field">
-                <label for="player-name">Joueur ou joueuse</label>
-                <input
-                  id="player-name"
-                  type="text"
-                  formControlName="playerName"
-                  autocomplete="off"
-                />
-              </div>
-              <div class="field">
-                <label for="character-status">Statut</label>
-                <select id="character-status" formControlName="status">
-                  @for (status of statuses; track status) {
-                    <option [value]="status">{{ statusLabel(status) }}</option>
-                  }
-                </select>
-              </div>
-              <div class="field">
-                <label for="character-species">Espèce</label>
-                <input id="character-species" type="text" formControlName="species" />
-              </div>
-              <div class="field">
-                <label for="character-class">Classe</label>
-                <input id="character-class" type="text" formControlName="className" />
-              </div>
-              <div class="field">
-                <label for="character-level">Niveau</label>
-                <input
-                  id="character-level"
-                  type="number"
-                  min="1"
-                  max="20"
-                  formControlName="level"
-                />
-                @if (
+              <app-form-field
+                inputId="character-name"
+                label="Personnage"
+                formControlName="name"
+                [errorMessage]="
+                  characterForm.controls.name.touched && characterForm.controls.name.invalid
+                    ? 'Le nom du personnage est obligatoire.'
+                    : null
+                "
+              />
+              <app-form-field
+                inputId="player-name"
+                label="Joueur ou joueuse"
+                formControlName="playerName"
+              />
+              <app-form-field
+                inputId="character-status"
+                label="Statut"
+                controlType="select"
+                formControlName="status"
+                [options]="statusFieldOptions"
+              />
+              <app-form-field
+                inputId="character-species"
+                label="Espèce"
+                formControlName="species"
+              />
+              <app-form-field
+                inputId="character-class"
+                label="Classe"
+                formControlName="className"
+              />
+              <app-form-field
+                inputId="character-level"
+                label="Niveau"
+                controlType="number"
+                [min]="1"
+                [max]="20"
+                formControlName="level"
+                [errorMessage]="
                   characterForm.controls.level.invalid &&
                   (characterForm.controls.level.dirty || characterForm.controls.level.touched)
-                ) {
-                  <p class="field-error" role="alert">
-                    Le niveau doit être un nombre entier compris entre 1 et 20.
-                  </p>
-                }
-              </div>
+                    ? 'Le niveau doit être un nombre entier compris entre 1 et 20.'
+                    : null
+                "
+              />
             </div>
           </section>
 
           <section class="form-section" aria-labelledby="survival-fields">
             <h3 id="survival-fields">Survie et déplacement</h3>
             <div class="form-grid four-columns">
-              <div class="field">
-                <label for="character-current-hp">PV actuels</label>
-                <input
-                  id="character-current-hp"
-                  type="number"
-                  min="0"
-                  formControlName="currentHitPoints"
-                />
-                @if (
+              <app-form-field
+                inputId="character-current-hp"
+                label="PV actuels"
+                controlType="number"
+                [min]="0"
+                formControlName="currentHitPoints"
+                [errorMessage]="
                   (characterForm.controls.currentHitPoints.invalid ||
                     characterForm.hasError('hitPointRange')) &&
                   (characterForm.controls.currentHitPoints.dirty ||
                     characterForm.controls.currentHitPoints.touched ||
                     characterForm.controls.maxHitPoints.dirty)
-                ) {
-                  <p class="field-error" role="alert">
-                    @if (characterForm.hasError('hitPointRange')) {
-                      Les PV actuels ne peuvent pas dépasser les PV maximum.
-                    } @else {
-                      Les PV actuels doivent être un nombre entier positif ou nul.
-                    }
-                  </p>
-                }
-              </div>
-              <div class="field">
-                <label for="character-max-hp">PV maximum</label>
-                <input id="character-max-hp" type="number" min="0" formControlName="maxHitPoints" />
-                @if (
+                    ? characterForm.hasError('hitPointRange')
+                      ? 'Les PV actuels ne peuvent pas dépasser les PV maximum.'
+                      : 'Les PV actuels doivent être un nombre entier positif ou nul.'
+                    : null
+                "
+              />
+              <app-form-field
+                inputId="character-max-hp"
+                label="PV maximum"
+                controlType="number"
+                [min]="0"
+                formControlName="maxHitPoints"
+                [errorMessage]="
                   characterForm.controls.maxHitPoints.invalid &&
                   (characterForm.controls.maxHitPoints.dirty ||
                     characterForm.controls.maxHitPoints.touched)
-                ) {
-                  <p class="field-error" role="alert">
-                    Les PV maximum doivent être un nombre entier positif ou nul.
-                  </p>
-                }
-              </div>
-              <div class="field">
-                <label for="character-ac">Classe d'armure</label>
-                <input id="character-ac" type="number" min="0" formControlName="armorClass" />
-                @if (
+                    ? 'Les PV maximum doivent être un nombre entier positif ou nul.'
+                    : null
+                "
+              />
+              <app-form-field
+                inputId="character-ac"
+                label="Classe d'armure"
+                controlType="number"
+                [min]="0"
+                formControlName="armorClass"
+                [errorMessage]="
                   characterForm.controls.armorClass.invalid &&
                   (characterForm.controls.armorClass.dirty ||
                     characterForm.controls.armorClass.touched)
-                ) {
-                  <p class="field-error" role="alert">
-                    La classe d'armure doit être un nombre entier positif ou nul.
-                  </p>
-                }
-              </div>
-              <div class="field">
-                <label for="character-speed">Vitesse</label>
-                <input id="character-speed" type="number" min="0" formControlName="speed" />
-                @if (
+                    ? 'La classe d’armure doit être un nombre entier positif ou nul.'
+                    : null
+                "
+              />
+              <app-form-field
+                inputId="character-speed"
+                label="Vitesse"
+                controlType="number"
+                [min]="0"
+                formControlName="speed"
+                [errorMessage]="
                   characterForm.controls.speed.invalid &&
                   (characterForm.controls.speed.dirty || characterForm.controls.speed.touched)
-                ) {
-                  <p class="field-error" role="alert">
-                    La vitesse doit être un nombre entier positif ou nul.
-                  </p>
-                }
-              </div>
+                    ? 'La vitesse doit être un nombre entier positif ou nul.'
+                    : null
+                "
+              />
             </div>
           </section>
 
           <section class="form-section" aria-labelledby="awareness-fields">
             <h3 id="awareness-fields">Vigilance</h3>
             <div class="form-grid three-columns">
-              <div class="field">
-                <label for="passive-perception">Perception passive</label>
-                <input
-                  id="passive-perception"
-                  type="number"
-                  min="0"
-                  formControlName="passivePerception"
-                />
-                @if (
+              <app-form-field
+                inputId="passive-perception"
+                label="Perception passive"
+                controlType="number"
+                [min]="0"
+                formControlName="passivePerception"
+                [errorMessage]="
                   characterForm.controls.passivePerception.invalid &&
                   (characterForm.controls.passivePerception.dirty ||
                     characterForm.controls.passivePerception.touched)
-                ) {
-                  <p class="field-error" role="alert">
-                    La perception passive doit être un nombre entier positif ou nul.
-                  </p>
-                }
-              </div>
-              <div class="field">
-                <label for="passive-insight">Intuition passive</label>
-                <input
-                  id="passive-insight"
-                  type="number"
-                  min="0"
-                  formControlName="passiveInsight"
-                />
-                @if (
+                    ? 'La perception passive doit être un nombre entier positif ou nul.'
+                    : null
+                "
+              />
+              <app-form-field
+                inputId="passive-insight"
+                label="Intuition passive"
+                controlType="number"
+                [min]="0"
+                formControlName="passiveInsight"
+                [errorMessage]="
                   characterForm.controls.passiveInsight.invalid &&
                   (characterForm.controls.passiveInsight.dirty ||
                     characterForm.controls.passiveInsight.touched)
-                ) {
-                  <p class="field-error" role="alert">
-                    L'intuition passive doit être un nombre entier positif ou nul.
-                  </p>
-                }
-              </div>
-              <div class="field">
-                <label for="passive-investigation">Investigation passive</label>
-                <input
-                  id="passive-investigation"
-                  type="number"
-                  min="0"
-                  formControlName="passiveInvestigation"
-                />
-                @if (
+                    ? 'L’intuition passive doit être un nombre entier positif ou nul.'
+                    : null
+                "
+              />
+              <app-form-field
+                inputId="passive-investigation"
+                label="Investigation passive"
+                controlType="number"
+                [min]="0"
+                formControlName="passiveInvestigation"
+                [errorMessage]="
                   characterForm.controls.passiveInvestigation.invalid &&
                   (characterForm.controls.passiveInvestigation.dirty ||
                     characterForm.controls.passiveInvestigation.touched)
-                ) {
-                  <p class="field-error" role="alert">
-                    L'investigation passive doit être un nombre entier positif ou nul.
-                  </p>
-                }
-              </div>
+                    ? 'L’investigation passive doit être un nombre entier positif ou nul.'
+                    : null
+                "
+              />
             </div>
           </section>
 
@@ -407,25 +388,21 @@
                   (valueChange)="updateTags('conditions', $event)"
                 />
               </div>
-              <div class="field">
-                <label for="character-exhaustion">Épuisement</label>
-                <input
-                  id="character-exhaustion"
-                  type="number"
-                  min="0"
-                  max="6"
-                  formControlName="exhaustionLevel"
-                />
-                @if (
+              <app-form-field
+                inputId="character-exhaustion"
+                label="Épuisement"
+                controlType="number"
+                [min]="0"
+                [max]="6"
+                formControlName="exhaustionLevel"
+                [errorMessage]="
                   characterForm.controls.exhaustionLevel.invalid &&
                   (characterForm.controls.exhaustionLevel.dirty ||
                     characterForm.controls.exhaustionLevel.touched)
-                ) {
-                  <p class="field-error" role="alert">
-                    L'épuisement doit être un nombre entier compris entre 0 et 6.
-                  </p>
-                }
-              </div>
+                    ? 'L’épuisement doit être un nombre entier compris entre 0 et 6.'
+                    : null
+                "
+              />
             </div>
           </section>
         </form>

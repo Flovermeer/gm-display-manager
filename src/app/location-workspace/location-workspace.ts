@@ -15,6 +15,7 @@ import { ButtonDirective } from '../shared/ui/button/button.directive';
 import { Dialog } from '../shared/ui/dialog/dialog';
 import { EmptyState } from '../shared/ui/empty-state/empty-state';
 import { EntityTitle } from '../shared/ui/entity-title/entity-title';
+import { FormField, type FormFieldOption } from '../shared/ui/form-field/form-field';
 
 type PendingDecisionResolver = (canLeave: boolean) => void;
 type LocationListEntry = Readonly<{ location: Location; depth: number; path: string }>;
@@ -30,6 +31,7 @@ const DEMO_LOCATION_IMAGE_URL = '/demo/tavern.svg';
     Dialog,
     EmptyState,
     EntityTitle,
+    FormField,
   ],
   templateUrl: './location-workspace.html',
   styleUrl: './location-workspace.scss',
@@ -47,6 +49,9 @@ export class LocationWorkspace implements OnInit, PendingChangesAware {
 
   protected readonly campaign = this.campaignContext.campaign;
   protected readonly locations = signal<readonly Location[]>([]);
+  protected readonly parentFieldOptions = computed<readonly FormFieldOption[]>(() =>
+    this.parentOptions().map((entry) => ({ value: entry.location.id, label: entry.path })),
+  );
   protected readonly selectedLocation = signal<Location | null>(null);
   protected readonly imageUrl = signal<string>(DEMO_LOCATION_IMAGE_URL);
   protected readonly draftImagePath = signal<string | null>(null);

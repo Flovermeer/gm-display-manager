@@ -79,10 +79,13 @@
     [title]="option.kind === 'type' ? 'Type d’objet' : 'Rareté d’objet'"
     headingId="configuration-edit-title"
   >
-    <label class="configuration-dialog-field">
-      Nom
-      <input [formControl]="nameControl" (keydown.enter)="save()" />
-    </label>
+    <app-form-field
+      inputId="configuration-name"
+      label="Nom"
+      [formControl]="nameControl"
+      [errorMessage]="nameControl.touched && nameControl.invalid ? 'Le nom est obligatoire.' : null"
+      (enterKey)="save()"
+    />
     <div dialog-actions class="dialog-actions">
       <button appButton="secondary" type="button" (click)="cancelEditing()">Annuler</button>
       <button

@@ -24,19 +24,30 @@
   @if (isEditing()) {
     <form class="journal-entry-form" [formGroup]="entryForm" (ngSubmit)="saveEntry()">
       <div class="journal-entry-form__metadata">
-        <label>
-          Date et heure
-          <input type="datetime-local" formControlName="sessionAt" />
-        </label>
-        <label>
-          Date en jeu
-          <input type="text" formControlName="inGameDate" placeholder="Facultatif" />
-        </label>
+        <app-form-field
+          inputId="journal-session-at"
+          label="Date et heure"
+          controlType="datetime-local"
+          formControlName="sessionAt"
+          [errorMessage]="
+            entryForm.controls.sessionAt.touched && entryForm.controls.sessionAt.invalid
+              ? 'La date et l’heure sont obligatoires.'
+              : null
+          "
+        />
+        <app-form-field
+          inputId="journal-in-game-date"
+          label="Date en jeu"
+          formControlName="inGameDate"
+          placeholder="Facultatif"
+        />
       </div>
-      <label>
-        Titre
-        <input type="text" formControlName="title" placeholder="Facultatif" />
-      </label>
+      <app-form-field
+        inputId="journal-title"
+        label="Titre"
+        formControlName="title"
+        placeholder="Facultatif"
+      />
       <label>Contenu</label>
       <app-rich-text-editor
         [value]="draftContent()"

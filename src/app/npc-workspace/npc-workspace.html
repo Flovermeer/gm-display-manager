@@ -177,33 +177,33 @@
       @if (isEditing()) {
         <form class="npc-form" [formGroup]="npcForm" (ngSubmit)="saveNpc()">
           <div class="form-row">
-            <div class="field field-wide">
-              <label for="npc-name">Nom</label>
-              <input id="npc-name" type="text" formControlName="name" autocomplete="off" />
-              @if (npcForm.controls.name.touched && npcForm.controls.name.invalid) {
-                <p class="field-error">Le nom est obligatoire.</p>
-              }
-            </div>
+            <app-form-field
+              class="field-wide"
+              inputId="npc-name"
+              label="Nom"
+              formControlName="name"
+              [errorMessage]="
+                npcForm.controls.name.touched && npcForm.controls.name.invalid
+                  ? 'Le nom est obligatoire.'
+                  : null
+              "
+            />
 
-            <div class="field">
-              <label for="npc-status">Statut</label>
-              <select id="npc-status" formControlName="status">
-                @for (status of statuses; track status) {
-                  <option [value]="status">{{ statusLabel(status) }}</option>
-                }
-              </select>
-            </div>
-          </div>
-
-          <div class="field">
-            <label for="npc-summary">Rôle ou résumé</label>
-            <input
-              id="npc-summary"
-              type="text"
-              formControlName="summary"
-              placeholder="Commanditaire, guide, antagoniste…"
+            <app-form-field
+              inputId="npc-status"
+              label="Statut"
+              controlType="select"
+              formControlName="status"
+              [options]="statusFieldOptions"
             />
           </div>
+
+          <app-form-field
+            inputId="npc-summary"
+            label="Rôle ou résumé"
+            formControlName="summary"
+            placeholder="Commanditaire, guide, antagoniste…"
+          />
 
           <div class="field media-field">
             <div>
@@ -235,72 +235,108 @@
             </div>
 
             <div class="form-grid three-columns">
-              <div class="field">
-                <label for="npc-size">Taille</label>
-                <input id="npc-size" type="text" formControlName="size" placeholder="Moyenne" />
-              </div>
-              <div class="field">
-                <label for="npc-creature-type">Type</label>
-                <input
-                  id="npc-creature-type"
-                  type="text"
-                  formControlName="creatureType"
-                  placeholder="Humanoïde (humain)"
-                />
-              </div>
-              <div class="field">
-                <label for="npc-alignment">Alignement</label>
-                <input
-                  id="npc-alignment"
-                  type="text"
-                  formControlName="alignment"
-                  placeholder="Neutre bon"
-                />
-              </div>
+              <app-form-field
+                inputId="npc-size"
+                label="Taille"
+                formControlName="size"
+                placeholder="Moyenne"
+              />
+              <app-form-field
+                inputId="npc-creature-type"
+                label="Type"
+                formControlName="creatureType"
+                placeholder="Humanoïde (humain)"
+              />
+              <app-form-field
+                inputId="npc-alignment"
+                label="Alignement"
+                formControlName="alignment"
+                placeholder="Neutre bon"
+              />
             </div>
 
             <div class="form-grid combat-basics">
-              <div class="field compact-number">
-                <label for="npc-armor-class">Classe d'armure</label>
-                <input id="npc-armor-class" type="number" min="0" formControlName="armorClass" />
-              </div>
-              <div class="field">
-                <label for="npc-armor-details">Détail de l'armure</label>
-                <input
-                  id="npc-armor-details"
-                  type="text"
-                  formControlName="armorClassDetails"
-                  placeholder="Cuir clouté"
-                />
-              </div>
-              <div class="field compact-number">
-                <label for="npc-hit-points">Points de vie</label>
-                <input id="npc-hit-points" type="number" min="0" formControlName="hitPoints" />
-              </div>
-              <div class="field">
-                <label for="npc-hit-point-formula">Formule de PV</label>
-                <input
-                  id="npc-hit-point-formula"
-                  type="text"
-                  formControlName="hitPointFormula"
-                  placeholder="15d8 + 15"
-                />
-              </div>
-              <div class="field">
-                <label for="npc-speed">Vitesse</label>
-                <input id="npc-speed" type="text" formControlName="speed" placeholder="9 m" />
-              </div>
+              <app-form-field
+                class="compact-number"
+                inputId="npc-armor-class"
+                label="Classe d'armure"
+                controlType="number"
+                [min]="0"
+                formControlName="armorClass"
+              />
+              <app-form-field
+                inputId="npc-armor-details"
+                label="Détail de l'armure"
+                formControlName="armorClassDetails"
+                placeholder="Cuir clouté"
+              />
+              <app-form-field
+                class="compact-number"
+                inputId="npc-hit-points"
+                label="Points de vie"
+                controlType="number"
+                [min]="0"
+                formControlName="hitPoints"
+              />
+              <app-form-field
+                inputId="npc-hit-point-formula"
+                label="Formule de PV"
+                formControlName="hitPointFormula"
+                placeholder="15d8 + 15"
+              />
+              <app-form-field
+                inputId="npc-speed"
+                label="Vitesse"
+                formControlName="speed"
+                placeholder="9 m"
+              />
             </div>
 
             <fieldset class="abilities-fieldset">
               <legend>Caractéristiques</legend>
               <div class="ability-inputs">
-                <label>FOR <input type="number" min="0" formControlName="strength" /></label>
-                <label>DEX <input type="number" min="0" formControlName="dexterity" /></label>
-                <label>CON <input type="number" min="0" formControlName="constitution" /></label>
-                <label>INT <input type="number" min="0" formControlName="intelligence" /></label>
-                <label>SAG <input type="number" min="0" formControlName="wisdom" /></label>
-                <label>CHA <input type="number" min="0" formControlName="charisma" /></label>
+                <app-form-field
+                  inputId="npc-strength"
+                  label="FOR"
+                  controlType="number"
+                  [min]="0"
+                  formControlName="strength"
+                />
+                <app-form-field
+                  inputId="npc-dexterity"
+                  label="DEX"
+                  controlType="number"
+                  [min]="0"
+                  formControlName="dexterity"
+                />
+                <app-form-field
+                  inputId="npc-constitution"
+                  label="CON"
+                  controlType="number"
+                  [min]="0"
+                  formControlName="constitution"
+                />
+                <app-form-field
+                  inputId="npc-intelligence"
+                  label="INT"
+                  controlType="number"
+                  [min]="0"
+                  formControlName="intelligence"
+                />
+                <app-form-field
+                  inputId="npc-wisdom"
+                  label="SAG"
+                  controlType="number"
+                  [min]="0"
+                  formControlName="wisdom"
+                />
+                <app-form-field
+                  inputId="npc-charisma"
+                  label="CHA"
+                  controlType="number"
+                  [min]="0"
+                  formControlName="charisma"
+                />
               </div>
             </fieldset>
 
@@ -364,25 +400,20 @@
             </div>
 
             <div class="form-grid challenge-fields">
-              <div class="field">
-                <label for="npc-challenge-rating">Facteur de puissance</label>
-                <input
-                  id="npc-challenge-rating"
-                  type="text"
-                  formControlName="challengeRating"
-                  placeholder="7"
-                />
-              </div>
-              <div class="field">
-                <label for="npc-experience-points">Points d'expérience</label>
-                <input
-                  id="npc-experience-points"
-                  type="number"
-                  min="0"
-                  formControlName="experiencePoints"
-                  placeholder="2900"
-                />
-              </div>
+              <app-form-field
+                inputId="npc-challenge-rating"
+                label="Facteur de puissance"
+                formControlName="challengeRating"
+                placeholder="7"
+              />
+              <app-form-field
+                inputId="npc-experience-points"
+                label="Points d'expérience"
+                controlType="number"
+                [min]="0"
+                formControlName="experiencePoints"
+                placeholder="2900"
+              />
             </div>
             @if (hasInvalidSheetNumbers()) {
               <p class="field-error sheet-error" role="alert">
@@ -404,7 +435,6 @@
               @for (feature of featureDrafts()[section.key]; track feature.id) {
                 <article class="feature-editor">
                   <div class="feature-editor-heading">
-                    <label [for]="'npc-feature-' + feature.id">Nom</label>
                     <button
                       class="feature-remove"
                       type="button"
@@ -414,12 +444,12 @@
                       Supprimer
                     </button>
                   </div>
-                  <input
-                    [id]="'npc-feature-' + feature.id"
-                    type="text"
+                  <app-form-field
+                    [inputId]="'npc-feature-' + feature.id"
+                    label="Nom"
                     [value]="feature.name"
                     placeholder="Nom de {{ section.singularLabel }}"
-                    (input)="updateFeatureName(section.key, feature.id, $event)"
+                    (valueChange)="updateFeatureName(section.key, feature.id, $event)"
                   />
                   <app-rich-text-editor
                     [value]="feature.description"

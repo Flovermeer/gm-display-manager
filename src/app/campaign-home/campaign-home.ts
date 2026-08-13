@@ -6,14 +6,18 @@ import type { Campaign } from '../campaign/campaign';
 import { CampaignService } from '../campaign/campaign.service';
 import { ButtonDirective } from '../shared/ui/button/button.directive';
 import { Dialog } from '../shared/ui/dialog/dialog';
+import { FormField, type FormFieldOption } from '../shared/ui/form-field/form-field';
 
 @Component({
   selector: 'app-campaign-home',
-  imports: [ReactiveFormsModule, ButtonDirective, Dialog],
+  imports: [ReactiveFormsModule, ButtonDirective, Dialog, FormField],
   templateUrl: './campaign-home.html',
   styleUrl: './campaign-home.scss',
 })
 export class CampaignHome implements OnInit {
+  protected readonly systemOptions: readonly FormFieldOption[] = [
+    { value: 'dnd5e', label: 'Dungeons & Dragons 5e' },
+  ];
   private readonly campaignService = inject(CampaignService);
   private readonly router = inject(Router);
 

@@ -38,6 +38,7 @@ import { ButtonDirective } from '../shared/ui/button/button.directive';
 import { Dialog } from '../shared/ui/dialog/dialog';
 import { EmptyState } from '../shared/ui/empty-state/empty-state';
 import { EntityTitle } from '../shared/ui/entity-title/entity-title';
+import { FormField, type FormFieldOption } from '../shared/ui/form-field/form-field';
 
 type PendingDecisionResolver = (canLeave: boolean) => void;
 const DEMO_NPC_PORTRAIT_URL = '/demo/innkeeper.svg';
@@ -64,6 +65,7 @@ type NpcFeatureDrafts = Readonly<Record<NpcFeatureSection, readonly NpcFeature[]
     Dialog,
     EmptyState,
     EntityTitle,
+    FormField,
   ],
   templateUrl: './npc-workspace.html',
   styleUrl: './npc-workspace.scss',
@@ -101,6 +103,12 @@ export class NpcWorkspace implements OnInit, PendingChangesAware {
   protected readonly error = signal<string | null>(null);
   protected readonly focusedJournalEntryId = signal<string | null>(null);
   protected readonly statuses = NPC_STATUSES;
+  protected readonly statusFieldOptions: readonly FormFieldOption[] = NPC_STATUSES.map(
+    (status) => ({
+      value: status,
+      label: this.statusLabel(status),
+    }),
+  );
   protected readonly featureSections: readonly Readonly<{
     key: NpcFeatureSection;
     label: string;
@@ -482,8 +490,12 @@ export class NpcWorkspace implements OnInit, PendingChangesAware {
     this.npcForm.markAsDirty();
   }
 
-  protected updateFeatureName(section: NpcFeatureSection, featureId: string, event: Event): void {
-    const name = (event.target as HTMLInputElement).value;
+  protected updateFeatureName(
+    section: NpcFeatureSection,
+    featureId: string,
+    value: string | number | null,
+  ): void {
+    const name = String(value ?? '');
     this.updateFeature(section, featureId, (feature) => ({ ...feature, name }));
   }
 

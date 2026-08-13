@@ -77,9 +77,8 @@ describe('JournalEntryList', () => {
       resourceId: 'npc-id',
     });
     expect(
-      (fixture.nativeElement as HTMLElement).querySelector<HTMLInputElement>(
-        'input[formcontrolname="title"]',
-      )?.value,
+      (fixture.nativeElement as HTMLElement).querySelector<HTMLInputElement>('#journal-title')
+        ?.value,
     ).toBe('Rencontre');
   });
 

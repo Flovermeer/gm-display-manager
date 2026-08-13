@@ -77,30 +77,31 @@
       </div>
 
       <form [formGroup]="campaignForm" (ngSubmit)="saveCampaign()">
-        <label for="campaign-name">Nom</label>
-        <input
-          id="campaign-name"
-          type="text"
+        <app-form-field
+          inputId="campaign-name"
+          label="Nom"
           formControlName="name"
-          autocomplete="off"
           placeholder="Tomb of Annihilation"
+          [errorMessage]="
+            campaignForm.controls.name.touched && campaignForm.controls.name.invalid
+              ? 'Donne un nom à la campagne.'
+              : null
+          "
         />
-        @if (campaignForm.controls.name.touched && campaignForm.controls.name.invalid) {
-          <p class="field-error">Donne un nom à la campagne.</p>
-        }
-
-        <label for="campaign-description">Description</label>
-        <textarea
-          id="campaign-description"
+        <app-form-field
+          inputId="campaign-description"
+          label="Description"
+          controlType="textarea"
           formControlName="description"
-          rows="5"
           placeholder="Une courte présentation de la campagne…"
-        ></textarea>
-
-        <label for="campaign-system">Système de jeu</label>
-        <select id="campaign-system" formControlName="systemKey">
-          <option value="dnd5e">Dungeons & Dragons 5e</option>
-        </select>
+        />
+        <app-form-field
+          inputId="campaign-system"
+          label="Système de jeu"
+          controlType="select"
+          formControlName="systemKey"
+          [options]="systemOptions"
+        />
 
         <div class="form-actions">
           @if (editingCampaign()) {

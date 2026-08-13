@@ -181,7 +181,7 @@ textarea {
   gap: 0.65rem;
 }
 
-.ability-inputs label {
+.ability-inputs app-form-field {
   display: grid;
   gap: 0.35rem;
   color: #675d52;
@@ -190,7 +190,7 @@ textarea {
   text-align: center;
 }
 
-.ability-inputs input {
+.ability-inputs ::ng-deep input {
   text-align: center;
 }
 

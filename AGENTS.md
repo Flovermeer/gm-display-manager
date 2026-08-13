@@ -87,6 +87,13 @@ Le premier critère de réussite est simple : un clic sur le laptop du MJ provoq
 ## Principes d'implémentation
 
 - Privilégier la fiabilité en pleine partie, la simplicité et les retours visuels explicites.
+- Utiliser les styles CSS communs organisés selon Atomic Design et nommés avec la convention BEM.
+- Dès qu'un style commence à être dupliqué entre plusieurs vues, l'extraire dans la couche commune
+  appropriée de `src/styles/` plutôt que de conserver des copies locales.
+- Dès qu'une structure d'interface ou un comportement Angular commence à être dupliqué, l'extraire
+  dans un composant, une directive ou une primitive partagée de `src/app/shared/`.
+- Préserver la sémantique HTML native lors des extractions : préférer notamment une directive sur
+  un bouton natif à un composant wrapper lorsque le comportement du bouton doit rester intact.
 - Ne jamais supposer que les numéros ou l'ordre des moniteurs Windows restent stables.
 - Conserver localement l'association entre un moniteur et son rôle.
 - Concevoir l'application pour fonctionner hors ligne pendant une session.

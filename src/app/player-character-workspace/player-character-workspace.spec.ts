@@ -97,6 +97,17 @@ describe('PlayerCharacterWorkspace', () => {
     expect(item?.textContent).toContain('18 / 24 PV');
     expect(item?.textContent).toContain('Flore');
     expect(item?.textContent).toContain('Rôdeuse · niveau 3');
+    expect(item?.querySelector('.hit-point-pill.full')).toBeNull();
+  });
+
+  it('highlights full hit points in the group summary', async () => {
+    characterService.list.mockResolvedValue([{ ...character, currentHitPoints: 24 }]);
+    const fixture = TestBed.createComponent(PlayerCharacterWorkspace);
+    fixture.detectChanges();
+    await renderUntil(fixture, '24 / 24 PV');
+
+    const pill = (fixture.nativeElement as HTMLElement).querySelector('.hit-point-pill');
+    expect(pill?.classList.contains('full')).toBe(true);
   });
 
   it('edits current hit points from the read-only reference sheet', async () => {

@@ -38,7 +38,9 @@
           >
             <span class="list-row">
               <strong>{{ character.name }}</strong>
-              <span class="hit-point-pill">{{ hitPointLabel(character) }}</span>
+              <span class="hit-point-pill" [class.full]="hasFullHitPoints(character)">
+                {{ hitPointLabel(character) }}
+              </span>
             </span>
             <span>{{ character.playerName || 'Joueur non renseigné' }}</span>
             <span>{{ classAndLevel(character) }}</span>

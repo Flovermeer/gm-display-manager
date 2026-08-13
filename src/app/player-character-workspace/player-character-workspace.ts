@@ -304,6 +304,15 @@ export class PlayerCharacterWorkspace implements OnInit, PendingChangesAware {
     return `${character.currentHitPoints ?? '—'} / ${character.maxHitPoints ?? '—'} PV`;
   }
 
+  protected hasFullHitPoints(character: PlayerCharacter): boolean {
+    return (
+      character.currentHitPoints !== null &&
+      character.maxHitPoints !== null &&
+      character.maxHitPoints > 0 &&
+      character.currentHitPoints === character.maxHitPoints
+    );
+  }
+
   protected classAndLevel(character: PlayerCharacter): string {
     const className = character.sheet.className || 'Classe non renseignée';
     return character.sheet.level === null

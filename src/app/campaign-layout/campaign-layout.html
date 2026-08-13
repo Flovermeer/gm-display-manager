@@ -1,0 +1,13 @@
+@if (campaign(); as activeCampaign) {
+  <app-campaign-navigation [campaignName]="activeCampaign.name" [campaignId]="activeCampaign.id" />
+  <router-outlet />
+} @else if (error(); as errorMessage) {
+  <main class="campaign-layout-state">
+    <p role="alert">{{ errorMessage }}</p>
+    <a href="/campaigns">Retour aux campagnes</a>
+  </main>
+} @else {
+  <main class="campaign-layout-state" aria-live="polite">
+    <p>Chargement de la campagne…</p>
+  </main>
+}

@@ -8,11 +8,8 @@ import {
   type ValidatorFn,
   Validators,
 } from '@angular/forms';
-import { ActivatedRoute, Router } from '@angular/router';
 
-import type { Campaign } from '../campaign/campaign';
-import { CampaignService } from '../campaign/campaign.service';
-import { CampaignNavigation } from '../campaign-navigation/campaign-navigation';
+import { CampaignContext } from '../campaign-layout/campaign-context';
 import type { PendingChangesAware } from '../navigation/pending-changes.guard';
 import { PlayerCharacterPortraitGateway } from '../media/player-character-portrait.gateway';
 import {
@@ -29,19 +26,17 @@ type PendingDecisionResolver = (canLeave: boolean) => void;
 
 @Component({
   selector: 'app-player-character-workspace',
-  imports: [CampaignNavigation, ReactiveFormsModule, TagInput],
+  imports: [ReactiveFormsModule, TagInput],
   templateUrl: './player-character-workspace.html',
   styleUrl: './player-character-workspace.scss',
 })
 export class PlayerCharacterWorkspace implements OnInit, PendingChangesAware {
-  private readonly campaignService = inject(CampaignService);
+  private readonly campaignContext = inject(CampaignContext);
   private readonly characterService = inject(PlayerCharacterService);
   private readonly portraitGateway = inject(PlayerCharacterPortraitGateway);
-  private readonly route = inject(ActivatedRoute);
-  private readonly router = inject(Router);
   private pendingDecisionResolver?: PendingDecisionResolver;
 
-  protected readonly campaign = signal<Campaign | null>(null);
+  protected readonly campaign = this.campaignContext.campaign;
   protected readonly characters = signal<readonly PlayerCharacter[]>([]);
   protected readonly selectedCharacter = signal<PlayerCharacter | null>(null);
   protected readonly portraitUrl = signal<string | null>(null);
@@ -358,19 +353,8 @@ export class PlayerCharacterWorkspace implements OnInit, PendingChangesAware {
   }
 
   private async initialize(): Promise<void> {
-    const campaignId = this.route.snapshot.paramMap.get('campaignId');
-    if (!campaignId) {
-      await this.router.navigate(['/campaigns']);
-      return;
-    }
     try {
-      const campaign = await this.campaignService.findById(campaignId);
-      if (!campaign) {
-        await this.router.navigate(['/campaigns']);
-        return;
-      }
-      await this.campaignService.activate(campaign.id);
-      this.campaign.set(campaign);
+      if (!(await this.campaignContext.load())) return;
       await this.reloadCharacters();
     } catch (error) {
       this.error.set(this.errorMessage(error));

@@ -4,6 +4,7 @@ import { ActivatedRoute } from '@angular/router';
 
 import type { Campaign } from '../campaign/campaign';
 import { CampaignService } from '../campaign/campaign.service';
+import { CampaignContext } from '../campaign-layout/campaign-context';
 import type { Chapter } from '../chapter/chapter';
 import { ChapterService } from '../chapter/chapter.service';
 import { LocationService } from '../location/location.service';
@@ -48,6 +49,10 @@ describe('ChapterWorkspace', () => {
       providers: [
         provideRouter([]),
         { provide: CampaignService, useValue: campaignService },
+        {
+          provide: CampaignContext,
+          useValue: { campaign: () => campaign, load: () => Promise.resolve(campaign) },
+        },
         { provide: ChapterService, useValue: chapterService },
         { provide: LocationService, useValue: emptyResourceService },
         { provide: NpcService, useValue: emptyResourceService },

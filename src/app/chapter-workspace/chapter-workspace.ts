@@ -1,11 +1,8 @@
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { ActivatedRoute, Router } from '@angular/router';
 import type { JSONContent } from '@tiptap/core';
 
-import type { Campaign } from '../campaign/campaign';
-import { CampaignService } from '../campaign/campaign.service';
-import { CampaignNavigation } from '../campaign-navigation/campaign-navigation';
+import { CampaignContext } from '../campaign-layout/campaign-context';
 import { emptyChapterInput, type Chapter, type UpdateChapterInput } from '../chapter/chapter';
 import { ChapterService } from '../chapter/chapter.service';
 import { LocationService } from '../location/location.service';
@@ -20,21 +17,19 @@ type PendingDecisionResolver = (canLeave: boolean) => void;
 
 @Component({
   selector: 'app-chapter-workspace',
-  imports: [CampaignNavigation, ReactiveFormsModule, RichTextEditor],
+  imports: [ReactiveFormsModule, RichTextEditor],
   templateUrl: './chapter-workspace.html',
   styleUrl: './chapter-workspace.scss',
 })
 export class ChapterWorkspace implements OnInit, PendingChangesAware {
-  private readonly campaignService = inject(CampaignService);
+  private readonly campaignContext = inject(CampaignContext);
   private readonly chapterService = inject(ChapterService);
   private readonly locationService = inject(LocationService);
   private readonly npcService = inject(NpcService);
   private readonly characterService = inject(PlayerCharacterService);
-  private readonly route = inject(ActivatedRoute);
-  private readonly router = inject(Router);
   private pendingDecisionResolver?: PendingDecisionResolver;
 
-  protected readonly campaign = signal<Campaign | null>(null);
+  protected readonly campaign = this.campaignContext.campaign;
   protected readonly chapters = signal<readonly Chapter[]>([]);
   protected readonly selectedChapter = signal<Chapter | null>(null);
   protected readonly draftContent = signal<RichTextDocument>(emptyChapterInput().content);
@@ -216,19 +211,9 @@ export class ChapterWorkspace implements OnInit, PendingChangesAware {
   }
 
   private async initialize(): Promise<void> {
-    const campaignId = this.route.snapshot.paramMap.get('campaignId');
-    if (!campaignId) {
-      await this.router.navigate(['/campaigns']);
-      return;
-    }
     try {
-      const campaign = await this.campaignService.findById(campaignId);
-      if (!campaign) {
-        await this.router.navigate(['/campaigns']);
-        return;
-      }
-      await this.campaignService.activate(campaign.id);
-      this.campaign.set(campaign);
+      const campaign = await this.campaignContext.load();
+      if (!campaign) return;
       const [chapters, locations, npcs, characters] = await Promise.all([
         this.chapterService.list(campaign.id),
         this.locationService.list(campaign.id),

@@ -7,31 +7,21 @@
   <p class="campaign-name" [title]="campaignName()">{{ campaignName() }}</p>
 
   <div class="campaign-links">
-    <a [class.active]="activeSection() === 'control'" [routerLink]="['/campaigns', campaignId()]">
+    <a
+      [routerLink]="['/campaigns', campaignId()]"
+      routerLinkActive="active"
+      [routerLinkActiveOptions]="{ exact: true }"
+    >
       Régie
     </a>
-    <a
-      [class.active]="activeSection() === 'chapters'"
-      [routerLink]="['/campaigns', campaignId(), 'chapters']"
-    >
+    <a [routerLink]="['/campaigns', campaignId(), 'chapters']" routerLinkActive="active">
       Chapitres
     </a>
-    <a
-      [class.active]="activeSection() === 'locations'"
-      [routerLink]="['/campaigns', campaignId(), 'locations']"
-    >
+    <a [routerLink]="['/campaigns', campaignId(), 'locations']" routerLinkActive="active">
       Lieux
     </a>
-    <a
-      [class.active]="activeSection() === 'npcs'"
-      [routerLink]="['/campaigns', campaignId(), 'npcs']"
-    >
-      PNJ
-    </a>
-    <a
-      [class.active]="activeSection() === 'player-characters'"
-      [routerLink]="['/campaigns', campaignId(), 'player-characters']"
-    >
+    <a [routerLink]="['/campaigns', campaignId(), 'npcs']" routerLinkActive="active"> PNJ </a>
+    <a [routerLink]="['/campaigns', campaignId(), 'player-characters']" routerLinkActive="active">
       PJ
     </a>
     <span aria-disabled="true" title="Bientôt disponible">Objets</span>

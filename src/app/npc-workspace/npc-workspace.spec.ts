@@ -4,6 +4,7 @@ import { ActivatedRoute } from '@angular/router';
 
 import type { Campaign } from '../campaign/campaign';
 import { CampaignService } from '../campaign/campaign.service';
+import { CampaignContext } from '../campaign-layout/campaign-context';
 import { DisplayGateway } from '../display/display.gateway';
 import { NpcPortraitGateway } from '../media/npc-portrait.gateway';
 import { NpcIdleVideoGateway } from '../media/npc-idle-video.gateway';
@@ -82,6 +83,10 @@ describe('NpcWorkspace', () => {
       providers: [
         provideRouter([]),
         { provide: CampaignService, useValue: campaignService },
+        {
+          provide: CampaignContext,
+          useValue: { campaign: () => campaign, load: () => Promise.resolve(campaign) },
+        },
         { provide: NpcService, useValue: npcService },
         { provide: NpcPortraitGateway, useValue: portraitGateway },
         { provide: NpcIdleVideoGateway, useValue: idleVideoGateway },

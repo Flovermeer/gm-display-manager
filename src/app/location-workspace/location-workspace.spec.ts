@@ -4,6 +4,7 @@ import { ActivatedRoute } from '@angular/router';
 
 import type { Campaign } from '../campaign/campaign';
 import { CampaignService } from '../campaign/campaign.service';
+import { CampaignContext } from '../campaign-layout/campaign-context';
 import { DisplayGateway } from '../display/display.gateway';
 import type { Location } from '../location/location';
 import { LocationService } from '../location/location.service';
@@ -66,6 +67,10 @@ describe('LocationWorkspace', () => {
       providers: [
         provideRouter([]),
         { provide: CampaignService, useValue: campaignService },
+        {
+          provide: CampaignContext,
+          useValue: { campaign: () => campaign, load: () => Promise.resolve(campaign) },
+        },
         { provide: LocationService, useValue: locationService },
         { provide: LocationImageGateway, useValue: imageGateway },
         { provide: DisplayGateway, useValue: displayGateway },

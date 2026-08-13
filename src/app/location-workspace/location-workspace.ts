@@ -1,10 +1,7 @@
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { ActivatedRoute, Router } from '@angular/router';
 
-import type { Campaign } from '../campaign/campaign';
-import { CampaignService } from '../campaign/campaign.service';
-import { CampaignNavigation } from '../campaign-navigation/campaign-navigation';
+import { CampaignContext } from '../campaign-layout/campaign-context';
 import { DisplayGateway } from '../display/display.gateway';
 import { PlayerDisplayStore } from '../display/player-display.store';
 import type { Location } from '../location/location';
@@ -19,21 +16,19 @@ const DEMO_LOCATION_IMAGE_URL = '/demo/tavern.svg';
 
 @Component({
   selector: 'app-location-workspace',
-  imports: [CampaignNavigation, ReactiveFormsModule],
+  imports: [ReactiveFormsModule],
   templateUrl: './location-workspace.html',
   styleUrl: './location-workspace.scss',
 })
 export class LocationWorkspace implements OnInit, PendingChangesAware {
-  private readonly campaignService = inject(CampaignService);
+  private readonly campaignContext = inject(CampaignContext);
   private readonly locationService = inject(LocationService);
   private readonly locationImageGateway = inject(LocationImageGateway);
   private readonly displayGateway = inject(DisplayGateway);
   private readonly playerDisplayStore = inject(PlayerDisplayStore);
-  private readonly route = inject(ActivatedRoute);
-  private readonly router = inject(Router);
   private pendingDecisionResolver?: PendingDecisionResolver;
 
-  protected readonly campaign = signal<Campaign | null>(null);
+  protected readonly campaign = this.campaignContext.campaign;
   protected readonly locations = signal<readonly Location[]>([]);
   protected readonly selectedLocation = signal<Location | null>(null);
   protected readonly imageUrl = signal<string>(DEMO_LOCATION_IMAGE_URL);
@@ -321,21 +316,8 @@ export class LocationWorkspace implements OnInit, PendingChangesAware {
   }
 
   private async initialize(): Promise<void> {
-    const campaignId = this.route.snapshot.paramMap.get('campaignId');
-    if (!campaignId) {
-      await this.router.navigate(['/campaigns']);
-      return;
-    }
-
     try {
-      const campaign = await this.campaignService.findById(campaignId);
-      if (!campaign) {
-        await this.router.navigate(['/campaigns']);
-        return;
-      }
-
-      await this.campaignService.activate(campaign.id);
-      this.campaign.set(campaign);
+      if (!(await this.campaignContext.load())) return;
       await this.reloadLocations();
       if (this.displayGateway.isDesktop) {
         this.isPlayerDisplayOpen.set(await this.displayGateway.isPlayerDisplayOpen());

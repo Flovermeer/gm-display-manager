@@ -10,43 +10,51 @@ export const routes: Routes = [
     title: "Beholder's Inn — Campagnes",
   },
   {
-    path: 'campaigns/:campaignId/chapters',
-    loadComponent: () =>
-      import('./chapter-workspace/chapter-workspace').then(
-        ({ ChapterWorkspace }) => ChapterWorkspace,
-      ),
-    canDeactivate: [pendingChangesGuard],
-    title: "Beholder's Inn — Chapitres",
-  },
-  {
-    path: 'campaigns/:campaignId/locations',
-    loadComponent: () =>
-      import('./location-workspace/location-workspace').then(
-        ({ LocationWorkspace }) => LocationWorkspace,
-      ),
-    canDeactivate: [pendingChangesGuard],
-    title: "Beholder's Inn — Lieux",
-  },
-  {
-    path: 'campaigns/:campaignId/npcs',
-    loadComponent: () =>
-      import('./npc-workspace/npc-workspace').then(({ NpcWorkspace }) => NpcWorkspace),
-    canDeactivate: [pendingChangesGuard],
-    title: "Beholder's Inn — PNJ",
-  },
-  {
-    path: 'campaigns/:campaignId/player-characters',
-    loadComponent: () =>
-      import('./player-character-workspace/player-character-workspace').then(
-        ({ PlayerCharacterWorkspace }) => PlayerCharacterWorkspace,
-      ),
-    canDeactivate: [pendingChangesGuard],
-    title: "Beholder's Inn — PJ",
-  },
-  {
     path: 'campaigns/:campaignId',
-    loadComponent: () => import('./control/control').then(({ Control }) => Control),
-    title: "Beholder's Inn — Panneau MJ",
+    loadComponent: () =>
+      import('./campaign-layout/campaign-layout').then(({ CampaignLayout }) => CampaignLayout),
+    children: [
+      {
+        path: '',
+        pathMatch: 'full',
+        loadComponent: () => import('./control/control').then(({ Control }) => Control),
+        title: "Beholder's Inn — Panneau MJ",
+      },
+      {
+        path: 'chapters',
+        loadComponent: () =>
+          import('./chapter-workspace/chapter-workspace').then(
+            ({ ChapterWorkspace }) => ChapterWorkspace,
+          ),
+        canDeactivate: [pendingChangesGuard],
+        title: "Beholder's Inn — Chapitres",
+      },
+      {
+        path: 'locations',
+        loadComponent: () =>
+          import('./location-workspace/location-workspace').then(
+            ({ LocationWorkspace }) => LocationWorkspace,
+          ),
+        canDeactivate: [pendingChangesGuard],
+        title: "Beholder's Inn — Lieux",
+      },
+      {
+        path: 'npcs',
+        loadComponent: () =>
+          import('./npc-workspace/npc-workspace').then(({ NpcWorkspace }) => NpcWorkspace),
+        canDeactivate: [pendingChangesGuard],
+        title: "Beholder's Inn — PNJ",
+      },
+      {
+        path: 'player-characters',
+        loadComponent: () =>
+          import('./player-character-workspace/player-character-workspace').then(
+            ({ PlayerCharacterWorkspace }) => PlayerCharacterWorkspace,
+          ),
+        canDeactivate: [pendingChangesGuard],
+        title: "Beholder's Inn — PJ",
+      },
+    ],
   },
   {
     path: 'player-display',

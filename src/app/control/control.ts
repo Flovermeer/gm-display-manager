@@ -1,10 +1,8 @@
 import { Component, computed, inject, OnDestroy, OnInit, signal } from '@angular/core';
-import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { RouterLink } from '@angular/router';
 import type { UnlistenFn } from '@tauri-apps/api/event';
 
-import type { Campaign } from '../campaign/campaign';
-import { CampaignService } from '../campaign/campaign.service';
-import { CampaignNavigation } from '../campaign-navigation/campaign-navigation';
+import { CampaignContext } from '../campaign-layout/campaign-context';
 import { DisplayGateway } from '../display/display.gateway';
 import type { MonitorDescriptor } from '../display/display.models';
 import { PlayerDisplayPreferenceService } from '../display/player-display-preference.service';
@@ -13,21 +11,19 @@ import { PlayerDisplayStore } from '../display/player-display.store';
 
 @Component({
   selector: 'app-control',
-  imports: [CampaignNavigation, RouterLink],
+  imports: [RouterLink],
   templateUrl: './control.html',
   styleUrl: './control.scss',
 })
 export class Control implements OnInit, OnDestroy {
-  private readonly campaignService = inject(CampaignService);
-  private readonly route = inject(ActivatedRoute);
-  private readonly router = inject(Router);
+  private readonly campaignContext = inject(CampaignContext);
   private readonly displayGateway = inject(DisplayGateway);
   private readonly playerDisplayPreference = inject(PlayerDisplayPreferenceService);
   private readonly playerDisplayStore = inject(PlayerDisplayStore);
   private unlistenPlayerDisplayReady?: UnlistenFn;
 
   protected readonly isDesktop = this.displayGateway.isDesktop;
-  protected readonly campaign = signal<Campaign | null>(null);
+  protected readonly campaign = this.campaignContext.campaign;
   protected readonly monitors = signal<readonly MonitorDescriptor[]>([]);
   protected readonly selectedMonitorId = signal('');
   protected readonly isLoading = signal(false);
@@ -164,23 +160,8 @@ export class Control implements OnInit, OnDestroy {
   }
 
   private async initializeCampaign(): Promise<void> {
-    const campaignId = this.route.snapshot.paramMap.get('campaignId');
-
-    if (!campaignId) {
-      await this.router.navigate(['/campaigns']);
-      return;
-    }
-
     try {
-      const campaign = await this.campaignService.findById(campaignId);
-      if (!campaign) {
-        await this.router.navigate(['/campaigns']);
-        return;
-      }
-
-      await this.campaignService.activate(campaign.id);
-      this.campaign.set(campaign);
-
+      if (!(await this.campaignContext.load())) return;
       if (this.isDesktop) {
         await this.initializeDesktop();
       }

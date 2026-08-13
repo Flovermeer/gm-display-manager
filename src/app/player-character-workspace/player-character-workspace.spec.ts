@@ -3,6 +3,7 @@ import { ActivatedRoute, provideRouter } from '@angular/router';
 
 import type { Campaign } from '../campaign/campaign';
 import { CampaignService } from '../campaign/campaign.service';
+import { CampaignContext } from '../campaign-layout/campaign-context';
 import {
   EMPTY_PLAYER_CHARACTER_SHEET,
   type PlayerCharacter,
@@ -73,6 +74,10 @@ describe('PlayerCharacterWorkspace', () => {
       providers: [
         provideRouter([]),
         { provide: CampaignService, useValue: campaignService },
+        {
+          provide: CampaignContext,
+          useValue: { campaign: () => campaign, load: () => Promise.resolve(campaign) },
+        },
         { provide: PlayerCharacterService, useValue: characterService },
         { provide: PlayerCharacterPortraitGateway, useValue: portraitGateway },
         {

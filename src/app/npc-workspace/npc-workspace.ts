@@ -1,10 +1,7 @@
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { ActivatedRoute, Router } from '@angular/router';
 
-import type { Campaign } from '../campaign/campaign';
-import { CampaignService } from '../campaign/campaign.service';
-import { CampaignNavigation } from '../campaign-navigation/campaign-navigation';
+import { CampaignContext } from '../campaign-layout/campaign-context';
 import { DisplayGateway } from '../display/display.gateway';
 import { PlayerDisplayStore } from '../display/player-display.store';
 import { NpcPortraitGateway } from '../media/npc-portrait.gateway';
@@ -18,22 +15,20 @@ const DEMO_NPC_PORTRAIT_URL = '/demo/innkeeper.svg';
 
 @Component({
   selector: 'app-npc-workspace',
-  imports: [CampaignNavigation, ReactiveFormsModule],
+  imports: [ReactiveFormsModule],
   templateUrl: './npc-workspace.html',
   styleUrl: './npc-workspace.scss',
 })
 export class NpcWorkspace implements OnInit, PendingChangesAware {
-  private readonly campaignService = inject(CampaignService);
+  private readonly campaignContext = inject(CampaignContext);
   private readonly npcService = inject(NpcService);
   private readonly npcPortraitGateway = inject(NpcPortraitGateway);
   private readonly npcIdleVideoGateway = inject(NpcIdleVideoGateway);
   private readonly displayGateway = inject(DisplayGateway);
   private readonly playerDisplayStore = inject(PlayerDisplayStore);
-  private readonly route = inject(ActivatedRoute);
-  private readonly router = inject(Router);
   private pendingDecisionResolver?: PendingDecisionResolver;
 
-  protected readonly campaign = signal<Campaign | null>(null);
+  protected readonly campaign = this.campaignContext.campaign;
   protected readonly npcs = signal<readonly Npc[]>([]);
   protected readonly selectedNpc = signal<Npc | null>(null);
   protected readonly portraitUrl = signal<string>(DEMO_NPC_PORTRAIT_URL);
@@ -363,21 +358,8 @@ export class NpcWorkspace implements OnInit, PendingChangesAware {
   }
 
   private async initialize(): Promise<void> {
-    const campaignId = this.route.snapshot.paramMap.get('campaignId');
-    if (!campaignId) {
-      await this.router.navigate(['/campaigns']);
-      return;
-    }
-
     try {
-      const campaign = await this.campaignService.findById(campaignId);
-      if (!campaign) {
-        await this.router.navigate(['/campaigns']);
-        return;
-      }
-
-      await this.campaignService.activate(campaign.id);
-      this.campaign.set(campaign);
+      if (!(await this.campaignContext.load())) return;
       await this.reloadNpcs();
       if (this.displayGateway.isDesktop) {
         this.isPlayerDisplayOpen.set(await this.displayGateway.isPlayerDisplayOpen());

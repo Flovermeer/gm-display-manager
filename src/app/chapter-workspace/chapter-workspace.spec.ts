@@ -6,6 +6,9 @@ import type { Campaign } from '../campaign/campaign';
 import { CampaignService } from '../campaign/campaign.service';
 import type { Chapter } from '../chapter/chapter';
 import { ChapterService } from '../chapter/chapter.service';
+import { LocationService } from '../location/location.service';
+import { NpcService } from '../npc/npc.service';
+import { PlayerCharacterService } from '../player-character/player-character.service';
 import { RICH_TEXT_SCHEMA_VERSION } from '../shared/rich-text-editor/rich-text-document';
 import { ChapterWorkspace } from './chapter-workspace';
 
@@ -26,6 +29,7 @@ describe('ChapterWorkspace', () => {
     update: vi.fn(),
     delete: vi.fn(),
   };
+  const emptyResourceService = { list: vi.fn() };
 
   beforeEach(async () => {
     vi.clearAllMocks();
@@ -35,6 +39,7 @@ describe('ChapterWorkspace', () => {
     chapterService.create.mockResolvedValue(chapter);
     chapterService.update.mockResolvedValue(chapter);
     chapterService.delete.mockResolvedValue(undefined);
+    emptyResourceService.list.mockResolvedValue([]);
 
     await TestBed.configureTestingModule({
       imports: [ChapterWorkspace],
@@ -42,6 +47,9 @@ describe('ChapterWorkspace', () => {
         provideRouter([]),
         { provide: CampaignService, useValue: campaignService },
         { provide: ChapterService, useValue: chapterService },
+        { provide: LocationService, useValue: emptyResourceService },
+        { provide: NpcService, useValue: emptyResourceService },
+        { provide: PlayerCharacterService, useValue: emptyResourceService },
         {
           provide: ActivatedRoute,
           useValue: { snapshot: { paramMap: { get: () => campaign.id } } },

@@ -1,8 +1,71 @@
 .rich-text-editor {
+  position: relative;
   overflow: hidden;
   border: 1px solid #bdb4a8;
   border-radius: 0.55rem;
   background: #fff;
+}
+
+.mention-menu {
+  position: absolute;
+  z-index: 5;
+  right: 1rem;
+  bottom: 1rem;
+  display: grid;
+  width: min(24rem, calc(100% - 2rem));
+  max-height: 18rem;
+  overflow-y: auto;
+  padding: 0.4rem;
+  border: 1px solid #9f8eaa;
+  border-radius: 0.5rem;
+  background: #f6f2eb;
+  box-shadow: 0 1rem 2.5rem rgb(35 27 40 / 28%);
+}
+
+.mention-menu button {
+  display: grid;
+  padding: 0.55rem 0.7rem;
+  border: 0;
+  border-radius: 0.35rem;
+  color: #352f2a;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+  grid-template-columns: 3rem minmax(0, 1fr);
+  gap: 0.7rem;
+}
+
+.mention-menu button:hover,
+.mention-menu button.selected {
+  background: #e0d3e7;
+}
+
+.mention-menu button span {
+  color: #775a88;
+  font-size: 0.7rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.mention-menu p {
+  margin: 0;
+  padding: 0.7rem;
+  color: #71685e;
+  font-size: 0.8rem;
+}
+
+.rich-text-content .tiptap .resource-mention {
+  padding: 0.12rem 0.35rem;
+  border-radius: 999px;
+  color: #613b75;
+  background: #e4d6eb;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.rich-text-content .tiptap .resource-mention-broken {
+  color: inherit;
+  background: transparent;
 }
 
 .rich-text-toolbar {

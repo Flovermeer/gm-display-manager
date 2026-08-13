@@ -8,9 +8,13 @@ import { CampaignService } from '../campaign/campaign.service';
 import { CampaignNavigation } from '../campaign-navigation/campaign-navigation';
 import { emptyChapterInput, type Chapter, type UpdateChapterInput } from '../chapter/chapter';
 import { ChapterService } from '../chapter/chapter.service';
+import { LocationService } from '../location/location.service';
 import type { PendingChangesAware } from '../navigation/pending-changes.guard';
+import { NpcService } from '../npc/npc.service';
+import { PlayerCharacterService } from '../player-character/player-character.service';
 import type { RichTextDocument } from '../shared/rich-text-editor/rich-text-document';
 import { RichTextEditor } from '../shared/rich-text-editor/rich-text-editor';
+import type { ResourceMentionCandidate } from '../shared/rich-text-editor/resource-mention';
 
 type PendingDecisionResolver = (canLeave: boolean) => void;
 
@@ -23,6 +27,9 @@ type PendingDecisionResolver = (canLeave: boolean) => void;
 export class ChapterWorkspace implements OnInit, PendingChangesAware {
   private readonly campaignService = inject(CampaignService);
   private readonly chapterService = inject(ChapterService);
+  private readonly locationService = inject(LocationService);
+  private readonly npcService = inject(NpcService);
+  private readonly characterService = inject(PlayerCharacterService);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private pendingDecisionResolver?: PendingDecisionResolver;
@@ -41,6 +48,7 @@ export class ChapterWorkspace implements OnInit, PendingChangesAware {
   protected readonly showPendingChangesDialog = signal(false);
   protected readonly showDeleteDialog = signal(false);
   protected readonly error = signal<string | null>(null);
+  protected readonly mentionCandidates = signal<readonly ResourceMentionCandidate[]>([]);
 
   protected readonly chapterForm = new FormGroup({
     title: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
@@ -188,7 +196,30 @@ export class ChapterWorkspace implements OnInit, PendingChangesAware {
       }
       await this.campaignService.activate(campaign.id);
       this.campaign.set(campaign);
-      await this.reloadChapters();
+      const [chapters, locations, npcs, characters] = await Promise.all([
+        this.chapterService.list(campaign.id),
+        this.locationService.list(campaign.id),
+        this.npcService.list(campaign.id),
+        this.characterService.list(campaign.id),
+      ]);
+      this.chapters.set(chapters);
+      this.mentionCandidates.set([
+        ...characters.map((character) => ({
+          resourceType: 'player-character' as const,
+          resourceId: character.id,
+          label: character.name,
+        })),
+        ...npcs.map((npc) => ({
+          resourceType: 'npc' as const,
+          resourceId: npc.id,
+          label: npc.name,
+        })),
+        ...locations.map((location) => ({
+          resourceType: 'location' as const,
+          resourceId: location.id,
+          label: location.name,
+        })),
+      ]);
     } catch (error) {
       this.error.set(errorMessage(error));
     } finally {

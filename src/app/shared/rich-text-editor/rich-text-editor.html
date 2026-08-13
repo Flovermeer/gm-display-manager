@@ -78,4 +78,28 @@
   }
 
   <div #editorHost class="rich-text-content" [class.readonly]="!editable()"></div>
+
+  @if (mentionMatch() && editable()) {
+    <div class="mention-menu" role="listbox" aria-label="Ressources de la campagne">
+      @for (
+        candidate of filteredMentionCandidates();
+        track candidate.resourceType + candidate.resourceId;
+        let index = $index
+      ) {
+        <button
+          type="button"
+          role="option"
+          [class.selected]="index === selectedMentionIndex()"
+          [attr.aria-selected]="index === selectedMentionIndex()"
+          (mousedown)="$event.preventDefault()"
+          (click)="insertMention(candidate)"
+        >
+          <span>{{ resourceTypeLabel(candidate) }}</span>
+          <strong>{{ candidate.label }}</strong>
+        </button>
+      } @empty {
+        <p>Aucune ressource ne correspond à « {{ mentionMatch()?.query }} ».</p>
+      }
+    </div>
+  }
 </div>

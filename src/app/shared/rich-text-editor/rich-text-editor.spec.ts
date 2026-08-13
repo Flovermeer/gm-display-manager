@@ -45,4 +45,35 @@ describe('RichTextEditor', () => {
     expect(destroy).toHaveBeenCalledOnce();
     destroy.mockRestore();
   });
+
+  it('keeps a missing resource mention readable as ordinary text', async () => {
+    const fixture = TestBed.createComponent(RichTextEditor);
+    fixture.componentRef.setInput('editable', false);
+    fixture.componentRef.setInput('mentionCandidates', []);
+    fixture.componentRef.setInput('value', {
+      schemaVersion: RICH_TEXT_SCHEMA_VERSION,
+      content: {
+        type: 'doc',
+        content: [
+          {
+            type: 'paragraph',
+            content: [
+              {
+                type: 'resourceMention',
+                attrs: { resourceType: 'npc', resourceId: 'deleted-id', label: 'Ancien PNJ' },
+              },
+            ],
+          },
+        ],
+      },
+    } satisfies RichTextDocument);
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    const mention = (fixture.nativeElement as HTMLElement).querySelector(
+      '[data-resource-mention="broken"]',
+    );
+    expect(mention?.textContent).toBe('@Ancien PNJ');
+    expect(mention?.classList.contains('resource-mention')).toBe(false);
+  });
 });

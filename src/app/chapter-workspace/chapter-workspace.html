@@ -117,7 +117,11 @@
 
           <div class="field editor-field">
             <label>Contenu</label>
-            <app-rich-text-editor [value]="draftContent()" (valueChange)="updateContent($event)" />
+            <app-rich-text-editor
+              [value]="draftContent()"
+              [mentionCandidates]="mentionCandidates()"
+              (valueChange)="updateContent($event)"
+            />
           </div>
         </form>
       } @else if (selectedChapter(); as chapter) {
@@ -129,7 +133,11 @@
               <p class="chapter-summary">{{ chapter.summary }}</p>
             }
           </header>
-          <app-rich-text-editor [value]="chapter.content" [editable]="false" />
+          <app-rich-text-editor
+            [value]="chapter.content"
+            [editable]="false"
+            [mentionCandidates]="mentionCandidates()"
+          />
         </article>
       }
     } @else {

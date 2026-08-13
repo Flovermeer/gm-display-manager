@@ -1,6 +1,7 @@
 import {
   AfterViewInit,
   Component,
+  computed,
   ElementRef,
   OnDestroy,
   ViewEncapsulation,
@@ -18,6 +19,12 @@ import {
   RICH_TEXT_SCHEMA_VERSION,
   type RichTextDocument,
 } from './rich-text-document';
+import {
+  createResourceMentionExtension,
+  createResourceMentionTrigger,
+  type ResourceMentionCandidate,
+  type ResourceMentionMatch,
+} from './resource-mention';
 
 @Component({
   selector: 'app-rich-text-editor',
@@ -28,11 +35,22 @@ import {
 export class RichTextEditor implements AfterViewInit, OnDestroy {
   readonly value = input<RichTextDocument>(createEmptyRichTextDocument());
   readonly editable = input(true);
+  readonly mentionCandidates = input<readonly ResourceMentionCandidate[]>([]);
   readonly valueChange = output<RichTextDocument>();
 
   private readonly editorHost = viewChild.required<ElementRef<HTMLDivElement>>('editorHost');
   private readonly editorReady = signal(false);
   private readonly editorRevision = signal(0);
+  protected readonly mentionMatch = signal<ResourceMentionMatch | null>(null);
+  protected readonly selectedMentionIndex = signal(0);
+  protected readonly filteredMentionCandidates = computed(() => {
+    const match = this.mentionMatch();
+    if (!match) return [];
+    const query = normalizeSearch(match.query);
+    return this.mentionCandidates()
+      .filter((candidate) => normalizeSearch(candidate.label).includes(query))
+      .slice(0, 8);
+  });
   private editor: Editor | null = null;
 
   private readonly synchronizeExternalValue = effect(() => {
@@ -60,6 +78,20 @@ export class RichTextEditor implements AfterViewInit, OnDestroy {
             defaultProtocol: 'https',
           },
         }),
+        createResourceMentionExtension({
+          isAvailable: (resourceType, resourceId) =>
+            this.mentionCandidates().some(
+              (candidate) =>
+                candidate.resourceType === resourceType && candidate.resourceId === resourceId,
+            ),
+        }),
+        createResourceMentionTrigger(
+          (match) => {
+            this.mentionMatch.set(this.editable() ? match : null);
+            this.selectedMentionIndex.set(0);
+          },
+          (event) => this.handleMentionKeydown(event),
+        ),
       ],
       content: this.value().content,
       editable: this.editable(),
@@ -126,12 +158,74 @@ export class RichTextEditor implements AfterViewInit, OnDestroy {
     this.editor.chain().focus().extendMarkRange('link').setLink({ href: trimmedUrl }).run();
   }
 
+  protected insertMention(candidate: ResourceMentionCandidate): void {
+    const match = this.mentionMatch();
+    if (!this.editor || !match) return;
+    this.editor
+      .chain()
+      .focus()
+      .deleteRange({ from: match.from, to: match.to })
+      .insertContent([
+        {
+          type: 'resourceMention',
+          attrs: {
+            resourceType: candidate.resourceType,
+            resourceId: candidate.resourceId,
+            label: candidate.label,
+          },
+        },
+        { type: 'text', text: ' ' },
+      ])
+      .run();
+    this.mentionMatch.set(null);
+  }
+
+  protected resourceTypeLabel(candidate: ResourceMentionCandidate): string {
+    const labels = {
+      'player-character': 'PJ',
+      npc: 'PNJ',
+      location: 'Lieu',
+      item: 'Objet',
+    } as const;
+    return labels[candidate.resourceType];
+  }
+
   protected isActive(name: string, attributes?: Record<string, unknown>): boolean {
     this.editorRevision();
     return this.editor?.isActive(name, attributes) ?? false;
+  }
+
+  private handleMentionKeydown(event: KeyboardEvent): boolean {
+    const candidates = this.filteredMentionCandidates();
+    if (!this.mentionMatch() || candidates.length === 0) return false;
+    if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+      const direction = event.key === 'ArrowDown' ? 1 : -1;
+      this.selectedMentionIndex.update(
+        (index) => (index + direction + candidates.length) % candidates.length,
+      );
+      return true;
+    }
+    if (event.key === 'Enter') {
+      const candidate = candidates[this.selectedMentionIndex()];
+      if (candidate) this.insertMention(candidate);
+      return true;
+    }
+    if (event.key === 'Escape') {
+      this.mentionMatch.set(null);
+      return true;
+    }
+    return false;
   }
 }
 
 function documentsAreEqual(current: JSONContent, next: JSONContent): boolean {
   return JSON.stringify(current) === JSON.stringify(next);
+}
+
+function normalizeSearch(value: string): string {
+  return value
+    .trim()
+    .toLocaleLowerCase('fr')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '');
 }

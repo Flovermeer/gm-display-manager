@@ -37,6 +37,9 @@
     </a>
     <span aria-disabled="true" title="Bientôt disponible">Objets</span>
     <a [routerLink]="['/campaigns', campaignId(), 'journal']" routerLinkActive="active">Journal</a>
+    <a [routerLink]="['/campaigns', campaignId(), 'configuration']" routerLinkActive="active">
+      <span aria-hidden="true">⚙</span> Configuration
+    </a>
     <a class="home-link" routerLink="/campaigns">Accueil</a>
   </div>
 </nav>

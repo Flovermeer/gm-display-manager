@@ -63,6 +63,14 @@ export const routes: Routes = [
         canDeactivate: [pendingChangesGuard],
         title: "Beholder's Inn — Journal",
       },
+      {
+        path: 'configuration',
+        loadComponent: () =>
+          import('./campaign-configuration-workspace/campaign-configuration-workspace').then(
+            ({ CampaignConfigurationWorkspace }) => CampaignConfigurationWorkspace,
+          ),
+        title: "Beholder's Inn — Configuration",
+      },
     ],
   },
   {

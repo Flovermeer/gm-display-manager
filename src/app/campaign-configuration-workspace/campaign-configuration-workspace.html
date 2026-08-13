@@ -1,0 +1,97 @@
+<main class="configuration-workspace">
+  <header class="configuration-workspace__heading">
+    <p class="entity-workspace__kicker">Campagne</p>
+    <h1><span aria-hidden="true">⚙</span> Configuration</h1>
+    <p>Adapte les référentiels utilisés dans les fiches de cette campagne.</p>
+  </header>
+
+  @if (error(); as errorMessage) {
+    <p class="configuration-workspace__error" role="alert">{{ errorMessage }}</p>
+  }
+
+  <section class="configuration-sections" aria-label="Réglages de la campagne">
+    @for (section of sections; track section.kind) {
+      <article class="configuration-section">
+        <button
+          class="configuration-section__toggle"
+          type="button"
+          [attr.aria-expanded]="expanded().has(section.kind)"
+          (click)="toggle(section.kind)"
+        >
+          <span>
+            <strong>{{ section.title }}</strong>
+            <small>{{ section.description }}</small>
+          </span>
+          <span aria-hidden="true">{{ expanded().has(section.kind) ? '−' : '+' }}</span>
+        </button>
+
+        @if (expanded().has(section.kind)) {
+          <div class="configuration-section__content">
+            <ul>
+              @for (option of options()[section.kind]; track option.id) {
+                <li>
+                  <span>{{ option.name }}</span>
+                  <div>
+                    <button appButton="secondary" type="button" (click)="startRename(option)">
+                      Renommer
+                    </button>
+                    <button
+                      appButton="secondary-danger"
+                      type="button"
+                      (click)="requestDelete(option)"
+                    >
+                      Supprimer
+                    </button>
+                  </div>
+                </li>
+              }
+            </ul>
+            <button appButton="primary" type="button" (click)="startCreate(section.kind)">
+              + Ajouter une valeur
+            </button>
+          </div>
+        }
+      </article>
+    }
+  </section>
+</main>
+
+@if (editing(); as option) {
+  <app-dialog
+    [kicker]="option.id ? 'Renommer une valeur' : 'Nouvelle valeur'"
+    [title]="option.kind === 'type' ? 'Type d’objet' : 'Rareté d’objet'"
+    headingId="configuration-edit-title"
+  >
+    <label class="configuration-dialog-field">
+      Nom
+      <input [formControl]="nameControl" (keydown.enter)="save()" />
+    </label>
+    <div dialog-actions class="dialog-actions">
+      <button appButton="secondary" type="button" (click)="cancelEditing()">Annuler</button>
+      <button
+        appButton="primary"
+        type="button"
+        [disabled]="nameControl.invalid || isSaving()"
+        (click)="save()"
+      >
+        Enregistrer
+      </button>
+    </div>
+  </app-dialog>
+}
+
+@if (pendingDeletion(); as option) {
+  <app-dialog
+    kicker="Suppression"
+    [title]="'Supprimer « ' + option.name + ' » ?'"
+    headingId="configuration-delete-title"
+  >
+    <p>La suppression sera refusée si cette valeur est utilisée par un objet.</p>
+    <div dialog-actions class="dialog-actions">
+      <button appButton="secondary" type="button" (click)="pendingDeletion.set(null)">
+        Annuler
+      </button>
+      <button appButton="danger" type="button" (click)="confirmDelete()">Supprimer</button>
+    </div>
+  </app-dialog>
+}

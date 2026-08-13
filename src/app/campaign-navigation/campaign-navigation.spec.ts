@@ -29,6 +29,7 @@ describe('CampaignNavigation', () => {
       'PNJ',
       'PJ',
       'Journal',
+      '⚙ Configuration',
       'Accueil',
     ]);
     expect([...element.querySelectorAll('[aria-disabled="true"]')]).toHaveLength(1);

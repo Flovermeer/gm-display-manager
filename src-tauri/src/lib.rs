@@ -60,5 +60,11 @@ fn migrations() -> Vec<Migration> {
             sql: include_str!("../migrations/0007_create_player_character.sql"),
             kind: MigrationKind::Up,
         },
+        Migration {
+            version: 8,
+            description: "add_player_character_portrait",
+            sql: include_str!("../migrations/0008_add_player_character_portrait.sql"),
+            kind: MigrationKind::Up,
+        },
     ]
 }

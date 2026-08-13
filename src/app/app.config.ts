@@ -6,15 +6,18 @@ import { CampaignRepository } from './campaign/campaign.repository';
 import { BrowserCampaignMediaGateway } from './media/browser-campaign-media.gateway';
 import { LocationRepository } from './location/location.repository';
 import { BrowserNpcPortraitGateway } from './media/browser-npc-portrait.gateway';
+import { BrowserPlayerCharacterPortraitGateway } from './media/browser-player-character-portrait.gateway';
 import { BrowserNpcIdleVideoGateway } from './media/browser-npc-idle-video.gateway';
 import { BrowserLocationImageGateway } from './media/browser-location-image.gateway';
 import { CampaignMediaGateway } from './media/campaign-media.gateway';
 import { LocationImageGateway } from './media/location-image.gateway';
 import { NpcPortraitGateway } from './media/npc-portrait.gateway';
+import { PlayerCharacterPortraitGateway } from './media/player-character-portrait.gateway';
 import { NpcIdleVideoGateway } from './media/npc-idle-video.gateway';
 import { TauriLocationImageGateway } from './media/tauri-location-image.gateway';
 import { TauriCampaignMediaGateway } from './media/tauri-campaign-media.gateway';
 import { TauriNpcPortraitGateway } from './media/tauri-npc-portrait.gateway';
+import { TauriPlayerCharacterPortraitGateway } from './media/tauri-player-character-portrait.gateway';
 import { TauriNpcIdleVideoGateway } from './media/tauri-npc-idle-video.gateway';
 import { NpcRepository } from './npc/npc.repository';
 import { PlayerCharacterRepository } from './player-character/player-character.repository';
@@ -78,6 +81,13 @@ export const appConfig: ApplicationConfig = {
       provide: NpcPortraitGateway,
       useFactory: () =>
         isTauri() ? new TauriNpcPortraitGateway() : new BrowserNpcPortraitGateway(),
+    },
+    {
+      provide: PlayerCharacterPortraitGateway,
+      useFactory: () =>
+        isTauri()
+          ? new TauriPlayerCharacterPortraitGateway()
+          : new BrowserPlayerCharacterPortraitGateway(),
     },
   ],
 };

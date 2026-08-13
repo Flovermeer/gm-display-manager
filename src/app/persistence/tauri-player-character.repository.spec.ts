@@ -41,6 +41,7 @@ describe('TauriPlayerCharacterRepository', () => {
       'active',
       18,
       24,
+      'campaigns/campaign-id/media/player-character-portraits/nyssa.webp',
       JSON.stringify(character.sheet),
       2,
       '2026-08-12T18:30:00.000Z',
@@ -57,6 +58,7 @@ const character: PlayerCharacter = {
   status: 'active',
   currentHitPoints: 18,
   maxHitPoints: 24,
+  portraitPath: 'campaigns/campaign-id/media/player-character-portraits/nyssa.webp',
   sheet: {
     ...EMPTY_PLAYER_CHARACTER_SHEET,
     className: 'Rôdeuse',
@@ -78,6 +80,7 @@ const characterRow = {
   status: 'active',
   current_hit_points: 18,
   max_hit_points: 24,
+  portrait_path: 'campaigns/campaign-id/media/player-character-portraits/nyssa.webp',
   sheet_json: JSON.stringify({
     ...EMPTY_PLAYER_CHARACTER_SHEET,
     className: 'Rôdeuse',

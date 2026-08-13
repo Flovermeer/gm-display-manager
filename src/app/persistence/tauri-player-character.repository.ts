@@ -19,6 +19,7 @@ type PlayerCharacterRow = Readonly<{
   status: PlayerCharacterStatus;
   current_hit_points: number | null;
   max_hit_points: number | null;
+  portrait_path: string | null;
   sheet_json: string;
   sheet_schema_version: number;
   created_at: string;
@@ -57,14 +58,15 @@ export class TauriPlayerCharacterRepository extends PlayerCharacterRepository {
     await database.execute(
       `INSERT INTO player_character (
          id, campaign_id, name, player_name, status, current_hit_points, max_hit_points,
-         sheet_json, sheet_schema_version, created_at, updated_at
-       ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+         portrait_path, sheet_json, sheet_schema_version, created_at, updated_at
+       ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
        ON CONFLICT(id) DO UPDATE SET
          name = excluded.name,
          player_name = excluded.player_name,
          status = excluded.status,
          current_hit_points = excluded.current_hit_points,
          max_hit_points = excluded.max_hit_points,
+         portrait_path = excluded.portrait_path,
          sheet_json = excluded.sheet_json,
          sheet_schema_version = excluded.sheet_schema_version,
          updated_at = excluded.updated_at
@@ -77,6 +79,7 @@ export class TauriPlayerCharacterRepository extends PlayerCharacterRepository {
         character.status,
         character.currentHitPoints,
         character.maxHitPoints,
+        character.portraitPath,
         JSON.stringify(character.sheet),
         character.sheetSchemaVersion,
         character.createdAt,
@@ -103,7 +106,7 @@ export class TauriPlayerCharacterRepository extends PlayerCharacterRepository {
 }
 
 const PLAYER_CHARACTER_COLUMNS = `SELECT id, campaign_id, name, player_name, status,
-                                          current_hit_points, max_hit_points, sheet_json,
+                                          current_hit_points, max_hit_points, portrait_path, sheet_json,
                                           sheet_schema_version, created_at, updated_at`;
 
 function mapPlayerCharacterRow(row: PlayerCharacterRow): PlayerCharacter {
@@ -115,6 +118,7 @@ function mapPlayerCharacterRow(row: PlayerCharacterRow): PlayerCharacter {
     status: row.status,
     currentHitPoints: row.current_hit_points,
     maxHitPoints: row.max_hit_points,
+    portraitPath: row.portrait_path,
     sheet: parseSheet(row.sheet_json),
     sheetSchemaVersion: row.sheet_schema_version,
     createdAt: row.created_at,

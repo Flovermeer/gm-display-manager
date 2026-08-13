@@ -1,0 +1,2 @@
+ALTER TABLE player_character
+ADD COLUMN portrait_path TEXT;

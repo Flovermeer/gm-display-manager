@@ -17,8 +17,12 @@ export class PlayerCharacterService {
     return this.repository.listByCampaign(campaignId);
   }
 
-  async create(campaignId: string, input: UpdatePlayerCharacterInput): Promise<PlayerCharacter> {
-    const character = createPlayerCharacter(campaignId, input);
+  async create(
+    campaignId: string,
+    input: UpdatePlayerCharacterInput,
+    portraitPath: string | null = null,
+  ): Promise<PlayerCharacter> {
+    const character = createPlayerCharacter(campaignId, { ...input, portraitPath });
     await this.repository.save(character);
     return character;
   }
@@ -26,8 +30,9 @@ export class PlayerCharacterService {
   async update(
     character: PlayerCharacter,
     input: UpdatePlayerCharacterInput,
+    portraitPath: string | null = character.portraitPath,
   ): Promise<PlayerCharacter> {
-    const updatedCharacter = updatePlayerCharacter(character, input);
+    const updatedCharacter = updatePlayerCharacter(character, { ...input, portraitPath });
     await this.repository.save(updatedCharacter);
     return updatedCharacter;
   }

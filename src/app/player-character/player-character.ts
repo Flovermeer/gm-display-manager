@@ -26,6 +26,7 @@ export type PlayerCharacter = Readonly<{
   status: PlayerCharacterStatus;
   currentHitPoints: number | null;
   maxHitPoints: number | null;
+  portraitPath: string | null;
   sheet: PlayerCharacterSheet;
   sheetSchemaVersion: number;
   createdAt: string;
@@ -38,6 +39,7 @@ export type UpdatePlayerCharacterInput = Readonly<{
   status: PlayerCharacterStatus;
   currentHitPoints: number | null;
   maxHitPoints: number | null;
+  portraitPath?: string | null;
   sheet: PlayerCharacterSheet;
 }>;
 
@@ -79,6 +81,7 @@ export function createPlayerCharacter(
     id: dependencies.createId(),
     campaignId,
     ...normalized,
+    portraitPath: input.portraitPath ?? null,
     sheetSchemaVersion: 2,
     createdAt: now,
     updatedAt: now,
@@ -93,6 +96,7 @@ export function updatePlayerCharacter(
   return {
     ...character,
     ...normalizeInput(input),
+    portraitPath: input.portraitPath ?? character.portraitPath,
     sheetSchemaVersion: 2,
     updatedAt: now().toISOString(),
   };

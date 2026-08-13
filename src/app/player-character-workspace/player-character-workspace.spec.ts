@@ -8,6 +8,7 @@ import {
   type PlayerCharacter,
 } from '../player-character/player-character';
 import { PlayerCharacterService } from '../player-character/player-character.service';
+import { PlayerCharacterPortraitGateway } from '../media/player-character-portrait.gateway';
 import { PlayerCharacterWorkspace } from './player-character-workspace';
 
 describe('PlayerCharacterWorkspace', () => {
@@ -27,6 +28,7 @@ describe('PlayerCharacterWorkspace', () => {
     status: 'active',
     currentHitPoints: 18,
     maxHitPoints: 24,
+    portraitPath: null,
     sheet: {
       ...EMPTY_PLAYER_CHARACTER_SHEET,
       species: 'Elfe',
@@ -47,6 +49,11 @@ describe('PlayerCharacterWorkspace', () => {
     updateHitPoints: vi.fn(),
     delete: vi.fn(),
   };
+  const portraitGateway = {
+    chooseAndImport: vi.fn(),
+    resolveUrl: vi.fn(),
+    discard: vi.fn(),
+  };
 
   beforeEach(async () => {
     vi.clearAllMocks();
@@ -57,6 +64,9 @@ describe('PlayerCharacterWorkspace', () => {
     characterService.update.mockResolvedValue(character);
     characterService.updateHitPoints.mockResolvedValue(character);
     characterService.delete.mockResolvedValue(undefined);
+    portraitGateway.chooseAndImport.mockResolvedValue(null);
+    portraitGateway.resolveUrl.mockResolvedValue('asset://portrait');
+    portraitGateway.discard.mockResolvedValue(undefined);
 
     await TestBed.configureTestingModule({
       imports: [PlayerCharacterWorkspace],
@@ -64,6 +74,7 @@ describe('PlayerCharacterWorkspace', () => {
         provideRouter([]),
         { provide: CampaignService, useValue: campaignService },
         { provide: PlayerCharacterService, useValue: characterService },
+        { provide: PlayerCharacterPortraitGateway, useValue: portraitGateway },
         {
           provide: ActivatedRoute,
           useValue: { snapshot: { paramMap: { get: () => campaign.id } } },
@@ -195,6 +206,40 @@ describe('PlayerCharacterWorkspace', () => {
     expect(exhaustionInput.closest('.field')?.querySelector('.field-error')?.textContent).toContain(
       'entre 0 et 6',
     );
+  });
+
+  it('previews an imported portrait and passes it when saving', async () => {
+    const portraitPath = 'campaigns/campaign-id/media/player-character-portraits/nyssa.webp';
+    portraitGateway.chooseAndImport.mockResolvedValue(portraitPath);
+    const fixture = TestBed.createComponent(PlayerCharacterWorkspace);
+    fixture.detectChanges();
+    await renderUntil(fixture, 'Nyssa');
+    const element = fixture.nativeElement as HTMLElement;
+
+    element.querySelector<HTMLButtonElement>('.character-list-item')?.click();
+    await renderUntil(fixture, 'Modifier');
+    element.querySelector<HTMLButtonElement>('.detail-actions .primary-button')?.click();
+    fixture.detectChanges();
+    element.querySelector<HTMLButtonElement>('.portrait-action')?.click();
+
+    await vi.waitFor(() => {
+      fixture.detectChanges();
+      expect(
+        element.querySelector<HTMLImageElement>('.character-portrait-frame img')?.src,
+      ).toContain('asset://portrait');
+    });
+    const saveButton = [
+      ...element.querySelectorAll<HTMLButtonElement>('.detail-actions button'),
+    ].find((button) => button.textContent?.includes('Enregistrer'));
+    saveButton?.click();
+
+    await vi.waitFor(() => {
+      expect(characterService.update).toHaveBeenCalledWith(
+        character,
+        expect.any(Object),
+        portraitPath,
+      );
+    });
   });
 });
 

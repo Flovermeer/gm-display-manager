@@ -525,7 +525,9 @@ app-player-character-workspace {
   .dialog-actions {
     display: flex;
     flex-wrap: wrap;
-    justify-content: flex-end;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.5rem;
     gap: 0.65rem;
   }
 
@@ -536,5 +538,22 @@ app-player-character-workspace {
 
   .danger-button {
     color: #a43e46;
+  }
+
+  .character-portrait-frame {
+    position: relative;
+    width: min(100%, 18rem);
+    overflow: hidden;
+    aspect-ratio: 1;
+    border: 1px solid #bdb4a8;
+    border-radius: 0.65rem;
+    background: #ddd7ce;
+    box-shadow: 0 0.8rem 2rem rgb(41 33 25 / 12%);
+  }
+
+  .character-portrait-frame img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
   }
 }

@@ -14,6 +14,7 @@ import type { Campaign } from '../campaign/campaign';
 import { CampaignService } from '../campaign/campaign.service';
 import { CampaignNavigation } from '../campaign-navigation/campaign-navigation';
 import type { PendingChangesAware } from '../navigation/pending-changes.guard';
+import { PlayerCharacterPortraitGateway } from '../media/player-character-portrait.gateway';
 import {
   EMPTY_PLAYER_CHARACTER_SHEET,
   PLAYER_CHARACTER_STATUSES,
@@ -35,6 +36,7 @@ type PendingDecisionResolver = (canLeave: boolean) => void;
 export class PlayerCharacterWorkspace implements OnInit, PendingChangesAware {
   private readonly campaignService = inject(CampaignService);
   private readonly characterService = inject(PlayerCharacterService);
+  private readonly portraitGateway = inject(PlayerCharacterPortraitGateway);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private pendingDecisionResolver?: PendingDecisionResolver;
@@ -42,10 +44,13 @@ export class PlayerCharacterWorkspace implements OnInit, PendingChangesAware {
   protected readonly campaign = signal<Campaign | null>(null);
   protected readonly characters = signal<readonly PlayerCharacter[]>([]);
   protected readonly selectedCharacter = signal<PlayerCharacter | null>(null);
+  protected readonly portraitUrl = signal<string | null>(null);
+  protected readonly draftPortraitPath = signal<string | null>(null);
   protected readonly searchTerm = signal('');
   protected readonly isSidebarCollapsed = signal(false);
   protected readonly isLoading = signal(true);
   protected readonly isSaving = signal(false);
+  protected readonly isImportingPortrait = signal(false);
   protected readonly isEditing = signal(false);
   protected readonly isCreating = signal(false);
   protected readonly showPendingChangesDialog = signal(false);
@@ -54,6 +59,9 @@ export class PlayerCharacterWorkspace implements OnInit, PendingChangesAware {
   protected readonly showValidationErrors = signal(false);
   protected readonly error = signal<string | null>(null);
   protected readonly statuses = PLAYER_CHARACTER_STATUSES;
+  protected readonly effectivePortraitPath = computed(
+    () => this.draftPortraitPath() ?? this.selectedCharacter()?.portraitPath ?? null,
+  );
   protected readonly filteredCharacters = computed(() => {
     const term = this.searchTerm().trim().toLocaleLowerCase('fr');
     if (!term) return this.characters();
@@ -129,6 +137,8 @@ export class PlayerCharacterWorkspace implements OnInit, PendingChangesAware {
   protected async requestCreateCharacter(): Promise<void> {
     if (!(await this.confirmPendingChanges())) return;
     this.selectedCharacter.set(null);
+    this.portraitUrl.set(null);
+    this.draftPortraitPath.set(null);
     this.isCreating.set(true);
     this.isEditing.set(true);
     this.populateEmptyForm();
@@ -143,7 +153,33 @@ export class PlayerCharacterWorkspace implements OnInit, PendingChangesAware {
   }
 
   protected cancelEditing(): void {
-    this.abandonChanges();
+    void this.abandonChanges();
+  }
+
+  protected async choosePortrait(): Promise<void> {
+    const campaign = this.campaign();
+    if (!campaign || this.isImportingPortrait()) return;
+    this.isImportingPortrait.set(true);
+    this.error.set(null);
+    try {
+      const importedPath = await this.portraitGateway.chooseAndImport(campaign.id);
+      if (!importedPath) return;
+      const previewUrl = await this.portraitGateway
+        .resolveUrl(importedPath)
+        .catch(async (error) => {
+          await this.portraitGateway.discard(importedPath);
+          throw error;
+        });
+      const previousDraft = this.draftPortraitPath();
+      this.draftPortraitPath.set(importedPath);
+      this.portraitUrl.set(previewUrl);
+      this.characterForm.markAsDirty();
+      if (previousDraft) await this.portraitGateway.discard(previousDraft);
+    } catch (error) {
+      this.error.set(this.errorMessage(error));
+    } finally {
+      this.isImportingPortrait.set(false);
+    }
   }
 
   protected async saveCharacter(): Promise<boolean> {
@@ -159,15 +195,21 @@ export class PlayerCharacterWorkspace implements OnInit, PendingChangesAware {
     this.error.set(null);
     try {
       const selected = this.selectedCharacter();
+      const portraitPath = this.effectivePortraitPath();
       const saved = this.isCreating()
-        ? await this.characterService.create(campaign.id, this.formInput())
+        ? await this.characterService.create(campaign.id, this.formInput(), portraitPath)
         : selected
-          ? await this.characterService.update(selected, this.formInput())
+          ? await this.characterService.update(selected, this.formInput(), portraitPath)
           : null;
       if (!saved) return false;
+      const previousPortraitPath = selected?.portraitPath ?? null;
+      this.draftPortraitPath.set(null);
       this.showValidationErrors.set(false);
       await this.reloadCharacters();
       this.openReadOnly(saved);
+      if (previousPortraitPath && previousPortraitPath !== saved.portraitPath) {
+        await this.portraitGateway.discard(previousPortraitPath);
+      }
       return true;
     } catch (error) {
       this.error.set(this.errorMessage(error));
@@ -222,6 +264,13 @@ export class PlayerCharacterWorkspace implements OnInit, PendingChangesAware {
     this.error.set(null);
     try {
       await this.characterService.delete(character);
+      if (character.portraitPath) {
+        try {
+          await this.portraitGateway.discard(character.portraitPath);
+        } catch (error) {
+          this.error.set(this.errorMessage(error));
+        }
+      }
       await this.reloadCharacters();
       this.selectedCharacter.set(null);
       this.showDeleteDialog.set(false);
@@ -237,8 +286,7 @@ export class PlayerCharacterWorkspace implements OnInit, PendingChangesAware {
   }
 
   protected leaveWithoutSaving(): void {
-    this.abandonChanges();
-    this.resolvePendingDecision(true);
+    void this.abandonChanges().then(() => this.resolvePendingDecision(true));
   }
 
   protected async saveAndLeave(): Promise<void> {
@@ -345,6 +393,7 @@ export class PlayerCharacterWorkspace implements OnInit, PendingChangesAware {
     this.showValidationErrors.set(false);
     this.populateForm(refreshed);
     this.hitPointsControl.reset(refreshed.currentHitPoints);
+    void this.loadPortrait(refreshed.portraitPath);
   }
 
   private populateForm(character: PlayerCharacter): void {
@@ -415,13 +464,27 @@ export class PlayerCharacterWorkspace implements OnInit, PendingChangesAware {
     }
   }
 
-  private abandonChanges(): void {
+  private async abandonChanges(): Promise<void> {
+    const draftPortraitPath = this.draftPortraitPath();
+    this.draftPortraitPath.set(null);
+    if (draftPortraitPath) {
+      try {
+        await this.portraitGateway.discard(draftPortraitPath);
+      } catch (error) {
+        this.error.set(this.errorMessage(error));
+      }
+    }
     const selected = this.selectedCharacter();
     this.isEditing.set(false);
     this.isCreating.set(false);
     this.showValidationErrors.set(false);
-    if (selected) this.populateForm(selected);
-    else this.populateEmptyForm();
+    if (selected) {
+      this.populateForm(selected);
+      await this.loadPortrait(selected.portraitPath);
+    } else {
+      this.populateEmptyForm();
+      this.portraitUrl.set(null);
+    }
   }
 
   private confirmPendingChanges(): boolean | Promise<boolean> {
@@ -444,6 +507,17 @@ export class PlayerCharacterWorkspace implements OnInit, PendingChangesAware {
     if (error instanceof Error) return error.message;
     if (typeof error === 'string') return error;
     return 'Une erreur inattendue est survenue.';
+  }
+
+  private async loadPortrait(relativePath: string | null): Promise<void> {
+    this.portraitUrl.set(null);
+    if (!relativePath) return;
+    try {
+      const url = await this.portraitGateway.resolveUrl(relativePath);
+      if (this.effectivePortraitPath() === relativePath) this.portraitUrl.set(url);
+    } catch (error) {
+      this.error.set(this.errorMessage(error));
+    }
   }
 }
 

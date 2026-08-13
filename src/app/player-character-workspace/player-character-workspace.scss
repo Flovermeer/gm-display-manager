@@ -43,7 +43,20 @@
 }
 
 .character-subtitle {
+  margin: 0.35rem 0 0;
   color: #6f675d;
+}
+
+.toolbar-identity {
+  min-width: 0;
+  margin-right: auto;
+}
+
+.toolbar-identity h2 {
+  overflow: hidden;
+  font-size: clamp(1.5rem, 3vw, 2.25rem);
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .hit-point-card {

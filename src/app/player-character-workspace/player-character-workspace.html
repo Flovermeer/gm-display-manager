@@ -73,6 +73,17 @@
 
     @if (isCreating() || selectedCharacter()) {
       <div class="detail-toolbar">
+        <div class="toolbar-identity">
+          <p class="section-kicker">{{ isCreating() ? 'Nouveau héros' : 'Référence du MJ' }}</p>
+          <h2 id="character-detail-title">
+            {{ isCreating() ? 'Créer un PJ' : selectedCharacter()?.name }}
+          </h2>
+          @if (!isCreating() && selectedCharacter(); as character) {
+            <p class="character-subtitle">
+              {{ character.playerName || 'Joueur non renseigné' }} · {{ classAndLevel(character) }}
+            </p>
+          }
+        </div>
         <div class="detail-actions">
           @if (!isEditing()) {
             <button class="primary-button" type="button" (click)="editCharacter()">Modifier</button>
@@ -90,7 +101,7 @@
             <button
               class="primary-button"
               type="button"
-              [disabled]="characterForm.invalid || isSaving()"
+              [disabled]="characterForm.invalid || isSaving() || isImportingPortrait()"
               (click)="saveCharacter()"
             >
               {{ isSaving() ? 'Enregistrement…' : 'Enregistrer' }}
@@ -100,15 +111,34 @@
       </div>
 
       <header class="detail-heading">
-        <div>
-          <p class="section-kicker">{{ isCreating() ? 'Nouveau héros' : 'Référence du MJ' }}</p>
-          <h2 id="character-detail-title">
-            {{ isCreating() ? 'Créer un PJ' : selectedCharacter()?.name }}
-          </h2>
-          @if (!isCreating() && selectedCharacter(); as character) {
-            <p class="character-subtitle">
-              {{ character.playerName || 'Joueur non renseigné' }} · {{ classAndLevel(character) }}
-            </p>
+        <div class="character-portrait-frame" [class.editable]="isEditing()">
+          @if (portraitUrl(); as portrait) {
+            <img
+              [src]="portrait"
+              [alt]="selectedCharacter()?.name || 'Portrait du nouveau personnage'"
+            />
+          } @else {
+            <div class="portrait-placeholder">
+              <span aria-hidden="true">♙</span>
+              <small>Aucun portrait</small>
+            </div>
+          }
+
+          @if (isEditing()) {
+            <button
+              class="portrait-action"
+              type="button"
+              [disabled]="isImportingPortrait()"
+              (click)="choosePortrait()"
+            >
+              {{
+                isImportingPortrait()
+                  ? 'Import…'
+                  : effectivePortraitPath()
+                    ? 'Remplacer'
+                    : 'Choisir'
+              }}
+            </button>
           }
         </div>
 

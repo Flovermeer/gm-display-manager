@@ -452,6 +452,11 @@ Avant chaque ligne de ce tableau, l'agent doit présenter les paquets exacts, le
 
 ### Nice to have après le MVP
 
+- ajouter sous la barre de navigation un mini-historique de ressources récemment consultées sous
+  forme de pills cliquables (PNJ, PJ, lieux, chapitres, objets et futurs types de ressources) afin de
+  revenir rapidement à une fiche pendant la partie ;
+- décider au moment de l'implémentation du nombre d'entrées, de la gestion des doublons, de l'action
+  de retrait et de la persistance éventuelle entre deux lancements ;
 - remplacer certains champs texte des fiches système (espèce, classe et futurs référentiels) par
   des sélecteurs avec recherche et saisie libre de secours ;
 - évaluer un catalogue local versionné et une récupération par API, en tenant compte du

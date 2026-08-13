@@ -62,14 +62,6 @@ export const routes: Routes = [
       import('./player-display/player-display').then(({ PlayerDisplay }) => PlayerDisplay),
     title: "Beholder's Inn — Écran joueurs",
   },
-  {
-    path: 'editor-prototype',
-    loadComponent: () =>
-      import('./rich-text-editor-demo/rich-text-editor-demo').then(
-        ({ RichTextEditorDemo }) => RichTextEditorDemo,
-      ),
-    title: "Beholder's Inn — Prototype de notes riches",
-  },
   { path: 'control', pathMatch: 'full', redirectTo: 'campaigns' },
   { path: '', pathMatch: 'full', redirectTo: 'campaigns' },
   { path: '**', redirectTo: 'campaigns' },

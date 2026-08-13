@@ -10,7 +10,6 @@ import { LocationService } from '../location/location.service';
 import { ItemImageGateway } from '../media/item-image.gateway';
 import type { PendingChangesAware } from '../navigation/pending-changes.guard';
 import {
-  ATTUNEMENT_MODES,
   emptyNarrativeItemInput,
   NARRATIVE_ITEM_STATUSES,
   type AttunementMode,
@@ -33,6 +32,7 @@ import { ButtonDirective } from '../shared/ui/button/button.directive';
 import { Dialog } from '../shared/ui/dialog/dialog';
 import { EmptyState } from '../shared/ui/empty-state/empty-state';
 import { EntityTitle } from '../shared/ui/entity-title/entity-title';
+import { FormField, type FormFieldOption } from '../shared/ui/form-field/form-field';
 
 type PendingDecisionResolver = (canLeave: boolean) => void;
 type OwnerOption = Readonly<{ resourceType: ItemOwnerType; resourceId: string; label: string }>;
@@ -49,6 +49,7 @@ const DEMO_ITEM_IMAGE_URL = '/demo/item-placeholder.svg';
     Dialog,
     EmptyState,
     EntityTitle,
+    FormField,
   ],
   templateUrl: './narrative-item-workspace.html',
   styleUrl: './narrative-item-workspace.scss',
@@ -93,8 +94,26 @@ export class NarrativeItemWorkspace implements OnInit, PendingChangesAware {
   protected readonly showDeleteDialog = signal(false);
   protected readonly error = signal<string | null>(null);
   protected readonly focusedJournalEntryId = signal<string | null>(null);
-  protected readonly statuses = NARRATIVE_ITEM_STATUSES;
-  protected readonly attunementModes = ATTUNEMENT_MODES;
+  protected readonly typeFieldOptions = computed<readonly FormFieldOption[]>(() =>
+    this.itemTypes().map(({ id, name }) => ({ value: id, label: name })),
+  );
+  protected readonly rarityFieldOptions = computed<readonly FormFieldOption[]>(() =>
+    this.itemRarities().map(({ id, name }) => ({ value: id, label: name })),
+  );
+  protected readonly ownerFieldOptions = computed<readonly FormFieldOption[]>(() =>
+    this.ownerOptions().map((owner) => ({
+      value: `${owner.resourceType}:${owner.resourceId}`,
+      label: owner.label,
+    })),
+  );
+  protected readonly statusFieldOptions: readonly FormFieldOption[] = NARRATIVE_ITEM_STATUSES.map(
+    (status) => ({ value: status, label: this.statusLabel(status) }),
+  );
+  protected readonly attunementFieldOptions: readonly FormFieldOption[] = [
+    { value: 'none', label: 'Aucune' },
+    { value: 'required', label: 'Requise' },
+    { value: 'conditional', label: 'Requise sous condition' },
+  ];
   protected readonly effectiveImagePath = computed(
     () => this.draftImagePath() ?? this.selectedItem()?.imagePath ?? null,
   );

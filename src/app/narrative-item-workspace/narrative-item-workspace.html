@@ -141,77 +141,78 @@
       @if (isEditing()) {
         <form class="item-form" [formGroup]="itemForm" (ngSubmit)="saveItem()">
           <div class="form-grid">
-            <div class="field field--wide">
-              <label for="item-name">Nom</label>
-              <input id="item-name" type="text" formControlName="name" autocomplete="off" />
-              @if (itemForm.controls.name.touched && itemForm.controls.name.invalid) {
-                <p class="field-error">Le nom est obligatoire.</p>
-              }
-            </div>
-            <div class="field">
-              <label for="item-status">Statut</label>
-              <select id="item-status" formControlName="status">
-                @for (status of statuses; track status) {
-                  <option [value]="status">{{ statusLabel(status) }}</option>
-                }
-              </select>
-            </div>
-            <div class="field">
-              <label for="item-type">Type</label>
-              <select id="item-type" formControlName="itemTypeId">
-                @for (type of itemTypes(); track type.id) {
-                  <option [value]="type.id">{{ type.name }}</option>
-                }
-              </select>
-              @if (itemForm.controls.itemTypeId.touched && itemForm.controls.itemTypeId.invalid) {
-                <p class="field-error">Le type est obligatoire.</p>
-              }
-            </div>
-            <div class="field">
-              <label for="item-rarity">Rareté</label>
-              <select id="item-rarity" formControlName="itemRarityId">
-                <option [ngValue]="null">Non renseignée</option>
-                @for (rarity of itemRarities(); track rarity.id) {
-                  <option [value]="rarity.id">{{ rarity.name }}</option>
-                }
-              </select>
-            </div>
-            <div class="field">
-              <label for="item-attunement">Harmonisation</label>
-              <select id="item-attunement" formControlName="attunement">
-                <option value="none">Aucune</option>
-                <option value="required">Requise</option>
-                <option value="conditional">Requise sous condition</option>
-              </select>
-            </div>
+            <app-form-field
+              class="field--wide"
+              inputId="item-name"
+              label="Nom"
+              formControlName="name"
+              [errorMessage]="
+                itemForm.controls.name.touched && itemForm.controls.name.invalid
+                  ? 'Le nom est obligatoire.'
+                  : null
+              "
+            />
+            <app-form-field
+              inputId="item-status"
+              label="Statut"
+              controlType="select"
+              formControlName="status"
+              [options]="statusFieldOptions"
+            />
+            <app-form-field
+              inputId="item-type"
+              label="Type"
+              controlType="select"
+              formControlName="itemTypeId"
+              [options]="typeFieldOptions()"
+              [errorMessage]="
+                itemForm.controls.itemTypeId.touched && itemForm.controls.itemTypeId.invalid
+                  ? 'Le type est obligatoire.'
+                  : null
+              "
+            />
+            <app-form-field
+              inputId="item-rarity"
+              label="Rareté"
+              controlType="select"
+              formControlName="itemRarityId"
+              emptyLabel="Non renseignée"
+              [options]="rarityFieldOptions()"
+            />
+            <app-form-field
+              inputId="item-attunement"
+              label="Harmonisation"
+              controlType="select"
+              formControlName="attunement"
+              [options]="attunementFieldOptions"
+            />
             @if (itemForm.controls.attunement.value === 'conditional') {
-              <div class="field">
-                <label for="item-attunement-condition">Condition d’harmonisation</label>
-                <input
-                  id="item-attunement-condition"
-                  type="text"
-                  formControlName="attunementCondition"
-                />
-                @if (!itemForm.controls.attunementCondition.value.trim()) {
-                  <p class="field-error">Précise la condition d’harmonisation.</p>
-                }
-              </div>
+              <app-form-field
+                inputId="item-attunement-condition"
+                label="Condition d’harmonisation"
+                formControlName="attunementCondition"
+                [errorMessage]="
+                  !itemForm.controls.attunementCondition.value.trim()
+                    ? 'Précise la condition d’harmonisation.'
+                    : null
+                "
+              />
             }
-            <div class="field">
-              <label for="item-owner">Détenteur actuel</label>
-              <select id="item-owner" formControlName="ownerKey">
-                <option value="">Aucun détenteur</option>
-                @for (owner of ownerOptions(); track owner.resourceType + owner.resourceId) {
-                  <option [value]="owner.resourceType + ':' + owner.resourceId">
-                    {{ owner.label }}
-                  </option>
-                }
-              </select>
-            </div>
-            <div class="field field--full">
-              <label for="item-summary">Résumé</label>
-              <input id="item-summary" type="text" formControlName="summary" />
-            </div>
+            <app-form-field
+              inputId="item-owner"
+              label="Détenteur actuel"
+              controlType="select"
+              formControlName="ownerKey"
+              emptyLabel="Aucun détenteur"
+              emptyValue=""
+              [options]="ownerFieldOptions()"
+            />
+            <app-form-field
+              class="field--full"
+              inputId="item-summary"
+              label="Résumé"
+              formControlName="summary"
+            />
           </div>
 
           <section class="item-description" aria-labelledby="item-description-form-title">

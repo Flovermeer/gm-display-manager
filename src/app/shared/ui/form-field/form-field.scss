@@ -1,0 +1,49 @@
+:host {
+  display: block;
+  min-width: 0;
+}
+
+.form-field__label {
+  display: block;
+  margin-bottom: 0.45rem;
+  color: #5d554c;
+  font-size: 0.8rem;
+  font-weight: 800;
+}
+
+.form-field__control {
+  box-sizing: border-box;
+  width: 100%;
+  padding: 0.75rem 0.85rem;
+  border: 1px solid #bbb2a6;
+  border-radius: 0.4rem;
+  color: #25221e;
+  background: #fff;
+  font: inherit;
+}
+
+.form-field__control--textarea {
+  min-height: 8rem;
+  resize: vertical;
+  line-height: 1.6;
+}
+
+.form-field__control:focus-visible {
+  outline: 2px solid #824397;
+  outline-offset: 2px;
+}
+
+.form-field__control:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.form-field--invalid .form-field__control {
+  border-color: #a43e46;
+}
+
+.form-field__error {
+  margin: 0.35rem 0 0;
+  color: #a43e46;
+  font-size: 0.78rem;
+}

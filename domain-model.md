@@ -144,12 +144,26 @@ Les nœuds distinguent les sections, lieux, PNJ et objets. Un clic sur un nœud 
 
 ## Journal de campagne
 
-Les notes de partie forment un journal chronologique. Une entrée contient :
+Les notes de partie forment un journal chronologique unifié. Une entrée contient :
 
 - une date réelle de session ;
 - une date en jeu facultative, stockée comme texte pour rester indépendante du système ;
 - un titre facultatif ;
 - un contenu riche ;
 - une position stable pour ordonner plusieurs entrées d'une même session.
+
+Une entrée est soit globale à la campagne, soit rattachée à exactement une ressource : PNJ, lieu
+ou PJ. Les notes rattachées apparaissent automatiquement dans le Journal global sous forme d'un
+lien compact indiquant le type, le nom et un aperçu sur deux lignes. Ce lien ouvre la fiche de la
+ressource directement sur l'entrée concernée.
+
+Chaque entrée peut être modifiée ou supprimée après confirmation. L'ordre par défaut va de la
+plus récente à la plus ancienne. La date réelle comprend l'heure et la minute et est préremplie
+avec l'instant courant ; le titre et la date en jeu restent facultatifs, tandis que le contenu
+riche est obligatoire. Une modification met à jour l'entrée existante sans créer un historique de
+versions.
+
+Les anciens champs de note libre des fiches PNJ, lieux et PJ sont abandonnés sans migration de
+leur contenu.
 
 Ce journal remplace, dans un premier temps, tout compteur spécialisé propre à une campagne. Un compteur ne sera ajouté que si un usage concret le justifie.

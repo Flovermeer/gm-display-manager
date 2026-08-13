@@ -4,6 +4,7 @@ import { isTauri } from '@tauri-apps/api/core';
 
 import { CampaignRepository } from './campaign/campaign.repository';
 import { ChapterRepository } from './chapter/chapter.repository';
+import { JournalEntryRepository } from './journal/journal-entry.repository';
 import { BrowserCampaignMediaGateway } from './media/browser-campaign-media.gateway';
 import { LocationRepository } from './location/location.repository';
 import { BrowserNpcPortraitGateway } from './media/browser-npc-portrait.gateway';
@@ -27,12 +28,14 @@ import { AppSettingRepository } from './persistence/app-setting.repository';
 import { InMemoryAppSettingRepository } from './persistence/in-memory-app-setting.repository';
 import { InMemoryCampaignRepository } from './persistence/in-memory-campaign.repository';
 import { InMemoryChapterRepository } from './persistence/in-memory-chapter.repository';
+import { InMemoryJournalEntryRepository } from './persistence/in-memory-journal-entry.repository';
 import { InMemoryLocationRepository } from './persistence/in-memory-location.repository';
 import { InMemoryNpcRepository } from './persistence/in-memory-npc.repository';
 import { InMemoryPlayerCharacterRepository } from './persistence/in-memory-player-character.repository';
 import { TauriAppSettingRepository } from './persistence/tauri-app-setting.repository';
 import { TauriCampaignRepository } from './persistence/tauri-campaign.repository';
 import { TauriChapterRepository } from './persistence/tauri-chapter.repository';
+import { TauriJournalEntryRepository } from './persistence/tauri-journal-entry.repository';
 import { TauriLocationRepository } from './persistence/tauri-location.repository';
 import { TauriNpcRepository } from './persistence/tauri-npc.repository';
 import { TauriPlayerCharacterRepository } from './persistence/tauri-player-character.repository';
@@ -55,6 +58,11 @@ export const appConfig: ApplicationConfig = {
       provide: ChapterRepository,
       useFactory: () =>
         isTauri() ? new TauriChapterRepository() : new InMemoryChapterRepository(),
+    },
+    {
+      provide: JournalEntryRepository,
+      useFactory: () =>
+        isTauri() ? new TauriJournalEntryRepository() : new InMemoryJournalEntryRepository(),
     },
     {
       provide: CampaignMediaGateway,

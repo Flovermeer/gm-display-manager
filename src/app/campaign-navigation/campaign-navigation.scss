@@ -16,12 +16,13 @@
   align-items: center;
   margin: 0 auto;
   padding: 0.55rem clamp(1rem, 4vw, 2.5rem);
-  grid-template-columns: auto minmax(0, 1fr) auto;
+  grid-template-columns: auto auto minmax(0, 1fr) auto;
   gap: clamp(1rem, 3vw, 2.5rem);
 }
 
 .brand-link,
-.campaign-links a {
+.campaign-links a,
+.campaign-back {
   color: #bbb4a7;
   text-decoration: none;
 }
@@ -94,9 +95,31 @@
 }
 
 .campaign-links a:hover,
-.campaign-links a.active {
+.campaign-links a.active,
+.campaign-back:hover {
   color: #f3efe6;
   background: #302b24;
+}
+
+.campaign-back {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  padding: 0.65rem 0.8rem;
+  border: 1px solid #49443b;
+  border-radius: 0.4rem;
+  background: transparent;
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+  gap: 0.4rem;
+}
+
+.campaign-back span {
+  padding: 0;
+  color: inherit;
+  font-size: 1rem;
+  cursor: inherit;
 }
 
 .campaign-links span {
@@ -109,14 +132,15 @@
   border: 1px solid #49443b;
 }
 
-a:focus-visible {
+a:focus-visible,
+button:focus-visible {
   outline: 2px solid #c5a467;
   outline-offset: 2px;
 }
 
 @media (max-width: 45rem) {
   .campaign-navigation {
-    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-columns: auto minmax(0, 1fr) auto;
   }
 
   .campaign-name {
@@ -132,6 +156,10 @@ a:focus-visible {
 @media (max-width: 28rem) {
   .campaign-links a,
   .campaign-links span {
+    padding-inline: 0.55rem;
+  }
+
+  .campaign-back {
     padding-inline: 0.55rem;
   }
 }

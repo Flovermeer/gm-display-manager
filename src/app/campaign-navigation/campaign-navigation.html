@@ -1,4 +1,15 @@
 <nav class="campaign-navigation" aria-label="Navigation de la campagne">
+  <button
+    class="campaign-back"
+    type="button"
+    title="Revenir à l'écran précédent"
+    aria-label="Revenir à l'écran précédent"
+    (click)="goBack()"
+  >
+    <span aria-hidden="true">←</span>
+    Retour
+  </button>
+
   <a class="brand-link" routerLink="/campaigns" aria-label="Retour à l'accueil des campagnes">
     <span class="brand-mark" aria-hidden="true"><span></span></span>
     <span class="brand-name">Beholder's Inn</span>

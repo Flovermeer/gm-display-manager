@@ -1,7 +1,10 @@
 import { Component, input, output, signal } from '@angular/core';
 
+import { TagPill } from '../ui/tag-pill/tag-pill';
+
 @Component({
   selector: 'app-tag-input',
+  imports: [TagPill],
   templateUrl: './tag-input.html',
   styleUrl: './tag-input.scss',
 })

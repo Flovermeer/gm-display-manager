@@ -23,7 +23,7 @@ describe('TagInput', () => {
 
     fixture.componentRef.setInput('value', changes[0]);
     fixture.detectChanges();
-    element.querySelector<HTMLButtonElement>('.tag button')?.click();
+    element.querySelector<HTMLButtonElement>('app-tag-pill button')?.click();
     expect(changes).toEqual([['Commun', 'Elfique'], ['Elfique']]);
   });
 });

@@ -1,0 +1,14 @@
+<span class="tag-pill">
+  <span class="tag-pill__label">{{ label() }}</span>
+  @if (removable()) {
+    <button
+      class="tag-pill__remove"
+      type="button"
+      [attr.aria-label]="'Retirer ' + label()"
+      [attr.title]="'Retirer ' + label()"
+      (click)="$event.stopPropagation(); remove.emit()"
+    >
+      ×
+    </button>
+  }
+</span>

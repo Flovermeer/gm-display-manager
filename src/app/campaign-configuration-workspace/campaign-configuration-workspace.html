@@ -1,59 +1,76 @@
 <main class="configuration-workspace">
-  <header class="configuration-workspace__heading">
-    <p class="entity-workspace__kicker">Campagne</p>
-    <h1><span aria-hidden="true">⚙</span> Configuration</h1>
-    <p>Adapte les référentiels utilisés dans les fiches de cette campagne.</p>
-  </header>
+  <aside class="configuration-workspace__navigation" aria-label="Catégories de configuration">
+    <p class="configuration-workspace__navigation-title">Configuration</p>
+    <button
+      class="configuration-workspace__navigation-item configuration-workspace__navigation-item--active"
+      type="button"
+      aria-current="page"
+    >
+      <span aria-hidden="true">◆</span>
+      <span>
+        <strong>Objets</strong>
+        <small>Types et raretés</small>
+      </span>
+    </button>
+  </aside>
 
-  @if (error(); as errorMessage) {
-    <p class="configuration-workspace__error" role="alert">{{ errorMessage }}</p>
-  }
+  <div class="configuration-workspace__panel">
+    <header class="configuration-workspace__heading">
+      <p class="entity-workspace__kicker">Configuration de la campagne</p>
+      <h1>Objets</h1>
+      <p>Adapte les valeurs proposées dans les fiches des objets narratifs.</p>
+    </header>
 
-  <section class="configuration-sections" aria-label="Réglages de la campagne">
-    @for (section of sections; track section.kind) {
-      <article class="configuration-section">
-        <button
-          class="configuration-section__toggle"
-          type="button"
-          [attr.aria-expanded]="expanded().has(section.kind)"
-          (click)="toggle(section.kind)"
-        >
-          <span>
-            <strong>{{ section.title }}</strong>
-            <small>{{ section.description }}</small>
-          </span>
-          <span aria-hidden="true">{{ expanded().has(section.kind) ? '−' : '+' }}</span>
-        </button>
-
-        @if (expanded().has(section.kind)) {
-          <div class="configuration-section__content">
-            <ul>
-              @for (option of options()[section.kind]; track option.id) {
-                <li>
-                  <span>{{ option.name }}</span>
-                  <div>
-                    <button appButton="secondary" type="button" (click)="startRename(option)">
-                      Renommer
-                    </button>
-                    <button
-                      appButton="secondary-danger"
-                      type="button"
-                      (click)="requestDelete(option)"
-                    >
-                      Supprimer
-                    </button>
-                  </div>
-                </li>
-              }
-            </ul>
-            <button appButton="primary" type="button" (click)="startCreate(section.kind)">
-              + Ajouter une valeur
-            </button>
-          </div>
-        }
-      </article>
+    @if (error(); as errorMessage) {
+      <p class="configuration-workspace__error" role="alert">{{ errorMessage }}</p>
     }
-  </section>
+
+    <section class="configuration-sections" aria-label="Configuration des objets">
+      @for (section of sections; track section.kind) {
+        <article class="configuration-section">
+          <button
+            class="configuration-section__toggle"
+            type="button"
+            [attr.aria-expanded]="expanded().has(section.kind)"
+            (click)="toggle(section.kind)"
+          >
+            <span>
+              <strong>{{ section.title }}</strong>
+              <small>{{ section.description }}</small>
+            </span>
+            <span aria-hidden="true">{{ expanded().has(section.kind) ? '−' : '+' }}</span>
+          </button>
+
+          @if (expanded().has(section.kind)) {
+            <div class="configuration-section__content">
+              <ul>
+                @for (option of options()[section.kind]; track option.id) {
+                  <li>
+                    <span>{{ option.name }}</span>
+                    <div>
+                      <button appButton="secondary" type="button" (click)="startRename(option)">
+                        Renommer
+                      </button>
+                      <button
+                        appButton="secondary-danger"
+                        type="button"
+                        (click)="requestDelete(option)"
+                      >
+                        Supprimer
+                      </button>
+                    </div>
+                  </li>
+                }
+              </ul>
+              <button appButton="primary" type="button" (click)="startCreate(section.kind)">
+                + Ajouter une valeur
+              </button>
+            </div>
+          }
+        </article>
+      }
+    </section>
+  </div>
 </main>
 
 @if (editing(); as option) {

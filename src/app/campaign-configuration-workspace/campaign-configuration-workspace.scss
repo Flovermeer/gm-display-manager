@@ -4,12 +4,67 @@
   background: #211f1c;
 }
 .configuration-workspace {
-  width: min(62rem, calc(100% - 3rem));
+  display: grid;
+  width: min(76rem, calc(100% - 3rem));
+  min-height: calc(100dvh - 10rem);
   margin: 1.5rem auto;
-  padding: clamp(1.5rem, 4vw, 3rem);
+  overflow: hidden;
   border-radius: 0.75rem;
   color: #25221e;
   background: #f0ece5;
+  grid-template-columns: 15rem minmax(0, 1fr);
+}
+.configuration-workspace__navigation {
+  padding: 1.5rem 1rem;
+  border-right: 1px solid #cbc3b8;
+  background: #e2ddd4;
+}
+.configuration-workspace__navigation-title {
+  margin: 0 0 1.25rem;
+  padding: 0 0.6rem;
+  color: #675e54;
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.configuration-workspace__navigation-item {
+  display: grid;
+  width: 100%;
+  align-items: center;
+  padding: 0.85rem;
+  border: 1px solid transparent;
+  border-radius: 0.55rem;
+  color: #4c443c;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 0.75rem;
+}
+.configuration-workspace__navigation-item > span:first-child {
+  color: #824397;
+}
+.configuration-workspace__navigation-item > span:last-child {
+  display: grid;
+  gap: 0.2rem;
+}
+.configuration-workspace__navigation-item small {
+  color: #766c62;
+  font-size: 0.72rem;
+}
+.configuration-workspace__navigation-item--active {
+  border-color: #755486;
+  color: #fff;
+  background: #4d3c5c;
+}
+.configuration-workspace__navigation-item--active small,
+.configuration-workspace__navigation-item--active > span:first-child {
+  color: #ded0e6;
+}
+.configuration-workspace__panel {
+  min-width: 0;
+  padding: clamp(1.5rem, 4vw, 3rem);
 }
 .configuration-workspace__heading h1 {
   margin: 0;
@@ -88,6 +143,21 @@
   background: #f7e2e4;
 }
 @media (max-width: 40rem) {
+  .configuration-workspace {
+    width: min(100% - 1.5rem, 76rem);
+    grid-template-columns: 1fr;
+  }
+  .configuration-workspace__navigation {
+    padding: 0.85rem;
+    border-right: 0;
+    border-bottom: 1px solid #cbc3b8;
+  }
+  .configuration-workspace__navigation-title {
+    margin-bottom: 0.6rem;
+  }
+  .configuration-workspace__navigation-item {
+    max-width: 15rem;
+  }
   .configuration-section__content li {
     align-items: start;
     flex-direction: column;

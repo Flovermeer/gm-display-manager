@@ -22,6 +22,7 @@ import { SceneService } from '../scene/scene.service';
 import { ActiveSceneService } from '../scene/active-scene.service';
 import { defaultSceneState, SceneDisplayService } from '../scene/scene-display.service';
 import { JournalEntryList } from '../shared/journal-entry-list/journal-entry-list';
+import { errorMessage as resolveErrorMessage } from '../shared/error-message';
 import { ButtonDirective } from '../shared/ui/button/button.directive';
 import { Dialog } from '../shared/ui/dialog/dialog';
 import { EmptyState } from '../shared/ui/empty-state/empty-state';
@@ -407,5 +408,5 @@ export class SceneWorkspace implements OnInit, PendingChangesAware {
 }
 
 function errorMessage(error: unknown): string {
-  return error instanceof Error ? error.message : "Impossible d'enregistrer cette scène.";
+  return resolveErrorMessage(error, "Impossible d'enregistrer cette scène.");
 }

@@ -73,7 +73,7 @@ describe('TauriNpcRepository', () => {
       'campaigns/campaign-id/media/npc-portraits/portrait.webp',
       'campaigns/campaign-id/media/npc-idle-videos/portrait.webm',
       JSON.stringify(npc.sheet),
-      2,
+      3,
       '2026-08-12T18:30:00.000Z',
       '2026-08-12T18:30:00.000Z',
     ]);
@@ -90,7 +90,7 @@ const npc: Npc = {
   portraitPath: 'campaigns/campaign-id/media/npc-portraits/portrait.webp',
   idleVideoPath: 'campaigns/campaign-id/media/npc-idle-videos/portrait.webm',
   sheet: { ...createEmptyNpcSheet(), armorClass: 12 },
-  sheetSchemaVersion: 2,
+  sheetSchemaVersion: 3,
   createdAt: '2026-08-12T18:30:00.000Z',
   updatedAt: '2026-08-12T18:30:00.000Z',
 };
@@ -105,7 +105,7 @@ const npcRow = {
   portrait_path: 'campaigns/campaign-id/media/npc-portraits/portrait.webp',
   idle_video_path: 'campaigns/campaign-id/media/npc-idle-videos/portrait.webm',
   sheet_json: JSON.stringify({ ...createEmptyNpcSheet(), armorClass: 12 }),
-  sheet_schema_version: 2,
+  sheet_schema_version: 3,
   created_at: '2026-08-12T18:30:00.000Z',
   updated_at: '2026-08-12T18:30:00.000Z',
 };

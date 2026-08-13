@@ -26,7 +26,10 @@ import {
 } from '../npc/npc';
 import { NpcService } from '../npc/npc.service';
 import { RichTextEditor } from '../shared/rich-text-editor/rich-text-editor';
-import type { RichTextDocument } from '../shared/rich-text-editor/rich-text-document';
+import {
+  createEmptyRichTextDocument,
+  type RichTextDocument,
+} from '../shared/rich-text-editor/rich-text-document';
 import { TagInput } from '../shared/tag-input/tag-input';
 
 type PendingDecisionResolver = (canLeave: boolean) => void;
@@ -94,6 +97,9 @@ export class NpcWorkspace implements OnInit, PendingChangesAware {
     },
   ];
   protected readonly featureDrafts = signal<NpcFeatureDrafts>(emptyFeatureDrafts());
+  protected readonly officialDescriptionDraft = signal<RichTextDocument>(
+    createEmptyRichTextDocument(),
+  );
   protected readonly effectivePortraitPath = computed(
     () => this.draftPortraitPath() ?? this.selectedNpc()?.portraitPath ?? null,
   );
@@ -450,6 +456,11 @@ export class NpcWorkspace implements OnInit, PendingChangesAware {
     this.updateFeature(section, featureId, (feature) => ({ ...feature, description }));
   }
 
+  protected updateOfficialDescription(description: RichTextDocument): void {
+    this.officialDescriptionDraft.set(description);
+    this.npcForm.markAsDirty();
+  }
+
   protected abilityModifier(score: number | null): string {
     if (score === null) return '—';
     const modifier = Math.floor((score - 10) / 2);
@@ -562,6 +573,7 @@ export class NpcWorkspace implements OnInit, PendingChangesAware {
       experiencePoints: sheet.experiencePoints,
     });
     this.featureDrafts.set(featureDraftsFromSheet(sheet));
+    this.officialDescriptionDraft.set(sheet.officialDescription);
     this.npcForm.markAsPristine();
   }
 
@@ -598,6 +610,7 @@ export class NpcWorkspace implements OnInit, PendingChangesAware {
       experiencePoints: sheet.experiencePoints,
     });
     this.featureDrafts.set(emptyFeatureDrafts());
+    this.officialDescriptionDraft.set(sheet.officialDescription);
     this.npcForm.markAsPristine();
   }
 
@@ -667,6 +680,7 @@ export class NpcWorkspace implements OnInit, PendingChangesAware {
         languages: value.languages,
         challengeRating: value.challengeRating,
         experiencePoints: value.experiencePoints,
+        officialDescription: this.officialDescriptionDraft(),
         ...this.featureDrafts(),
       },
     };

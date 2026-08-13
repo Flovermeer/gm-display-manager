@@ -4,7 +4,7 @@ import {
 } from '../shared/rich-text-editor/rich-text-document';
 
 export const NPC_STATUSES = ['active', 'dead', 'retired', 'missing'] as const;
-export const NPC_SHEET_SCHEMA_VERSION = 2 as const;
+export const NPC_SHEET_SCHEMA_VERSION = 3 as const;
 
 export type NpcStatus = (typeof NPC_STATUSES)[number];
 
@@ -43,6 +43,7 @@ export type NpcSheet = Readonly<{
   languages: readonly string[];
   challengeRating: string;
   experiencePoints: number | null;
+  officialDescription: RichTextDocument;
   traits: readonly NpcFeature[];
   actions: readonly NpcFeature[];
   bonusActions: readonly NpcFeature[];
@@ -122,6 +123,7 @@ export function createEmptyNpcSheet(): NpcSheet {
     languages: [],
     challengeRating: '',
     experiencePoints: null,
+    officialDescription: createEmptyRichTextDocument(),
     traits: [],
     actions: [],
     bonusActions: [],
@@ -201,6 +203,7 @@ export function normalizeNpcSheet(value: unknown): NpcSheet {
     languages: tags(source['languages']),
     challengeRating: text(source['challengeRating']),
     experiencePoints: nullableNonNegativeInteger(source['experiencePoints'], 'Experience points'),
+    officialDescription: richTextDocument(source['officialDescription']),
     traits: features(source['traits']),
     actions: features(source['actions']),
     bonusActions: features(source['bonusActions']),
@@ -258,6 +261,10 @@ function isRichTextDocument(value: unknown): value is RichTextDocument {
     isRecord(value['content']) &&
     value['content']['type'] === 'doc'
   );
+}
+
+function richTextDocument(value: unknown): RichTextDocument {
+  return isRichTextDocument(value) ? value : createEmptyRichTextDocument();
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {

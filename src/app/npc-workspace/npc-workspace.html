@@ -415,6 +415,17 @@
             </section>
           }
 
+          <section class="official-description-form" aria-labelledby="npc-description-form-title">
+            <div class="form-section-heading">
+              <p class="section-kicker">Contenu de référence</p>
+              <h3 id="npc-description-form-title">Description officielle</h3>
+            </div>
+            <app-rich-text-editor
+              [value]="officialDescriptionDraft()"
+              (valueChange)="updateOfficialDescription($event)"
+            />
+          </section>
+
           <div class="field notes-field">
             <label for="npc-notes">Notes privées du MJ</label>
             <textarea id="npc-notes" formControlName="notes" rows="14"></textarea>
@@ -537,6 +548,11 @@
                 </section>
               }
             }
+          </section>
+
+          <section class="official-description-readonly" aria-labelledby="npc-description-title">
+            <h3 id="npc-description-title">Description officielle</h3>
+            <app-rich-text-editor [value]="npc.sheet.officialDescription" [editable]="false" />
           </section>
 
           <section class="notes-readonly">

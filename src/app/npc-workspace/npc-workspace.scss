@@ -264,7 +264,8 @@ h2 {
 }
 
 .sheet-form-section,
-.feature-form-section {
+.feature-form-section,
+.official-description-form {
   margin: 1.5rem 0;
   padding: 1.5rem;
   border: 1px solid #d2cbc0;
@@ -279,6 +280,7 @@ h2 {
 
 .form-section-heading h3,
 .feature-section-heading h3,
+.official-description-readonly h3,
 .notes-readonly h3 {
   margin: 0;
   font-family: Georgia, 'Times New Roman', serif;
@@ -511,10 +513,22 @@ dd {
   padding: 0;
 }
 
+.official-description-readonly,
 .notes-readonly {
   margin-top: 2.5rem;
   padding-top: 1.5rem;
   border-top: 1px solid #d2cbc0;
+}
+
+.official-description-readonly .rich-text-editor {
+  margin-top: 1rem;
+  border: 0;
+  background: transparent;
+}
+
+.official-description-readonly .rich-text-content.readonly .tiptap {
+  min-height: 4rem;
+  padding: 0;
 }
 
 .notes-readonly p {

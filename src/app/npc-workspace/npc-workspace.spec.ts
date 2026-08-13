@@ -52,6 +52,15 @@ describe('NpcWorkspace', () => {
       languages: ['Commun', 'Draconique'],
       challengeRating: '7',
       experiencePoints: 2900,
+      officialDescription: {
+        schemaVersion: 1,
+        content: {
+          type: 'doc',
+          content: [
+            { type: 'paragraph', content: [{ type: 'text', text: 'Description canonique.' }] },
+          ],
+        },
+      },
       actions: [
         {
           id: 'action-id',
@@ -60,7 +69,7 @@ describe('NpcWorkspace', () => {
         },
       ],
     },
-    sheetSchemaVersion: 2,
+    sheetSchemaVersion: 3,
     createdAt: '2026-08-12T18:30:00.000Z',
     updatedAt: '2026-08-12T18:30:00.000Z',
   };
@@ -156,9 +165,14 @@ describe('NpcWorkspace', () => {
     expect(element.querySelector('.stat-block')?.textContent).toContain('Attaques multiples');
     expect(element.querySelector('.npc-sheet > dl')).toBeNull();
     const sheet = element.querySelector('.npc-character-sheet');
+    const description = element.querySelector('.official-description-readonly');
     const notes = element.querySelector('.notes-readonly');
-    if (!sheet || !notes) throw new Error('NPC sheet sections not found.');
-    expect(sheet.compareDocumentPosition(notes) & Node.DOCUMENT_POSITION_FOLLOWING).toBe(
+    if (!sheet || !description || !notes) throw new Error('NPC sheet sections not found.');
+    expect(description.textContent).toContain('Description canonique.');
+    expect(sheet.compareDocumentPosition(description) & Node.DOCUMENT_POSITION_FOLLOWING).toBe(
+      Node.DOCUMENT_POSITION_FOLLOWING,
+    );
+    expect(description.compareDocumentPosition(notes) & Node.DOCUMENT_POSITION_FOLLOWING).toBe(
       Node.DOCUMENT_POSITION_FOLLOWING,
     );
   });

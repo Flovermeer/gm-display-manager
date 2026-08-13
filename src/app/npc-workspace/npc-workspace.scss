@@ -177,7 +177,7 @@ select:focus-visible {
   align-items: start;
   padding: 2rem 0;
   border-bottom: 1px solid #d2cbc0;
-  grid-template-columns: minmax(0, 1fr) 12rem;
+  grid-template-columns: minmax(0, 1fr) minmax(12rem, 15rem);
   gap: 2rem;
 }
 

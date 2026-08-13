@@ -102,11 +102,31 @@
       </div>
 
       <header class="detail-heading">
-        <div>
+        <div class="npc-identity">
           <p class="section-kicker">{{ isCreating() ? 'Nouveau personnage' : 'Fiche du PNJ' }}</p>
-          <h2 id="npc-detail-title">
-            {{ isCreating() ? 'Créer un PNJ' : selectedNpc()?.name }}
-          </h2>
+          <div class="npc-title-row">
+            <h2 id="npc-detail-title">
+              {{ isCreating() ? 'Créer un PNJ' : selectedNpc()?.name }}
+            </h2>
+            @if (!isEditing() && selectedNpc(); as npc) {
+              <span class="status-badge" [attr.data-status]="npc.status">
+                {{ statusLabel(npc.status) }}
+              </span>
+            }
+          </div>
+
+          @if (!isEditing() && selectedNpc(); as npc) {
+            <dl class="npc-overview">
+              <div>
+                <dt>Rôle ou résumé</dt>
+                <dd>{{ npc.summary || 'Non renseigné' }}</dd>
+              </div>
+              <div>
+                <dt>Animation joueurs</dt>
+                <dd>{{ npc.idleVideoPath ? 'Vidéo prête' : 'Portrait statique' }}</dd>
+              </div>
+            </dl>
+          }
         </div>
 
         <div class="portrait-frame" [class.editable]="isEditing()">
@@ -198,24 +218,10 @@
         </form>
       } @else if (selectedNpc(); as npc) {
         <article class="npc-sheet">
-          <dl>
-            <div>
-              <dt>Statut</dt>
-              <dd>
-                <span class="status-badge" [attr.data-status]="npc.status">{{
-                  statusLabel(npc.status)
-                }}</span>
-              </dd>
-            </div>
-            <div>
-              <dt>Rôle ou résumé</dt>
-              <dd>{{ npc.summary || 'Non renseigné' }}</dd>
-            </div>
-            <div>
-              <dt>Animation joueurs</dt>
-              <dd>{{ npc.idleVideoPath ? 'Vidéo prête' : 'Portrait statique' }}</dd>
-            </div>
-          </dl>
+          <section class="npc-character-sheet" aria-labelledby="npc-sheet-title">
+            <h3 id="npc-sheet-title">Fiche PNJ</h3>
+            <p>Les caractéristiques propres aux PNJ seront affichées ici.</p>
+          </section>
 
           <section class="notes-readonly">
             <h3>Notes</h3>

@@ -110,6 +110,27 @@ describe('NpcWorkspace', () => {
     expect(element.textContent).toContain('Aucun PNJ sélectionné');
   });
 
+  it('uses the portrait row for the selected NPC overview before sheet and notes', async () => {
+    const fixture = TestBed.createComponent(NpcWorkspace);
+    fixture.detectChanges();
+    await renderUntil(fixture, 'Syndra Silvane');
+    const element = fixture.nativeElement as HTMLElement;
+
+    element.querySelector<HTMLButtonElement>('.npc-list-item')?.click();
+    await renderUntil(fixture, 'Fiche PNJ');
+
+    expect(element.querySelector('.npc-title-row .status-badge')?.textContent).toContain('Actif');
+    expect(element.querySelector('.npc-overview')?.textContent).toContain('Commanditaire');
+    expect(element.querySelector('.npc-overview')?.textContent).toContain('Portrait statique');
+    expect(element.querySelector('.npc-sheet > dl')).toBeNull();
+    const sheet = element.querySelector('.npc-character-sheet');
+    const notes = element.querySelector('.notes-readonly');
+    if (!sheet || !notes) throw new Error('NPC sheet sections not found.');
+    expect(sheet.compareDocumentPosition(notes) & Node.DOCUMENT_POSITION_FOLLOWING).toBe(
+      Node.DOCUMENT_POSITION_FOLLOWING,
+    );
+  });
+
   it('asks what to do before leaving a dirty form', async () => {
     const fixture = TestBed.createComponent(NpcWorkspace);
     fixture.detectChanges();

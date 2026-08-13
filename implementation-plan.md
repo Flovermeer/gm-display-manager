@@ -287,6 +287,14 @@ Périmètre initial :
 - sauvegarde du JSON Tiptap avec un numéro de version de schéma ;
 - lecture seule fiable.
 
+Contrat retenu pour les liens réactifs :
+
+- une mention saisie avec `@` conserve le type de ressource, son identifiant stable et son libellé ;
+- les premiers types raccordés sont les PJ, les PNJ et les lieux, puis les objets utiliseront le même contrat ;
+- les relations et la future carte heuristique sont dérivées des mentions présentes dans le JSON du chapitre ;
+- si la ressource ciblée n'existe plus, son libellé reste lisible comme du texte normal et le chapitre ne devient jamais inutilisable ;
+- les relations dérivées ne doivent pas imposer une clé étrangère qui empêcherait ce fallback.
+
 Les tableaux, images intégrées, mentions `@entité` et blocs personnalisés sont différés.
 
 Critères de validation :

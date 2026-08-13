@@ -10,7 +10,12 @@
     <a [class.active]="activeSection() === 'control'" [routerLink]="['/campaigns', campaignId()]">
       Régie
     </a>
-    <span aria-disabled="true" title="Bientôt disponible">Chapitres</span>
+    <a
+      [class.active]="activeSection() === 'chapters'"
+      [routerLink]="['/campaigns', campaignId(), 'chapters']"
+    >
+      Chapitres
+    </a>
     <a
       [class.active]="activeSection() === 'locations'"
       [routerLink]="['/campaigns', campaignId(), 'locations']"

@@ -10,6 +10,15 @@ export const routes: Routes = [
     title: "Beholder's Inn — Campagnes",
   },
   {
+    path: 'campaigns/:campaignId/chapters',
+    loadComponent: () =>
+      import('./chapter-workspace/chapter-workspace').then(
+        ({ ChapterWorkspace }) => ChapterWorkspace,
+      ),
+    canDeactivate: [pendingChangesGuard],
+    title: "Beholder's Inn — Chapitres",
+  },
+  {
     path: 'campaigns/:campaignId/locations',
     loadComponent: () =>
       import('./location-workspace/location-workspace').then(

@@ -27,6 +27,7 @@ import {
 })
 export class RichTextEditor implements AfterViewInit, OnDestroy {
   readonly value = input<RichTextDocument>(createEmptyRichTextDocument());
+  readonly editable = input(true);
   readonly valueChange = output<RichTextDocument>();
 
   private readonly editorHost = viewChild.required<ElementRef<HTMLDivElement>>('editorHost');
@@ -43,6 +44,12 @@ export class RichTextEditor implements AfterViewInit, OnDestroy {
     this.editorRevision.update((revision) => revision + 1);
   });
 
+  private readonly synchronizeEditableState = effect(() => {
+    const editable = this.editable();
+    this.editorReady();
+    this.editor?.setEditable(editable);
+  });
+
   ngAfterViewInit(): void {
     this.editor = new Editor({
       element: this.editorHost().nativeElement,
@@ -55,6 +62,7 @@ export class RichTextEditor implements AfterViewInit, OnDestroy {
         }),
       ],
       content: this.value().content,
+      editable: this.editable(),
       editorProps: {
         attributes: {
           'aria-label': 'Contenu de la note',

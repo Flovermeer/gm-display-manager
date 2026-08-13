@@ -50,6 +50,12 @@
   outline: none;
 }
 
+.rich-text-content.readonly .tiptap {
+  min-height: 12rem;
+  padding: 0;
+  background: transparent;
+}
+
 .rich-text-content .tiptap > :first-child {
   margin-top: 0;
 }

@@ -1,0 +1,190 @@
+<app-campaign-navigation
+  [campaignName]="campaign()?.name ?? 'Chargement…'"
+  [campaignId]="campaign()?.id ?? ''"
+  activeSection="chapters"
+/>
+
+<main class="workspace" [class.sidebar-collapsed]="isSidebarCollapsed()">
+  <aside class="sidebar" aria-label="Liste des chapitres">
+    <div class="sidebar-tools">
+      <label class="search-label" for="chapter-search">Rechercher dans les chapitres</label>
+      <input
+        id="chapter-search"
+        type="search"
+        placeholder="Titre, résumé ou contenu…"
+        [value]="searchTerm()"
+        (input)="updateSearch($event)"
+      />
+
+      <div class="sidebar-heading">
+        <h1>Chapitres</h1>
+        <span>{{ chapters().length }}</span>
+      </div>
+      <button class="create-button" type="button" (click)="requestCreateChapter()">
+        + Nouveau chapitre
+      </button>
+    </div>
+
+    <div class="chapter-list">
+      @if (isLoading()) {
+        <p class="list-message">Chargement…</p>
+      } @else if (filteredChapters().length === 0) {
+        <p class="list-message">
+          {{ searchTerm() ? 'Aucun résultat.' : 'Aucun chapitre pour le moment.' }}
+        </p>
+      } @else {
+        @for (chapter of filteredChapters(); track chapter.id; let index = $index) {
+          <button
+            class="chapter-list-item"
+            type="button"
+            [class.active]="selectedChapter()?.id === chapter.id && !isCreating()"
+            (click)="requestSelectChapter(chapter)"
+          >
+            <span class="chapter-number">{{ index + 1 }}</span>
+            <strong>{{ chapter.title }}</strong>
+            <small>{{ chapter.summary || 'Sans résumé' }}</small>
+          </button>
+        }
+      }
+    </div>
+  </aside>
+
+  <button
+    class="sidebar-toggle"
+    type="button"
+    [attr.aria-label]="
+      isSidebarCollapsed() ? 'Afficher la liste des chapitres' : 'Replier la liste des chapitres'
+    "
+    (click)="toggleSidebar()"
+  >
+    {{ isSidebarCollapsed() ? '→' : '←' }}
+  </button>
+
+  <section class="detail-panel" aria-labelledby="chapter-detail-title">
+    @if (error(); as errorMessage) {
+      <p class="error" role="alert">{{ errorMessage }}</p>
+    }
+
+    @if (isCreating() || selectedChapter()) {
+      <div class="detail-toolbar">
+        <div class="detail-actions">
+          @if (!isEditing()) {
+            <button class="primary-button" type="button" (click)="editChapter()">Modifier</button>
+            <button
+              class="secondary-button danger-button"
+              type="button"
+              (click)="requestDeleteChapter()"
+            >
+              Supprimer
+            </button>
+          } @else {
+            <button class="secondary-button" type="button" (click)="cancelEditing()">
+              Annuler
+            </button>
+            <button
+              class="primary-button"
+              type="button"
+              [disabled]="chapterForm.invalid || isSaving()"
+              (click)="saveChapter()"
+            >
+              {{ isSaving() ? 'Enregistrement…' : 'Enregistrer' }}
+            </button>
+          }
+        </div>
+      </div>
+
+      @if (isEditing()) {
+        <form class="chapter-form" [formGroup]="chapterForm" (ngSubmit)="saveChapter()">
+          <header class="chapter-heading">
+            <p class="section-kicker">{{ isCreating() ? 'Nouveau chapitre' : 'Modification' }}</p>
+            <div class="field">
+              <label for="chapter-title">Titre</label>
+              <input id="chapter-title" type="text" formControlName="title" autocomplete="off" />
+              @if (chapterForm.controls.title.touched && chapterForm.controls.title.invalid) {
+                <p class="field-error">Le titre est obligatoire.</p>
+              }
+            </div>
+            <div class="field">
+              <label for="chapter-summary">Résumé</label>
+              <input
+                id="chapter-summary"
+                type="text"
+                formControlName="summary"
+                placeholder="Une phrase pour retrouver rapidement ce chapitre"
+              />
+            </div>
+          </header>
+
+          <div class="field editor-field">
+            <label>Contenu</label>
+            <app-rich-text-editor [value]="draftContent()" (valueChange)="updateContent($event)" />
+          </div>
+        </form>
+      } @else if (selectedChapter(); as chapter) {
+        <article class="chapter-sheet">
+          <header class="chapter-heading">
+            <p class="section-kicker">Chapitre {{ chapter.position + 1 }}</p>
+            <h2 id="chapter-detail-title">{{ chapter.title }}</h2>
+            @if (chapter.summary) {
+              <p class="chapter-summary">{{ chapter.summary }}</p>
+            }
+          </header>
+          <app-rich-text-editor [value]="chapter.content" [editable]="false" />
+        </article>
+      }
+    } @else {
+      <div class="empty-detail">
+        <span aria-hidden="true">✦</span>
+        <h2 id="chapter-detail-title">Aucun chapitre sélectionné</h2>
+        <p>Sélectionne un chapitre dans la liste ou commence une nouvelle note.</p>
+      </div>
+    }
+  </section>
+</main>
+
+@if (showPendingChangesDialog()) {
+  <div class="dialog-backdrop" role="presentation">
+    <section class="dialog" role="dialog" aria-modal="true" aria-labelledby="pending-title">
+      <p class="section-kicker">Modifications non enregistrées</p>
+      <h2 id="pending-title">Que veux-tu faire ?</h2>
+      <p>Le contenu ajouté à ce chapitre sera perdu si tu quittes maintenant.</p>
+      <div class="dialog-actions three-actions">
+        <button
+          class="primary-button"
+          type="button"
+          [disabled]="isSaving()"
+          (click)="saveAndLeave()"
+        >
+          Enregistrer et quitter
+        </button>
+        <button class="secondary-button danger-button" type="button" (click)="leaveWithoutSaving()">
+          Quitter sans enregistrer
+        </button>
+        <button class="secondary-button" type="button" (click)="continueEditing()">
+          Continuer la modification
+        </button>
+      </div>
+    </section>
+  </div>
+}
+
+@if (showDeleteDialog()) {
+  <div class="dialog-backdrop" role="presentation">
+    <section class="dialog" role="dialog" aria-modal="true" aria-labelledby="delete-title">
+      <p class="section-kicker">Suppression définitive</p>
+      <h2 id="delete-title">Supprimer {{ selectedChapter()?.title }} ?</h2>
+      <p>Le texte du chapitre sera définitivement supprimé.</p>
+      <div class="dialog-actions">
+        <button class="secondary-button" type="button" (click)="cancelDelete()">Annuler</button>
+        <button
+          class="delete-confirm"
+          type="button"
+          [disabled]="isSaving()"
+          (click)="confirmDeleteChapter()"
+        >
+          Supprimer définitivement
+        </button>
+      </div>
+    </section>
+  </div>
+}

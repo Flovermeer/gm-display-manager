@@ -1,0 +1,79 @@
+<div class="rich-text-editor">
+  <div class="rich-text-toolbar" role="toolbar" aria-label="Mise en forme de la note">
+    <button
+      type="button"
+      title="Gras"
+      [class.active]="isActive('bold')"
+      [attr.aria-pressed]="isActive('bold')"
+      (click)="toggleBold()"
+    >
+      <strong>G</strong>
+    </button>
+    <button
+      type="button"
+      title="Italique"
+      [class.active]="isActive('italic')"
+      [attr.aria-pressed]="isActive('italic')"
+      (click)="toggleItalic()"
+    >
+      <em>I</em>
+    </button>
+    <button
+      type="button"
+      title="Titre de niveau 2"
+      [class.active]="isActive('heading', { level: 2 })"
+      [attr.aria-pressed]="isActive('heading', { level: 2 })"
+      (click)="toggleHeading(2)"
+    >
+      T2
+    </button>
+    <button
+      type="button"
+      title="Titre de niveau 3"
+      [class.active]="isActive('heading', { level: 3 })"
+      [attr.aria-pressed]="isActive('heading', { level: 3 })"
+      (click)="toggleHeading(3)"
+    >
+      T3
+    </button>
+    <span class="toolbar-separator" aria-hidden="true"></span>
+    <button
+      type="button"
+      title="Liste à puces"
+      [class.active]="isActive('bulletList')"
+      [attr.aria-pressed]="isActive('bulletList')"
+      (click)="toggleBulletList()"
+    >
+      • Liste
+    </button>
+    <button
+      type="button"
+      title="Liste numérotée"
+      [class.active]="isActive('orderedList')"
+      [attr.aria-pressed]="isActive('orderedList')"
+      (click)="toggleOrderedList()"
+    >
+      1. Liste
+    </button>
+    <button
+      type="button"
+      title="Citation"
+      [class.active]="isActive('blockquote')"
+      [attr.aria-pressed]="isActive('blockquote')"
+      (click)="toggleBlockquote()"
+    >
+      Citation
+    </button>
+    <button
+      type="button"
+      title="Ajouter, modifier ou retirer un lien"
+      [class.active]="isActive('link')"
+      [attr.aria-pressed]="isActive('link')"
+      (click)="editLink()"
+    >
+      Lien
+    </button>
+  </div>
+
+  <div #editorHost class="rich-text-content"></div>
+</div>

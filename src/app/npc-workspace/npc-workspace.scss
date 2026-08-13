@@ -229,6 +229,20 @@ h2 {
   gap: 1rem;
 }
 
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.form-grid.three-columns {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.combat-basics {
+  grid-template-columns: 9rem minmax(10rem, 1fr) 9rem minmax(10rem, 1fr) minmax(8rem, 0.8fr);
+}
+
 .field {
   margin-bottom: 1.35rem;
 }
@@ -249,9 +263,126 @@ h2 {
   background: #fff;
 }
 
+.sheet-form-section,
+.feature-form-section {
+  margin: 1.5rem 0;
+  padding: 1.5rem;
+  border: 1px solid #d2cbc0;
+  border-radius: 0.65rem;
+  background: #e8e3da;
+}
+
+.form-section-heading,
+.feature-section-heading {
+  margin-bottom: 1.25rem;
+}
+
+.form-section-heading h3,
+.feature-section-heading h3,
+.notes-readonly h3 {
+  margin: 0;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 1.35rem;
+}
+
+.feature-section-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.abilities-fieldset {
+  margin: 0 0 1.35rem;
+  padding: 1rem;
+  border: 1px solid #c7bdb0;
+  border-radius: 0.5rem;
+}
+
+.abilities-fieldset legend {
+  padding: 0 0.45rem;
+  color: #5d554c;
+  font-size: 0.8rem;
+  font-weight: 800;
+}
+
+.ability-inputs,
+.ability-grid {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(4rem, 1fr));
+  gap: 0.65rem;
+}
+
+.ability-inputs label {
+  display: grid;
+  gap: 0.35rem;
+  color: #675d52;
+  font-size: 0.75rem;
+  font-weight: 800;
+  text-align: center;
+}
+
+.ability-inputs input {
+  text-align: center;
+}
+
+.tag-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.35rem;
+}
+
+.feature-editor {
+  display: grid;
+  gap: 0.65rem;
+  margin-top: 1rem;
+  padding: 1rem;
+  border: 1px solid #c7bdb0;
+  border-radius: 0.5rem;
+  background: #f4f0e9;
+}
+
+.feature-editor-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.feature-editor-heading label {
+  color: #5d554c;
+  font-size: 0.8rem;
+  font-weight: 800;
+}
+
+.feature-remove {
+  padding: 0.35rem 0.5rem;
+  border: 0;
+  color: #9a3540;
+  background: transparent;
+  cursor: pointer;
+}
+
+.empty-features {
+  margin: 0;
+  color: #746b60;
+  font-size: 0.85rem;
+}
+
+.feature-editor .rich-text-content .tiptap {
+  min-height: 8rem;
+}
+
 .field-error {
   margin: 0.4rem 0 0;
+  color: #a4303b;
   font-size: 0.78rem;
+}
+
+.sheet-error {
+  margin-top: 0;
+  font-weight: 700;
 }
 
 .error {
@@ -283,6 +414,113 @@ dd {
   margin: 0;
 }
 
+.stat-block {
+  color: #332b25;
+}
+
+.stat-block-heading,
+.combat-stat-lines,
+.ability-grid,
+.reference-stat-lines {
+  border-bottom: 0.25rem solid #7c3440;
+}
+
+.stat-block-heading {
+  padding-bottom: 0.75rem;
+}
+
+.stat-block-heading h3 {
+  margin: 0;
+  color: #612d35;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 1.8rem;
+  text-transform: uppercase;
+}
+
+.stat-block-heading p {
+  margin: 0.2rem 0 0;
+  font-style: italic;
+}
+
+.combat-stat-lines,
+.reference-stat-lines {
+  gap: 0.35rem;
+  padding: 0.75rem 0;
+}
+
+.combat-stat-lines div,
+.reference-stat-lines div {
+  display: flex;
+  grid-template-columns: none;
+  gap: 0.35rem;
+}
+
+.combat-stat-lines dt,
+.reference-stat-lines dt {
+  color: #4c4037;
+  font-size: inherit;
+}
+
+.ability-grid {
+  padding: 0.85rem 0;
+}
+
+.ability-grid div {
+  display: grid;
+  gap: 0.25rem;
+  text-align: center;
+}
+
+.ability-grid span {
+  color: #612d35;
+  font-weight: 800;
+}
+
+.stat-feature-section {
+  margin-top: 1.5rem;
+}
+
+.stat-feature-section h4 {
+  margin: 0 0 0.75rem;
+  padding-bottom: 0.2rem;
+  border-bottom: 1px solid #7c3440;
+  color: #612d35;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 1.5rem;
+  font-weight: 500;
+  text-transform: uppercase;
+}
+
+.stat-feature + .stat-feature {
+  margin-top: 1rem;
+}
+
+.stat-feature h5 {
+  margin: 0 0 0.25rem;
+  font-size: 1rem;
+  font-style: italic;
+}
+
+.stat-feature .rich-text-editor {
+  border: 0;
+  background: transparent;
+}
+
+.stat-feature .rich-text-content.readonly .tiptap {
+  min-height: 0;
+  padding: 0;
+}
+
+.notes-readonly {
+  margin-top: 2.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid #d2cbc0;
+}
+
+.notes-readonly p {
+  white-space: pre-wrap;
+}
+
 @media (max-width: 52rem) {
   .workspace {
     grid-template-columns: 15rem 2.5rem minmax(0, 1fr);
@@ -298,12 +536,26 @@ dd {
   }
 
   .detail-heading,
-  .form-row {
+  .form-row,
+  .form-grid,
+  .form-grid.three-columns,
+  .combat-basics,
+  .tag-grid {
     grid-template-columns: 1fr;
   }
 
   .detail-heading {
     gap: 1.25rem;
+  }
+
+  .ability-inputs,
+  .ability-grid {
+    grid-template-columns: repeat(3, minmax(4rem, 1fr));
+  }
+
+  .feature-section-heading {
+    align-items: stretch;
+    flex-direction: column;
   }
 }
 

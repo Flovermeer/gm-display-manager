@@ -8,8 +8,9 @@ import { CampaignContext } from '../campaign-layout/campaign-context';
 import { DisplayGateway } from '../display/display.gateway';
 import { NpcPortraitGateway } from '../media/npc-portrait.gateway';
 import { NpcIdleVideoGateway } from '../media/npc-idle-video.gateway';
-import type { Npc } from '../npc/npc';
+import { createEmptyNpcSheet, type Npc } from '../npc/npc';
 import { NpcService } from '../npc/npc.service';
+import { createEmptyRichTextDocument } from '../shared/rich-text-editor/rich-text-document';
 import { NpcWorkspace } from './npc-workspace';
 
 describe('NpcWorkspace', () => {
@@ -30,8 +31,36 @@ describe('NpcWorkspace', () => {
     notes: '',
     portraitPath: null,
     idleVideoPath: null,
-    sheet: {},
-    sheetSchemaVersion: 1,
+    sheet: {
+      ...createEmptyNpcSheet(),
+      size: 'Moyenne',
+      creatureType: 'Humanoïde (humain)',
+      alignment: 'Neutre bon',
+      armorClass: 14,
+      hitPoints: 82,
+      hitPointFormula: '15d8 + 15',
+      speed: '9 m',
+      abilities: {
+        strength: 10,
+        dexterity: 15,
+        constitution: 13,
+        intelligence: 17,
+        wisdom: 16,
+        charisma: 18,
+      },
+      skills: ['Histoire +9', 'Perspicacité +6'],
+      languages: ['Commun', 'Draconique'],
+      challengeRating: '7',
+      experiencePoints: 2900,
+      actions: [
+        {
+          id: 'action-id',
+          name: 'Attaques multiples',
+          description: createEmptyRichTextDocument(),
+        },
+      ],
+    },
+    sheetSchemaVersion: 2,
     createdAt: '2026-08-12T18:30:00.000Z',
     updatedAt: '2026-08-12T18:30:00.000Z',
   };
@@ -122,6 +151,9 @@ describe('NpcWorkspace', () => {
     expect(element.querySelector('.npc-title-row .status-badge')?.textContent).toContain('Actif');
     expect(element.querySelector('.npc-overview')?.textContent).toContain('Commanditaire');
     expect(element.querySelector('.npc-overview')?.textContent).toContain('Portrait statique');
+    expect(element.querySelector('.stat-block')?.textContent).toContain('14');
+    expect(element.querySelector('.stat-block')?.textContent).toContain('82 (15d8 + 15)');
+    expect(element.querySelector('.stat-block')?.textContent).toContain('Attaques multiples');
     expect(element.querySelector('.npc-sheet > dl')).toBeNull();
     const sheet = element.querySelector('.npc-character-sheet');
     const notes = element.querySelector('.notes-readonly');

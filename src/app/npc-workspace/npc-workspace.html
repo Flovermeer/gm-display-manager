@@ -211,20 +211,336 @@
             </button>
           </div>
 
+          <section class="sheet-form-section" aria-labelledby="npc-profile-form-title">
+            <div class="form-section-heading">
+              <p class="section-kicker">Référence en partie</p>
+              <h3 id="npc-profile-form-title">Fiche PNJ</h3>
+            </div>
+
+            <div class="form-grid three-columns">
+              <div class="field">
+                <label for="npc-size">Taille</label>
+                <input id="npc-size" type="text" formControlName="size" placeholder="Moyenne" />
+              </div>
+              <div class="field">
+                <label for="npc-creature-type">Type</label>
+                <input
+                  id="npc-creature-type"
+                  type="text"
+                  formControlName="creatureType"
+                  placeholder="Humanoïde (humain)"
+                />
+              </div>
+              <div class="field">
+                <label for="npc-alignment">Alignement</label>
+                <input
+                  id="npc-alignment"
+                  type="text"
+                  formControlName="alignment"
+                  placeholder="Neutre bon"
+                />
+              </div>
+            </div>
+
+            <div class="form-grid combat-basics">
+              <div class="field compact-number">
+                <label for="npc-armor-class">Classe d'armure</label>
+                <input id="npc-armor-class" type="number" min="0" formControlName="armorClass" />
+              </div>
+              <div class="field">
+                <label for="npc-armor-details">Détail de l'armure</label>
+                <input
+                  id="npc-armor-details"
+                  type="text"
+                  formControlName="armorClassDetails"
+                  placeholder="Cuir clouté"
+                />
+              </div>
+              <div class="field compact-number">
+                <label for="npc-hit-points">Points de vie</label>
+                <input id="npc-hit-points" type="number" min="0" formControlName="hitPoints" />
+              </div>
+              <div class="field">
+                <label for="npc-hit-point-formula">Formule de PV</label>
+                <input
+                  id="npc-hit-point-formula"
+                  type="text"
+                  formControlName="hitPointFormula"
+                  placeholder="15d8 + 15"
+                />
+              </div>
+              <div class="field">
+                <label for="npc-speed">Vitesse</label>
+                <input id="npc-speed" type="text" formControlName="speed" placeholder="9 m" />
+              </div>
+            </div>
+
+            <fieldset class="abilities-fieldset">
+              <legend>Caractéristiques</legend>
+              <div class="ability-inputs">
+                <label>FOR <input type="number" min="0" formControlName="strength" /></label>
+                <label>DEX <input type="number" min="0" formControlName="dexterity" /></label>
+                <label>CON <input type="number" min="0" formControlName="constitution" /></label>
+                <label>INT <input type="number" min="0" formControlName="intelligence" /></label>
+                <label>SAG <input type="number" min="0" formControlName="wisdom" /></label>
+                <label>CHA <input type="number" min="0" formControlName="charisma" /></label>
+              </div>
+            </fieldset>
+
+            <div class="tag-grid">
+              <app-tag-input
+                inputId="npc-saving-throws"
+                label="Jets de sauvegarde"
+                placeholder="Dex +5"
+                [value]="npcForm.controls.savingThrows.value"
+                (valueChange)="updateTags('savingThrows', $event)"
+              />
+              <app-tag-input
+                inputId="npc-skills"
+                label="Compétences"
+                placeholder="Histoire +9"
+                [value]="npcForm.controls.skills.value"
+                (valueChange)="updateTags('skills', $event)"
+              />
+              <app-tag-input
+                inputId="npc-damage-vulnerabilities"
+                label="Vulnérabilités aux dégâts"
+                placeholder="Feu"
+                [value]="npcForm.controls.damageVulnerabilities.value"
+                (valueChange)="updateTags('damageVulnerabilities', $event)"
+              />
+              <app-tag-input
+                inputId="npc-damage-resistances"
+                label="Résistances aux dégâts"
+                placeholder="Froid"
+                [value]="npcForm.controls.damageResistances.value"
+                (valueChange)="updateTags('damageResistances', $event)"
+              />
+              <app-tag-input
+                inputId="npc-damage-immunities"
+                label="Immunités aux dégâts"
+                placeholder="Poison"
+                [value]="npcForm.controls.damageImmunities.value"
+                (valueChange)="updateTags('damageImmunities', $event)"
+              />
+              <app-tag-input
+                inputId="npc-condition-immunities"
+                label="Immunités aux états"
+                placeholder="Charmé"
+                [value]="npcForm.controls.conditionImmunities.value"
+                (valueChange)="updateTags('conditionImmunities', $event)"
+              />
+              <app-tag-input
+                inputId="npc-senses"
+                label="Sens"
+                placeholder="Perception passive 13"
+                [value]="npcForm.controls.senses.value"
+                (valueChange)="updateTags('senses', $event)"
+              />
+              <app-tag-input
+                inputId="npc-languages"
+                label="Langues"
+                placeholder="Commun"
+                [value]="npcForm.controls.languages.value"
+                (valueChange)="updateTags('languages', $event)"
+              />
+            </div>
+
+            <div class="form-grid challenge-fields">
+              <div class="field">
+                <label for="npc-challenge-rating">Facteur de puissance</label>
+                <input
+                  id="npc-challenge-rating"
+                  type="text"
+                  formControlName="challengeRating"
+                  placeholder="7"
+                />
+              </div>
+              <div class="field">
+                <label for="npc-experience-points">Points d'expérience</label>
+                <input
+                  id="npc-experience-points"
+                  type="number"
+                  min="0"
+                  formControlName="experiencePoints"
+                  placeholder="2900"
+                />
+              </div>
+            </div>
+            @if (hasInvalidSheetNumbers()) {
+              <p class="field-error sheet-error" role="alert">
+                Les valeurs numériques de la fiche doivent être des nombres entiers positifs ou
+                nuls.
+              </p>
+            }
+          </section>
+
+          @for (section of featureSections; track section.key) {
+            <section class="feature-form-section">
+              <div class="feature-section-heading">
+                <h3>{{ section.label }}</h3>
+                <button class="secondary-button" type="button" (click)="addFeature(section.key)">
+                  + Ajouter {{ section.singularLabel }}
+                </button>
+              </div>
+
+              @for (feature of featureDrafts()[section.key]; track feature.id) {
+                <article class="feature-editor">
+                  <div class="feature-editor-heading">
+                    <label [for]="'npc-feature-' + feature.id">Nom</label>
+                    <button
+                      class="feature-remove"
+                      type="button"
+                      [attr.aria-label]="'Supprimer ' + (feature.name || section.singularLabel)"
+                      (click)="removeFeature(section.key, feature.id)"
+                    >
+                      Supprimer
+                    </button>
+                  </div>
+                  <input
+                    [id]="'npc-feature-' + feature.id"
+                    type="text"
+                    [value]="feature.name"
+                    placeholder="Nom de {{ section.singularLabel }}"
+                    (input)="updateFeatureName(section.key, feature.id, $event)"
+                  />
+                  <app-rich-text-editor
+                    [value]="feature.description"
+                    (valueChange)="updateFeatureDescription(section.key, feature.id, $event)"
+                  />
+                </article>
+              } @empty {
+                <p class="empty-features">Aucune entrée pour le moment.</p>
+              }
+            </section>
+          }
+
           <div class="field notes-field">
-            <label for="npc-notes">Notes</label>
+            <label for="npc-notes">Notes privées du MJ</label>
             <textarea id="npc-notes" formControlName="notes" rows="14"></textarea>
           </div>
         </form>
       } @else if (selectedNpc(); as npc) {
         <article class="npc-sheet">
-          <section class="npc-character-sheet" aria-labelledby="npc-sheet-title">
-            <h3 id="npc-sheet-title">Fiche PNJ</h3>
-            <p>Les caractéristiques propres aux PNJ seront affichées ici.</p>
+          <section class="npc-character-sheet stat-block" aria-labelledby="npc-sheet-title">
+            <header class="stat-block-heading">
+              <h3 id="npc-sheet-title">Fiche PNJ</h3>
+              <p>{{ npcTypeLine(npc.sheet) }}</p>
+            </header>
+
+            <dl class="combat-stat-lines">
+              <div>
+                <dt>Classe d'armure</dt>
+                <dd>{{ armorClassLabel(npc.sheet) }}</dd>
+              </div>
+              <div>
+                <dt>Points de vie</dt>
+                <dd>{{ hitPointsLabel(npc.sheet) }}</dd>
+              </div>
+              <div>
+                <dt>Vitesse</dt>
+                <dd>{{ npc.sheet.speed || '—' }}</dd>
+              </div>
+            </dl>
+
+            <div class="ability-grid" aria-label="Caractéristiques">
+              <div>
+                <span>FOR</span><strong>{{ abilityModifier(npc.sheet.abilities.strength) }}</strong>
+              </div>
+              <div>
+                <span>DEX</span
+                ><strong>{{ abilityModifier(npc.sheet.abilities.dexterity) }}</strong>
+              </div>
+              <div>
+                <span>CON</span
+                ><strong>{{ abilityModifier(npc.sheet.abilities.constitution) }}</strong>
+              </div>
+              <div>
+                <span>INT</span
+                ><strong>{{ abilityModifier(npc.sheet.abilities.intelligence) }}</strong>
+              </div>
+              <div>
+                <span>SAG</span><strong>{{ abilityModifier(npc.sheet.abilities.wisdom) }}</strong>
+              </div>
+              <div>
+                <span>CHA</span><strong>{{ abilityModifier(npc.sheet.abilities.charisma) }}</strong>
+              </div>
+            </div>
+
+            <dl class="reference-stat-lines">
+              @if (npc.sheet.savingThrows.length) {
+                <div>
+                  <dt>Jets de sauvegarde</dt>
+                  <dd>{{ npc.sheet.savingThrows.join(', ') }}</dd>
+                </div>
+              }
+              @if (npc.sheet.skills.length) {
+                <div>
+                  <dt>Compétences</dt>
+                  <dd>{{ npc.sheet.skills.join(', ') }}</dd>
+                </div>
+              }
+              @if (npc.sheet.damageVulnerabilities.length) {
+                <div>
+                  <dt>Vulnérabilités aux dégâts</dt>
+                  <dd>{{ npc.sheet.damageVulnerabilities.join(', ') }}</dd>
+                </div>
+              }
+              @if (npc.sheet.damageResistances.length) {
+                <div>
+                  <dt>Résistances aux dégâts</dt>
+                  <dd>{{ npc.sheet.damageResistances.join(', ') }}</dd>
+                </div>
+              }
+              @if (npc.sheet.damageImmunities.length) {
+                <div>
+                  <dt>Immunités aux dégâts</dt>
+                  <dd>{{ npc.sheet.damageImmunities.join(', ') }}</dd>
+                </div>
+              }
+              @if (npc.sheet.conditionImmunities.length) {
+                <div>
+                  <dt>Immunités aux états</dt>
+                  <dd>{{ npc.sheet.conditionImmunities.join(', ') }}</dd>
+                </div>
+              }
+              @if (npc.sheet.senses.length) {
+                <div>
+                  <dt>Sens</dt>
+                  <dd>{{ npc.sheet.senses.join(', ') }}</dd>
+                </div>
+              }
+              @if (npc.sheet.languages.length) {
+                <div>
+                  <dt>Langues</dt>
+                  <dd>{{ npc.sheet.languages.join(', ') }}</dd>
+                </div>
+              }
+              <div>
+                <dt>Dangerosité</dt>
+                <dd>{{ challengeLabel(npc.sheet) }}</dd>
+              </div>
+            </dl>
+
+            @for (section of featureSections; track section.key) {
+              @if (npc.sheet[section.key].length) {
+                <section class="stat-feature-section">
+                  <h4>{{ section.label }}</h4>
+                  @for (feature of npc.sheet[section.key]; track feature.id) {
+                    <article class="stat-feature">
+                      @if (feature.name) {
+                        <h5>{{ feature.name }}</h5>
+                      }
+                      <app-rich-text-editor [value]="feature.description" [editable]="false" />
+                    </article>
+                  }
+                </section>
+              }
+            }
           </section>
 
           <section class="notes-readonly">
-            <h3>Notes</h3>
+            <h3>Notes privées du MJ</h3>
             <p>{{ npc.notes || 'Aucune note pour le moment.' }}</p>
           </section>
         </article>

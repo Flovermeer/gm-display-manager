@@ -1,4 +1,10 @@
-import { createNpc, updateNpc, type NpcFactoryDependencies } from './npc';
+import {
+  createEmptyNpcSheet,
+  createNpc,
+  NPC_SHEET_SCHEMA_VERSION,
+  updateNpc,
+  type NpcFactoryDependencies,
+} from './npc';
 
 describe('Npc', () => {
   const dependencies: NpcFactoryDependencies = {
@@ -26,8 +32,8 @@ describe('Npc', () => {
       notes: 'Souffre de la malédiction.',
       portraitPath: null,
       idleVideoPath: null,
-      sheet: {},
-      sheetSchemaVersion: 1,
+      sheet: createEmptyNpcSheet(),
+      sheetSchemaVersion: NPC_SHEET_SCHEMA_VERSION,
       createdAt: '2026-08-12T18:30:00.000Z',
       updatedAt: '2026-08-12T18:30:00.000Z',
     });
@@ -38,12 +44,13 @@ describe('Npc', () => {
 
     expect(
       updateNpc(
-        { ...npc, sheet: { armorClass: 12 } },
+        { ...npc, sheet: { ...createEmptyNpcSheet(), armorClass: 12 } },
         {
           name: ' Syndra Silvane ',
           status: 'missing',
           summary: ' Commanditaire ',
           notes: ' Introuvable ',
+          sheet: { ...createEmptyNpcSheet(), armorClass: 14 },
         },
         () => new Date('2026-08-13T10:00:00.000Z'),
       ),
@@ -53,7 +60,8 @@ describe('Npc', () => {
       status: 'missing',
       summary: 'Commanditaire',
       notes: 'Introuvable',
-      sheet: { armorClass: 12 },
+      sheet: { ...createEmptyNpcSheet(), armorClass: 14 },
+      sheetSchemaVersion: NPC_SHEET_SCHEMA_VERSION,
       updatedAt: '2026-08-13T10:00:00.000Z',
     });
   });

@@ -1,6 +1,6 @@
 import Database from '@tauri-apps/plugin-sql';
 
-import type { Npc } from '../npc/npc';
+import { createEmptyNpcSheet, type Npc } from '../npc/npc';
 import { TauriNpcRepository } from './tauri-npc.repository';
 
 vi.mock('@tauri-apps/plugin-sql', () => ({
@@ -26,6 +26,18 @@ describe('TauriNpcRepository', () => {
     await expect(repository.listByCampaign('campaign-id')).resolves.toEqual([npc]);
     expect(database.select).toHaveBeenCalledWith(expect.stringContaining('campaign_id = $1'), [
       'campaign-id',
+    ]);
+  });
+
+  it('normalizes a legacy empty NPC sheet', async () => {
+    database.select.mockResolvedValue([{ ...npcRow, sheet_json: '{}', sheet_schema_version: 1 }]);
+    const repository = new TauriNpcRepository();
+
+    await expect(repository.listByCampaign('campaign-id')).resolves.toMatchObject([
+      {
+        sheet: { armorClass: null, traits: [], actions: [] },
+        sheetSchemaVersion: 1,
+      },
     ]);
   });
 
@@ -60,8 +72,8 @@ describe('TauriNpcRepository', () => {
       'Souffre de la malédiction.',
       'campaigns/campaign-id/media/npc-portraits/portrait.webp',
       'campaigns/campaign-id/media/npc-idle-videos/portrait.webm',
-      '{"armorClass":12}',
-      1,
+      JSON.stringify(npc.sheet),
+      2,
       '2026-08-12T18:30:00.000Z',
       '2026-08-12T18:30:00.000Z',
     ]);
@@ -77,8 +89,8 @@ const npc: Npc = {
   notes: 'Souffre de la malédiction.',
   portraitPath: 'campaigns/campaign-id/media/npc-portraits/portrait.webp',
   idleVideoPath: 'campaigns/campaign-id/media/npc-idle-videos/portrait.webm',
-  sheet: { armorClass: 12 },
-  sheetSchemaVersion: 1,
+  sheet: { ...createEmptyNpcSheet(), armorClass: 12 },
+  sheetSchemaVersion: 2,
   createdAt: '2026-08-12T18:30:00.000Z',
   updatedAt: '2026-08-12T18:30:00.000Z',
 };
@@ -92,8 +104,8 @@ const npcRow = {
   notes: 'Souffre de la malédiction.',
   portrait_path: 'campaigns/campaign-id/media/npc-portraits/portrait.webp',
   idle_video_path: 'campaigns/campaign-id/media/npc-idle-videos/portrait.webm',
-  sheet_json: '{"armorClass":12}',
-  sheet_schema_version: 1,
+  sheet_json: JSON.stringify({ ...createEmptyNpcSheet(), armorClass: 12 }),
+  sheet_schema_version: 2,
   created_at: '2026-08-12T18:30:00.000Z',
   updated_at: '2026-08-12T18:30:00.000Z',
 };

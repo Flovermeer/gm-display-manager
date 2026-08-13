@@ -1,7 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 
 import { InMemoryNpcRepository } from '../persistence/in-memory-npc.repository';
-import type { Npc } from './npc';
+import { createEmptyNpcSheet, type Npc } from './npc';
 import { NpcRepository } from './npc.repository';
 import { NpcService } from './npc.service';
 
@@ -21,6 +21,7 @@ describe('NpcService', () => {
       status: 'active',
       summary: 'Commanditaire',
       notes: '',
+      sheet: createEmptyNpcSheet(),
     });
 
     const updated = await service.update(
@@ -30,6 +31,7 @@ describe('NpcService', () => {
         status: 'missing',
         summary: 'Commanditaire',
         notes: 'Introuvable',
+        sheet: { ...createEmptyNpcSheet(), armorClass: 14 },
       },
       'campaigns/campaign-id/media/npc-portraits/syndra.webp',
     );
@@ -52,5 +54,11 @@ describe('NpcService', () => {
 });
 
 function npcInput(name: string) {
-  return { name, status: 'active' as const, summary: '', notes: '' };
+  return {
+    name,
+    status: 'active' as const,
+    summary: '',
+    notes: '',
+    sheet: createEmptyNpcSheet(),
+  };
 }

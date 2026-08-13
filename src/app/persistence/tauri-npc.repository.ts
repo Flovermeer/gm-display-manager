@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import Database from '@tauri-apps/plugin-sql';
 
-import type { Npc, NpcStatus } from '../npc/npc';
+import { normalizeNpcSheet, type Npc, type NpcStatus } from '../npc/npc';
 import { NpcRepository } from '../npc/npc.repository';
 
 const DATABASE_URL = 'sqlite:beholders-inn.db';
@@ -121,11 +121,6 @@ function mapNpcRow(row: NpcRow): Npc {
   };
 }
 
-function parseSheet(value: string): Readonly<Record<string, unknown>> {
-  const parsed: unknown = JSON.parse(value);
-  if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) {
-    throw new Error('Invalid NPC sheet data.');
-  }
-
-  return parsed as Readonly<Record<string, unknown>>;
+function parseSheet(value: string) {
+  return normalizeNpcSheet(JSON.parse(value) as unknown);
 }

@@ -90,7 +90,7 @@
             <button
               class="primary-button"
               type="button"
-              [disabled]="isSaving()"
+              [disabled]="characterForm.invalid || isSaving()"
               (click)="saveCharacter()"
             >
               {{ isSaving() ? 'Enregistrement…' : 'Enregistrer' }}
@@ -201,6 +201,14 @@
                   max="20"
                   formControlName="level"
                 />
+                @if (
+                  characterForm.controls.level.invalid &&
+                  (characterForm.controls.level.dirty || characterForm.controls.level.touched)
+                ) {
+                  <p class="field-error" role="alert">
+                    Le niveau doit être un nombre entier compris entre 1 et 20.
+                  </p>
+                }
               </div>
             </div>
           </section>
@@ -216,18 +224,59 @@
                   min="0"
                   formControlName="currentHitPoints"
                 />
+                @if (
+                  (characterForm.controls.currentHitPoints.invalid ||
+                    characterForm.hasError('hitPointRange')) &&
+                  (characterForm.controls.currentHitPoints.dirty ||
+                    characterForm.controls.currentHitPoints.touched ||
+                    characterForm.controls.maxHitPoints.dirty)
+                ) {
+                  <p class="field-error" role="alert">
+                    @if (characterForm.hasError('hitPointRange')) {
+                      Les PV actuels ne peuvent pas dépasser les PV maximum.
+                    } @else {
+                      Les PV actuels doivent être un nombre entier positif ou nul.
+                    }
+                  </p>
+                }
               </div>
               <div class="field">
                 <label for="character-max-hp">PV maximum</label>
                 <input id="character-max-hp" type="number" min="0" formControlName="maxHitPoints" />
+                @if (
+                  characterForm.controls.maxHitPoints.invalid &&
+                  (characterForm.controls.maxHitPoints.dirty ||
+                    characterForm.controls.maxHitPoints.touched)
+                ) {
+                  <p class="field-error" role="alert">
+                    Les PV maximum doivent être un nombre entier positif ou nul.
+                  </p>
+                }
               </div>
               <div class="field">
                 <label for="character-ac">Classe d'armure</label>
                 <input id="character-ac" type="number" min="0" formControlName="armorClass" />
+                @if (
+                  characterForm.controls.armorClass.invalid &&
+                  (characterForm.controls.armorClass.dirty ||
+                    characterForm.controls.armorClass.touched)
+                ) {
+                  <p class="field-error" role="alert">
+                    La classe d'armure doit être un nombre entier positif ou nul.
+                  </p>
+                }
               </div>
               <div class="field">
                 <label for="character-speed">Vitesse</label>
                 <input id="character-speed" type="number" min="0" formControlName="speed" />
+                @if (
+                  characterForm.controls.speed.invalid &&
+                  (characterForm.controls.speed.dirty || characterForm.controls.speed.touched)
+                ) {
+                  <p class="field-error" role="alert">
+                    La vitesse doit être un nombre entier positif ou nul.
+                  </p>
+                }
               </div>
             </div>
           </section>
@@ -243,6 +292,15 @@
                   min="0"
                   formControlName="passivePerception"
                 />
+                @if (
+                  characterForm.controls.passivePerception.invalid &&
+                  (characterForm.controls.passivePerception.dirty ||
+                    characterForm.controls.passivePerception.touched)
+                ) {
+                  <p class="field-error" role="alert">
+                    La perception passive doit être un nombre entier positif ou nul.
+                  </p>
+                }
               </div>
               <div class="field">
                 <label for="passive-insight">Intuition passive</label>
@@ -252,6 +310,15 @@
                   min="0"
                   formControlName="passiveInsight"
                 />
+                @if (
+                  characterForm.controls.passiveInsight.invalid &&
+                  (characterForm.controls.passiveInsight.dirty ||
+                    characterForm.controls.passiveInsight.touched)
+                ) {
+                  <p class="field-error" role="alert">
+                    L'intuition passive doit être un nombre entier positif ou nul.
+                  </p>
+                }
               </div>
               <div class="field">
                 <label for="passive-investigation">Investigation passive</label>
@@ -261,6 +328,15 @@
                   min="0"
                   formControlName="passiveInvestigation"
                 />
+                @if (
+                  characterForm.controls.passiveInvestigation.invalid &&
+                  (characterForm.controls.passiveInvestigation.dirty ||
+                    characterForm.controls.passiveInvestigation.touched)
+                ) {
+                  <p class="field-error" role="alert">
+                    L'investigation passive doit être un nombre entier positif ou nul.
+                  </p>
+                }
               </div>
             </div>
           </section>
@@ -310,7 +386,7 @@
                     characterForm.controls.exhaustionLevel.touched)
                 ) {
                   <p class="field-error" role="alert">
-                    L'épuisement doit être compris entre 0 et 6.
+                    L'épuisement doit être un nombre entier compris entre 0 et 6.
                   </p>
                 }
               </div>

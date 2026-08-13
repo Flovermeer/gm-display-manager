@@ -1,5 +1,13 @@
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
-import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import {
+  type AbstractControl,
+  FormControl,
+  FormGroup,
+  ReactiveFormsModule,
+  type ValidationErrors,
+  type ValidatorFn,
+  Validators,
+} from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 
 import type { Campaign } from '../campaign/campaign';
@@ -59,29 +67,42 @@ export class PlayerCharacterWorkspace implements OnInit, PendingChangesAware {
     );
   });
 
-  protected readonly characterForm = new FormGroup({
-    name: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
-    playerName: new FormControl('', { nonNullable: true }),
-    status: new FormControl<PlayerCharacterStatus>('active', { nonNullable: true }),
-    currentHitPoints: new FormControl<number | null>(null, [Validators.min(0)]),
-    maxHitPoints: new FormControl<number | null>(null, [Validators.min(0)]),
-    species: new FormControl('', { nonNullable: true }),
-    className: new FormControl('', { nonNullable: true }),
-    level: new FormControl<number | null>(null, [Validators.min(1), Validators.max(20)]),
-    armorClass: new FormControl<number | null>(null, [Validators.min(0)]),
-    speed: new FormControl<number | null>(null, [Validators.min(0)]),
-    passivePerception: new FormControl<number | null>(null, [Validators.min(0)]),
-    passiveInsight: new FormControl<number | null>(null, [Validators.min(0)]),
-    passiveInvestigation: new FormControl<number | null>(null, [Validators.min(0)]),
-    senses: new FormControl<readonly string[]>([], { nonNullable: true }),
-    languages: new FormControl<readonly string[]>([], { nonNullable: true }),
-    conditions: new FormControl<readonly string[]>([], { nonNullable: true }),
-    exhaustionLevel: new FormControl(0, {
-      nonNullable: true,
-      validators: [Validators.min(0), Validators.max(6)],
-    }),
-    privateNotes: new FormControl('', { nonNullable: true }),
-  });
+  protected readonly characterForm = new FormGroup(
+    {
+      name: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
+      playerName: new FormControl('', { nonNullable: true }),
+      status: new FormControl<PlayerCharacterStatus>('active', { nonNullable: true }),
+      currentHitPoints: new FormControl<number | null>(null, [Validators.min(0), integerValidator]),
+      maxHitPoints: new FormControl<number | null>(null, [Validators.min(0), integerValidator]),
+      species: new FormControl('', { nonNullable: true }),
+      className: new FormControl('', { nonNullable: true }),
+      level: new FormControl<number | null>(null, [
+        Validators.min(1),
+        Validators.max(20),
+        integerValidator,
+      ]),
+      armorClass: new FormControl<number | null>(null, [Validators.min(0), integerValidator]),
+      speed: new FormControl<number | null>(null, [Validators.min(0), integerValidator]),
+      passivePerception: new FormControl<number | null>(null, [
+        Validators.min(0),
+        integerValidator,
+      ]),
+      passiveInsight: new FormControl<number | null>(null, [Validators.min(0), integerValidator]),
+      passiveInvestigation: new FormControl<number | null>(null, [
+        Validators.min(0),
+        integerValidator,
+      ]),
+      senses: new FormControl<readonly string[]>([], { nonNullable: true }),
+      languages: new FormControl<readonly string[]>([], { nonNullable: true }),
+      conditions: new FormControl<readonly string[]>([], { nonNullable: true }),
+      exhaustionLevel: new FormControl(0, {
+        nonNullable: true,
+        validators: [Validators.min(0), Validators.max(6), integerValidator],
+      }),
+      privateNotes: new FormControl('', { nonNullable: true }),
+    },
+    { validators: hitPointRangeValidator },
+  );
   protected readonly hitPointsControl = new FormControl<number | null>(null, [Validators.min(0)]);
 
   ngOnInit(): void {
@@ -273,9 +294,11 @@ export class PlayerCharacterWorkspace implements OnInit, PendingChangesAware {
       privateNotes: 'Notes privées',
     };
 
-    return Object.entries(this.characterForm.controls)
+    const invalidFields = Object.entries(this.characterForm.controls)
       .filter(([, control]) => control.invalid)
       .map(([name]) => labels[name as keyof typeof labels]);
+    if (this.characterForm.hasError('hitPointRange')) invalidFields.push('PV actuels');
+    return [...new Set(invalidFields)];
   }
 
   protected updateTags(
@@ -423,3 +446,14 @@ export class PlayerCharacterWorkspace implements OnInit, PendingChangesAware {
     return 'Une erreur inattendue est survenue.';
   }
 }
+
+const hitPointRangeValidator: ValidatorFn = (control: AbstractControl): ValidationErrors | null => {
+  const current = control.get('currentHitPoints')?.value as number | null;
+  const maximum = control.get('maxHitPoints')?.value as number | null;
+  return current !== null && maximum !== null && current > maximum ? { hitPointRange: true } : null;
+};
+
+const integerValidator: ValidatorFn = (control: AbstractControl): ValidationErrors | null => {
+  const value = control.value as number | null;
+  return value === null || Number.isInteger(value) ? null : { integer: true };
+};

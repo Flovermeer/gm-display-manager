@@ -1,0 +1,443 @@
+<app-campaign-navigation
+  [campaignName]="campaign()?.name ?? 'Chargement…'"
+  [campaignId]="campaign()?.id ?? ''"
+  activeSection="player-characters"
+/>
+
+<main class="workspace" [class.sidebar-collapsed]="isSidebarCollapsed()">
+  <aside class="sidebar" aria-label="Résumé du groupe">
+    <div class="sidebar-tools">
+      <label class="search-label" for="character-search">Rechercher un personnage</label>
+      <input
+        id="character-search"
+        type="search"
+        placeholder="Personnage, joueur, classe…"
+        [value]="searchTerm()"
+        (input)="updateSearch($event)"
+      />
+
+      <div class="sidebar-heading">
+        <h1>Groupe</h1>
+        <span>{{ characters().length }}</span>
+      </div>
+
+      <button class="create-button" type="button" (click)="requestCreateCharacter()">
+        + Nouveau PJ
+      </button>
+    </div>
+
+    <div class="character-list">
+      @if (isLoading()) {
+        <p class="list-message">Chargement…</p>
+      } @else if (filteredCharacters().length === 0) {
+        <p class="list-message">
+          {{ searchTerm() ? 'Aucun PJ ne correspond à la recherche.' : 'Aucun PJ pour le moment.' }}
+        </p>
+      } @else {
+        @for (character of filteredCharacters(); track character.id) {
+          <button
+            class="character-list-item"
+            type="button"
+            [class.active]="selectedCharacter()?.id === character.id && !isCreating()"
+            [attr.data-status]="character.status"
+            (click)="requestSelectCharacter(character)"
+          >
+            <span class="list-row">
+              <strong>{{ character.name }}</strong>
+              <span class="hit-point-pill">{{ hitPointLabel(character) }}</span>
+            </span>
+            <span>{{ character.playerName || 'Joueur non renseigné' }}</span>
+            <span>{{ classAndLevel(character) }}</span>
+          </button>
+        }
+      }
+    </div>
+  </aside>
+
+  <button
+    class="sidebar-toggle"
+    type="button"
+    [attr.aria-label]="
+      isSidebarCollapsed() ? 'Afficher le résumé du groupe' : 'Replier le résumé du groupe'
+    "
+    [attr.title]="isSidebarCollapsed() ? 'Afficher le groupe' : 'Replier le groupe'"
+    (click)="toggleSidebar()"
+  >
+    {{ isSidebarCollapsed() ? '→' : '←' }}
+  </button>
+
+  <section class="detail-panel" aria-labelledby="character-detail-title">
+    @if (error(); as errorMessage) {
+      <p class="error" role="alert">{{ errorMessage }}</p>
+    }
+
+    @if (isCreating() || selectedCharacter()) {
+      <div class="detail-toolbar">
+        <div class="detail-actions">
+          @if (!isEditing()) {
+            <button class="primary-button" type="button" (click)="editCharacter()">Modifier</button>
+            <button
+              class="secondary-button danger-button"
+              type="button"
+              (click)="requestDeleteCharacter()"
+            >
+              Supprimer
+            </button>
+          } @else {
+            <button class="secondary-button" type="button" (click)="cancelEditing()">
+              Annuler
+            </button>
+            <button
+              class="primary-button"
+              type="button"
+              [disabled]="characterForm.invalid || isSaving()"
+              (click)="saveCharacter()"
+            >
+              {{ isSaving() ? 'Enregistrement…' : 'Enregistrer' }}
+            </button>
+          }
+        </div>
+      </div>
+
+      <header class="detail-heading">
+        <div>
+          <p class="section-kicker">{{ isCreating() ? 'Nouveau héros' : 'Référence du MJ' }}</p>
+          <h2 id="character-detail-title">
+            {{ isCreating() ? 'Créer un PJ' : selectedCharacter()?.name }}
+          </h2>
+          @if (!isCreating() && selectedCharacter(); as character) {
+            <p class="character-subtitle">
+              {{ character.playerName || 'Joueur non renseigné' }} · {{ classAndLevel(character) }}
+            </p>
+          }
+        </div>
+
+        @if (!isEditing() && selectedCharacter(); as character) {
+          <section class="hit-point-card" aria-labelledby="hit-points-title">
+            <div>
+              <span id="hit-points-title">Points de vie actuels</span>
+              <strong>{{ hitPointLabel(character) }}</strong>
+            </div>
+            <div class="hit-point-editor">
+              <label for="current-hit-points">Corriger les PV</label>
+              <input
+                id="current-hit-points"
+                type="number"
+                min="0"
+                [max]="character.maxHitPoints ?? null"
+                [formControl]="hitPointsControl"
+              />
+              <button
+                class="primary-button"
+                type="button"
+                [disabled]="
+                  hitPointsControl.invalid || hitPointsControl.value === null || isSaving()
+                "
+                (click)="saveCurrentHitPoints()"
+              >
+                Appliquer
+              </button>
+              <button
+                class="secondary-button"
+                type="button"
+                [disabled]="character.maxHitPoints === null || isSaving()"
+                (click)="requestResetHitPoints()"
+              >
+                Remettre au maximum
+              </button>
+            </div>
+          </section>
+        }
+      </header>
+
+      @if (isEditing()) {
+        <form class="character-form" [formGroup]="characterForm" (ngSubmit)="saveCharacter()">
+          <section class="form-section" aria-labelledby="identity-fields">
+            <h3 id="identity-fields">Identité</h3>
+            <div class="form-grid three-columns">
+              <div class="field">
+                <label for="character-name">Personnage</label>
+                <input id="character-name" type="text" formControlName="name" autocomplete="off" />
+                @if (characterForm.controls.name.touched && characterForm.controls.name.invalid) {
+                  <p class="field-error">Le nom du personnage est obligatoire.</p>
+                }
+              </div>
+              <div class="field">
+                <label for="player-name">Joueur ou joueuse</label>
+                <input
+                  id="player-name"
+                  type="text"
+                  formControlName="playerName"
+                  autocomplete="off"
+                />
+              </div>
+              <div class="field">
+                <label for="character-status">Statut</label>
+                <select id="character-status" formControlName="status">
+                  @for (status of statuses; track status) {
+                    <option [value]="status">{{ statusLabel(status) }}</option>
+                  }
+                </select>
+              </div>
+              <div class="field">
+                <label for="character-species">Espèce</label>
+                <input id="character-species" type="text" formControlName="species" />
+              </div>
+              <div class="field">
+                <label for="character-class">Classe</label>
+                <input id="character-class" type="text" formControlName="className" />
+              </div>
+              <div class="field">
+                <label for="character-level">Niveau</label>
+                <input
+                  id="character-level"
+                  type="number"
+                  min="1"
+                  max="20"
+                  formControlName="level"
+                />
+              </div>
+            </div>
+          </section>
+
+          <section class="form-section" aria-labelledby="survival-fields">
+            <h3 id="survival-fields">Survie et déplacement</h3>
+            <div class="form-grid four-columns">
+              <div class="field">
+                <label for="character-current-hp">PV actuels</label>
+                <input
+                  id="character-current-hp"
+                  type="number"
+                  min="0"
+                  formControlName="currentHitPoints"
+                />
+              </div>
+              <div class="field">
+                <label for="character-max-hp">PV maximum</label>
+                <input id="character-max-hp" type="number" min="0" formControlName="maxHitPoints" />
+              </div>
+              <div class="field">
+                <label for="character-ac">Classe d'armure</label>
+                <input id="character-ac" type="number" min="0" formControlName="armorClass" />
+              </div>
+              <div class="field">
+                <label for="character-speed">Vitesse</label>
+                <input id="character-speed" type="number" min="0" formControlName="speed" />
+              </div>
+            </div>
+          </section>
+
+          <section class="form-section" aria-labelledby="awareness-fields">
+            <h3 id="awareness-fields">Vigilance</h3>
+            <div class="form-grid three-columns">
+              <div class="field">
+                <label for="passive-perception">Perception passive</label>
+                <input
+                  id="passive-perception"
+                  type="number"
+                  min="0"
+                  formControlName="passivePerception"
+                />
+              </div>
+              <div class="field">
+                <label for="passive-insight">Intuition passive</label>
+                <input
+                  id="passive-insight"
+                  type="number"
+                  min="0"
+                  formControlName="passiveInsight"
+                />
+              </div>
+              <div class="field">
+                <label for="passive-investigation">Investigation passive</label>
+                <input
+                  id="passive-investigation"
+                  type="number"
+                  min="0"
+                  formControlName="passiveInvestigation"
+                />
+              </div>
+            </div>
+          </section>
+
+          <section class="form-section" aria-labelledby="campaign-fields">
+            <h3 id="campaign-fields">Informations utiles au MJ</h3>
+            <div class="form-grid two-columns">
+              <div class="field">
+                <label for="character-senses">Sens particuliers</label>
+                <input
+                  id="character-senses"
+                  type="text"
+                  formControlName="senses"
+                  placeholder="Vision dans le noir 18 m…"
+                />
+              </div>
+              <div class="field">
+                <label for="character-languages">Langues</label>
+                <input id="character-languages" type="text" formControlName="languages" />
+              </div>
+              <div class="field">
+                <label for="character-conditions">Conditions</label>
+                <input
+                  id="character-conditions"
+                  type="text"
+                  formControlName="conditions"
+                  placeholder="Empoisonné, à terre…"
+                />
+              </div>
+              <div class="field">
+                <label for="character-exhaustion">Épuisement</label>
+                <input
+                  id="character-exhaustion"
+                  type="number"
+                  min="0"
+                  max="6"
+                  formControlName="exhaustionLevel"
+                />
+              </div>
+            </div>
+            <div class="field">
+              <label for="character-notes">Notes privées, secrets et éléments narratifs</label>
+              <textarea id="character-notes" formControlName="privateNotes" rows="9"></textarea>
+            </div>
+          </section>
+        </form>
+      } @else if (selectedCharacter(); as character) {
+        <article class="character-sheet">
+          <section class="stat-grid" aria-label="Statistiques de référence">
+            <div>
+              <span>CA</span><strong>{{ valueOrDash(character.sheet.armorClass) }}</strong>
+            </div>
+            <div>
+              <span>Vitesse</span><strong>{{ valueOrDash(character.sheet.speed) }}</strong>
+            </div>
+            <div>
+              <span>Perception passive</span
+              ><strong>{{ valueOrDash(character.sheet.passivePerception) }}</strong>
+            </div>
+            <div>
+              <span>Intuition passive</span
+              ><strong>{{ valueOrDash(character.sheet.passiveInsight) }}</strong>
+            </div>
+            <div>
+              <span>Investigation passive</span
+              ><strong>{{ valueOrDash(character.sheet.passiveInvestigation) }}</strong>
+            </div>
+            <div>
+              <span>Épuisement</span><strong>{{ character.sheet.exhaustionLevel }}</strong>
+            </div>
+          </section>
+
+          <dl>
+            <div>
+              <dt>Statut</dt>
+              <dd>{{ statusLabel(character.status) }}</dd>
+            </div>
+            <div>
+              <dt>Espèce</dt>
+              <dd>{{ valueOrDash(character.sheet.species) }}</dd>
+            </div>
+            <div>
+              <dt>Sens</dt>
+              <dd>{{ valueOrDash(character.sheet.senses) }}</dd>
+            </div>
+            <div>
+              <dt>Langues</dt>
+              <dd>{{ valueOrDash(character.sheet.languages) }}</dd>
+            </div>
+            <div>
+              <dt>Conditions</dt>
+              <dd>{{ valueOrDash(character.sheet.conditions) }}</dd>
+            </div>
+          </dl>
+
+          <section class="notes-readonly">
+            <h3>Notes privées du MJ</h3>
+            <p>{{ character.sheet.privateNotes || 'Aucune note pour le moment.' }}</p>
+          </section>
+        </article>
+      }
+    } @else {
+      <div class="empty-detail">
+        <span aria-hidden="true">⚔</span>
+        <h2 id="character-detail-title">Aucun PJ sélectionné</h2>
+        <p>Sélectionne un personnage dans le groupe ou crée-en un nouveau.</p>
+      </div>
+    }
+  </section>
+</main>
+
+@if (showPendingChangesDialog()) {
+  <div class="dialog-backdrop" role="presentation">
+    <section class="dialog" role="dialog" aria-modal="true" aria-labelledby="pending-title">
+      <p class="section-kicker">Modifications non enregistrées</p>
+      <h2 id="pending-title">Que veux-tu faire ?</h2>
+      <p>Tes dernières modifications seront perdues si tu quittes cette fiche.</p>
+      <div class="dialog-actions three-actions">
+        <button
+          class="primary-button"
+          type="button"
+          [disabled]="isSaving()"
+          (click)="saveAndLeave()"
+        >
+          Enregistrer et quitter
+        </button>
+        <button class="secondary-button danger-button" type="button" (click)="leaveWithoutSaving()">
+          Quitter sans enregistrer
+        </button>
+        <button class="secondary-button" type="button" (click)="continueEditing()">
+          Continuer la modification
+        </button>
+      </div>
+    </section>
+  </div>
+}
+
+@if (showDeleteDialog()) {
+  <div class="dialog-backdrop" role="presentation">
+    <section class="dialog" role="dialog" aria-modal="true" aria-labelledby="delete-title">
+      <p class="section-kicker">Suppression définitive</p>
+      <h2 id="delete-title">Supprimer {{ selectedCharacter()?.name }} ?</h2>
+      <p>Cette action supprimera définitivement la fiche et son état courant.</p>
+      <div class="dialog-actions">
+        <button class="secondary-button" type="button" (click)="cancelDelete()">Annuler</button>
+        <button
+          class="primary-button delete-confirm"
+          type="button"
+          [disabled]="isSaving()"
+          (click)="confirmDeleteCharacter()"
+        >
+          Supprimer définitivement
+        </button>
+      </div>
+    </section>
+  </div>
+}
+
+@if (showResetHitPointsDialog()) {
+  <div class="dialog-backdrop" role="presentation">
+    <section
+      class="dialog"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="reset-hit-points-title"
+    >
+      <p class="section-kicker">Mise à jour des PV</p>
+      <h2 id="reset-hit-points-title">Remettre les PV au maximum ?</h2>
+      <p>Les PV actuels de {{ selectedCharacter()?.name }} seront remplacés par ses PV maximum.</p>
+      <div class="dialog-actions">
+        <button class="secondary-button" type="button" (click)="cancelResetHitPoints()">
+          Annuler
+        </button>
+        <button
+          class="primary-button"
+          type="button"
+          [disabled]="isSaving()"
+          (click)="confirmResetHitPoints()"
+        >
+          Confirmer
+        </button>
+      </div>
+    </section>
+  </div>
+}

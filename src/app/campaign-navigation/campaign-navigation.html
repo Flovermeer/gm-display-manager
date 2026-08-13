@@ -23,7 +23,12 @@
     >
       PNJ
     </a>
-    <span aria-disabled="true" title="Bientôt disponible">PJ</span>
+    <a
+      [class.active]="activeSection() === 'player-characters'"
+      [routerLink]="['/campaigns', campaignId(), 'player-characters']"
+    >
+      PJ
+    </a>
     <span aria-disabled="true" title="Bientôt disponible">Objets</span>
     <span aria-disabled="true" title="Bientôt disponible">Journal</span>
     <a class="home-link" routerLink="/campaigns">Accueil</a>

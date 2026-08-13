@@ -10,5 +10,5 @@ import { RouterLink } from '@angular/router';
 export class CampaignNavigation {
   readonly campaignName = input.required<string>();
   readonly campaignId = input.required<string>();
-  readonly activeSection = input<'control' | 'locations' | 'npcs'>('control');
+  readonly activeSection = input<'control' | 'locations' | 'npcs' | 'player-characters'>('control');
 }

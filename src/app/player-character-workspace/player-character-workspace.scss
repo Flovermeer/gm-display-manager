@@ -1,0 +1,269 @@
+.character-list-item {
+  display: grid;
+  width: 100%;
+  gap: 0.35rem;
+  padding: 0.85rem 0.9rem;
+  border: 1px solid transparent;
+  border-radius: 0.45rem;
+  color: #e5ded2;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+}
+
+.character-list-item:hover,
+.character-list-item.active {
+  border-color: #725987;
+  background: #4d3c5c;
+}
+
+.character-list-item[data-status='dead'] {
+  opacity: 0.62;
+}
+
+.character-list-item > span:not(.list-row),
+.list-message {
+  color: #9e9689;
+  font-size: 0.78rem;
+}
+
+.hit-point-pill {
+  flex: 0 0 auto;
+  padding: 0.18rem 0.4rem;
+  border-radius: 999px;
+  color: #f4dede;
+  background: #683941;
+  font-size: 0.7rem;
+  font-weight: 800;
+}
+
+.list-message {
+  padding: 1rem 0.5rem;
+  line-height: 1.5;
+}
+
+.character-subtitle {
+  color: #6f675d;
+}
+
+.hit-point-card {
+  padding: 1rem;
+  border: 1px solid #c8bdb0;
+  border-radius: 0.65rem;
+  background: #e3ddd3;
+}
+
+.hit-point-card > div:first-child {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.hit-point-card span,
+.hit-point-editor label {
+  color: #675f55;
+  font-size: 0.75rem;
+  font-weight: 800;
+}
+
+.hit-point-card strong {
+  color: #7f3039;
+  font-size: 1.25rem;
+}
+
+.hit-point-editor {
+  display: grid;
+  margin-top: 1rem;
+  grid-template-columns: 5rem auto;
+  gap: 0.55rem;
+}
+
+.hit-point-editor label {
+  grid-column: 1 / -1;
+}
+
+.hit-point-editor input {
+  border-color: #b8aea1;
+  color: #25221e;
+  background: #fff;
+}
+
+.hit-point-editor .secondary-button {
+  grid-column: 1 / -1;
+}
+
+.character-form,
+.character-sheet {
+  padding-top: 2rem;
+}
+
+.form-section {
+  margin-bottom: 2rem;
+}
+
+.form-section h3,
+.notes-readonly h3 {
+  margin: 0 0 1rem;
+  font-size: 1rem;
+}
+
+.form-grid {
+  display: grid;
+  gap: 1rem;
+}
+
+.two-columns {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.three-columns {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.four-columns {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.field {
+  margin-bottom: 1.1rem;
+}
+
+.field label {
+  display: block;
+  margin-bottom: 0.45rem;
+  color: #5d554c;
+  font-size: 0.8rem;
+  font-weight: 800;
+}
+
+.character-form input,
+.character-form textarea,
+.character-form select {
+  border-color: #bbb2a6;
+  color: #25221e;
+  background: #fff;
+}
+
+.field-error {
+  margin: 0.4rem 0 0;
+  color: #a43e46;
+  font-size: 0.78rem;
+}
+
+.error {
+  padding: 0.8rem;
+  border: 1px solid #d9a3a7;
+  border-radius: 0.4rem;
+  color: #a32635;
+  background: #fff0f1;
+}
+
+.stat-grid {
+  display: grid;
+  margin-bottom: 2rem;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.8rem;
+}
+
+.stat-grid div {
+  display: grid;
+  min-height: 6rem;
+  padding: 0.9rem;
+  border: 1px solid #d0c7bb;
+  border-radius: 0.5rem;
+  place-items: center;
+  text-align: center;
+}
+
+.stat-grid span {
+  color: #746b60;
+  font-size: 0.72rem;
+  font-weight: 800;
+}
+
+.stat-grid strong {
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 1.8rem;
+}
+
+dl {
+  display: grid;
+  gap: 1.25rem;
+  margin: 0;
+}
+
+dl div {
+  display: grid;
+  grid-template-columns: 10rem minmax(0, 1fr);
+  gap: 1rem;
+}
+
+dt {
+  color: #746b60;
+  font-size: 0.8rem;
+  font-weight: 800;
+}
+
+dd {
+  margin: 0;
+}
+
+.notes-readonly {
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid #d2cbc0;
+}
+
+.notes-readonly p {
+  white-space: pre-wrap;
+}
+
+.empty-detail {
+  display: grid;
+  min-height: 28rem;
+  place-content: center;
+  color: #746b60;
+  text-align: center;
+}
+
+.empty-detail > span {
+  font-size: 2.5rem;
+}
+
+@media (max-width: 65rem) {
+  .workspace {
+    grid-template-columns: 16rem 2.5rem minmax(0, 1fr);
+  }
+
+  .workspace.sidebar-collapsed {
+    grid-template-columns: 0 2.5rem minmax(0, 1fr);
+  }
+
+  .detail-panel {
+    width: calc(100% - 1.5rem);
+    padding: 1.25rem;
+  }
+
+  .detail-heading,
+  .three-columns,
+  .four-columns {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 48rem) {
+  .detail-heading,
+  .two-columns,
+  .three-columns,
+  .four-columns,
+  .stat-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .workspace {
+    transition: none;
+  }
+}

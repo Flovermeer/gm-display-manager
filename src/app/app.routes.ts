@@ -26,6 +26,15 @@ export const routes: Routes = [
     title: "Beholder's Inn — PNJ",
   },
   {
+    path: 'campaigns/:campaignId/player-characters',
+    loadComponent: () =>
+      import('./player-character-workspace/player-character-workspace').then(
+        ({ PlayerCharacterWorkspace }) => PlayerCharacterWorkspace,
+      ),
+    canDeactivate: [pendingChangesGuard],
+    title: "Beholder's Inn — PJ",
+  },
+  {
     path: 'campaigns/:campaignId',
     loadComponent: () => import('./control/control').then(({ Control }) => Control),
     title: "Beholder's Inn — Panneau MJ",

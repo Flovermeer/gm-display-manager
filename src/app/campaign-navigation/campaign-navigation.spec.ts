@@ -21,8 +21,9 @@ describe('CampaignNavigation', () => {
       'Régie',
       'Lieux',
       'PNJ',
+      'PJ',
       'Accueil',
     ]);
-    expect([...element.querySelectorAll('[aria-disabled="true"]')]).toHaveLength(4);
+    expect([...element.querySelectorAll('[aria-disabled="true"]')]).toHaveLength(3);
   });
 });

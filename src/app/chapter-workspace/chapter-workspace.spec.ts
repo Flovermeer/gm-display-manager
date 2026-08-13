@@ -70,12 +70,13 @@ describe('ChapterWorkspace', () => {
     fixture.detectChanges();
     await renderUntil(fixture, 'Le port');
 
-    (fixture.nativeElement as HTMLElement)
-      .querySelector<HTMLButtonElement>('.chapter-list-item')
-      ?.click();
+    const element = fixture.nativeElement as HTMLElement;
+    expect(element.querySelector('.chapter-overview')).toBeTruthy();
+    expect(element.querySelector('.chapter-tree')?.textContent).toContain('Arrivée à Chult');
+
+    element.querySelector<HTMLButtonElement>('.chapter-tree button')?.click();
     await renderUntil(fixture, 'Bienvenue à Chult');
 
-    const element = fixture.nativeElement as HTMLElement;
     expect(element.querySelector('h2')?.textContent).toContain('Le port');
     expect(element.querySelector('.tiptap')?.textContent).toContain('Bienvenue à Chult');
   });

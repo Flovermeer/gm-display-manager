@@ -154,6 +154,31 @@
           />
         </article>
       }
+    } @else if (chapters().length > 0) {
+      <section class="chapter-overview" aria-labelledby="chapter-detail-title">
+        <header>
+          <p class="section-kicker">Vue d'ensemble</p>
+          <h2 id="chapter-detail-title">Arborescence des chapitres</h2>
+          <p>Sélectionne une étape pour ouvrir directement son contenu.</p>
+        </header>
+
+        <ol class="chapter-tree">
+          @for (chapter of chapters(); track chapter.id; let index = $index) {
+            <li>
+              <button type="button" (click)="requestSelectChapter(chapter)">
+                <span class="tree-index">{{ index + 1 }}</span>
+                <span class="tree-content">
+                  <strong>{{ chapter.title }}</strong>
+                  @if (chapter.summary) {
+                    <small>{{ chapter.summary }}</small>
+                  }
+                </span>
+                <span class="tree-arrow" aria-hidden="true">→</span>
+              </button>
+            </li>
+          }
+        </ol>
+      </section>
     } @else {
       <div class="empty-detail">
         <span aria-hidden="true">✦</span>

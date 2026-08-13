@@ -3,6 +3,7 @@ import { TestBed } from '@angular/core/testing';
 import type { JournalEntry } from '../../journal/journal-entry';
 import { JournalEntryService } from '../../journal/journal-entry.service';
 import { createEmptyRichTextDocument } from '../rich-text-editor/rich-text-document';
+import { ResourceMentionNavigationService } from '../rich-text-editor/resource-mention-navigation.service';
 import { JournalEntryList } from './journal-entry-list';
 
 describe('JournalEntryList', () => {
@@ -35,6 +36,7 @@ describe('JournalEntryList', () => {
     update: vi.fn(),
     delete: vi.fn(),
   };
+  const mentionNavigation = { listCandidates: vi.fn(), open: vi.fn() };
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -43,9 +45,14 @@ describe('JournalEntryList', () => {
     service.create.mockResolvedValue(entry);
     service.update.mockResolvedValue(entry);
     service.delete.mockResolvedValue(undefined);
+    mentionNavigation.listCandidates.mockResolvedValue([]);
+    mentionNavigation.open.mockResolvedValue(true);
     TestBed.configureTestingModule({
       imports: [JournalEntryList],
-      providers: [{ provide: JournalEntryService, useValue: service }],
+      providers: [
+        { provide: JournalEntryService, useValue: service },
+        { provide: ResourceMentionNavigationService, useValue: mentionNavigation },
+      ],
     });
   });
 

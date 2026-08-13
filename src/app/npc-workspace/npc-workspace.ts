@@ -1,4 +1,5 @@
-import { Component, computed, inject, OnInit, signal, viewChild } from '@angular/core';
+import { Component, computed, DestroyRef, inject, OnInit, signal, viewChild } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute } from '@angular/router';
 import {
   type AbstractControl,
@@ -70,6 +71,7 @@ type NpcFeatureDrafts = Readonly<Record<NpcFeatureSection, readonly NpcFeature[]
 export class NpcWorkspace implements OnInit, PendingChangesAware {
   private readonly campaignContext = inject(CampaignContext);
   private readonly route = inject(ActivatedRoute);
+  private readonly destroyRef = inject(DestroyRef);
   private readonly npcService = inject(NpcService);
   private readonly npcPortraitGateway = inject(NpcPortraitGateway);
   private readonly npcIdleVideoGateway = inject(NpcIdleVideoGateway);
@@ -167,6 +169,11 @@ export class NpcWorkspace implements OnInit, PendingChangesAware {
   });
 
   ngOnInit(): void {
+    this.route.queryParamMap
+      ?.pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(
+        (params) => void this.openRequestedNpc(params.get('resourceId'), params.get('entryId')),
+      );
     void this.initialize();
   }
 
@@ -544,12 +551,10 @@ export class NpcWorkspace implements OnInit, PendingChangesAware {
     try {
       if (!(await this.campaignContext.load())) return;
       await this.reloadNpcs();
-      const resourceId = this.route.snapshot.queryParamMap?.get('resourceId');
-      const requested = this.npcs().find(({ id }) => id === resourceId);
-      if (requested) {
-        this.focusedJournalEntryId.set(this.route.snapshot.queryParamMap?.get('entryId'));
-        this.openReadOnly(requested);
-      }
+      await this.openRequestedNpc(
+        this.route.snapshot.queryParamMap?.get('resourceId'),
+        this.route.snapshot.queryParamMap?.get('entryId'),
+      );
       if (this.displayGateway.isDesktop) {
         this.isPlayerDisplayOpen.set(await this.displayGateway.isPlayerDisplayOpen());
       }
@@ -558,6 +563,14 @@ export class NpcWorkspace implements OnInit, PendingChangesAware {
     } finally {
       this.isLoading.set(false);
     }
+  }
+
+  private async openRequestedNpc(resourceId: string | null, entryId: string | null): Promise<void> {
+    const requested = this.npcs().find(({ id }) => id === resourceId);
+    if (!requested || requested.id === this.selectedNpc()?.id) return;
+    if (!(await this.confirmPendingChanges())) return;
+    this.focusedJournalEntryId.set(entryId);
+    this.openReadOnly(requested);
   }
 
   private async reloadNpcs(): Promise<void> {

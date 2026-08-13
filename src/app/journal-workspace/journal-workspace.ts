@@ -10,6 +10,8 @@ import { NpcService } from '../npc/npc.service';
 import { PlayerCharacterService } from '../player-character/player-character.service';
 import { JournalEntryList } from '../shared/journal-entry-list/journal-entry-list';
 import { RichTextEditor } from '../shared/rich-text-editor/rich-text-editor';
+import { ResourceMentionNavigationService } from '../shared/rich-text-editor/resource-mention-navigation.service';
+import type { ResourceMentionCandidate } from '../shared/rich-text-editor/resource-mention';
 import { ButtonDirective } from '../shared/ui/button/button.directive';
 import { Dialog } from '../shared/ui/dialog/dialog';
 import { EmptyState } from '../shared/ui/empty-state/empty-state';
@@ -47,11 +49,13 @@ export class JournalWorkspace implements OnInit, PendingChangesAware {
   private readonly locationService = inject(LocationService);
   private readonly characterService = inject(PlayerCharacterService);
   private readonly router = inject(Router);
+  private readonly mentionNavigation = inject(ResourceMentionNavigationService);
   private readonly globalEntryEditor = viewChild<JournalEntryList>(JournalEntryList);
   private pendingDecisionResolver?: PendingDecisionResolver;
 
   protected readonly campaign = this.campaignContext.campaign;
   protected readonly timelineEntries = signal<readonly TimelineEntry[]>([]);
+  protected readonly mentionCandidates = signal<readonly ResourceMentionCandidate[]>([]);
   protected readonly expandedDays = signal<ReadonlySet<string>>(new Set());
   protected readonly isLoading = signal(true);
   protected readonly error = signal<string | null>(null);
@@ -129,6 +133,11 @@ export class JournalWorkspace implements OnInit, PendingChangesAware {
     });
   }
 
+  protected openMention(mention: ResourceMentionCandidate): void {
+    const campaign = this.campaign();
+    if (campaign) void this.mentionNavigation.open(campaign.id, mention);
+  }
+
   protected reloadJournal(): void {
     void this.loadJournal();
   }
@@ -160,6 +169,23 @@ export class JournalWorkspace implements OnInit, PendingChangesAware {
         location: new Map(locations.map(({ id, name }) => [id, name])),
         'player-character': new Map(characters.map(({ id, name }) => [id, name])),
       };
+      this.mentionCandidates.set([
+        ...characters.map(({ id, name }) => ({
+          resourceType: 'player-character' as const,
+          resourceId: id,
+          label: name,
+        })),
+        ...npcs.map(({ id, name }) => ({
+          resourceType: 'npc' as const,
+          resourceId: id,
+          label: name,
+        })),
+        ...locations.map(({ id, name }) => ({
+          resourceType: 'location' as const,
+          resourceId: id,
+          label: name,
+        })),
+      ]);
       this.timelineEntries.set(
         entries.map((entry) => ({
           entry,

@@ -61,6 +61,14 @@
   background: #e4d6eb;
   font-weight: 700;
   white-space: nowrap;
+  cursor: pointer;
+}
+
+.rich-text-content .tiptap .resource-mention:hover,
+.rich-text-content .tiptap .resource-mention:focus-visible {
+  outline: 2px solid rgb(118 83 141 / 35%);
+  outline-offset: 2px;
+  background: #dec4e8;
 }
 
 .rich-text-content .tiptap .resource-mention-broken {

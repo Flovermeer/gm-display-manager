@@ -12,6 +12,7 @@ import { PlayerCharacterService } from '../player-character/player-character.ser
 import { JournalEntryService } from '../journal/journal-entry.service';
 import { PlayerCharacterPortraitGateway } from '../media/player-character-portrait.gateway';
 import { PlayerCharacterWorkspace } from './player-character-workspace';
+import { ResourceMentionNavigationService } from '../shared/rich-text-editor/resource-mention-navigation.service';
 
 describe('PlayerCharacterWorkspace', () => {
   const campaign: Campaign = {
@@ -90,6 +91,10 @@ describe('PlayerCharacterWorkspace', () => {
         },
         { provide: PlayerCharacterService, useValue: characterService },
         { provide: JournalEntryService, useValue: journalEntryService },
+        {
+          provide: ResourceMentionNavigationService,
+          useValue: { listCandidates: () => Promise.resolve([]), open: vi.fn() },
+        },
         { provide: PlayerCharacterPortraitGateway, useValue: portraitGateway },
         {
           provide: ActivatedRoute,

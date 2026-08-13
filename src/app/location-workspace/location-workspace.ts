@@ -1,4 +1,5 @@
-import { Component, computed, inject, OnInit, signal, viewChild } from '@angular/core';
+import { Component, computed, DestroyRef, inject, OnInit, signal, viewChild } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute } from '@angular/router';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 
@@ -36,6 +37,7 @@ const DEMO_LOCATION_IMAGE_URL = '/demo/tavern.svg';
 export class LocationWorkspace implements OnInit, PendingChangesAware {
   private readonly campaignContext = inject(CampaignContext);
   private readonly route = inject(ActivatedRoute);
+  private readonly destroyRef = inject(DestroyRef);
   private readonly locationService = inject(LocationService);
   private readonly locationImageGateway = inject(LocationImageGateway);
   private readonly displayGateway = inject(DisplayGateway);
@@ -101,6 +103,12 @@ export class LocationWorkspace implements OnInit, PendingChangesAware {
   });
 
   ngOnInit(): void {
+    this.route.queryParamMap
+      ?.pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(
+        (params) =>
+          void this.openRequestedLocation(params.get('resourceId'), params.get('entryId')),
+      );
     void this.initialize();
   }
 
@@ -339,12 +347,10 @@ export class LocationWorkspace implements OnInit, PendingChangesAware {
     try {
       if (!(await this.campaignContext.load())) return;
       await this.reloadLocations();
-      const resourceId = this.route.snapshot.queryParamMap?.get('resourceId');
-      const requested = this.locations().find(({ id }) => id === resourceId);
-      if (requested) {
-        this.focusedJournalEntryId.set(this.route.snapshot.queryParamMap?.get('entryId'));
-        this.openReadOnly(requested);
-      }
+      await this.openRequestedLocation(
+        this.route.snapshot.queryParamMap?.get('resourceId'),
+        this.route.snapshot.queryParamMap?.get('entryId'),
+      );
       if (this.displayGateway.isDesktop) {
         this.isPlayerDisplayOpen.set(await this.displayGateway.isPlayerDisplayOpen());
       }
@@ -353,6 +359,17 @@ export class LocationWorkspace implements OnInit, PendingChangesAware {
     } finally {
       this.isLoading.set(false);
     }
+  }
+
+  private async openRequestedLocation(
+    resourceId: string | null,
+    entryId: string | null,
+  ): Promise<void> {
+    const requested = this.locations().find(({ id }) => id === resourceId);
+    if (!requested || requested.id === this.selectedLocation()?.id) return;
+    if (!(await this.confirmPendingChanges())) return;
+    this.focusedJournalEntryId.set(entryId);
+    this.openReadOnly(requested);
   }
 
   private async reloadLocations(): Promise<void> {

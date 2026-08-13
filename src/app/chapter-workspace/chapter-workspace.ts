@@ -12,6 +12,7 @@ import { PlayerCharacterService } from '../player-character/player-character.ser
 import type { RichTextDocument } from '../shared/rich-text-editor/rich-text-document';
 import { RichTextEditor } from '../shared/rich-text-editor/rich-text-editor';
 import type { ResourceMentionCandidate } from '../shared/rich-text-editor/resource-mention';
+import { ResourceMentionNavigationService } from '../shared/rich-text-editor/resource-mention-navigation.service';
 import { ButtonDirective } from '../shared/ui/button/button.directive';
 import { Dialog } from '../shared/ui/dialog/dialog';
 import { EmptyState } from '../shared/ui/empty-state/empty-state';
@@ -31,6 +32,7 @@ export class ChapterWorkspace implements OnInit, PendingChangesAware {
   private readonly locationService = inject(LocationService);
   private readonly npcService = inject(NpcService);
   private readonly characterService = inject(PlayerCharacterService);
+  private readonly mentionNavigation = inject(ResourceMentionNavigationService);
   private pendingDecisionResolver?: PendingDecisionResolver;
 
   protected readonly campaign = this.campaignContext.campaign;
@@ -118,6 +120,11 @@ export class ChapterWorkspace implements OnInit, PendingChangesAware {
     if (!this.isEditing()) return;
     this.draftContent.set(content);
     this.contentDirty.set(true);
+  }
+
+  protected openMention(mention: ResourceMentionCandidate): void {
+    const campaign = this.campaign();
+    if (campaign) void this.mentionNavigation.open(campaign.id, mention);
   }
 
   protected cancelEditing(): void {

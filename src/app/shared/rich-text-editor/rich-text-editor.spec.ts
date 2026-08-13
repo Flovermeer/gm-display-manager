@@ -76,4 +76,40 @@ describe('RichTextEditor', () => {
     expect(mention?.textContent).toBe('@Ancien PNJ');
     expect(mention?.classList.contains('resource-mention')).toBe(false);
   });
+
+  it('emits an existing resource mention when activated in read-only mode', async () => {
+    const fixture = TestBed.createComponent(RichTextEditor);
+    const candidate = { resourceType: 'npc' as const, resourceId: 'npc-id', label: 'Syndra' };
+    const activated = vi.fn();
+    fixture.componentInstance.mentionActivate.subscribe(activated);
+    fixture.componentRef.setInput('editable', false);
+    fixture.componentRef.setInput('mentionCandidates', [candidate]);
+    fixture.componentRef.setInput('value', {
+      schemaVersion: RICH_TEXT_SCHEMA_VERSION,
+      content: {
+        type: 'doc',
+        content: [
+          {
+            type: 'paragraph',
+            content: [
+              {
+                type: 'resourceMention',
+                attrs: { resourceType: 'npc', resourceId: 'npc-id', label: 'Syndra' },
+              },
+            ],
+          },
+        ],
+      },
+    } satisfies RichTextDocument);
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    const mention = (fixture.nativeElement as HTMLElement).querySelector<HTMLElement>(
+      '[data-resource-mention="resolved"]',
+    );
+    expect(mention?.getAttribute('role')).toBe('link');
+    mention?.click();
+
+    expect(activated).toHaveBeenCalledWith(candidate);
+  });
 });

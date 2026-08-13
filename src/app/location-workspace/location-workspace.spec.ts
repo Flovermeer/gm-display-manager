@@ -11,6 +11,7 @@ import { LocationService } from '../location/location.service';
 import { JournalEntryService } from '../journal/journal-entry.service';
 import { LocationImageGateway } from '../media/location-image.gateway';
 import { LocationWorkspace } from './location-workspace';
+import { ResourceMentionNavigationService } from '../shared/rich-text-editor/resource-mention-navigation.service';
 
 describe('LocationWorkspace', () => {
   const campaign: Campaign = {
@@ -83,6 +84,10 @@ describe('LocationWorkspace', () => {
         },
         { provide: LocationService, useValue: locationService },
         { provide: JournalEntryService, useValue: journalEntryService },
+        {
+          provide: ResourceMentionNavigationService,
+          useValue: { listCandidates: () => Promise.resolve([]), open: vi.fn() },
+        },
         { provide: LocationImageGateway, useValue: imageGateway },
         { provide: DisplayGateway, useValue: displayGateway },
         {

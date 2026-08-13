@@ -162,6 +162,7 @@
             [value]="chapter.content"
             [editable]="false"
             [mentionCandidates]="mentionCandidates()"
+            (mentionActivate)="openMention($event)"
           />
         </article>
       }

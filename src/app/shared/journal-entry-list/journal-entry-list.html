@@ -38,7 +38,11 @@
         <input type="text" formControlName="title" placeholder="Facultatif" />
       </label>
       <label>Contenu</label>
-      <app-rich-text-editor [value]="draftContent()" (valueChange)="updateContent($event)" />
+      <app-rich-text-editor
+        [value]="draftContent()"
+        [mentionCandidates]="mentionCandidates()"
+        (valueChange)="updateContent($event)"
+      />
       @if (!contentIsValid() && contentDirty()) {
         <p class="journal-entries__error">Le contenu de la note est obligatoire.</p>
       }
@@ -86,7 +90,12 @@
               </button>
             </div>
           </header>
-          <app-rich-text-editor [value]="entry.content" [editable]="false" />
+          <app-rich-text-editor
+            [value]="entry.content"
+            [editable]="false"
+            [mentionCandidates]="mentionCandidates()"
+            (mentionActivate)="openMention($event)"
+          />
         </article>
       }
     </div>

@@ -52,6 +52,8 @@ export function createResourceMentionExtension(options: ResourceMentionExtension
           'data-resource-type': resourceType,
           'data-resource-id': resourceId,
           class: available ? 'resource-mention' : 'resource-mention-broken',
+          role: available ? 'link' : null,
+          tabindex: available ? '0' : null,
         }),
         `@${label}`,
       ];

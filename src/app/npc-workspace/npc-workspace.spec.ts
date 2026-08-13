@@ -12,6 +12,7 @@ import { createEmptyNpcSheet, type Npc } from '../npc/npc';
 import { NpcService } from '../npc/npc.service';
 import { JournalEntryService } from '../journal/journal-entry.service';
 import { createEmptyRichTextDocument } from '../shared/rich-text-editor/rich-text-document';
+import { ResourceMentionNavigationService } from '../shared/rich-text-editor/resource-mention-navigation.service';
 import { NpcWorkspace } from './npc-workspace';
 
 describe('NpcWorkspace', () => {
@@ -137,6 +138,10 @@ describe('NpcWorkspace', () => {
         },
         { provide: NpcService, useValue: npcService },
         { provide: JournalEntryService, useValue: journalEntryService },
+        {
+          provide: ResourceMentionNavigationService,
+          useValue: { listCandidates: () => Promise.resolve([]), open: vi.fn() },
+        },
         { provide: NpcPortraitGateway, useValue: portraitGateway },
         { provide: NpcIdleVideoGateway, useValue: idleVideoGateway },
         { provide: DisplayGateway, useValue: displayGateway },

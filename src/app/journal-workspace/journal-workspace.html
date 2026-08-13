@@ -92,7 +92,12 @@
                         </button>
                       </div>
                     </header>
-                    <app-rich-text-editor [value]="item.entry.content" [editable]="false" />
+                    <app-rich-text-editor
+                      [value]="item.entry.content"
+                      [editable]="false"
+                      [mentionCandidates]="mentionCandidates()"
+                      (mentionActivate)="openMention($event)"
+                    />
                   </section>
                 }
               }

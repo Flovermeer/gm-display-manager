@@ -37,6 +37,7 @@ export class RichTextEditor implements AfterViewInit, OnDestroy {
   readonly editable = input(true);
   readonly mentionCandidates = input<readonly ResourceMentionCandidate[]>([]);
   readonly valueChange = output<RichTextDocument>();
+  readonly mentionActivate = output<ResourceMentionCandidate>();
 
   private readonly editorHost = viewChild.required<ElementRef<HTMLDivElement>>('editorHost');
   private readonly editorReady = signal(false);
@@ -66,6 +67,13 @@ export class RichTextEditor implements AfterViewInit, OnDestroy {
     const editable = this.editable();
     this.editorReady();
     this.editor?.setEditable(editable);
+  });
+
+  private readonly synchronizeMentionAvailability = effect(() => {
+    this.mentionCandidates();
+    this.editorReady();
+    if (!this.editor) return;
+    this.editor.commands.setContent(this.editor.getJSON(), { emitUpdate: false });
   });
 
   ngAfterViewInit(): void {
@@ -99,6 +107,13 @@ export class RichTextEditor implements AfterViewInit, OnDestroy {
         attributes: {
           'aria-label': 'Contenu de la note',
           role: 'textbox',
+        },
+        handleDOMEvents: {
+          click: (_view, event) => this.activateMention(event.target),
+          keydown: (_view, event) => {
+            if (event.key !== 'Enter' && event.key !== ' ') return false;
+            return this.activateMention(document.activeElement);
+          },
         },
       },
       onSelectionUpdate: () => this.editorRevision.update((revision) => revision + 1),
@@ -188,6 +203,20 @@ export class RichTextEditor implements AfterViewInit, OnDestroy {
       item: 'Objet',
     } as const;
     return labels[candidate.resourceType];
+  }
+
+  private activateMention(target: EventTarget | null): boolean {
+    if (this.editable() || !(target instanceof Element)) return false;
+    const element = target.closest<HTMLElement>('[data-resource-mention="resolved"]');
+    if (!element) return false;
+    const resourceType = element.dataset['resourceType'];
+    const resourceId = element.dataset['resourceId'];
+    const candidate = this.mentionCandidates().find(
+      (item) => item.resourceType === resourceType && item.resourceId === resourceId,
+    );
+    if (!candidate) return false;
+    this.mentionActivate.emit(candidate);
+    return true;
   }
 
   protected isActive(name: string, attributes?: Record<string, unknown>): boolean {

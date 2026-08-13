@@ -8,6 +8,8 @@ import {
   type RichTextDocument,
 } from '../rich-text-editor/rich-text-document';
 import { RichTextEditor } from '../rich-text-editor/rich-text-editor';
+import { ResourceMentionNavigationService } from '../rich-text-editor/resource-mention-navigation.service';
+import type { ResourceMentionCandidate } from '../rich-text-editor/resource-mention';
 import { ButtonDirective } from '../ui/button/button.directive';
 import { Dialog } from '../ui/dialog/dialog';
 
@@ -19,6 +21,7 @@ import { Dialog } from '../ui/dialog/dialog';
 })
 export class JournalEntryList {
   private readonly journalEntryService = inject(JournalEntryService);
+  private readonly mentionNavigation = inject(ResourceMentionNavigationService);
 
   readonly campaignId = input.required<string>();
   readonly heading = input('Notes privées du MJ');
@@ -38,6 +41,7 @@ export class JournalEntryList {
   protected readonly isSaving = signal(false);
   protected readonly entryPendingDeletion = signal<JournalEntry | null>(null);
   protected readonly error = signal<string | null>(null);
+  protected readonly mentionCandidates = signal<readonly ResourceMentionCandidate[]>([]);
   protected readonly isEditing = computed(() => this.isCreating() || this.editingEntry() !== null);
   protected readonly contentIsValid = computed(() => richTextHasContent(this.draftContent()));
   private readonly target = computed<JournalTarget | null>(() => {
@@ -56,6 +60,7 @@ export class JournalEntryList {
     const target = this.target();
     this.cancelEditing();
     void this.loadEntries(campaignId, target);
+    void this.loadMentionCandidates(campaignId);
   });
 
   startCreate(): void {
@@ -165,6 +170,10 @@ export class JournalEntryList {
     }).format(new Date(value));
   }
 
+  protected openMention(mention: ResourceMentionCandidate): void {
+    void this.mentionNavigation.open(this.campaignId(), mention);
+  }
+
   private async loadEntries(campaignId: string, target: JournalTarget | null): Promise<void> {
     try {
       this.entries.set(
@@ -173,6 +182,14 @@ export class JournalEntryList {
           : await this.journalEntryService.listGlobal(campaignId),
       );
       queueMicrotask(() => this.focusRequestedEntry());
+    } catch (error) {
+      this.error.set(errorMessage(error));
+    }
+  }
+
+  private async loadMentionCandidates(campaignId: string): Promise<void> {
+    try {
+      this.mentionCandidates.set(await this.mentionNavigation.listCandidates(campaignId));
     } catch (error) {
       this.error.set(errorMessage(error));
     }

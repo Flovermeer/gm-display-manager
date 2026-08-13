@@ -171,6 +171,11 @@ celui de la première entrée chronologique de la journée, ou un libellé gén�
 n'a pas de titre. Une entrée globale affiche son contenu complet ; une entrée rattachée affiche un
 aperçu cliquable qui redirige vers la fiche et la note ciblées.
 
+Les mentions `@` présentes dans le contenu riche sont également interactives en lecture seule. Une
+mention résolue ouvre la fiche PNJ, lieu ou PJ correspondante dans la campagne active. Si la
+ressource n'existe plus, la mention reste affichée comme du texte normal et ne déclenche aucune
+navigation.
+
 Les anciens champs de note libre des fiches PNJ, lieux et PJ sont abandonnés sans migration de
 leur contenu.
 

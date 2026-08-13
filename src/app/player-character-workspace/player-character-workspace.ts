@@ -1,4 +1,5 @@
-import { Component, computed, inject, OnInit, signal, viewChild } from '@angular/core';
+import { Component, computed, DestroyRef, inject, OnInit, signal, viewChild } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute } from '@angular/router';
 import {
   type AbstractControl,
@@ -47,6 +48,7 @@ type PendingDecisionResolver = (canLeave: boolean) => void;
 export class PlayerCharacterWorkspace implements OnInit, PendingChangesAware {
   private readonly campaignContext = inject(CampaignContext);
   private readonly route = inject(ActivatedRoute);
+  private readonly destroyRef = inject(DestroyRef);
   private readonly characterService = inject(PlayerCharacterService);
   private readonly portraitGateway = inject(PlayerCharacterPortraitGateway);
   private pendingDecisionResolver?: PendingDecisionResolver;
@@ -126,6 +128,12 @@ export class PlayerCharacterWorkspace implements OnInit, PendingChangesAware {
   protected readonly hitPointsControl = new FormControl<number | null>(null, [Validators.min(0)]);
 
   ngOnInit(): void {
+    this.route.queryParamMap
+      ?.pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(
+        (params) =>
+          void this.openRequestedCharacter(params.get('resourceId'), params.get('entryId')),
+      );
     void this.initialize();
   }
 
@@ -387,17 +395,26 @@ export class PlayerCharacterWorkspace implements OnInit, PendingChangesAware {
     try {
       if (!(await this.campaignContext.load())) return;
       await this.reloadCharacters();
-      const resourceId = this.route.snapshot.queryParamMap?.get('resourceId');
-      const requested = this.characters().find(({ id }) => id === resourceId);
-      if (requested) {
-        this.focusedJournalEntryId.set(this.route.snapshot.queryParamMap?.get('entryId'));
-        this.openReadOnly(requested);
-      }
+      await this.openRequestedCharacter(
+        this.route.snapshot.queryParamMap?.get('resourceId'),
+        this.route.snapshot.queryParamMap?.get('entryId'),
+      );
     } catch (error) {
       this.error.set(this.errorMessage(error));
     } finally {
       this.isLoading.set(false);
     }
+  }
+
+  private async openRequestedCharacter(
+    resourceId: string | null,
+    entryId: string | null,
+  ): Promise<void> {
+    const requested = this.characters().find(({ id }) => id === resourceId);
+    if (!requested || requested.id === this.selectedCharacter()?.id) return;
+    if (!(await this.confirmPendingChanges())) return;
+    this.focusedJournalEntryId.set(entryId);
+    this.openReadOnly(requested);
   }
 
   private async reloadCharacters(): Promise<void> {

@@ -431,7 +431,10 @@ Les notes journalisées sont affichées sous la fiche, apparaissent dans le Jour
 ouvrent directement le monstre ciblé. Les monstres sont également proposés et navigables dans les
 mentions `@`, avec le même fallback texte qu’une autre ressource supprimée.
 
-Reste dans ce jalon : l’édition détaillée des blocs répétables (capacités, actions et réactions).
+Reste dans ce jalon : l’édition détaillée des cinq blocs répétables déjà présents dans la fiche
+(`capacités`, `actions`, `actions bonus`, `réactions` et `actions légendaires`), avec le même éditeur
+riche que pour les PNJ. Les actions de repaire, mécaniques mythiques et autres blocs spécialisés
+restent différés après la V1.
 
 ### Jalon 10 — Suivi de combat léger
 

@@ -15,9 +15,9 @@ Dernière consolidation : 14 août 2026
 | 4 — SQLite                  | Terminé pour les tranches livrées        | Quatorze migrations couvrent notamment systèmes, univers, campagnes et catalogues partagés avec contexte de campagne. Repositories Tauri et mémoire isolés derrière des interfaces.                              |
 | 5 — Gestion de campagne     | Terminé et étendu                        | CRUD campagnes, lieux hiérarchiques, PNJ structurés, PJ orientés MJ et objets narratifs. Navigation campagne persistante et protection des modifications non enregistrées.                                       |
 | 6 — Médias locaux           | Terminé pour images et portraits animés  | Import/copie locale des portraits PNJ/PJ, images de lieux et d’objets, vidéo idle PNJ et nettoyage des médias. Une validation plus large des fichiers cassés reste à inclure au durcissement.                    |
-| 7 — Tiptap et journal       | Terminé pour l’usage actuel              | Chapitres et descriptions riches, notes journalisées éditables, regroupement quotidien, mentions `@` cliquables vers PJ/PNJ/lieux/objets et fallback texte si la cible disparaît.                                |
+| 7 — Tiptap et journal       | Terminé pour l’usage actuel              | Chapitres et descriptions riches, notes journalisées éditables, regroupement quotidien, mentions `@` cliquables vers les ressources de campagne et fallback texte si la cible disparaît.                         |
 | 8 — Scènes                  | Terminé                                  | Composition facultative lieu + PNJ + monstres + objets, activation/désactivation et retour à l’écran par défaut sont livrés.                                                                                     |
-| 9 — Bestiaire               | Première tranche livrée                  | Catalogue canonique par univers, sélection explicite par campagne, fiche D&D structurée, illustration et association aux scènes sont disponibles. Les notes et mentions `@` restent à ajouter.                   |
+| 9 — Bestiaire               | En cours, socle fonctionnel livré        | Catalogue canonique par univers, sélection par campagne, fiche D&D, illustration, scènes, notes journalisées et mentions `@` sont disponibles. Restent les blocs détaillés de capacités et d’actions.            |
 | 10 — Combat léger           | Planifié après le bestiaire              | Le tracker réunira les PJ, PNJ et monstres ; le bestiaire doit donc être disponible avant cette tranche.                                                                                                         |
 | 11 — Historique récent      | Planifié après le combat                 | Pills cliquables des dernières ressources consultées sous la navigation de campagne.                                                                                                                             |
 | 12 — Carte heuristique      | Planifiée après l’historique             | Graphe automatique et navigable des chapitres, ressources liées et mentions `@`, sans édition manuelle du graphe.                                                                                                |
@@ -427,8 +427,11 @@ Première tranche livrée :
 - la fiche reprend les données structurées utiles d’un bloc de statistiques D&D et conserve son
   JSON versionné.
 
-Restent dans ce jalon : les notes journalisées, les mentions `@` et l’édition détaillée des blocs
-répétables (capacités, actions et réactions).
+Les notes journalisées sont affichées sous la fiche, apparaissent dans le Journal global et
+ouvrent directement le monstre ciblé. Les monstres sont également proposés et navigables dans les
+mentions `@`, avec le même fallback texte qu’une autre ressource supprimée.
+
+Reste dans ce jalon : l’édition détaillée des blocs répétables (capacités, actions et réactions).
 
 ### Jalon 10 — Suivi de combat léger
 

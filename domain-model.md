@@ -206,8 +206,8 @@ Les notes de partie forment un journal chronologique unifié. Une entrée contie
 - un horodatage technique de création pour stabiliser l'ordre lorsque plusieurs entrées partagent
   la même date de session.
 
-Une entrée est soit globale à la campagne, soit rattachée à exactement une ressource : PNJ, lieu
-ou PJ. Les notes rattachées apparaissent automatiquement dans le Journal global sous forme d'un
+Une entrée est soit globale à la campagne, soit rattachée à exactement une ressource : PNJ,
+monstre, lieu, PJ, objet narratif ou scène. Les notes rattachées apparaissent automatiquement dans le Journal global sous forme d'un
 lien compact indiquant le type, le nom et un aperçu sur deux lignes. Ce lien ouvre la fiche de la
 ressource directement sur l'entrée concernée.
 
@@ -225,7 +225,7 @@ n'a pas de titre. Une entrée globale affiche son contenu complet ; une entrée 
 aperçu cliquable qui redirige vers la fiche et la note ciblées.
 
 Les mentions `@` présentes dans le contenu riche sont également interactives en lecture seule. Une
-mention résolue ouvre la fiche PNJ, lieu ou PJ correspondante dans la campagne active. Si la
+mention résolue ouvre la fiche PJ, PNJ, monstre, lieu, objet ou scène correspondante dans la campagne active. Si la
 ressource n'existe plus, la mention reste affichée comme du texte normal et ne déclenche aucune
 navigation.
 

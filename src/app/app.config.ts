@@ -54,6 +54,12 @@ import { TauriSceneRepository } from '@app/features/scenes/data-access/tauri-sce
 import { GameSystemRepository } from '@app/features/game-systems/data-access/game-system.repository';
 import { InMemoryGameSystemRepository } from '@app/features/game-systems/data-access/in-memory-game-system.repository';
 import { TauriGameSystemRepository } from '@app/features/game-systems/data-access/tauri-game-system.repository';
+import { MonsterRepository } from '@app/features/bestiary/data-access/monster.repository';
+import { InMemoryMonsterRepository } from '@app/features/bestiary/data-access/in-memory-monster.repository';
+import { TauriMonsterRepository } from '@app/features/bestiary/data-access/tauri-monster.repository';
+import { MonsterImageGateway } from '@app/features/bestiary/data-access/monster-image.gateway';
+import { BrowserMonsterImageGateway } from '@app/features/bestiary/data-access/browser-monster-image.gateway';
+import { TauriMonsterImageGateway } from '@app/features/bestiary/data-access/tauri-monster-image.gateway';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -120,6 +126,11 @@ export const appConfig: ApplicationConfig = {
       useFactory: () => (isTauri() ? new TauriSceneRepository() : new InMemorySceneRepository()),
     },
     {
+      provide: MonsterRepository,
+      useFactory: () =>
+        isTauri() ? new TauriMonsterRepository() : new InMemoryMonsterRepository(),
+    },
+    {
       provide: LocationImageGateway,
       useFactory: () =>
         isTauri() ? new TauriLocationImageGateway() : new BrowserLocationImageGateway(),
@@ -144,6 +155,11 @@ export const appConfig: ApplicationConfig = {
         isTauri()
           ? new TauriPlayerCharacterPortraitGateway()
           : new BrowserPlayerCharacterPortraitGateway(),
+    },
+    {
+      provide: MonsterImageGateway,
+      useFactory: () =>
+        isTauri() ? new TauriMonsterImageGateway() : new BrowserMonsterImageGateway(),
     },
   ],
 };

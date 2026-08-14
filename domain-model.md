@@ -137,6 +137,21 @@ Le catalogue n'a pas vocation à recopier tous les objets génériques d'un syst
 possessions génériques pourront rester dans les fiches JSON ou en texte libre. Le suivi des
 quantités sera ajouté dans une tranche dédiée lorsqu'un véritable inventaire sera implémenté.
 
+## Bestiaire
+
+`monster` est une fiche canonique du catalogue d’un univers. Elle contient son nom, son
+illustration et un `sheet_json` versionné pour les statistiques propres au système de jeu. Elle ne
+porte ni campagne active, ni points de vie courants, ni état de combat.
+
+`campaign_monster` représente uniquement la sélection explicite des monstres disponibles dans une
+campagne. Retirer un monstre de cette sélection ne supprime donc pas sa fiche partagée. Une autre
+campagne du même univers peut sélectionner exactement la même fiche, sans clone et sans risque de
+divergence entre copies.
+
+`scene_monster` associe une scène aux fiches sélectionnées pour sa campagne. Cette relation décrit
+la préparation narrative de la scène ; les futurs exemplaires rencontrés, leurs PV courants et
+leurs conditions appartiendront au suivi de combat et ne modifieront pas la fiche canonique.
+
 ## Chapitres et sections
 
 Les chapitres forment une liste ordonnée et réorganisable dans la campagne. Un chapitre contient des `chapter_section` également ordonnées.

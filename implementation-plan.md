@@ -12,12 +12,12 @@ Dernière consolidation : 14 août 2026
 | 1 — Shell Angular + Tauri   | Terminé                                  | Application standalone zoneless, routes Angular, fenêtre principale maximisée et capabilities Tauri en place.                                                                                                    |
 | 2 — Multi-écran             | Fonctionnel, validation avancée restante | Détection, choix persistant du moniteur et fenêtre joueurs dédiée plein écran validés sur le matériel nominal. Restent les cas de déconnexion, remplacement, coordonnées négatives et facteurs d’échelle variés. |
 | 3 — Régie verticale         | Terminé                                  | Écran noir, lieux, PNJ et objets peuvent être envoyés au Player Display ; synchronisation `ready` et fallback statique des PNJ en place.                                                                         |
-| 4 — SQLite                  | Terminé pour les tranches livrées        | Treize migrations couvrent notamment systèmes, univers, campagnes et catalogues partagés avec contexte de campagne. Repositories Tauri et mémoire isolés derrière des interfaces.                              |
+| 4 — SQLite                  | Terminé pour les tranches livrées        | Quatorze migrations couvrent notamment systèmes, univers, campagnes et catalogues partagés avec contexte de campagne. Repositories Tauri et mémoire isolés derrière des interfaces.                              |
 | 5 — Gestion de campagne     | Terminé et étendu                        | CRUD campagnes, lieux hiérarchiques, PNJ structurés, PJ orientés MJ et objets narratifs. Navigation campagne persistante et protection des modifications non enregistrées.                                       |
 | 6 — Médias locaux           | Terminé pour images et portraits animés  | Import/copie locale des portraits PNJ/PJ, images de lieux et d’objets, vidéo idle PNJ et nettoyage des médias. Une validation plus large des fichiers cassés reste à inclure au durcissement.                    |
 | 7 — Tiptap et journal       | Terminé pour l’usage actuel              | Chapitres et descriptions riches, notes journalisées éditables, regroupement quotidien, mentions `@` cliquables vers PJ/PNJ/lieux/objets et fallback texte si la cible disparaît.                                |
-| 8 — Scènes                  | Terminé                                  | Composition facultative lieu + PNJ + objets, activation/désactivation et retour à l’écran par défaut sont livrés.                                                                                                  |
-| 9 — Bestiaire               | En cours                                 | Le modèle système/univers et les catalogues partagés sont en place ; la fiche et l’espace Bestiaire constituent la tranche active.                                                                                |
+| 8 — Scènes                  | Terminé                                  | Composition facultative lieu + PNJ + monstres + objets, activation/désactivation et retour à l’écran par défaut sont livrés.                                                                                     |
+| 9 — Bestiaire               | Première tranche livrée                  | Catalogue canonique par univers, sélection explicite par campagne, fiche D&D structurée, illustration et association aux scènes sont disponibles. Les notes et mentions `@` restent à ajouter.                   |
 | 10 — Combat léger           | Planifié après le bestiaire              | Le tracker réunira les PJ, PNJ et monstres ; le bestiaire doit donc être disponible avant cette tranche.                                                                                                         |
 | 11 — Historique récent      | Planifié après le combat                 | Pills cliquables des dernières ressources consultées sous la navigation de campagne.                                                                                                                             |
 | 12 — Carte heuristique      | Planifiée après l’historique             | Graphe automatique et navigable des chapitres, ressources liées et mentions `@`, sans édition manuelle du graphe.                                                                                                |
@@ -380,7 +380,7 @@ type Scene = {
 Décisions V1 confirmées :
 
 - le lieu est facultatif dans le formulaire, mais la régie encourage son association ;
-- les PNJ et objets narratifs associés sont triés alphabétiquement ; les monstres seront ajoutés au jalon Bestiaire ;
+- les PNJ, monstres et objets narratifs associés sont triés alphabétiquement ;
 - sélectionner une scène ouvre seulement sa fiche ; une action explicite l'active sur le Player Display ;
 - l'activation affiche le lieu en fond lorsqu'il possède une image, sinon le brouillard Vanta violet par défaut ;
 - un seul PNJ, monstre ou objet peut occuper le premier plan ; il n'apparaît jamais automatiquement ;
@@ -417,7 +417,18 @@ Principes retenus :
 - permettre de relier les monstres aux chapitres et notes avec le même contrat de mentions `@` ;
 - préparer explicitement l’ajout d’un ou plusieurs exemplaires d’un monstre au suivi de combat.
 
-Le contenu exact de la fiche de monstre et les éventuelles données de référence seront définis avec le MJ avant l’implémentation.
+Première tranche livrée :
+
+- `monster` contient la fiche canonique de l’univers et son illustration ;
+- `campaign_monster` sélectionne explicitement les monstres utilisés par une campagne ;
+- `scene_monster` relie une scène à ces mêmes fiches, sans clone ni état de combat ;
+- l’espace Bestiaire permet de créer/modifier une fiche et d’ajouter ou retirer une fiche du
+  catalogue de campagne ;
+- la fiche reprend les données structurées utiles d’un bloc de statistiques D&D et conserve son
+  JSON versionné.
+
+Restent dans ce jalon : les notes journalisées, les mentions `@` et l’édition détaillée des blocs
+répétables (capacités, actions et réactions).
 
 ### Jalon 10 — Suivi de combat léger
 

@@ -198,6 +198,7 @@ GameUniverse
 Campaign
 Session
 Npc
+Monster
 Location
 Scene
 Faction
@@ -225,6 +226,19 @@ CampaignNpc {
   npcId
   status
   roleSummary
+}
+
+Monster {
+  id
+  universeId
+  name
+  imagePath
+  sheetJson
+}
+
+CampaignMonster {
+  campaignId
+  monsterId
 }
 ```
 

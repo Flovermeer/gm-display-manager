@@ -82,6 +82,30 @@ doivent conserver leur sémantique HTML native, comme les boutons, utilisent une
 d'attribut. Les compositions répétées, comme un titre de fiche, un état vide ou un dialogue,
 utilisent des composants standalone de présentation avec projection de contenu.
 
+L'application Angular suit une organisation **feature-first** :
+
+```text
+src/app/
+├── core/                 # infrastructure globale et navigation
+├── features/
+│   └── <feature>/
+│       ├── domain/       # modèles et règles pures
+│       ├── application/  # services et orchestration des cas d'usage
+│       ├── data-access/  # ports et adaptateurs SQLite, Tauri ou mémoire
+│       ├── pages/        # composants accessibles par le router
+│       └── ui/           # composants propres à la feature
+└── shared/
+    ├── rich-text-editor/  # primitives riches transversales
+    └── ui/                # composants visuels réutilisables
+```
+
+Les imports internes utilisent l'alias unique `@app/...`, afin de conserver des chemins lisibles
+sans masquer la structure réelle du projet derrière de nombreux alias.
+
+Les services, contexts, stores, guards, repositories et gateways comportent un en-tête court
+`But / Responsabilités`. Les composants Angular et les simples modèles ne répètent pas de
+documentation évidente.
+
 Pas de NgRx au départ.
 
 Exemples d'état global :

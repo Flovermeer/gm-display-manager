@@ -104,6 +104,12 @@ Le premier critère de réussite est simple : un clic sur le laptop du MJ provoq
 - Utiliser des migrations explicites pour toute évolution du schéma SQLite.
 - Éviter les abstractions prématurées et les dépendances sans bénéfice immédiat pour la tranche en cours.
 - Préserver la séparation entre état métier, persistance, commandes Tauri et rendu des fenêtres.
+- Organiser le code Angular par feature dans `src/app/features/<feature>/`, avec les couches
+  `domain/`, `application/`, `data-access/`, `pages/` et `ui/` selon les besoins réels.
+- Ranger les composants routés dans `pages/` et les composants propres à une feature dans `ui/`.
+- Utiliser l'alias `@app/...` pour les imports internes plutôt que des remontées relatives profondes.
+- Ajouter un en-tête concis `But / Responsabilités` aux services, contexts, stores, guards,
+  repositories et gateways ; ne pas documenter artificiellement les composants ou types évidents.
 
 ## Hors périmètre initial
 

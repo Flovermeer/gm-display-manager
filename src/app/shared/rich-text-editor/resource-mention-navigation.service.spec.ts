@@ -1,11 +1,11 @@
 import { TestBed } from '@angular/core/testing';
 import { Router } from '@angular/router';
 
-import { LocationService } from '@app/location/location.service';
-import { NpcService } from '@app/npc/npc.service';
-import { PlayerCharacterService } from '@app/player-character/player-character.service';
-import { NarrativeItemService } from '@app/narrative-item/narrative-item.service';
-import { SceneService } from '@app/scene/scene.service';
+import { LocationService } from '@app/features/locations/application/location.service';
+import { NpcService } from '@app/features/npcs/application/npc.service';
+import { PlayerCharacterService } from '@app/features/players/application/player-character.service';
+import { NarrativeItemService } from '@app/features/items/application/narrative-item.service';
+import { SceneService } from '@app/features/scenes/application/scene.service';
 import { ResourceMentionNavigationService } from '@app/shared/rich-text-editor/resource-mention-navigation.service';
 
 describe('ResourceMentionNavigationService', () => {

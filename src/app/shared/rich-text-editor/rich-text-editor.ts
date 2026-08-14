@@ -199,6 +199,7 @@ export class RichTextEditor implements AfterViewInit, OnDestroy {
     const labels = {
       'player-character': 'PJ',
       npc: 'PNJ',
+      monster: 'Monstre',
       location: 'Lieu',
       item: 'Objet',
       scene: 'Scène',

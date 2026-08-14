@@ -16,6 +16,7 @@ import { NpcService } from '@app/features/npcs/application/npc.service';
 import { PlayerCharacterService } from '@app/features/players/application/player-character.service';
 import { NarrativeItemService } from '@app/features/items/application/narrative-item.service';
 import { SceneService } from '@app/features/scenes/application/scene.service';
+import { MonsterService } from '@app/features/bestiary/application/monster.service';
 import type { ResourceMentionCandidate } from '@app/shared/rich-text-editor/resource-mention';
 
 @Injectable({ providedIn: 'root' })
@@ -26,10 +27,12 @@ export class ResourceMentionNavigationService {
   private readonly router = inject(Router);
   private readonly itemService = inject(NarrativeItemService);
   private readonly sceneService = inject(SceneService, { optional: true });
+  private readonly monsterService = inject(MonsterService, { optional: true });
 
   async listCandidates(campaignId: string): Promise<readonly ResourceMentionCandidate[]> {
-    const [npcs, locations, characters, items, scenes] = await Promise.all([
+    const [npcs, monsters, locations, characters, items, scenes] = await Promise.all([
       this.npcService.list(campaignId),
+      this.monsterService?.list(campaignId) ?? Promise.resolve([]),
       this.locationService.list(campaignId),
       this.characterService.list(campaignId),
       this.itemService.list(campaignId),
@@ -43,6 +46,11 @@ export class ResourceMentionNavigationService {
       })),
       ...npcs.map(({ id, name }) => ({
         resourceType: 'npc' as const,
+        resourceId: id,
+        label: name,
+      })),
+      ...monsters.map(({ id, name }) => ({
+        resourceType: 'monster' as const,
         resourceId: id,
         label: name,
       })),
@@ -71,6 +79,7 @@ export class ResourceMentionNavigationService {
       'player-character': 'player-characters',
       item: 'items',
       scene: 'scenes',
+      monster: 'bestiary',
     }[mention.resourceType];
     if (!segment) return Promise.resolve(false);
     return this.router.navigate(['/campaigns', campaignId, segment], {

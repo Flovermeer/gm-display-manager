@@ -6,6 +6,7 @@ import { NpcService } from '@app/features/npcs/application/npc.service';
 import { PlayerCharacterService } from '@app/features/players/application/player-character.service';
 import { NarrativeItemService } from '@app/features/items/application/narrative-item.service';
 import { SceneService } from '@app/features/scenes/application/scene.service';
+import { MonsterService } from '@app/features/bestiary/application/monster.service';
 import { ResourceMentionNavigationService } from '@app/shared/rich-text-editor/resource-mention-navigation.service';
 
 describe('ResourceMentionNavigationService', () => {
@@ -15,6 +16,7 @@ describe('ResourceMentionNavigationService', () => {
   const characterService = { list: vi.fn() };
   const itemService = { list: vi.fn() };
   const sceneService = { list: vi.fn() };
+  const monsterService = { list: vi.fn() };
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -23,6 +25,7 @@ describe('ResourceMentionNavigationService', () => {
     characterService.list.mockResolvedValue([{ id: 'character-id', name: 'Flore' }]);
     itemService.list.mockResolvedValue([{ id: 'item-id', name: "Anneau de l'Hiver" }]);
     sceneService.list.mockResolvedValue([{ id: 'scene-id', name: 'Audience à la villa' }]);
+    monsterService.list.mockResolvedValue([{ id: 'monster-id', name: 'Atropal' }]);
     router.navigate.mockResolvedValue(true);
     TestBed.configureTestingModule({
       providers: [
@@ -32,6 +35,7 @@ describe('ResourceMentionNavigationService', () => {
         { provide: PlayerCharacterService, useValue: characterService },
         { provide: NarrativeItemService, useValue: itemService },
         { provide: SceneService, useValue: sceneService },
+        { provide: MonsterService, useValue: monsterService },
         { provide: Router, useValue: router },
       ],
     });
@@ -43,6 +47,7 @@ describe('ResourceMentionNavigationService', () => {
     await expect(service.listCandidates('campaign-id')).resolves.toEqual([
       { resourceType: 'player-character', resourceId: 'character-id', label: 'Flore' },
       { resourceType: 'npc', resourceId: 'npc-id', label: 'Syndra' },
+      { resourceType: 'monster', resourceId: 'monster-id', label: 'Atropal' },
       { resourceType: 'location', resourceId: 'location-id', label: 'Port Nyanzaru' },
       { resourceType: 'item', resourceId: 'item-id', label: "Anneau de l'Hiver" },
       { resourceType: 'scene', resourceId: 'scene-id', label: 'Audience à la villa' },
@@ -64,6 +69,15 @@ describe('ResourceMentionNavigationService', () => {
     });
     expect(router.navigate).toHaveBeenLastCalledWith(['/campaigns', 'campaign-id', 'items'], {
       queryParams: { resourceId: 'item-id' },
+    });
+
+    await service.open('campaign-id', {
+      resourceType: 'monster',
+      resourceId: 'monster-id',
+      label: 'Atropal',
+    });
+    expect(router.navigate).toHaveBeenLastCalledWith(['/campaigns', 'campaign-id', 'bestiary'], {
+      queryParams: { resourceId: 'monster-id' },
     });
   });
 });

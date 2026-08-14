@@ -11,6 +11,7 @@ import { NpcService } from '@app/features/npcs/application/npc.service';
 import { NarrativeItemService } from '@app/features/items/application/narrative-item.service';
 import { PlayerCharacterService } from '@app/features/players/application/player-character.service';
 import { SceneService } from '@app/features/scenes/application/scene.service';
+import { MonsterService } from '@app/features/bestiary/application/monster.service';
 import { JournalEntryList } from '@app/features/journal/ui/journal-entry-list/journal-entry-list';
 import { JournalWorkspace } from '@app/features/journal/pages/journal-workspace/journal-workspace';
 
@@ -86,6 +87,7 @@ describe('JournalWorkspace', () => {
         { provide: PlayerCharacterService, useValue: emptyResourceService },
         { provide: NarrativeItemService, useValue: emptyResourceService },
         { provide: SceneService, useValue: emptyResourceService },
+        { provide: MonsterService, useValue: emptyResourceService },
         { provide: Router, useValue: router },
       ],
     }).compileComponents();

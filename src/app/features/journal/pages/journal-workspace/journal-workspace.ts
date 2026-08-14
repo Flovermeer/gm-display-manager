@@ -4,12 +4,7 @@ import { Router } from '@angular/router';
 import { CampaignContext } from '@app/features/campaigns/application/campaign-context';
 import type { JournalEntry, JournalResourceType } from '@app/features/journal/domain/journal-entry';
 import { JournalEntryService } from '@app/features/journal/application/journal-entry.service';
-import { LocationService } from '@app/features/locations/application/location.service';
 import type { PendingChangesAware } from '@app/core/navigation/pending-changes.guard';
-import { NpcService } from '@app/features/npcs/application/npc.service';
-import { NarrativeItemService } from '@app/features/items/application/narrative-item.service';
-import { PlayerCharacterService } from '@app/features/players/application/player-character.service';
-import { SceneService } from '@app/features/scenes/application/scene.service';
 import { JournalEntryList } from '@app/features/journal/ui/journal-entry-list/journal-entry-list';
 import { RichTextEditor } from '@app/shared/rich-text-editor/rich-text-editor';
 import { ResourceMentionNavigationService } from '@app/shared/rich-text-editor/resource-mention-navigation.service';
@@ -47,11 +42,6 @@ type JournalDay = Readonly<{
 export class JournalWorkspace implements OnInit, PendingChangesAware {
   private readonly campaignContext = inject(CampaignContext);
   private readonly journalEntryService = inject(JournalEntryService);
-  private readonly npcService = inject(NpcService);
-  private readonly locationService = inject(LocationService);
-  private readonly characterService = inject(PlayerCharacterService);
-  private readonly itemService = inject(NarrativeItemService);
-  private readonly sceneService = inject(SceneService);
   private readonly router = inject(Router);
   private readonly mentionNavigation = inject(ResourceMentionNavigationService);
   private readonly globalEntryEditor = viewChild<JournalEntryList>(JournalEntryList);
@@ -133,6 +123,7 @@ export class JournalWorkspace implements OnInit, PendingChangesAware {
       'player-character': 'player-characters',
       item: 'items',
       scene: 'scenes',
+      monster: 'bestiary',
     }[target.resourceType];
     await this.router.navigate(['/campaigns', campaign.id, segment], {
       queryParams: { resourceId: target.resourceId, entryId: item.entry.id },
@@ -164,48 +155,21 @@ export class JournalWorkspace implements OnInit, PendingChangesAware {
     const campaign = this.campaign();
     if (!campaign) return;
     try {
-      const [entries, npcs, locations, characters, items, scenes] = await Promise.all([
+      const [entries, mentionCandidates] = await Promise.all([
         this.journalEntryService.list(campaign.id),
-        this.npcService.list(campaign.id),
-        this.locationService.list(campaign.id),
-        this.characterService.list(campaign.id),
-        this.itemService.list(campaign.id),
-        this.sceneService.list(campaign.id),
+        this.mentionNavigation.listCandidates(campaign.id),
       ]);
-      const names: Record<JournalResourceType, Map<string, string>> = {
-        npc: new Map(npcs.map(({ id, name }) => [id, name])),
-        location: new Map(locations.map(({ id, name }) => [id, name])),
-        'player-character': new Map(characters.map(({ id, name }) => [id, name])),
-        item: new Map(items.map(({ id, name }) => [id, name])),
-        scene: new Map(scenes.map(({ id, name }) => [id, name])),
-      };
-      this.mentionCandidates.set([
-        ...characters.map(({ id, name }) => ({
-          resourceType: 'player-character' as const,
-          resourceId: id,
-          label: name,
-        })),
-        ...npcs.map(({ id, name }) => ({
-          resourceType: 'npc' as const,
-          resourceId: id,
-          label: name,
-        })),
-        ...locations.map(({ id, name }) => ({
-          resourceType: 'location' as const,
-          resourceId: id,
-          label: name,
-        })),
-        ...items.map(({ id, name }) => ({
-          resourceType: 'item' as const,
-          resourceId: id,
-          label: name,
-        })),
-        ...scenes.map(({ id, name }) => ({
-          resourceType: 'scene' as const,
-          resourceId: id,
-          label: name,
-        })),
-      ]);
+      const names = Object.fromEntries(
+        ['npc', 'monster', 'location', 'player-character', 'item', 'scene'].map((resourceType) => [
+          resourceType,
+          new Map(
+            mentionCandidates
+              .filter((candidate) => candidate.resourceType === resourceType)
+              .map(({ resourceId, label }) => [resourceId, label]),
+          ),
+        ]),
+      ) as Record<JournalResourceType, Map<string, string>>;
+      this.mentionCandidates.set(mentionCandidates);
       this.timelineEntries.set(
         entries.map((entry) => ({
           entry,
@@ -216,6 +180,7 @@ export class JournalWorkspace implements OnInit, PendingChangesAware {
                   'Ressource supprimée',
                 resourceTypeLabel: {
                   npc: 'PNJ',
+                  monster: 'Monstre',
                   location: 'Lieu',
                   'player-character': 'PJ',
                   item: 'Objet',

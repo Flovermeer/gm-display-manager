@@ -1,7 +1,14 @@
 import { Extension, mergeAttributes, Node, type JSONContent } from '@tiptap/core';
 import { Plugin, PluginKey } from '@tiptap/pm/state';
 
-export const RESOURCE_TYPES = ['player-character', 'npc', 'location', 'item', 'scene'] as const;
+export const RESOURCE_TYPES = [
+  'player-character',
+  'npc',
+  'monster',
+  'location',
+  'item',
+  'scene',
+] as const;
 export type ResourceType = (typeof RESOURCE_TYPES)[number];
 
 export type ResourceMentionCandidate = Readonly<{

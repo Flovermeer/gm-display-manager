@@ -444,6 +444,14 @@
           <h3>Description officielle</h3>
           <app-rich-text-editor [value]="monster.sheet.officialDescription" [editable]="false" />
         </section>
+        @if (campaign(); as activeCampaign) {
+          <app-journal-entry-list
+            [campaignId]="activeCampaign.id"
+            resourceType="monster"
+            [resourceId]="monster.id"
+            [focusEntryId]="focusedJournalEntryId()"
+          />
+        }
       </article>
     } @else {
       <app-empty-state
@@ -461,7 +469,7 @@
     title="Que veux-tu faire ?"
     headingId="monster-pending-title"
   >
-    <p>Les modifications de cette fiche seront perdues si tu quittes.</p>
+    <p>Les modifications de cette fiche ou de sa note seront perdues si tu quittes.</p>
     <div dialog-actions class="dialog-actions">
       <button appButton="primary" type="button" [disabled]="isSaving()" (click)="saveAndLeave()">
         Enregistrer et quitter

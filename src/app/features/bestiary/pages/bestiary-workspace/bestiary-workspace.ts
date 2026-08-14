@@ -1,5 +1,7 @@
-import { Component, computed, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, DestroyRef, inject, OnInit, signal, viewChild } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { ActivatedRoute } from '@angular/router';
 
 import { CampaignContext } from '@app/features/campaigns/application/campaign-context';
 import { MonsterService } from '@app/features/bestiary/application/monster.service';
@@ -17,6 +19,7 @@ import { EmptyState } from '@app/shared/ui/empty-state/empty-state';
 import { FormField } from '@app/shared/ui/form-field/form-field';
 import { TagInput } from '@app/shared/ui/tag-input/tag-input';
 import type { PendingChangesAware } from '@app/core/navigation/pending-changes.guard';
+import { JournalEntryList } from '@app/features/journal/ui/journal-entry-list/journal-entry-list';
 
 type TagField =
   | 'savingThrows'
@@ -38,6 +41,7 @@ type PendingDecisionResolver = (canLeave: boolean) => void;
     Dialog,
     EmptyState,
     FormField,
+    JournalEntryList,
     RichTextEditor,
     TagInput,
   ],
@@ -46,8 +50,11 @@ type PendingDecisionResolver = (canLeave: boolean) => void;
 })
 export class BestiaryWorkspace implements OnInit, PendingChangesAware {
   private readonly context = inject(CampaignContext);
+  private readonly route = inject(ActivatedRoute);
+  private readonly destroyRef = inject(DestroyRef);
   private readonly service = inject(MonsterService);
   private readonly imageGateway = inject(MonsterImageGateway);
+  private readonly journalEntries = viewChild<JournalEntryList>(JournalEntryList);
   private pendingDecisionResolver?: PendingDecisionResolver;
 
   protected readonly campaign = this.context.campaign;
@@ -63,6 +70,7 @@ export class BestiaryWorkspace implements OnInit, PendingChangesAware {
   protected readonly isCatalogOpen = signal(false);
   protected readonly showPendingChangesDialog = signal(false);
   protected readonly error = signal<string | null>(null);
+  protected readonly focusedJournalEntryId = signal<string | null>(null);
   protected readonly draftImagePath = signal<string | null>(null);
   protected readonly imageUrl = signal<string | null>(null);
   protected readonly officialDescription = signal<RichTextDocument>(
@@ -106,7 +114,12 @@ export class BestiaryWorkspace implements OnInit, PendingChangesAware {
   });
 
   ngOnInit(): void {
-    void this.load();
+    this.route.queryParamMap
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(
+        (params) => void this.openRequestedMonster(params.get('resourceId'), params.get('entryId')),
+      );
+    void this.initialize();
   }
 
   canDeactivate(): boolean | Promise<boolean> {
@@ -123,8 +136,8 @@ export class BestiaryWorkspace implements OnInit, PendingChangesAware {
     this.isEditing.set(false);
     this.isCreating.set(false);
     this.isCatalogOpen.set(false);
-    this.selectedMonster.set(monster);
-    await this.resolveImage(monster.imagePath);
+    this.focusedJournalEntryId.set(null);
+    this.openReadOnly(monster);
   }
 
   protected async createMonster(): Promise<void> {
@@ -257,6 +270,7 @@ export class BestiaryWorkspace implements OnInit, PendingChangesAware {
   }
 
   protected async leaveWithoutSaving(): Promise<void> {
+    if (this.journalEntries()?.hasPendingChanges()) this.journalEntries()?.discardPendingChanges();
     await this.discardDraftImageSafely();
     this.isEditing.set(false);
     this.isCreating.set(false);
@@ -264,7 +278,10 @@ export class BestiaryWorkspace implements OnInit, PendingChangesAware {
   }
 
   protected async saveAndLeave(): Promise<void> {
-    if (await this.saveMonster()) this.resolvePendingDecision(true);
+    const saved = this.journalEntries()?.hasPendingChanges()
+      ? await this.journalEntries()!.savePendingChanges()
+      : await this.saveMonster();
+    if (saved) this.resolvePendingDecision(true);
   }
 
   protected updateTags(field: TagField, values: readonly string[]): void {
@@ -301,6 +318,46 @@ export class BestiaryWorkspace implements OnInit, PendingChangesAware {
     } finally {
       this.isLoading.set(false);
     }
+  }
+
+  private async initialize(): Promise<void> {
+    try {
+      if (!(await this.context.load())) return;
+      await this.load();
+      await this.openRequestedMonster(
+        this.route.snapshot.queryParamMap.get('resourceId'),
+        this.route.snapshot.queryParamMap.get('entryId'),
+      );
+    } catch (error) {
+      this.error.set(this.errorMessage(error));
+    } finally {
+      this.isLoading.set(false);
+    }
+  }
+
+  private async openRequestedMonster(
+    resourceId: string | null,
+    entryId: string | null,
+  ): Promise<void> {
+    const requested = this.monsters().find(({ id }) => id === resourceId);
+    if (!requested) return;
+    if (requested.id === this.selectedMonster()?.id) {
+      this.focusedJournalEntryId.set(entryId);
+      return;
+    }
+    if (!(await this.confirmPendingChanges())) return;
+    this.focusedJournalEntryId.set(entryId);
+    this.openReadOnly(requested);
+  }
+
+  private openReadOnly(monster: Monster): void {
+    const refreshed = this.monsters().find(({ id }) => id === monster.id) ?? monster;
+    this.selectedMonster.set(refreshed);
+    this.isCreating.set(false);
+    this.isEditing.set(false);
+    this.isCatalogOpen.set(false);
+    this.populateForm(refreshed);
+    void this.resolveImage(refreshed.imagePath);
   }
 
   private populateForm(monster: Monster | null): void {
@@ -391,7 +448,10 @@ export class BestiaryWorkspace implements OnInit, PendingChangesAware {
   }
 
   private hasPendingChanges(): boolean {
-    return this.isEditing() && (this.monsterForm.dirty || this.draftImagePath() !== null);
+    return (
+      (this.isEditing() && (this.monsterForm.dirty || this.draftImagePath() !== null)) ||
+      (this.journalEntries()?.hasPendingChanges() ?? false)
+    );
   }
 
   private confirmPendingChanges(): boolean | Promise<boolean> {

@@ -21,12 +21,22 @@ describe('resource mentions', () => {
             },
           ],
         },
+        {
+          type: 'paragraph',
+          content: [
+            {
+              type: 'resourceMention',
+              attrs: { resourceType: 'monster', resourceId: 'atropal-id', label: 'Atropal' },
+            },
+          ],
+        },
       ],
     };
 
     expect(extractResourceMentions(content)).toEqual([
       { resourceType: 'npc', resourceId: 'npc-id', label: 'Syndra' },
       { resourceType: 'location', resourceId: 'port-id', label: 'Port Nyanzaru' },
+      { resourceType: 'monster', resourceId: 'atropal-id', label: 'Atropal' },
     ]);
   });
 });

@@ -31,16 +31,16 @@ describe('TauriLocationImageGateway', () => {
     vi.mocked(open).mockResolvedValue('C:\\Pictures\\port.webp');
     const gateway = new TauriLocationImageGateway();
 
-    await expect(gateway.chooseAndImport('campaign-id')).resolves.toBe(
-      'campaigns/campaign-id/media/locations/00000000-0000-4000-8000-000000000000.webp',
+    await expect(gateway.chooseAndImport('universe-id')).resolves.toBe(
+      'universes/universe-id/media/locations/00000000-0000-4000-8000-000000000000.webp',
     );
-    expect(mkdir).toHaveBeenCalledWith('campaigns/campaign-id/media/locations', {
+    expect(mkdir).toHaveBeenCalledWith('universes/universe-id/media/locations', {
       baseDir: 14,
       recursive: true,
     });
     expect(copyFile).toHaveBeenCalledWith(
       'C:\\Pictures\\port.webp',
-      'C:\\AppData\\BeholdersInn\\campaigns\\campaign-id\\media\\locations\\00000000-0000-4000-8000-000000000000.webp',
+      'C:\\AppData\\BeholdersInn\\universes\\universe-id\\media\\locations\\00000000-0000-4000-8000-000000000000.webp',
     );
   });
 

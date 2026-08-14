@@ -1,16 +1,17 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 
 import type { Campaign } from '@app/features/campaigns/domain/campaign';
 import { CampaignService } from '@app/features/campaigns/application/campaign.service';
 import { CampaignHome } from '@app/features/campaigns/pages/campaign-home/campaign-home';
+import { GameSystemService } from '@app/features/game-systems/application/game-system.service';
 
 describe('CampaignHome', () => {
   const campaign: Campaign = {
     id: 'campaign-id',
     name: 'Tomb of Annihilation',
     description: 'Exploration de Chult',
-    systemKey: 'dnd5e',
+    universeId: 'forgotten-realms',
     createdAt: '2026-08-12T18:30:00.000Z',
     updatedAt: '2026-08-12T18:30:00.000Z',
   };
@@ -24,6 +25,12 @@ describe('CampaignHome', () => {
   };
   const router = {
     navigate: vi.fn(),
+    createUrlTree: vi.fn(() => ({ toString: () => '/configuration' })),
+    serializeUrl: vi.fn(() => '/configuration'),
+  };
+  const gameSystemService = {
+    listSystems: vi.fn(),
+    listUniverses: vi.fn(),
   };
 
   beforeEach(async () => {
@@ -35,12 +42,33 @@ describe('CampaignHome', () => {
     campaignService.update.mockResolvedValue(campaign);
     campaignService.delete.mockResolvedValue(undefined);
     router.navigate.mockResolvedValue(true);
+    gameSystemService.listSystems.mockResolvedValue([
+      {
+        id: 'dnd5e',
+        name: 'Dungeons & Dragons 5e',
+        deletedAt: null,
+        createdAt: '2026-08-12T18:30:00.000Z',
+        updatedAt: '2026-08-12T18:30:00.000Z',
+      },
+    ]);
+    gameSystemService.listUniverses.mockResolvedValue([
+      {
+        id: 'forgotten-realms',
+        gameSystemId: 'dnd5e',
+        name: 'Forgotten Realms',
+        deletedAt: null,
+        createdAt: '2026-08-12T18:30:00.000Z',
+        updatedAt: '2026-08-12T18:30:00.000Z',
+      },
+    ]);
 
     await TestBed.configureTestingModule({
       imports: [CampaignHome],
       providers: [
         { provide: CampaignService, useValue: campaignService },
+        { provide: GameSystemService, useValue: gameSystemService },
         { provide: Router, useValue: router },
+        { provide: ActivatedRoute, useValue: {} },
       ],
     }).compileComponents();
   });
@@ -87,21 +115,41 @@ describe('CampaignHome', () => {
 
     const element = fixture.nativeElement as HTMLElement;
     const nameInput = element.querySelector<HTMLInputElement>('#campaign-name');
-    const form = element.querySelector<HTMLFormElement>('form');
-
-    if (!nameInput || !form) {
+    if (!nameInput) {
       throw new Error('Campaign form not found.');
     }
 
     nameInput.value = 'Tomb of Annihilation';
     nameInput.dispatchEvent(new Event('input'));
-    form.dispatchEvent(new Event('submit'));
+    const component = fixture.componentInstance as unknown as {
+      campaignForm: { setValue: (value: Record<string, string>) => void };
+      gameSystems: () => readonly unknown[];
+      universes: () => readonly unknown[];
+      saveCampaign: () => Promise<void>;
+    };
+    await vi.waitFor(() => {
+      expect(component.gameSystems()).toHaveLength(1);
+      expect(component.universes()).toHaveLength(1);
+    });
+    component.campaignForm.setValue({
+      name: 'Tomb of Annihilation',
+      description: '',
+      gameSystemId: 'dnd5e',
+      universeId: 'forgotten-realms',
+    });
+    fixture.detectChanges();
+    await component.saveCampaign();
+
+    await renderUntil(fixture, 'Confirmer la création');
+    findButton(element, 'Confirmer la création')?.click();
 
     await vi.waitFor(() => {
       expect(campaignService.createAndActivate).toHaveBeenCalledWith({
         name: 'Tomb of Annihilation',
         description: '',
-        systemKey: 'dnd5e',
+        universeId: 'forgotten-realms',
+        systemName: 'Dungeons & Dragons 5e',
+        universeName: 'Forgotten Realms',
       });
       expect(router.navigate).toHaveBeenCalledWith(['/campaigns', campaign.id]);
     });
@@ -129,7 +177,8 @@ describe('CampaignHome', () => {
       expect(campaignService.update).toHaveBeenCalledWith(campaign, {
         name: updatedCampaign.name,
         description: campaign.description,
-        systemKey: campaign.systemKey,
+        gameSystemId: 'dnd5e',
+        universeId: campaign.universeId,
       });
       fixture.detectChanges();
       expect(element.textContent).toContain(updatedCampaign.name);

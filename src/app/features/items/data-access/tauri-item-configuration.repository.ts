@@ -32,8 +32,11 @@ export class TauriItemConfigurationRepository extends ItemConfigurationRepositor
     const rows = await (
       await this.database()
     ).select<OptionRow[]>(
-      `SELECT id, campaign_id, name, created_at, updated_at FROM ${table(kind)}
-       WHERE campaign_id = $1 ORDER BY name COLLATE NOCASE, id`,
+      `SELECT config.id, campaign.id AS campaign_id, config.name,
+              config.created_at, config.updated_at
+       FROM ${table(kind)} AS config
+       JOIN campaign ON campaign.universe_id=config.universe_id
+       WHERE campaign.id = $1 ORDER BY config.name COLLATE NOCASE, config.id`,
       [campaignId],
     );
     return rows.map((row) => mapRow(row, kind));
@@ -43,8 +46,11 @@ export class TauriItemConfigurationRepository extends ItemConfigurationRepositor
     const rows = await (
       await this.database()
     ).select<OptionRow[]>(
-      `SELECT id, campaign_id, name, created_at, updated_at FROM ${table(kind)}
-       WHERE campaign_id = $1 AND id = $2`,
+      `SELECT config.id, campaign.id AS campaign_id, config.name,
+              config.created_at, config.updated_at
+       FROM ${table(kind)} AS config
+       JOIN campaign ON campaign.universe_id=config.universe_id
+       WHERE campaign.id = $1 AND config.id = $2`,
       [campaignId, id],
     );
     return rows[0] ? mapRow(rows[0], kind) : null;
@@ -54,10 +60,10 @@ export class TauriItemConfigurationRepository extends ItemConfigurationRepositor
     await (
       await this.database()
     ).execute(
-      `INSERT INTO ${table(option.kind)} (id, campaign_id, name, created_at, updated_at)
-       VALUES ($1, $2, $3, $4, $5)
+      `INSERT INTO ${table(option.kind)} (id, universe_id, name, created_at, updated_at)
+       VALUES ($1, (SELECT universe_id FROM campaign WHERE id=$2), $3, $4, $5)
        ON CONFLICT(id) DO UPDATE SET name = excluded.name, updated_at = excluded.updated_at
-       WHERE campaign_id = excluded.campaign_id`,
+       WHERE universe_id = excluded.universe_id`,
       [option.id, option.campaignId, option.name, option.createdAt, option.updatedAt],
     );
   }
@@ -65,7 +71,11 @@ export class TauriItemConfigurationRepository extends ItemConfigurationRepositor
   override async delete(campaignId: string, kind: ItemConfigurationKind, id: string) {
     await (
       await this.database()
-    ).execute(`DELETE FROM ${table(kind)} WHERE campaign_id = $1 AND id = $2`, [campaignId, id]);
+    ).execute(
+      `DELETE FROM ${table(kind)}
+       WHERE id=$2 AND universe_id=(SELECT universe_id FROM campaign WHERE id=$1)`,
+      [campaignId, id],
+    );
   }
 
   private database(): Promise<Database> {

@@ -1,30 +1,50 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 
 import type { Campaign } from '@app/features/campaigns/domain/campaign';
 import { CampaignService } from '@app/features/campaigns/application/campaign.service';
 import { ButtonDirective } from '@app/shared/ui/button/button.directive';
 import { Dialog } from '@app/shared/ui/dialog/dialog';
 import { FormField, type FormFieldOption } from '@app/shared/ui/form-field/form-field';
+import { GameSystemService } from '@app/features/game-systems/application/game-system.service';
+import type {
+  GameSystem,
+  GameUniverse,
+} from '@app/features/game-systems/domain/game-system';
+
+type PendingCampaignCreation = Readonly<{
+  name: string;
+  description: string;
+  universeId: string;
+  systemName: string;
+  universeName: string;
+}>;
 
 @Component({
   selector: 'app-campaign-home',
-  imports: [ReactiveFormsModule, ButtonDirective, Dialog, FormField],
+  imports: [ReactiveFormsModule, RouterLink, ButtonDirective, Dialog, FormField],
   templateUrl: './campaign-home.html',
   styleUrl: './campaign-home.scss',
 })
 export class CampaignHome implements OnInit {
-  protected readonly systemOptions: readonly FormFieldOption[] = [
-    { value: 'dnd5e', label: 'Dungeons & Dragons 5e' },
-  ];
   private readonly campaignService = inject(CampaignService);
+  private readonly gameSystemService = inject(GameSystemService);
   private readonly router = inject(Router);
 
   protected readonly campaigns = signal<readonly Campaign[]>([]);
   protected readonly activeCampaignId = signal<string | null>(null);
   protected readonly editingCampaign = signal<Campaign | null>(null);
   protected readonly campaignPendingDeletion = signal<Campaign | null>(null);
+  protected readonly campaignPendingCreation = signal<PendingCampaignCreation | null>(null);
+  protected readonly gameSystems = signal<readonly GameSystem[]>([]);
+  protected readonly universes = signal<readonly GameUniverse[]>([]);
+  protected readonly systemOptions = computed<readonly FormFieldOption[]>(() =>
+    this.gameSystems().map(({ id, name }) => ({ value: id, label: name })),
+  );
+  protected readonly universeOptions = computed<readonly FormFieldOption[]>(() =>
+    this.universes().map(({ id, name }) => ({ value: id, label: name })),
+  );
   protected readonly isLoading = signal(true);
   protected readonly isSubmitting = signal(false);
   protected readonly error = signal<string | null>(null);
@@ -34,11 +54,12 @@ export class CampaignHome implements OnInit {
       validators: [Validators.required],
     }),
     description: new FormControl('', { nonNullable: true }),
-    systemKey: new FormControl('dnd5e', { nonNullable: true }),
+    gameSystemId: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
+    universeId: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
   });
 
   ngOnInit(): void {
-    void this.loadCampaigns();
+    void this.initialize();
   }
 
   protected async openCampaign(campaign: Campaign): Promise<void> {
@@ -64,10 +85,12 @@ export class CampaignHome implements OnInit {
     }
 
     this.editingCampaign.set(campaign);
+    const universe = this.universes().find(({ id }) => id === campaign.universeId);
     this.campaignForm.reset({
       name: campaign.name,
       description: campaign.description,
-      systemKey: campaign.systemKey,
+      gameSystemId: universe?.gameSystemId ?? '',
+      universeId: campaign.universeId,
     });
     this.campaignForm.markAsPristine();
   }
@@ -115,15 +138,48 @@ export class CampaignHome implements OnInit {
         this.resetCampaignForm();
         this.isSubmitting.set(false);
       } else {
-        const campaign = await this.campaignService.createAndActivate(
-          this.campaignForm.getRawValue(),
-        );
-        await this.router.navigate(['/campaigns', campaign.id]);
+        const value = this.campaignForm.getRawValue();
+        const gameSystem = this.gameSystems().find(({ id }) => id === value.gameSystemId);
+        const universe = this.universes().find(({ id }) => id === value.universeId);
+        if (!gameSystem || !universe) throw new Error('Choisis un système et un univers valides.');
+        this.campaignPendingCreation.set({
+          name: value.name.trim(),
+          description: value.description,
+          universeId: universe.id,
+          systemName: gameSystem.name,
+          universeName: universe.name,
+        });
+        this.isSubmitting.set(false);
       }
     } catch (error) {
       this.error.set(this.errorMessage(error));
       this.isSubmitting.set(false);
     }
+  }
+
+  protected cancelCreateCampaign(): void {
+    this.campaignPendingCreation.set(null);
+  }
+
+  protected async confirmCreateCampaign(): Promise<void> {
+    const pending = this.campaignPendingCreation();
+    if (!pending || this.isSubmitting()) return;
+    this.isSubmitting.set(true);
+    this.error.set(null);
+    try {
+      const campaign = await this.campaignService.createAndActivate(pending);
+      this.campaignPendingCreation.set(null);
+      await this.router.navigate(['/campaigns', campaign.id]);
+    } catch (error) {
+      this.error.set(this.errorMessage(error));
+      this.isSubmitting.set(false);
+    }
+  }
+
+  protected async selectSystem(value: string | number | null): Promise<void> {
+    const gameSystemId = typeof value === 'string' ? value : '';
+    this.campaignForm.controls.gameSystemId.setValue(gameSystemId);
+    await this.loadUniverses(gameSystemId);
   }
 
   protected async confirmDeleteCampaign(): Promise<void> {
@@ -165,8 +221,35 @@ export class CampaignHome implements OnInit {
     }
   }
 
+  private async initialize(): Promise<void> {
+    try {
+      const systems = await this.gameSystemService.listSystems();
+      this.gameSystems.set(systems);
+      const firstSystemId = systems[0]?.id ?? '';
+      this.campaignForm.controls.gameSystemId.setValue(firstSystemId);
+      await Promise.all([this.loadCampaigns(), this.loadUniverses(firstSystemId)]);
+    } catch (error) {
+      this.error.set(this.errorMessage(error));
+      this.isLoading.set(false);
+    }
+  }
+
+  private async loadUniverses(gameSystemId: string): Promise<void> {
+    const universes = gameSystemId
+      ? await this.gameSystemService.listUniverses(gameSystemId)
+      : [];
+    this.universes.set(universes);
+    this.campaignForm.controls.universeId.setValue(universes[0]?.id ?? '');
+  }
+
   private resetCampaignForm(): void {
-    this.campaignForm.reset({ name: '', description: '', systemKey: 'dnd5e' });
+    const gameSystemId = this.gameSystems()[0]?.id ?? '';
+    this.campaignForm.reset({
+      name: '',
+      description: '',
+      gameSystemId,
+      universeId: this.universes()[0]?.id ?? '',
+    });
     this.campaignForm.markAsPristine();
   }
 

@@ -1,10 +1,8 @@
-export const DEFAULT_CAMPAIGN_SYSTEM_KEY = 'dnd5e';
-
 export type Campaign = Readonly<{
   id: string;
   name: string;
   description: string;
-  systemKey: string;
+  universeId: string;
   createdAt: string;
   updatedAt: string;
 }>;
@@ -12,13 +10,12 @@ export type Campaign = Readonly<{
 export type CreateCampaignInput = Readonly<{
   name: string;
   description?: string;
-  systemKey?: string;
+  universeId: string;
 }>;
 
 export type UpdateCampaignInput = Readonly<{
   name: string;
   description: string;
-  systemKey: string;
 }>;
 
 export type CampaignFactoryDependencies = Readonly<{
@@ -36,10 +33,13 @@ export function createCampaign(
   dependencies: CampaignFactoryDependencies = defaultDependencies,
 ): Campaign {
   const name = input.name.trim();
-  const systemKey = input.systemKey?.trim() || DEFAULT_CAMPAIGN_SYSTEM_KEY;
+  const universeId = input.universeId.trim();
 
   if (!name) {
     throw new Error('Campaign name is required.');
+  }
+  if (!universeId) {
+    throw new Error('Campaign universe is required.');
   }
 
   const now = dependencies.now().toISOString();
@@ -48,7 +48,7 @@ export function createCampaign(
     id: dependencies.createId(),
     name,
     description: input.description?.trim() ?? '',
-    systemKey,
+    universeId,
     createdAt: now,
     updatedAt: now,
   };
@@ -60,19 +60,14 @@ export function updateCampaign(
   now: () => Date = () => new Date(),
 ): Campaign {
   const name = input.name.trim();
-  const systemKey = input.systemKey.trim();
   if (!name) {
     throw new Error('Campaign name is required.');
-  }
-  if (!systemKey) {
-    throw new Error('Campaign system key is required.');
   }
 
   return {
     ...campaign,
     name,
     description: input.description.trim(),
-    systemKey,
     updatedAt: now().toISOString(),
   };
 }

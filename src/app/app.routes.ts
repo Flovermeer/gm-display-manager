@@ -4,6 +4,14 @@ import { pendingChangesGuard } from '@app/core/navigation/pending-changes.guard'
 
 export const routes: Routes = [
   {
+    path: 'configuration',
+    loadComponent: () =>
+      import(
+        '@app/features/game-systems/pages/global-configuration/global-configuration'
+      ).then(({ GlobalConfiguration }) => GlobalConfiguration),
+    title: "Beholder's Inn — Configuration",
+  },
+  {
     path: 'campaigns',
     loadComponent: () =>
       import('@app/features/campaigns/pages/campaign-home/campaign-home').then(

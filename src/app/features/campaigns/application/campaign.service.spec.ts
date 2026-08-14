@@ -3,23 +3,19 @@ import { TestBed } from '@angular/core/testing';
 import { AppSettingRepository } from '@app/core/persistence/app-setting.repository';
 import { InMemoryAppSettingRepository } from '@app/core/persistence/in-memory-app-setting.repository';
 import { InMemoryCampaignRepository } from '@app/features/campaigns/data-access/in-memory-campaign.repository';
-import { CampaignMediaGateway } from '@app/features/campaigns/data-access/campaign-media.gateway';
 import { CampaignRepository } from '@app/features/campaigns/data-access/campaign.repository';
 import { CampaignService } from '@app/features/campaigns/application/campaign.service';
 
 describe('CampaignService', () => {
   let service: CampaignService;
-  const mediaGateway = { discardCampaign: vi.fn() };
 
   beforeEach(() => {
     vi.clearAllMocks();
-    mediaGateway.discardCampaign.mockResolvedValue(undefined);
     TestBed.configureTestingModule({
       providers: [
         CampaignService,
         { provide: CampaignRepository, useClass: InMemoryCampaignRepository },
         { provide: AppSettingRepository, useClass: InMemoryAppSettingRepository },
-        { provide: CampaignMediaGateway, useValue: mediaGateway },
       ],
     });
     service = TestBed.inject(CampaignService);
@@ -29,6 +25,7 @@ describe('CampaignService', () => {
     const campaign = await service.createAndActivate({
       name: ' Tomb of Annihilation ',
       description: ' Exploration de Chult ',
+      universeId: 'forgotten-realms',
     });
 
     await expect(service.list()).resolves.toEqual([campaign]);
@@ -37,8 +34,14 @@ describe('CampaignService', () => {
   });
 
   it('activates an existing campaign', async () => {
-    const first = await service.createAndActivate({ name: 'Première campagne' });
-    const second = await service.createAndActivate({ name: 'Deuxième campagne' });
+    const first = await service.createAndActivate({
+      name: 'Première campagne',
+      universeId: 'forgotten-realms',
+    });
+    const second = await service.createAndActivate({
+      name: 'Deuxième campagne',
+      universeId: 'forgotten-realms',
+    });
 
     await service.activate(first.id);
 
@@ -48,25 +51,29 @@ describe('CampaignService', () => {
   });
 
   it('updates a campaign without changing its identity', async () => {
-    const campaign = await service.createAndActivate({ name: 'Tomb' });
+    const campaign = await service.createAndActivate({
+      name: 'Tomb',
+      universeId: 'forgotten-realms',
+    });
 
     const updated = await service.update(campaign, {
       name: 'Tomb of Annihilation',
       description: 'Exploration de Chult',
-      systemKey: 'dnd5e',
     });
 
     expect(updated.id).toBe(campaign.id);
     await expect(service.findById(campaign.id)).resolves.toEqual(updated);
   });
 
-  it('deletes the campaign, its active preference and its media', async () => {
-    const campaign = await service.createAndActivate({ name: 'Tomb of Annihilation' });
+  it('deletes the campaign and its active preference', async () => {
+    const campaign = await service.createAndActivate({
+      name: 'Tomb of Annihilation',
+      universeId: 'forgotten-realms',
+    });
 
     await service.delete(campaign);
 
     await expect(service.findById(campaign.id)).resolves.toBeNull();
     await expect(service.getActiveCampaignId()).resolves.toBeNull();
-    expect(mediaGateway.discardCampaign).toHaveBeenCalledWith(campaign.id);
   });
 });

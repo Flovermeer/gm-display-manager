@@ -31,10 +31,10 @@ describe('TauriPlayerCharacterPortraitGateway', () => {
     vi.mocked(open).mockResolvedValue('C:\\Pictures\\nyssa.webp');
     const gateway = new TauriPlayerCharacterPortraitGateway();
     const relativePath =
-      'campaigns/campaign-id/media/player-character-portraits/00000000-0000-4000-8000-000000000000.webp';
+      'universes/universe-id/media/player-character-portraits/00000000-0000-4000-8000-000000000000.webp';
 
-    await expect(gateway.chooseAndImport('campaign-id')).resolves.toBe(relativePath);
-    expect(mkdir).toHaveBeenCalledWith('campaigns/campaign-id/media/player-character-portraits', {
+    await expect(gateway.chooseAndImport('universe-id')).resolves.toBe(relativePath);
+    expect(mkdir).toHaveBeenCalledWith('universes/universe-id/media/player-character-portraits', {
       baseDir: 14,
       recursive: true,
     });

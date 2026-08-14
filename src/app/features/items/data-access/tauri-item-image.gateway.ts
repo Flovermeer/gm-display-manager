@@ -17,8 +17,8 @@ import { ItemImageGateway } from '@app/features/items/data-access/item-image.gat
 const SUPPORTED_EXTENSIONS = ['png', 'jpg', 'jpeg', 'webp'] as const;
 
 export class TauriItemImageGateway extends ItemImageGateway {
-  override async chooseAndImport(campaignId: string): Promise<string | null> {
-    if (!/^[a-zA-Z0-9-]+$/.test(campaignId)) throw new Error('Invalid campaign identifier.');
+  override async chooseAndImport(universeId: string): Promise<string | null> {
+    if (!/^[a-zA-Z0-9-]+$/.test(universeId)) throw new Error('Invalid universe identifier.');
     const selectedPath = await open({
       multiple: false,
       directory: false,
@@ -26,7 +26,7 @@ export class TauriItemImageGateway extends ItemImageGateway {
     });
     if (!selectedPath) return null;
     const extension = fileExtension(selectedPath);
-    const directory = `campaigns/${campaignId}/media/items`;
+    const directory = `universes/${universeId}/media/items`;
     const relativePath = `${directory}/${crypto.randomUUID()}.${extension}`;
     await mkdir(directory, { baseDir: BaseDirectory.AppData, recursive: true });
     await copyFile(selectedPath, await this.absolutePath(relativePath));
@@ -59,7 +59,7 @@ function assertInternalPath(path: string): void {
   const segments = path.split('/');
   if (
     segments.length !== 5 ||
-    segments[0] !== 'campaigns' ||
+    !['campaigns', 'universes'].includes(segments[0]) ||
     segments[2] !== 'media' ||
     segments[3] !== 'items' ||
     segments.some((segment) => !segment || segment === '.' || segment === '..')

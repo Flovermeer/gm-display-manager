@@ -51,6 +51,9 @@ import { TauriPlayerCharacterRepository } from '@app/features/players/data-acces
 import { TauriItemConfigurationRepository } from '@app/features/items/data-access/tauri-item-configuration.repository';
 import { TauriNarrativeItemRepository } from '@app/features/items/data-access/tauri-narrative-item.repository';
 import { TauriSceneRepository } from '@app/features/scenes/data-access/tauri-scene.repository';
+import { GameSystemRepository } from '@app/features/game-systems/data-access/game-system.repository';
+import { InMemoryGameSystemRepository } from '@app/features/game-systems/data-access/in-memory-game-system.repository';
+import { TauriGameSystemRepository } from '@app/features/game-systems/data-access/tauri-game-system.repository';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -65,6 +68,11 @@ export const appConfig: ApplicationConfig = {
       provide: CampaignRepository,
       useFactory: () =>
         isTauri() ? new TauriCampaignRepository() : new InMemoryCampaignRepository(),
+    },
+    {
+      provide: GameSystemRepository,
+      useFactory: () =>
+        isTauri() ? new TauriGameSystemRepository() : new InMemoryGameSystemRepository(),
     },
     {
       provide: ChapterRepository,

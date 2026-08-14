@@ -11,7 +11,7 @@ describe('CampaignContext', () => {
       id: 'campaign-id',
       name: 'Tomb of Annihilation',
       description: '',
-      systemKey: 'dnd5e',
+      universeId: 'forgotten-realms',
       createdAt: '2026-08-13T08:00:00.000Z',
       updatedAt: '2026-08-13T08:00:00.000Z',
     };

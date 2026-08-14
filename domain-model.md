@@ -1,18 +1,34 @@
 # Modèle métier cible
 
-Date de décision : 12 août 2026
+Date de décision : 14 août 2026
 
 Ce document fixe les décisions de modélisation prises pour le gestionnaire de campagne. Le schéma sera livré par petites migrations au fil des tranches verticales ; toutes les entités décrites ici ne sont donc pas nécessairement déjà présentes dans SQLite.
 
 ## Principes
 
 - Les identifiants sont des UUID générés en TypeScript et stockés en `TEXT` dans SQLite.
-- Toutes les entités propres à une campagne portent une clé étrangère `campaign_id`.
+- Un système de jeu contient des univers ; un univers contient les catalogues de ressources
+  partagées et les campagnes qui les utilisent.
+- Les chapitres, scènes et entrées de journal appartiennent directement à une campagne.
+- Les PJ, PNJ, lieux, objets narratifs et monstres appartiennent à un univers. Des tables
+  d’association portent leur contexte propre à chaque campagne.
 - Les données recherchées, filtrées ou reliées restent dans des colonnes et tables relationnelles.
 - Les données dépendantes d'un système de jeu restent dans du JSON versionné.
 - Les médias volumineux restent dans le filesystem ; SQLite ne conserve que leurs métadonnées et chemins internes.
-- Les suppressions d'une campagne suppriment en cascade ses données métier et
-  son dossier de médias après confirmation explicite dans l'interface.
+- Supprimer une campagne supprime ses données propres et associations, jamais les fiches
+  canoniques partagées de l’univers.
+- Les systèmes et univers utilisent une corbeille via `deleted_at`. Leur purge définitive est une
+  action séparée et supprime en cascade tout leur contenu.
+
+## Systèmes de jeu et univers
+
+`game_system` est le catalogue administrable des systèmes de jeu. `game_universe` appartient à
+un seul système et constitue la frontière de partage des ressources. Les données existantes sont
+migrées vers le système D&D 5e et l’univers **Forgotten Realms**.
+
+La mise à la corbeille renseigne uniquement `deleted_at` sur le système ou l’univers racine : le
+contenu reste intact et réapparaît lors de la restauration. Une purge définitive utilise les
+cascades SQLite après confirmation explicite.
 
 ## Campagne
 
@@ -21,24 +37,31 @@ Une campagne contient au minimum :
 - `id` ;
 - `name` ;
 - `description` ;
-- `system_key`, avec `dnd5e` comme valeur initiale par défaut ;
+- `universe_id`, choisi à la création et ensuite immuable ;
 - `created_at` et `updated_at`.
 
 La campagne active est une préférence applicative stockée dans `app_setting`, et
 non un attribut de la campagne. Cette préférence est effacée si elle désigne une
 campagne supprimée.
 
+Le formulaire choisit d’abord un système, puis un univers filtré sur ce système. Les premières
+valeurs disponibles sont présélectionnées. Une confirmation récapitule le nom, le système et
+l’univers avant la création.
+
 ## Personnages
 
 ### Personnage joueur
 
-`player_character` représente un personnage, pas la personne humaine qui joue :
+`player_character` représente la fiche canonique partagée dans un univers, pas la personne humaine
+qui joue :
 
 - `name` désigne le personnage ;
-- `player_name` désigne la personne qui le joue ;
-- `status` accepte initialement `active`, `dead`, `retired` ou `missing` ;
+- `max_hit_points` et la fiche système appartiennent à la fiche canonique ;
 - `sheet_json` contient les données propres au système de jeu ;
 - `sheet_schema_version` permet de migrer ce JSON.
+
+`campaign_player_character` porte le nom du joueur, le statut et les PV actuels propres à une
+campagne. Un même PJ peut ainsi continuer dans une campagne suivante sans être cloné.
 
 La fiche PJ est une référence ciblée pour le MJ, pas une reproduction complète de la fiche de
 jeu. Les données fréquemment affichées et mises à jour restent relationnelles :
@@ -65,7 +88,9 @@ Plusieurs personnages, y compris de même nom, peuvent appartenir à la même ca
 
 ### PNJ
 
-`npc` suit les mêmes principes, sans `player_name`. Sa fiche système reste également dans un JSON versionné.
+`npc` contient la fiche canonique d’univers : nom, médias, description officielle et fiche système
+JSON versionnée. `campaign_npc` contient le statut et le rôle/résumé propres à la campagne. Les
+notes du MJ restent des entrées de journal liées à la campagne et au PNJ.
 
 Chaque PNJ peut référencer un `portrait_path` statique et un
 `idle_video_path` facultatif, tous deux relatifs au dossier interne de la
@@ -75,7 +100,7 @@ et reprend automatiquement la place si la vidéo échoue.
 
 ## Lieux
 
-Un `location` appartient à une campagne. Un `parent_location_id` nullable permet une hiérarchie telle que :
+Un `location` appartient à un univers. Un `parent_location_id` nullable permet une hiérarchie telle que :
 
 ```text
 Chult
@@ -83,31 +108,29 @@ Chult
     └── Beholder's Inn
 ```
 
-La hiérarchie reste facultative : un lieu peut être créé directement à la racine d'une campagne.
+La hiérarchie reste facultative : un lieu peut être créé directement à la racine d'un univers.
 Un lieu contient également un résumé, des notes simples et un `image_path` relatif
 vers son illustration dans le dossier interne de la campagne. L'illustration est
 utilisée dans la fiche MJ et sur le Player Display ; le visuel de démonstration de
 l'auberge sert de fallback tant qu'aucune image n'est enregistrée.
 
 Un lieu ne peut pas devenir son propre parent ni être placé dans un de ses
-descendants. Lorsqu'un lieu est supprimé, ses enfants directs sont replacés à la
-racine de la campagne afin d'éviter une suppression implicite de toute une branche.
+descendants. `campaign_location` sélectionne explicitement les lieux utilisés par une campagne.
 
 ## Objets narratifs
 
 `narrative_item` constitue un catalogue des objets remarquables liés à l'histoire : artefacts, clés,
 documents, objets de quête ou récompenses uniques. Un objet contient un nom, un résumé, une
-description officielle riche, une illustration facultative et un statut parmi `active`, `lost`,
-`destroyed` et `retired`.
+description officielle riche et une illustration facultative.
 
-Chaque objet référence un type obligatoire et une rareté facultative configurables par campagne.
-Une campagne D&D reçoit automatiquement un catalogue initial de types et raretés, que le MJ peut
+Chaque objet référence un type obligatoire et une rareté facultative configurables par univers.
+Un univers reçoit automatiquement un catalogue initial de types et raretés, que le MJ peut
 ajouter, renommer ou supprimer. La suppression est refusée lorsqu'une valeur est utilisée par un
 objet. L'harmonisation vaut `none`, `required` ou `conditional`; le dernier cas exige une condition
 en texte libre.
 
-Un objet peut avoir au maximum un détenteur actuel : un PJ, un PNJ ou un lieu. Ces relations sont
-des clés étrangères facultatives et ne constituent pas encore un inventaire quantitatif ou un
+`campaign_narrative_item` porte le statut et au maximum un détenteur actuel — PJ, PNJ ou lieu —
+dans cette campagne. Ces relations ne constituent pas encore un inventaire quantitatif ou un
 historique des possessions.
 
 Le catalogue n'a pas vocation à recopier tous les objets génériques d'un système comme D&D. Les

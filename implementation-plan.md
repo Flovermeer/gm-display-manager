@@ -2,7 +2,7 @@
 
 Date de cadrage : 12 août 2026
 
-Dernière consolidation : 13 août 2026
+Dernière consolidation : 14 août 2026
 
 ## Statut consolidé
 
@@ -12,12 +12,12 @@ Dernière consolidation : 13 août 2026
 | 1 — Shell Angular + Tauri   | Terminé                                  | Application standalone zoneless, routes Angular, fenêtre principale maximisée et capabilities Tauri en place.                                                                                                    |
 | 2 — Multi-écran             | Fonctionnel, validation avancée restante | Détection, choix persistant du moniteur et fenêtre joueurs dédiée plein écran validés sur le matériel nominal. Restent les cas de déconnexion, remplacement, coordonnées négatives et facteurs d’échelle variés. |
 | 3 — Régie verticale         | Terminé                                  | Écran noir, lieux, PNJ et objets peuvent être envoyés au Player Display ; synchronisation `ready` et fallback statique des PNJ en place.                                                                         |
-| 4 — SQLite                  | Terminé pour les tranches livrées        | Onze migrations couvrent réglages, campagnes, lieux, PNJ, PJ, chapitres, journal, objets, types et raretés. Repositories Tauri et mémoire isolés derrière des interfaces.                                        |
+| 4 — SQLite                  | Terminé pour les tranches livrées        | Treize migrations couvrent notamment systèmes, univers, campagnes et catalogues partagés avec contexte de campagne. Repositories Tauri et mémoire isolés derrière des interfaces.                              |
 | 5 — Gestion de campagne     | Terminé et étendu                        | CRUD campagnes, lieux hiérarchiques, PNJ structurés, PJ orientés MJ et objets narratifs. Navigation campagne persistante et protection des modifications non enregistrées.                                       |
 | 6 — Médias locaux           | Terminé pour images et portraits animés  | Import/copie locale des portraits PNJ/PJ, images de lieux et d’objets, vidéo idle PNJ et nettoyage des médias. Une validation plus large des fichiers cassés reste à inclure au durcissement.                    |
 | 7 — Tiptap et journal       | Terminé pour l’usage actuel              | Chapitres et descriptions riches, notes journalisées éditables, regroupement quotidien, mentions `@` cliquables vers PJ/PNJ/lieux/objets et fallback texte si la cible disparaît.                                |
-| 8 — Scènes                  | Prochaine tranche                        | Composition lieu + PNJ, état de scène et transitions coordonnées restent à concevoir et implémenter.                                                                                                             |
-| 9 — Bestiaire               | Planifié après les scènes                | Réutilisation des composants et champs communs aux PNJ, avec un modèle et une fiche détaillée propres aux monstres.                                                                                              |
+| 8 — Scènes                  | Terminé                                  | Composition facultative lieu + PNJ + objets, activation/désactivation et retour à l’écran par défaut sont livrés.                                                                                                  |
+| 9 — Bestiaire               | En cours                                 | Le modèle système/univers et les catalogues partagés sont en place ; la fiche et l’espace Bestiaire constituent la tranche active.                                                                                |
 | 10 — Combat léger           | Planifié après le bestiaire              | Le tracker réunira les PJ, PNJ et monstres ; le bestiaire doit donc être disponible avant cette tranche.                                                                                                         |
 | 11 — Historique récent      | Planifié après le combat                 | Pills cliquables des dernières ressources consultées sous la navigation de campagne.                                                                                                                             |
 | 12 — Carte heuristique      | Planifiée après l’historique             | Graphe automatique et navigable des chapitres, ressources liées et mentions `@`, sans édition manuelle du graphe.                                                                                                |
@@ -35,20 +35,19 @@ Dernière consolidation : 13 août 2026
 - panneau Configuration avec navigation latérale et accordéons ;
 - composants UI partagés pour boutons, dialogues, titres, états vides, champs Reactive Forms, tags et pills ;
 - navigation Retour commune aux écrans d’une campagne.
+- configuration globale des systèmes et univers avec corbeille, restauration et purge ;
+- ressources partagées par univers et associations explicites aux campagnes.
 
 ### Prochaine priorité recommandée
 
 Le prochain ordre de livraison retenu est :
 
-1. **Jalon 8 — Scènes**, car les briques nécessaires sont désormais présentes : lieux, PNJ, objets, médias et Player Display ;
-2. **Jalon 9 — Bestiaire**, en réutilisant les fondations de la tranche PNJ sans recopier sa fiche détaillée ;
-3. **Jalon 10 — Combat léger**, alimenté par les PJ, les PNJ et le Bestiaire ;
-4. **Jalon 11 — Historique récent**, pour accélérer la navigation pendant la partie ;
-5. **Jalon 12 — Carte heuristique**, générée depuis les chapitres, les ressources liées et les mentions `@` ;
-6. **Jalon 13 — Tables aléatoires**, à cadrer fonctionnellement après la carte ;
-7. **Jalon 14 — Durcissement et livraison Windows**.
-
-Avant d’implémenter les scènes, il faut définir avec le MJ leur comportement exact et la place des objets dans leur composition.
+1. **Jalon 9 — Bestiaire**, en réutilisant les fondations de la tranche PNJ sans recopier son workspace ;
+2. **Jalon 10 — Combat léger**, alimenté par les PJ, les PNJ et le Bestiaire ;
+3. **Jalon 11 — Historique récent**, pour accélérer la navigation pendant la partie ;
+4. **Jalon 12 — Carte heuristique**, générée depuis les chapitres, les ressources liées et les mentions `@` ;
+5. **Jalon 13 — Tables aléatoires**, à cadrer fonctionnellement après la carte ;
+6. **Jalon 14 — Durcissement et livraison Windows**.
 
 Les tables aléatoires sont désormais inscrites dans la séquence, mais leur modèle et leur expérience d’utilisation seront décidés avec le MJ au début du jalon 13.
 

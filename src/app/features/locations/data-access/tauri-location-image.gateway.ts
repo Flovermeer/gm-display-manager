@@ -15,11 +15,11 @@ import { BaseDirectory, copyFile, mkdir, remove } from '@tauri-apps/plugin-fs';
 import { LocationImageGateway } from '@app/features/locations/data-access/location-image.gateway';
 
 const SUPPORTED_EXTENSIONS = ['png', 'jpg', 'jpeg', 'webp'] as const;
-const MEDIA_ROOT = 'campaigns';
+const MEDIA_ROOT = 'universes';
 
 export class TauriLocationImageGateway extends LocationImageGateway {
-  override async chooseAndImport(campaignId: string): Promise<string | null> {
-    assertSafePathSegment(campaignId);
+  override async chooseAndImport(universeId: string): Promise<string | null> {
+    assertSafePathSegment(universeId);
     const selectedPath = await open({
       multiple: false,
       directory: false,
@@ -31,7 +31,7 @@ export class TauriLocationImageGateway extends LocationImageGateway {
     }
 
     const extension = fileExtension(selectedPath);
-    const relativeDirectory = `${MEDIA_ROOT}/${campaignId}/media/locations`;
+    const relativeDirectory = `${MEDIA_ROOT}/${universeId}/media/locations`;
     const relativePath = `${relativeDirectory}/${crypto.randomUUID()}.${extension}`;
     const destinationPath = await this.absolutePath(relativePath);
 
@@ -71,7 +71,7 @@ function assertInternalImagePath(relativePath: string): void {
   const segments = relativePath.split('/');
   if (
     segments.length !== 5 ||
-    segments[0] !== MEDIA_ROOT ||
+    !['campaigns', MEDIA_ROOT].includes(segments[0]) ||
     segments[2] !== 'media' ||
     segments[3] !== 'locations' ||
     segments.some((segment) => !segment || segment === '.' || segment === '..')
@@ -82,6 +82,6 @@ function assertInternalImagePath(relativePath: string): void {
 
 function assertSafePathSegment(value: string): void {
   if (!/^[a-zA-Z0-9-]+$/.test(value)) {
-    throw new Error('Invalid campaign identifier.');
+    throw new Error('Invalid universe identifier.');
   }
 }

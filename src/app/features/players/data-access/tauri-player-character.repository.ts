@@ -43,9 +43,11 @@ export class TauriPlayerCharacterRepository extends PlayerCharacterRepository {
     const database = await this.getDatabase();
     const rows = await database.select<PlayerCharacterRow[]>(
       `${PLAYER_CHARACTER_COLUMNS}
-       FROM player_character
-       WHERE campaign_id = $1
-       ORDER BY name COLLATE NOCASE, id`,
+       FROM campaign_player_character
+       JOIN player_character
+         ON player_character.id = campaign_player_character.player_character_id
+       WHERE campaign_player_character.campaign_id = $1
+       ORDER BY player_character.name COLLATE NOCASE, player_character.id`,
       [campaignId],
     );
     return rows.map(mapPlayerCharacterRow);
@@ -55,8 +57,10 @@ export class TauriPlayerCharacterRepository extends PlayerCharacterRepository {
     const database = await this.getDatabase();
     const rows = await database.select<PlayerCharacterRow[]>(
       `${PLAYER_CHARACTER_COLUMNS}
-       FROM player_character
-       WHERE campaign_id = $1 AND id = $2`,
+       FROM campaign_player_character
+       JOIN player_character
+         ON player_character.id = campaign_player_character.player_character_id
+       WHERE campaign_player_character.campaign_id = $1 AND player_character.id = $2`,
       [campaignId, id],
     );
     return rows[0] ? mapPlayerCharacterRow(rows[0]) : null;
@@ -66,27 +70,21 @@ export class TauriPlayerCharacterRepository extends PlayerCharacterRepository {
     const database = await this.getDatabase();
     await database.execute(
       `INSERT INTO player_character (
-         id, campaign_id, name, player_name, status, current_hit_points, max_hit_points,
-         portrait_path, sheet_json, sheet_schema_version, created_at, updated_at
-       ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+         id, universe_id, name, max_hit_points, portrait_path, sheet_json,
+         sheet_schema_version, created_at, updated_at
+       ) VALUES ($1, (SELECT universe_id FROM campaign WHERE id=$2), $3, $4, $5, $6, $7, $8, $9)
        ON CONFLICT(id) DO UPDATE SET
          name = excluded.name,
-         player_name = excluded.player_name,
-         status = excluded.status,
-         current_hit_points = excluded.current_hit_points,
          max_hit_points = excluded.max_hit_points,
          portrait_path = excluded.portrait_path,
          sheet_json = excluded.sheet_json,
          sheet_schema_version = excluded.sheet_schema_version,
          updated_at = excluded.updated_at
-       WHERE player_character.campaign_id = excluded.campaign_id`,
+       WHERE player_character.universe_id = excluded.universe_id`,
       [
         character.id,
         character.campaignId,
         character.name,
-        character.playerName,
-        character.status,
-        character.currentHitPoints,
         character.maxHitPoints,
         character.portraitPath,
         JSON.stringify(character.sheet),
@@ -95,11 +93,29 @@ export class TauriPlayerCharacterRepository extends PlayerCharacterRepository {
         character.updatedAt,
       ],
     );
+    await database.execute(
+      `INSERT INTO campaign_player_character(
+         campaign_id, player_character_id, player_name, status, current_hit_points,
+         created_at, updated_at
+       ) VALUES ($1, $2, $3, $4, $5, $6, $7)
+       ON CONFLICT(campaign_id, player_character_id) DO UPDATE SET
+         player_name=excluded.player_name, status=excluded.status,
+         current_hit_points=excluded.current_hit_points, updated_at=excluded.updated_at`,
+      [
+        character.campaignId,
+        character.id,
+        character.playerName,
+        character.status,
+        character.currentHitPoints,
+        character.createdAt,
+        character.updatedAt,
+      ],
+    );
   }
 
   override async delete(campaignId: string, id: string): Promise<void> {
     const database = await this.getDatabase();
-    await database.execute('DELETE FROM player_character WHERE campaign_id = $1 AND id = $2', [
+    await database.execute('DELETE FROM campaign_player_character WHERE campaign_id = $1 AND player_character_id = $2', [
       campaignId,
       id,
     ]);
@@ -114,9 +130,13 @@ export class TauriPlayerCharacterRepository extends PlayerCharacterRepository {
   }
 }
 
-const PLAYER_CHARACTER_COLUMNS = `SELECT id, campaign_id, name, player_name, status,
-                                          current_hit_points, max_hit_points, portrait_path, sheet_json,
-                                          sheet_schema_version, created_at, updated_at`;
+const PLAYER_CHARACTER_COLUMNS = `SELECT player_character.id,
+    campaign_player_character.campaign_id, player_character.name,
+    campaign_player_character.player_name, campaign_player_character.status,
+    campaign_player_character.current_hit_points, player_character.max_hit_points,
+    player_character.portrait_path, player_character.sheet_json,
+    player_character.sheet_schema_version, player_character.created_at,
+    MAX(player_character.updated_at, campaign_player_character.updated_at) AS updated_at`;
 
 function mapPlayerCharacterRow(row: PlayerCharacterRow): PlayerCharacter {
   return {

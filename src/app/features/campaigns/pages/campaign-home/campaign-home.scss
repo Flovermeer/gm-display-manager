@@ -13,11 +13,21 @@
 }
 
 .brand {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 1.25rem;
   margin-bottom: clamp(2rem, 5vh, 4rem);
+}
+
+.global-configuration-link {
+  position: absolute;
+  right: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  text-decoration: none;
 }
 
 .beholder-mark {
@@ -265,6 +275,42 @@ button:focus-visible {
   margin-top: 1.75rem;
 }
 
+.immutable-context {
+  margin: 1rem 0 0;
+  padding: 0.9rem 1rem;
+  border: 1px solid #56505a;
+  border-radius: 0.45rem;
+  color: #d3ccd6;
+  background: #1d1b1f;
+}
+
+.immutable-context strong {
+  display: block;
+  margin-top: 0.35rem;
+  color: #f5f0f7;
+}
+
+.creation-summary {
+  display: grid;
+  gap: 0.65rem;
+  margin: 1rem 0;
+}
+
+.creation-summary div {
+  display: grid;
+  grid-template-columns: 7rem 1fr;
+  gap: 1rem;
+}
+
+.creation-summary dt {
+  color: #6e665c;
+  font-weight: 700;
+}
+
+.creation-summary dd {
+  margin: 0;
+}
+
 .create-button:hover:not(:disabled) {
   background: #865fa0;
 }
@@ -293,6 +339,11 @@ button:focus-visible {
 @media (max-width: 34rem) {
   .brand {
     align-items: flex-start;
+    flex-wrap: wrap;
+  }
+
+  .global-configuration-link {
+    position: static;
   }
 
   .beholder-mark {

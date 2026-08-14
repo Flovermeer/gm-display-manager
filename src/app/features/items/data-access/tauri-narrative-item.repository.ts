@@ -40,16 +40,19 @@ export class TauriNarrativeItemRepository extends NarrativeItemRepository {
   private databasePromise?: Promise<Database>;
 
   override async listByCampaign(campaignId: string) {
-    return this.select(`${ITEM_COLUMNS} WHERE campaign_id = $1 ORDER BY name COLLATE NOCASE, id`, [
-      campaignId,
-    ]);
+    return this.select(
+      `${ITEM_COLUMNS} WHERE campaign_narrative_item.campaign_id = $1
+       ORDER BY narrative_item.name COLLATE NOCASE, narrative_item.id`,
+      [campaignId],
+    );
   }
 
   override async findById(campaignId: string, id: string) {
-    const items = await this.select(`${ITEM_COLUMNS} WHERE campaign_id = $1 AND id = $2`, [
-      campaignId,
-      id,
-    ]);
+    const items = await this.select(
+      `${ITEM_COLUMNS} WHERE campaign_narrative_item.campaign_id = $1
+       AND narrative_item.id = $2`,
+      [campaignId, id],
+    );
     return items[0] ?? null;
   }
 
@@ -63,30 +66,24 @@ export class TauriNarrativeItemRepository extends NarrativeItemRepository {
       await this.database()
     ).execute(
       `INSERT INTO narrative_item (
-         id, campaign_id, item_type_id, item_rarity_id, owner_npc_id, owner_location_id,
-         owner_player_character_id, name, status, attunement, attunement_condition, summary,
-         description_json, description_schema_version, image_path, created_at, updated_at
-       ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17)
+         id, universe_id, item_type_id, item_rarity_id, name, attunement,
+         attunement_condition, summary, description_json, description_schema_version,
+         image_path, created_at, updated_at
+       ) VALUES ($1,(SELECT universe_id FROM campaign WHERE id=$2),$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)
        ON CONFLICT(id) DO UPDATE SET
          item_type_id=excluded.item_type_id, item_rarity_id=excluded.item_rarity_id,
-         owner_npc_id=excluded.owner_npc_id, owner_location_id=excluded.owner_location_id,
-         owner_player_character_id=excluded.owner_player_character_id, name=excluded.name,
-         status=excluded.status, attunement=excluded.attunement,
+         name=excluded.name, attunement=excluded.attunement,
          attunement_condition=excluded.attunement_condition, summary=excluded.summary,
          description_json=excluded.description_json,
          description_schema_version=excluded.description_schema_version,
          image_path=excluded.image_path, updated_at=excluded.updated_at
-       WHERE narrative_item.campaign_id=excluded.campaign_id`,
+       WHERE narrative_item.universe_id=excluded.universe_id`,
       [
         item.id,
         item.campaignId,
         item.itemTypeId,
         item.itemRarityId,
-        ownerIds.npc,
-        ownerIds.location,
-        ownerIds.character,
         item.name,
-        item.status,
         item.attunement,
         item.attunementCondition,
         item.summary,
@@ -97,12 +94,38 @@ export class TauriNarrativeItemRepository extends NarrativeItemRepository {
         item.updatedAt,
       ],
     );
+    await (
+      await this.database()
+    ).execute(
+      `INSERT INTO campaign_narrative_item(
+         campaign_id, item_id, status, owner_npc_id, owner_location_id,
+         owner_player_character_id, created_at, updated_at
+       ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8)
+       ON CONFLICT(campaign_id, item_id) DO UPDATE SET
+         status=excluded.status, owner_npc_id=excluded.owner_npc_id,
+         owner_location_id=excluded.owner_location_id,
+         owner_player_character_id=excluded.owner_player_character_id,
+         updated_at=excluded.updated_at`,
+      [
+        item.campaignId,
+        item.id,
+        item.status,
+        ownerIds.npc,
+        ownerIds.location,
+        ownerIds.character,
+        item.createdAt,
+        item.updatedAt,
+      ],
+    );
   }
 
   override async delete(campaignId: string, id: string): Promise<void> {
     await (
       await this.database()
-    ).execute('DELETE FROM narrative_item WHERE campaign_id = $1 AND id = $2', [campaignId, id]);
+    ).execute('DELETE FROM campaign_narrative_item WHERE campaign_id = $1 AND item_id = $2', [
+      campaignId,
+      id,
+    ]);
   }
 
   override async countUsingConfiguration(campaignId: string, kind: 'type' | 'rarity', id: string) {
@@ -110,7 +133,9 @@ export class TauriNarrativeItemRepository extends NarrativeItemRepository {
     const rows = await (
       await this.database()
     ).select<{ count: number }[]>(
-      `SELECT COUNT(*) AS count FROM narrative_item WHERE campaign_id = $1 AND ${column} = $2`,
+      `SELECT COUNT(*) AS count FROM narrative_item
+       JOIN campaign_narrative_item ON campaign_narrative_item.item_id=narrative_item.id
+       WHERE campaign_narrative_item.campaign_id = $1 AND narrative_item.${column} = $2`,
       [campaignId, id],
     );
     return rows[0]?.count ?? 0;
@@ -130,10 +155,17 @@ export class TauriNarrativeItemRepository extends NarrativeItemRepository {
   }
 }
 
-const ITEM_COLUMNS = `SELECT id, campaign_id, item_type_id, item_rarity_id, owner_npc_id,
-  owner_location_id, owner_player_character_id, name, status, attunement,
-  attunement_condition, summary, description_json, description_schema_version,
-  image_path, created_at, updated_at FROM narrative_item`;
+const ITEM_COLUMNS = `SELECT narrative_item.id, campaign_narrative_item.campaign_id,
+  narrative_item.item_type_id, narrative_item.item_rarity_id,
+  campaign_narrative_item.owner_npc_id, campaign_narrative_item.owner_location_id,
+  campaign_narrative_item.owner_player_character_id, narrative_item.name,
+  campaign_narrative_item.status, narrative_item.attunement,
+  narrative_item.attunement_condition, narrative_item.summary,
+  narrative_item.description_json, narrative_item.description_schema_version,
+  narrative_item.image_path, narrative_item.created_at,
+  MAX(narrative_item.updated_at, campaign_narrative_item.updated_at) AS updated_at
+  FROM campaign_narrative_item
+  JOIN narrative_item ON narrative_item.id=campaign_narrative_item.item_id`;
 
 function mapRow(row: ItemRow): NarrativeItem {
   return {

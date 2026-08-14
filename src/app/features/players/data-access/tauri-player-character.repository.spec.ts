@@ -33,13 +33,10 @@ describe('TauriPlayerCharacterRepository', () => {
     const repository = new TauriPlayerCharacterRepository();
     await repository.save(character);
 
-    expect(database.execute).toHaveBeenCalledWith(expect.stringContaining('ON CONFLICT(id)'), [
+    expect(database.execute).toHaveBeenNthCalledWith(1, expect.stringContaining('ON CONFLICT(id)'), [
       'character-id',
       'campaign-id',
       'Nyssa',
-      'Flore',
-      'active',
-      18,
       24,
       'campaigns/campaign-id/media/player-character-portraits/nyssa.webp',
       JSON.stringify(character.sheet),
@@ -47,6 +44,19 @@ describe('TauriPlayerCharacterRepository', () => {
       '2026-08-12T18:30:00.000Z',
       '2026-08-12T18:30:00.000Z',
     ]);
+    expect(database.execute).toHaveBeenNthCalledWith(
+      2,
+      expect.stringContaining('campaign_player_character'),
+      [
+        'campaign-id',
+        'character-id',
+        'Flore',
+        'active',
+        18,
+        '2026-08-12T18:30:00.000Z',
+        '2026-08-12T18:30:00.000Z',
+      ],
+    );
   });
 });
 

@@ -15,11 +15,11 @@ import { BaseDirectory, copyFile, mkdir, remove } from '@tauri-apps/plugin-fs';
 import { NpcPortraitGateway } from '@app/features/npcs/data-access/npc-portrait.gateway';
 
 const SUPPORTED_EXTENSIONS = ['png', 'jpg', 'jpeg', 'webp'] as const;
-const PORTRAIT_ROOT = 'campaigns';
+const PORTRAIT_ROOT = 'universes';
 
 export class TauriNpcPortraitGateway extends NpcPortraitGateway {
-  override async chooseAndImport(campaignId: string): Promise<string | null> {
-    assertSafePathSegment(campaignId);
+  override async chooseAndImport(universeId: string): Promise<string | null> {
+    assertSafePathSegment(universeId);
     const selectedPath = await open({
       multiple: false,
       directory: false,
@@ -31,7 +31,7 @@ export class TauriNpcPortraitGateway extends NpcPortraitGateway {
     }
 
     const extension = fileExtension(selectedPath);
-    const relativeDirectory = `${PORTRAIT_ROOT}/${campaignId}/media/npc-portraits`;
+    const relativeDirectory = `${PORTRAIT_ROOT}/${universeId}/media/npc-portraits`;
     const relativePath = `${relativeDirectory}/${crypto.randomUUID()}.${extension}`;
     const destinationPath = await this.absolutePath(relativePath);
 
@@ -81,7 +81,7 @@ function assertInternalPortraitPath(relativePath: string): void {
   const segments = relativePath.split('/');
   if (
     segments.length !== 5 ||
-    segments[0] !== PORTRAIT_ROOT ||
+    !['campaigns', PORTRAIT_ROOT].includes(segments[0]) ||
     segments[2] !== 'media' ||
     segments[3] !== 'npc-portraits' ||
     segments.some((segment) => !segment || segment === '.' || segment === '..')
@@ -92,6 +92,6 @@ function assertInternalPortraitPath(relativePath: string): void {
 
 function assertSafePathSegment(value: string): void {
   if (!/^[a-zA-Z0-9-]+$/.test(value)) {
-    throw new Error('Invalid campaign identifier.');
+    throw new Error('Invalid universe identifier.');
   }
 }

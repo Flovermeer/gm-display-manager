@@ -17,8 +17,8 @@ import { PlayerCharacterPortraitGateway } from '@app/features/players/data-acces
 const SUPPORTED_EXTENSIONS = ['png', 'jpg', 'jpeg', 'webp'] as const;
 
 export class TauriPlayerCharacterPortraitGateway extends PlayerCharacterPortraitGateway {
-  override async chooseAndImport(campaignId: string): Promise<string | null> {
-    assertSafeSegment(campaignId);
+  override async chooseAndImport(universeId: string): Promise<string | null> {
+    assertSafeSegment(universeId);
     const selectedPath = await open({
       multiple: false,
       directory: false,
@@ -27,7 +27,7 @@ export class TauriPlayerCharacterPortraitGateway extends PlayerCharacterPortrait
     if (!selectedPath) return null;
 
     const extension = fileExtension(selectedPath);
-    const directory = `campaigns/${campaignId}/media/player-character-portraits`;
+    const directory = `universes/${universeId}/media/player-character-portraits`;
     const relativePath = `${directory}/${crypto.randomUUID()}.${extension}`;
     try {
       await mkdir(directory, { baseDir: BaseDirectory.AppData, recursive: true });
@@ -68,7 +68,7 @@ function assertInternalPath(path: string): void {
   const segments = path.split('/');
   if (
     segments.length !== 5 ||
-    segments[0] !== 'campaigns' ||
+    !['campaigns', 'universes'].includes(segments[0]) ||
     segments[2] !== 'media' ||
     segments[3] !== 'player-character-portraits' ||
     segments.some((segment) => !segment || segment === '.' || segment === '..')
@@ -78,7 +78,7 @@ function assertInternalPath(path: string): void {
 }
 
 function assertSafeSegment(value: string): void {
-  if (!/^[a-zA-Z0-9-]+$/.test(value)) throw new Error('Invalid campaign identifier.');
+  if (!/^[a-zA-Z0-9-]+$/.test(value)) throw new Error('Invalid universe identifier.');
 }
 
 function nativeErrorMessage(error: unknown): string {

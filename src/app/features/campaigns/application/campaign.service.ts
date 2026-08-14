@@ -11,7 +11,6 @@
 import { inject, Injectable } from '@angular/core';
 
 import { AppSettingRepository } from '@app/core/persistence/app-setting.repository';
-import { CampaignMediaGateway } from '@app/features/campaigns/data-access/campaign-media.gateway';
 import {
   createCampaign,
   updateCampaign,
@@ -27,7 +26,6 @@ const ACTIVE_CAMPAIGN_KEY = 'campaign.active_id';
 export class CampaignService {
   private readonly campaignRepository = inject(CampaignRepository);
   private readonly appSettingRepository = inject(AppSettingRepository);
-  private readonly campaignMediaGateway = inject(CampaignMediaGateway);
 
   list(): Promise<readonly Campaign[]> {
     return this.campaignRepository.list();
@@ -63,6 +61,5 @@ export class CampaignService {
     if ((await this.getActiveCampaignId()) === campaign.id) {
       await this.appSettingRepository.delete(ACTIVE_CAMPAIGN_KEY);
     }
-    await this.campaignMediaGateway.discardCampaign(campaign.id);
   }
 }

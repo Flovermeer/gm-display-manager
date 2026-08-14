@@ -7,6 +7,10 @@
       <p class="brand-kicker">Campaign & Display Manager</p>
       <h1 id="application-name">Beholder's Inn</h1>
     </div>
+    <a appButton="secondary" class="global-configuration-link" routerLink="/configuration">
+      <span aria-hidden="true">⚙</span>
+      Configuration
+    </a>
   </header>
 
   <div class="home-layout">
@@ -95,13 +99,28 @@
           formControlName="description"
           placeholder="Une courte présentation de la campagne…"
         />
-        <app-form-field
-          inputId="campaign-system"
-          label="Système de jeu"
-          controlType="select"
-          formControlName="systemKey"
-          [options]="systemOptions"
-        />
+        @if (editingCampaign(); as campaign) {
+          <p class="immutable-context">
+            L’univers de cette campagne est fixé à sa création.
+            <strong>{{ campaign.universeId }}</strong>
+          </p>
+        } @else {
+          <app-form-field
+            inputId="campaign-system"
+            label="Système de jeu"
+            controlType="select"
+            formControlName="gameSystemId"
+            [options]="systemOptions()"
+            (valueChange)="selectSystem($event)"
+          />
+          <app-form-field
+            inputId="campaign-universe"
+            label="Univers"
+            controlType="select"
+            formControlName="universeId"
+            [options]="universeOptions()"
+          />
+        }
 
         <div class="form-actions">
           @if (editingCampaign()) {
@@ -142,8 +161,8 @@
     headingId="delete-title"
   >
     <p>
-      Cette action supprimera la campagne, ses PJ, ses PNJ, ses lieux et tous les médias importés.
-      Elle ne pourra pas être annulée.
+      Cette action supprimera définitivement les chapitres, scènes, notes, associations et médias
+      propres à cette campagne. Les ressources partagées de l’univers seront conservées.
     </p>
     <div dialog-actions class="dialog-actions">
       <button appButton="secondary" type="button" (click)="cancelDelete()">Annuler</button>
@@ -154,6 +173,35 @@
         (click)="confirmDeleteCampaign()"
       >
         {{ isSubmitting() ? 'Suppression…' : 'Supprimer définitivement' }}
+      </button>
+    </div>
+  </app-dialog>
+}
+
+@if (campaignPendingCreation(); as campaign) {
+  <app-dialog
+    kicker="Nouvelle campagne"
+    [title]="'Créer ' + campaign.name + ' ?'"
+    headingId="create-confirmation-title"
+  >
+    <p>Vérifie les choix définitifs de cette campagne :</p>
+    <dl class="creation-summary">
+      <div><dt>Nom</dt><dd>{{ campaign.name }}</dd></div>
+      <div><dt>Système</dt><dd>{{ campaign.systemName }}</dd></div>
+      <div><dt>Univers</dt><dd>{{ campaign.universeName }}</dd></div>
+    </dl>
+    <p>Le système et l’univers ne pourront plus être modifiés après la création.</p>
+    <div dialog-actions class="dialog-actions">
+      <button appButton="secondary" type="button" (click)="cancelCreateCampaign()">
+        Corriger
+      </button>
+      <button
+        appButton="primary"
+        type="button"
+        [disabled]="isSubmitting()"
+        (click)="confirmCreateCampaign()"
+      >
+        {{ isSubmitting() ? 'Création…' : 'Confirmer la création' }}
       </button>
     </div>
   </app-dialog>

@@ -37,7 +37,7 @@ describe('TauriLocationRepository', () => {
     await repository.delete('campaign-id', 'location-id');
 
     expect(database.execute).toHaveBeenCalledWith(
-      'DELETE FROM location WHERE campaign_id = $1 AND id = $2',
+      'DELETE FROM campaign_location WHERE campaign_id = $1 AND location_id = $2',
       ['campaign-id', 'location-id'],
     );
   });
@@ -47,17 +47,21 @@ describe('TauriLocationRepository', () => {
 
     await repository.save(location);
 
-    expect(database.execute).toHaveBeenCalledWith(expect.stringContaining('ON CONFLICT(id)'), [
+    expect(database.execute).toHaveBeenNthCalledWith(1, expect.stringContaining('ON CONFLICT(id)'), [
       'location-id',
       'campaign-id',
       'parent-id',
       "Beholder's Inn",
       'Auberge de Port Nyanzaru',
-      'Repère animé.',
       'campaigns/campaign-id/media/locations/inn.webp',
       '2026-08-12T18:30:00.000Z',
       '2026-08-12T18:30:00.000Z',
     ]);
+    expect(database.execute).toHaveBeenNthCalledWith(
+      2,
+      expect.stringContaining('campaign_location'),
+      ['campaign-id', 'location-id', '2026-08-12T18:30:00.000Z'],
+    );
   });
 });
 

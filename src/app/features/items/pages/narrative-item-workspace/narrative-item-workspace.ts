@@ -208,7 +208,7 @@ export class NarrativeItemWorkspace implements OnInit, PendingChangesAware {
     if (!campaign || this.isImportingImage()) return;
     this.isImportingImage.set(true);
     try {
-      const path = await this.imageGateway.chooseAndImport(campaign.id);
+      const path = await this.imageGateway.chooseAndImport(campaign.universeId);
       if (!path) return;
       const previous = this.draftImagePath();
       this.draftImagePath.set(path);

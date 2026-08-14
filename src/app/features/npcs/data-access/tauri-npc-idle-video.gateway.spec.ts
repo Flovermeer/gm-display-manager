@@ -30,8 +30,8 @@ describe('TauriNpcIdleVideoGateway', () => {
   it('imports WebM and MP4 files into the campaign directory', async () => {
     vi.mocked(open).mockResolvedValue('C:\\Videos\\syndra.webm');
 
-    await expect(new TauriNpcIdleVideoGateway().chooseAndImport('campaign-id')).resolves.toBe(
-      'campaigns/campaign-id/media/npc-idle-videos/00000000-0000-4000-8000-000000000000.webm',
+    await expect(new TauriNpcIdleVideoGateway().chooseAndImport('universe-id')).resolves.toBe(
+      'universes/universe-id/media/npc-idle-videos/00000000-0000-4000-8000-000000000000.webm',
     );
     expect(copyFile).toHaveBeenCalledWith(
       'C:\\Videos\\syndra.webm',

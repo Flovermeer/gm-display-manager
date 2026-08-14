@@ -1,0 +1,121 @@
+<main class="global-configuration">
+  <header class="configuration-header">
+    <a appButton="secondary" routerLink="/campaigns">← Accueil</a>
+    <div>
+      <p class="configuration-header__kicker">Beholder's Inn</p>
+      <h1>Configuration</h1>
+    </div>
+  </header>
+
+  <div class="configuration-layout">
+    <nav class="configuration-menu" aria-label="Sections de configuration">
+      <button class="configuration-menu__item configuration-menu__item--active" type="button">
+        Systèmes de jeu
+      </button>
+    </nav>
+
+    <section class="configuration-workspace" aria-labelledby="systems-title">
+      <div class="configuration-workspace__heading">
+        <p class="configuration-workspace__kicker">Catalogue global</p>
+        <h2 id="systems-title">Systèmes de jeu</h2>
+      </div>
+
+      @if (isLoading()) {
+        <p>Chargement…</p>
+      } @else {
+        <div class="system-grid">
+          <section class="system-list" aria-label="Systèmes disponibles">
+            <div class="inline-create">
+              <app-form-field
+                inputId="new-system"
+                label="Nouveau système"
+                [formControl]="newSystemName"
+                placeholder="Pathfinder 2e"
+              />
+              <button appButton="primary" type="button" (click)="createSystem()">Ajouter</button>
+            </div>
+
+            @for (system of systems(); track system.id) {
+              <article
+                class="configuration-card"
+                [class.configuration-card--selected]="system.id === selectedSystemId()"
+                [class.configuration-card--trashed]="system.deletedAt"
+              >
+                <button type="button" class="configuration-card__main" (click)="selectSystem(system.id)">
+                  <strong>{{ system.name }}</strong>
+                  <small>{{ system.deletedAt ? 'Dans la corbeille' : 'Actif' }}</small>
+                </button>
+                <div class="configuration-card__actions">
+                  @if (system.deletedAt) {
+                    <button appButton="secondary" type="button" (click)="restoreSystem(system)">Restaurer</button>
+                    <button appButton="danger" type="button" (click)="requestPurge({ kind: 'system', item: system })">Purger</button>
+                  } @else {
+                    <button appButton="secondary" type="button" (click)="renameSystem(system)">Renommer</button>
+                    <button appButton="danger" type="button" (click)="trashSystem(system)">Corbeille</button>
+                  }
+                </div>
+              </article>
+            }
+          </section>
+
+          <section class="universe-list" aria-labelledby="universes-title">
+            <h3 id="universes-title">Univers de {{ selectedSystem()?.name || 'ce système' }}</h3>
+            @if (selectedSystem() && !selectedSystem()?.deletedAt) {
+              <div class="inline-create">
+                <app-form-field
+                  inputId="new-universe"
+                  label="Nouvel univers"
+                  [formControl]="newUniverseName"
+                  placeholder="Greyhawk"
+                />
+                <button appButton="primary" type="button" (click)="createUniverse()">Ajouter</button>
+              </div>
+            }
+
+            @for (universe of universes(); track universe.id) {
+              <article class="configuration-card" [class.configuration-card--trashed]="universe.deletedAt">
+                <div class="configuration-card__main">
+                  <strong>{{ universe.name }}</strong>
+                  <small>{{ universe.deletedAt ? 'Dans la corbeille' : 'Actif' }}</small>
+                </div>
+                <div class="configuration-card__actions">
+                  @if (universe.deletedAt) {
+                    <button appButton="secondary" type="button" (click)="restoreUniverse(universe)">Restaurer</button>
+                    <button appButton="danger" type="button" (click)="requestPurge({ kind: 'universe', item: universe })">Purger</button>
+                  } @else {
+                    <button appButton="secondary" type="button" (click)="renameUniverse(universe)">Renommer</button>
+                    <button appButton="danger" type="button" (click)="trashUniverse(universe)">Corbeille</button>
+                  }
+                </div>
+              </article>
+            } @empty {
+              <p class="empty-copy">Aucun univers configuré.</p>
+            }
+          </section>
+        </div>
+      }
+
+      @if (error(); as message) {
+        <p class="configuration-error" role="alert">{{ message }}</p>
+      }
+    </section>
+  </div>
+</main>
+
+@if (purgeTarget(); as target) {
+  <app-dialog
+    kicker="Suppression définitive"
+    [title]="'Purger ' + target.item.name + ' ?'"
+    headingId="purge-title"
+  >
+    <p>
+      Cette action est irréversible. Tout le contenu dépendant sera définitivement supprimé.
+    </p>
+    <div dialog-actions class="dialog-actions">
+      <button appButton="secondary" type="button" (click)="cancelPurge()">Annuler</button>
+      <button appButton="danger" type="button" [disabled]="isSubmitting()" (click)="confirmPurge()">
+        Supprimer définitivement
+      </button>
+    </div>
+  </app-dialog>
+}

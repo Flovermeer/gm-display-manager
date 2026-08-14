@@ -53,7 +53,7 @@ describe('TauriNpcRepository', () => {
       'npc-id',
     ]);
     expect(database.execute).toHaveBeenCalledWith(
-      'DELETE FROM npc WHERE campaign_id = $1 AND id = $2',
+      'DELETE FROM campaign_npc WHERE campaign_id = $1 AND npc_id = $2',
       ['campaign-id', 'npc-id'],
     );
   });
@@ -63,13 +63,10 @@ describe('TauriNpcRepository', () => {
 
     await repository.save(npc);
 
-    expect(database.execute).toHaveBeenCalledWith(expect.stringContaining('ON CONFLICT(id)'), [
+    expect(database.execute).toHaveBeenNthCalledWith(1, expect.stringContaining('ON CONFLICT(id)'), [
       'npc-id',
       'campaign-id',
       'Syndra Silvane',
-      'active',
-      'Commanditaire',
-      'Souffre de la malédiction.',
       'campaigns/campaign-id/media/npc-portraits/portrait.webp',
       'campaigns/campaign-id/media/npc-idle-videos/portrait.webm',
       JSON.stringify(npc.sheet),
@@ -77,6 +74,18 @@ describe('TauriNpcRepository', () => {
       '2026-08-12T18:30:00.000Z',
       '2026-08-12T18:30:00.000Z',
     ]);
+    expect(database.execute).toHaveBeenNthCalledWith(
+      2,
+      expect.stringContaining('campaign_npc'),
+      [
+        'campaign-id',
+        'npc-id',
+        'active',
+        'Commanditaire',
+        '2026-08-12T18:30:00.000Z',
+        '2026-08-12T18:30:00.000Z',
+      ],
+    );
   });
 });
 

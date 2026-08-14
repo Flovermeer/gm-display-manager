@@ -187,7 +187,7 @@ export class PlayerCharacterWorkspace implements OnInit, PendingChangesAware {
     this.isImportingPortrait.set(true);
     this.error.set(null);
     try {
-      const importedPath = await this.portraitGateway.chooseAndImport(campaign.id);
+      const importedPath = await this.portraitGateway.chooseAndImport(campaign.universeId);
       if (!importedPath) return;
       const previewUrl = await this.portraitGateway
         .resolveUrl(importedPath)

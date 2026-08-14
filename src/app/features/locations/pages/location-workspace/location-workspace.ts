@@ -178,7 +178,7 @@ export class LocationWorkspace implements OnInit, PendingChangesAware {
     this.error.set(null);
 
     try {
-      const importedPath = await this.locationImageGateway.chooseAndImport(campaign.id);
+      const importedPath = await this.locationImageGateway.chooseAndImport(campaign.universeId);
       if (!importedPath) {
         return;
       }

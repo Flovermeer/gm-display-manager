@@ -35,9 +35,10 @@ export class TauriLocationRepository extends LocationRepository {
     const database = await this.getDatabase();
     const rows = await database.select<LocationRow[]>(
       `${LOCATION_COLUMNS}
-       FROM location
-       WHERE campaign_id = $1
-       ORDER BY name COLLATE NOCASE, id`,
+       FROM campaign_location
+       JOIN location ON location.id = campaign_location.location_id
+       WHERE campaign_location.campaign_id = $1
+       ORDER BY location.name COLLATE NOCASE, location.id`,
       [campaignId],
     );
 
@@ -48,8 +49,9 @@ export class TauriLocationRepository extends LocationRepository {
     const database = await this.getDatabase();
     const rows = await database.select<LocationRow[]>(
       `${LOCATION_COLUMNS}
-       FROM location
-       WHERE campaign_id = $1 AND id = $2`,
+       FROM campaign_location
+       JOIN location ON location.id = campaign_location.location_id
+       WHERE campaign_location.campaign_id = $1 AND location.id = $2`,
       [campaignId, id],
     );
 
@@ -60,34 +62,36 @@ export class TauriLocationRepository extends LocationRepository {
     const database = await this.getDatabase();
     await database.execute(
       `INSERT INTO location (
-         id, campaign_id, parent_location_id, name, summary, notes, image_path,
-         created_at, updated_at
-       ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+         id, universe_id, parent_location_id, name, summary, image_path, created_at, updated_at
+       ) VALUES ($1, (SELECT universe_id FROM campaign WHERE id=$2), $3, $4, $5, $6, $7, $8)
        ON CONFLICT(id) DO UPDATE SET
          parent_location_id = excluded.parent_location_id,
          name = excluded.name,
          summary = excluded.summary,
-         notes = excluded.notes,
          image_path = excluded.image_path,
          updated_at = excluded.updated_at
-       WHERE location.campaign_id = excluded.campaign_id`,
+       WHERE location.universe_id = excluded.universe_id`,
       [
         location.id,
         location.campaignId,
         location.parentLocationId,
         location.name,
         location.summary,
-        location.notes,
         location.imagePath,
         location.createdAt,
         location.updatedAt,
       ],
     );
+    await database.execute(
+      `INSERT INTO campaign_location(campaign_id, location_id, created_at)
+       VALUES ($1, $2, $3) ON CONFLICT(campaign_id, location_id) DO NOTHING`,
+      [location.campaignId, location.id, location.createdAt],
+    );
   }
 
   override async delete(campaignId: string, id: string): Promise<void> {
     const database = await this.getDatabase();
-    await database.execute('DELETE FROM location WHERE campaign_id = $1 AND id = $2', [
+    await database.execute('DELETE FROM campaign_location WHERE campaign_id = $1 AND location_id = $2', [
       campaignId,
       id,
     ]);
@@ -103,8 +107,10 @@ export class TauriLocationRepository extends LocationRepository {
   }
 }
 
-const LOCATION_COLUMNS = `SELECT id, campaign_id, parent_location_id, name,
-                                 summary, notes, image_path, created_at, updated_at`;
+const LOCATION_COLUMNS = `SELECT location.id, campaign_location.campaign_id,
+                                 location.parent_location_id, location.name,
+                                 location.summary, '' AS notes, location.image_path,
+                                 location.created_at, location.updated_at`;
 
 function mapLocationRow(row: LocationRow): Location {
   return {

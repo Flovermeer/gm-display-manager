@@ -1,6 +1,5 @@
 import {
   createCampaign,
-  DEFAULT_CAMPAIGN_SYSTEM_KEY,
   updateCampaign,
   type CampaignFactoryDependencies,
 } from '@app/features/campaigns/domain/campaign';
@@ -11,12 +10,13 @@ describe('createCampaign', () => {
     now: () => new Date('2026-08-12T18:30:00.000Z'),
   };
 
-  it('creates a normalized D&D 5e campaign by default', () => {
+  it('creates a normalized campaign in the selected universe', () => {
     expect(
       createCampaign(
         {
           name: '  Tomb of Annihilation  ',
           description: '  Exploration de Chult  ',
+          universeId: '  forgotten-realms  ',
         },
         dependencies,
       ),
@@ -24,29 +24,31 @@ describe('createCampaign', () => {
       id: 'campaign-id',
       name: 'Tomb of Annihilation',
       description: 'Exploration de Chult',
-      systemKey: DEFAULT_CAMPAIGN_SYSTEM_KEY,
+      universeId: 'forgotten-realms',
       createdAt: '2026-08-12T18:30:00.000Z',
       updatedAt: '2026-08-12T18:30:00.000Z',
     });
   });
 
-  it('keeps an explicit system key', () => {
-    const campaign = createCampaign(
-      { name: 'Brindlewood Bay', systemKey: '  brindlewood-bay  ' },
-      dependencies,
-    );
-
-    expect(campaign.systemKey).toBe('brindlewood-bay');
-  });
-
   it('rejects an empty campaign name', () => {
-    expect(() => createCampaign({ name: '   ' }, dependencies)).toThrow(
+    expect(() =>
+      createCampaign({ name: '   ', universeId: 'forgotten-realms' }, dependencies),
+    ).toThrow(
       'Campaign name is required.',
     );
   });
 
+  it('rejects an empty universe', () => {
+    expect(() => createCampaign({ name: 'Tomb', universeId: '  ' }, dependencies)).toThrow(
+      'Campaign universe is required.',
+    );
+  });
+
   it('updates normalized editable fields', () => {
-    const campaign = createCampaign({ name: 'Tomb' }, dependencies);
+    const campaign = createCampaign(
+      { name: 'Tomb', universeId: 'forgotten-realms' },
+      dependencies,
+    );
 
     expect(
       updateCampaign(
@@ -54,7 +56,6 @@ describe('createCampaign', () => {
         {
           name: ' Tomb of Annihilation ',
           description: ' Exploration de Chult ',
-          systemKey: ' dnd5e ',
         },
         () => new Date('2026-08-13T10:00:00.000Z'),
       ),
@@ -62,7 +63,7 @@ describe('createCampaign', () => {
       id: campaign.id,
       name: 'Tomb of Annihilation',
       description: 'Exploration de Chult',
-      systemKey: 'dnd5e',
+      universeId: 'forgotten-realms',
       updatedAt: '2026-08-13T10:00:00.000Z',
     });
   });

@@ -193,6 +193,8 @@ SQLite stocke les données structurées.
 Exemples d'entités :
 
 ```text
+GameSystem
+GameUniverse
 Campaign
 Session
 Npc
@@ -206,21 +208,23 @@ Tag
 Relation
 ```
 
-Exemple simplifié :
+Les ressources partageables appartiennent à un univers et leur contexte appartient à la campagne :
 
 ```ts
 Npc {
   id
-  campaignId
+  universeId
   name
-  subtitle
-  armorClass
-  hitPoints
-  speed
-  notesJson
   portraitPath
   idleVideoPath
-  locationId
+  sheetJson
+}
+
+CampaignNpc {
+  campaignId
+  npcId
+  status
+  roleSummary
 }
 ```
 

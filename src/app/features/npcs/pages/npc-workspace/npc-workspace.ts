@@ -246,7 +246,7 @@ export class NpcWorkspace implements OnInit, PendingChangesAware {
     this.error.set(null);
 
     try {
-      const importedPath = await this.npcPortraitGateway.chooseAndImport(campaign.id);
+      const importedPath = await this.npcPortraitGateway.chooseAndImport(campaign.universeId);
       if (!importedPath) {
         return;
       }
@@ -278,7 +278,7 @@ export class NpcWorkspace implements OnInit, PendingChangesAware {
     this.isImportingVideo.set(true);
     this.error.set(null);
     try {
-      const importedPath = await this.npcIdleVideoGateway.chooseAndImport(campaign.id);
+      const importedPath = await this.npcIdleVideoGateway.chooseAndImport(campaign.universeId);
       if (!importedPath) return;
       const previousDraft = this.draftIdleVideoPath();
       this.draftIdleVideoPath.set(importedPath);

@@ -31,16 +31,16 @@ describe('TauriNpcPortraitGateway', () => {
     vi.mocked(open).mockResolvedValue('C:\\Pictures\\syndra.webp');
     const gateway = new TauriNpcPortraitGateway();
 
-    await expect(gateway.chooseAndImport('campaign-id')).resolves.toBe(
-      'campaigns/campaign-id/media/npc-portraits/00000000-0000-4000-8000-000000000000.webp',
+    await expect(gateway.chooseAndImport('universe-id')).resolves.toBe(
+      'universes/universe-id/media/npc-portraits/00000000-0000-4000-8000-000000000000.webp',
     );
-    expect(mkdir).toHaveBeenCalledWith('campaigns/campaign-id/media/npc-portraits', {
+    expect(mkdir).toHaveBeenCalledWith('universes/universe-id/media/npc-portraits', {
       baseDir: 14,
       recursive: true,
     });
     expect(copyFile).toHaveBeenCalledWith(
       'C:\\Pictures\\syndra.webp',
-      'C:\\AppData\\BeholdersInn\\campaigns\\campaign-id\\media\\npc-portraits\\00000000-0000-4000-8000-000000000000.webp',
+      'C:\\AppData\\BeholdersInn\\universes\\universe-id\\media\\npc-portraits\\00000000-0000-4000-8000-000000000000.webp',
     );
   });
 

@@ -17,8 +17,8 @@ import { NpcIdleVideoGateway } from '@app/features/npcs/data-access/npc-idle-vid
 const SUPPORTED_EXTENSIONS = ['webm', 'mp4'] as const;
 
 export class TauriNpcIdleVideoGateway extends NpcIdleVideoGateway {
-  override async chooseAndImport(campaignId: string): Promise<string | null> {
-    assertSafeSegment(campaignId);
+  override async chooseAndImport(universeId: string): Promise<string | null> {
+    assertSafeSegment(universeId);
     const selectedPath = await open({
       multiple: false,
       directory: false,
@@ -30,7 +30,7 @@ export class TauriNpcIdleVideoGateway extends NpcIdleVideoGateway {
     if (!extension || !SUPPORTED_EXTENSIONS.includes(extension as 'webm' | 'mp4')) {
       throw new Error('Choisis une vidéo WebM ou MP4.');
     }
-    const directory = `campaigns/${campaignId}/media/npc-idle-videos`;
+    const directory = `universes/${universeId}/media/npc-idle-videos`;
     const relativePath = `${directory}/${crypto.randomUUID()}.${extension}`;
     await mkdir(directory, { baseDir: BaseDirectory.AppData, recursive: true });
     await copyFile(selectedPath, await this.absolutePath(relativePath));
@@ -56,7 +56,7 @@ function assertInternalPath(path: string): void {
   const segments = path.split('/');
   if (
     segments.length !== 5 ||
-    segments[0] !== 'campaigns' ||
+    !['campaigns', 'universes'].includes(segments[0]) ||
     segments[2] !== 'media' ||
     segments[3] !== 'npc-idle-videos' ||
     segments.some((segment) => !segment || segment === '.' || segment === '..')
@@ -66,5 +66,5 @@ function assertInternalPath(path: string): void {
 }
 
 function assertSafeSegment(value: string): void {
-  if (!/^[a-zA-Z0-9-]+$/.test(value)) throw new Error('Invalid campaign identifier.');
+  if (!/^[a-zA-Z0-9-]+$/.test(value)) throw new Error('Invalid universe identifier.');
 }

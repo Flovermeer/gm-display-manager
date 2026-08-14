@@ -38,9 +38,10 @@ export class TauriNpcRepository extends NpcRepository {
     const database = await this.getDatabase();
     const rows = await database.select<NpcRow[]>(
       `${NPC_COLUMNS}
-       FROM npc
-       WHERE campaign_id = $1
-       ORDER BY name COLLATE NOCASE, id`,
+       FROM campaign_npc
+       JOIN npc ON npc.id = campaign_npc.npc_id
+       WHERE campaign_npc.campaign_id = $1
+       ORDER BY npc.name COLLATE NOCASE, npc.id`,
       [campaignId],
     );
 
@@ -51,8 +52,9 @@ export class TauriNpcRepository extends NpcRepository {
     const database = await this.getDatabase();
     const rows = await database.select<NpcRow[]>(
       `${NPC_COLUMNS}
-       FROM npc
-       WHERE campaign_id = $1 AND id = $2`,
+       FROM campaign_npc
+       JOIN npc ON npc.id = campaign_npc.npc_id
+       WHERE campaign_npc.campaign_id = $1 AND npc.id = $2`,
       [campaignId, id],
     );
 
@@ -63,27 +65,21 @@ export class TauriNpcRepository extends NpcRepository {
     const database = await this.getDatabase();
     await database.execute(
       `INSERT INTO npc (
-         id, campaign_id, name, status, summary, notes, portrait_path, idle_video_path,
+         id, universe_id, name, portrait_path, idle_video_path,
          sheet_json, sheet_schema_version, created_at, updated_at
-       ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+       ) VALUES ($1, (SELECT universe_id FROM campaign WHERE id=$2), $3, $4, $5, $6, $7, $8, $9)
        ON CONFLICT(id) DO UPDATE SET
          name = excluded.name,
-         status = excluded.status,
-         summary = excluded.summary,
-         notes = excluded.notes,
          portrait_path = excluded.portrait_path,
          idle_video_path = excluded.idle_video_path,
          sheet_json = excluded.sheet_json,
          sheet_schema_version = excluded.sheet_schema_version,
          updated_at = excluded.updated_at
-       WHERE npc.campaign_id = excluded.campaign_id`,
+       WHERE npc.universe_id = excluded.universe_id`,
       [
         npc.id,
         npc.campaignId,
         npc.name,
-        npc.status,
-        npc.summary,
-        npc.notes,
         npc.portraitPath,
         npc.idleVideoPath,
         JSON.stringify(npc.sheet),
@@ -92,11 +88,23 @@ export class TauriNpcRepository extends NpcRepository {
         npc.updatedAt,
       ],
     );
+    await database.execute(
+      `INSERT INTO campaign_npc(
+         campaign_id, npc_id, status, role_summary, created_at, updated_at
+       ) VALUES ($1, $2, $3, $4, $5, $6)
+       ON CONFLICT(campaign_id, npc_id) DO UPDATE SET
+         status=excluded.status, role_summary=excluded.role_summary,
+         updated_at=excluded.updated_at`,
+      [npc.campaignId, npc.id, npc.status, npc.summary, npc.createdAt, npc.updatedAt],
+    );
   }
 
   override async delete(campaignId: string, id: string): Promise<void> {
     const database = await this.getDatabase();
-    await database.execute('DELETE FROM npc WHERE campaign_id = $1 AND id = $2', [campaignId, id]);
+    await database.execute('DELETE FROM campaign_npc WHERE campaign_id = $1 AND npc_id = $2', [
+      campaignId,
+      id,
+    ]);
   }
 
   private getDatabase(): Promise<Database> {
@@ -109,9 +117,11 @@ export class TauriNpcRepository extends NpcRepository {
   }
 }
 
-const NPC_COLUMNS = `SELECT id, campaign_id, name, status, summary, notes,
-                            portrait_path, idle_video_path, sheet_json, sheet_schema_version,
-                            created_at, updated_at`;
+const NPC_COLUMNS = `SELECT npc.id, campaign_npc.campaign_id, npc.name,
+                            campaign_npc.status, campaign_npc.role_summary AS summary,
+                            '' AS notes, npc.portrait_path, npc.idle_video_path,
+                            npc.sheet_json, npc.sheet_schema_version,
+                            npc.created_at, MAX(npc.updated_at, campaign_npc.updated_at) AS updated_at`;
 
 function mapNpcRow(row: NpcRow): Npc {
   return {

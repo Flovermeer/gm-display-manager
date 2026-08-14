@@ -19,7 +19,7 @@ type CampaignRow = Readonly<{
   id: string;
   name: string;
   description: string;
-  system_key: string;
+  universe_id: string;
   created_at: string;
   updated_at: string;
 }>;
@@ -31,7 +31,7 @@ export class TauriCampaignRepository extends CampaignRepository {
   override async list(): Promise<readonly Campaign[]> {
     const database = await this.getDatabase();
     const rows = await database.select<CampaignRow[]>(
-      `SELECT id, name, description, system_key, created_at, updated_at
+      `SELECT id, name, description, universe_id, created_at, updated_at
        FROM campaign
        ORDER BY name COLLATE NOCASE, id`,
     );
@@ -42,7 +42,7 @@ export class TauriCampaignRepository extends CampaignRepository {
   override async findById(id: string): Promise<Campaign | null> {
     const database = await this.getDatabase();
     const rows = await database.select<CampaignRow[]>(
-      `SELECT id, name, description, system_key, created_at, updated_at
+      `SELECT id, name, description, universe_id, created_at, updated_at
        FROM campaign
        WHERE id = $1`,
       [id],
@@ -55,18 +55,17 @@ export class TauriCampaignRepository extends CampaignRepository {
     const database = await this.getDatabase();
     await database.execute(
       `INSERT INTO campaign (
-         id, name, description, system_key, created_at, updated_at
-       ) VALUES ($1, $2, $3, $4, $5, $6)
+         id, name, description, system_key, created_at, updated_at, universe_id
+       ) VALUES ($1, $2, $3, (SELECT game_system_id FROM game_universe WHERE id = $4), $5, $6, $4)
        ON CONFLICT(id) DO UPDATE SET
          name = excluded.name,
          description = excluded.description,
-         system_key = excluded.system_key,
          updated_at = excluded.updated_at`,
       [
         campaign.id,
         campaign.name,
         campaign.description,
-        campaign.systemKey,
+        campaign.universeId,
         campaign.createdAt,
         campaign.updatedAt,
       ],
@@ -93,7 +92,7 @@ function mapCampaignRow(row: CampaignRow): Campaign {
     id: row.id,
     name: row.name,
     description: row.description,
-    systemKey: row.system_key,
+    universeId: row.universe_id,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   };

@@ -6,9 +6,9 @@ export const routes: Routes = [
   {
     path: 'configuration',
     loadComponent: () =>
-      import(
-        '@app/features/game-systems/pages/global-configuration/global-configuration'
-      ).then(({ GlobalConfiguration }) => GlobalConfiguration),
+      import('@app/features/game-systems/pages/global-configuration/global-configuration').then(
+        ({ GlobalConfiguration }) => GlobalConfiguration,
+      ),
     title: "Beholder's Inn — Configuration",
   },
   {
@@ -68,6 +68,15 @@ export const routes: Routes = [
           ),
         canDeactivate: [pendingChangesGuard],
         title: "Beholder's Inn — PNJ",
+      },
+      {
+        path: 'bestiary',
+        loadComponent: () =>
+          import('@app/features/bestiary/pages/bestiary-workspace/bestiary-workspace').then(
+            ({ BestiaryWorkspace }) => BestiaryWorkspace,
+          ),
+        canDeactivate: [pendingChangesGuard],
+        title: "Beholder's Inn — Bestiaire",
       },
       {
         path: 'player-characters',

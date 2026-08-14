@@ -28,6 +28,7 @@ describe('CampaignNavigation', () => {
       'Chapitres',
       'Lieux',
       'PNJ',
+      'Bestiaire',
       'PJ',
       'Objets',
       'Journal',

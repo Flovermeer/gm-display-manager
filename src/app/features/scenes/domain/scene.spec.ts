@@ -12,6 +12,7 @@ describe('Scene', () => {
           summary: '  Première rencontre  ',
           locationId: '',
           npcIds: ['npc-1', 'npc-1', 'npc-2'],
+          monsterIds: ['monster-1', 'monster-1'],
           itemIds: ['item-1', 'item-1'],
         },
         () => 'scene-id',
@@ -24,6 +25,7 @@ describe('Scene', () => {
       summary: 'Première rencontre',
       locationId: null,
       npcIds: ['npc-1', 'npc-2'],
+      monsterIds: ['monster-1'],
       itemIds: ['item-1'],
       createdAt: '2026-08-13T12:00:00.000Z',
       updatedAt: '2026-08-13T12:00:00.000Z',
@@ -33,7 +35,7 @@ describe('Scene', () => {
   it('updates the editable fields and rejects an empty name', () => {
     const scene = createScene(
       'campaign-id',
-      { name: 'Port', summary: '', locationId: null, npcIds: [], itemIds: [] },
+      { name: 'Port', summary: '', locationId: null, npcIds: [], monsterIds: [], itemIds: [] },
       () => 'scene-id',
       now,
     );
@@ -45,6 +47,7 @@ describe('Scene', () => {
           summary: 'Audience',
           locationId: 'location-id',
           npcIds: ['npc-id'],
+          monsterIds: [],
           itemIds: [],
         },
         () => new Date('2026-08-13T13:00:00.000Z'),
@@ -55,7 +58,14 @@ describe('Scene', () => {
       updatedAt: '2026-08-13T13:00:00.000Z',
     });
     expect(() =>
-      updateScene(scene, { name: ' ', summary: '', locationId: null, npcIds: [], itemIds: [] }),
+      updateScene(scene, {
+        name: ' ',
+        summary: '',
+        locationId: null,
+        npcIds: [],
+        monsterIds: [],
+        itemIds: [],
+      }),
     ).toThrow('Scene name is required.');
   });
 });

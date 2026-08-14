@@ -88,6 +88,7 @@ function sceneFixture(overrides: Partial<Scene> = {}): Scene {
     summary: '',
     locationId: null,
     npcIds: [],
+    monsterIds: [],
     itemIds: [],
     createdAt: '2026-08-13T08:00:00.000Z',
     updatedAt: '2026-08-13T08:00:00.000Z',

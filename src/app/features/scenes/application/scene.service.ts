@@ -12,6 +12,7 @@ import { inject, Injectable } from '@angular/core';
 import { LocationService } from '@app/features/locations/application/location.service';
 import { NarrativeItemService } from '@app/features/items/application/narrative-item.service';
 import { NpcService } from '@app/features/npcs/application/npc.service';
+import { MonsterService } from '@app/features/bestiary/application/monster.service';
 import {
   createScene,
   updateScene,
@@ -25,6 +26,7 @@ export class SceneService {
   private readonly repository = inject(SceneRepository);
   private readonly locationService = inject(LocationService);
   private readonly npcService = inject(NpcService);
+  private readonly monsterService = inject(MonsterService);
   private readonly itemService = inject(NarrativeItemService);
 
   list(campaignId: string): Promise<readonly Scene[]> {
@@ -54,9 +56,10 @@ export class SceneService {
   }
 
   private async assertReferences(campaignId: string, input: UpdateSceneInput): Promise<void> {
-    const [locations, npcs, items] = await Promise.all([
+    const [locations, npcs, monsters, items] = await Promise.all([
       this.locationService.list(campaignId),
       this.npcService.list(campaignId),
+      this.monsterService.list(campaignId),
       this.itemService.list(campaignId),
     ]);
     if (input.locationId && !locations.some(({ id }) => id === input.locationId)) {
@@ -64,6 +67,9 @@ export class SceneService {
     }
     if (input.npcIds.some((id) => !npcs.some((npc) => npc.id === id))) {
       throw new Error("Un PNJ de la scène n'appartient pas à cette campagne.");
+    }
+    if (input.monsterIds.some((id) => !monsters.some((monster) => monster.id === id))) {
+      throw new Error("Un monstre de la scène n'appartient pas à cette campagne.");
     }
     if (input.itemIds.some((id) => !items.some((item) => item.id === id))) {
       throw new Error("Un objet de la scène n'appartient pas à cette campagne.");

@@ -153,6 +153,15 @@
             [options]="itemOptions()"
             formControlName="itemIds"
           />
+          <app-searchable-select
+            inputId="scene-monsters"
+            label="Monstres"
+            placeholder="Rechercher un monstre à ajouter…"
+            emptyMessage="Aucun autre monstre disponible."
+            [multiple]="true"
+            [options]="monsterOptions()"
+            formControlName="monsterIds"
+          />
         </form>
       } @else if (selectedScene(); as scene) {
         <article class="scene-sheet">
@@ -226,6 +235,20 @@
                 </ul>
               } @else {
                 <p>Aucun objet associé.</p>
+              }
+            </div>
+            <div>
+              <h3>Monstres</h3>
+              @if (selectedMonsters(scene).length) {
+                <ul>
+                  @for (monster of selectedMonsters(scene); track monster.id) {
+                    <li>
+                      <span>{{ monster.name }}</span>
+                    </li>
+                  }
+                </ul>
+              } @else {
+                <p>Aucun monstre associé.</p>
               }
             </div>
           </section>

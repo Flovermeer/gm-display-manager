@@ -17,6 +17,8 @@ import { NarrativeItemService } from '@app/features/items/application/narrative-
 import type { PendingChangesAware } from '@app/core/navigation/pending-changes.guard';
 import type { Npc } from '@app/features/npcs/domain/npc';
 import { NpcService } from '@app/features/npcs/application/npc.service';
+import { MonsterService } from '@app/features/bestiary/application/monster.service';
+import type { Monster } from '@app/features/bestiary/domain/monster';
 import type { Scene, UpdateSceneInput } from '@app/features/scenes/domain/scene';
 import { SceneService } from '@app/features/scenes/application/scene.service';
 import { ActiveSceneService } from '@app/features/scenes/application/active-scene.service';
@@ -60,6 +62,7 @@ export class SceneWorkspace implements OnInit, PendingChangesAware {
   private readonly sceneService = inject(SceneService);
   private readonly locationService = inject(LocationService);
   private readonly npcService = inject(NpcService);
+  private readonly monsterService = inject(MonsterService);
   private readonly itemService = inject(NarrativeItemService);
   private readonly activeSceneService = inject(ActiveSceneService);
   private readonly displayGateway = inject(DisplayGateway);
@@ -75,6 +78,7 @@ export class SceneWorkspace implements OnInit, PendingChangesAware {
   protected readonly scenes = signal<readonly Scene[]>([]);
   protected readonly locations = signal<readonly Location[]>([]);
   protected readonly npcs = signal<readonly Npc[]>([]);
+  protected readonly monsters = signal<readonly Monster[]>([]);
   protected readonly items = signal<readonly NarrativeItem[]>([]);
   protected readonly selectedScene = signal<Scene | null>(null);
   protected readonly searchTerm = signal('');
@@ -104,6 +108,9 @@ export class SceneWorkspace implements OnInit, PendingChangesAware {
   protected readonly npcOptions = computed<readonly SearchableSelectOption[]>(() =>
     this.npcs().map(({ id, name }) => ({ value: id, label: name })),
   );
+  protected readonly monsterOptions = computed<readonly SearchableSelectOption[]>(() =>
+    this.monsters().map(({ id, name }) => ({ value: id, label: name })),
+  );
   protected readonly itemOptions = computed<readonly SearchableSelectOption[]>(() =>
     this.items().map(({ id, name }) => ({ value: id, label: name })),
   );
@@ -112,6 +119,7 @@ export class SceneWorkspace implements OnInit, PendingChangesAware {
     summary: new FormControl('', { nonNullable: true }),
     locationId: new FormControl<string | null>(null),
     npcIds: new FormControl<readonly string[]>([], { nonNullable: true }),
+    monsterIds: new FormControl<readonly string[]>([], { nonNullable: true }),
     itemIds: new FormControl<readonly string[]>([], { nonNullable: true }),
   });
 
@@ -146,7 +154,14 @@ export class SceneWorkspace implements OnInit, PendingChangesAware {
     this.selectedScene.set(null);
     this.isCreating.set(true);
     this.isEditing.set(true);
-    this.sceneForm.reset({ name: '', summary: '', locationId: null, npcIds: [], itemIds: [] });
+    this.sceneForm.reset({
+      name: '',
+      summary: '',
+      locationId: null,
+      npcIds: [],
+      monsterIds: [],
+      itemIds: [],
+    });
     this.sceneForm.markAsPristine();
   }
 
@@ -298,6 +313,10 @@ export class SceneWorkspace implements OnInit, PendingChangesAware {
     return this.items().filter((item) => scene.itemIds.includes(item.id));
   }
 
+  protected selectedMonsters(scene: Scene): readonly Monster[] {
+    return this.monsters().filter((monster) => scene.monsterIds.includes(monster.id));
+  }
+
   protected continueEditing(): void {
     this.resolvePendingDecision(false);
   }
@@ -320,15 +339,17 @@ export class SceneWorkspace implements OnInit, PendingChangesAware {
     try {
       const campaign = await this.campaignContext.load();
       if (!campaign) return;
-      const [scenes, locations, npcs, items] = await Promise.all([
+      const [scenes, locations, npcs, monsters, items] = await Promise.all([
         this.sceneService.list(campaign.id),
         this.locationService.list(campaign.id),
         this.npcService.list(campaign.id),
+        this.monsterService.list(campaign.id),
         this.itemService.list(campaign.id),
       ]);
       this.scenes.set(scenes);
       this.locations.set(locations);
       this.npcs.set(npcs);
+      this.monsters.set(monsters);
       this.items.set(items);
       this.activeSceneId.set(await this.activeSceneService.get(campaign.id));
       if (this.displayGateway.isDesktop) {
@@ -394,6 +415,7 @@ export class SceneWorkspace implements OnInit, PendingChangesAware {
       summary: scene.summary,
       locationId: scene.locationId,
       npcIds: scene.npcIds,
+      monsterIds: scene.monsterIds,
       itemIds: scene.itemIds,
     });
     this.sceneForm.markAsPristine();
@@ -408,7 +430,15 @@ export class SceneWorkspace implements OnInit, PendingChangesAware {
     this.isEditing.set(false);
     this.isCreating.set(false);
     if (selected) this.populateForm(selected);
-    else this.sceneForm.reset({ name: '', summary: '', locationId: null, npcIds: [], itemIds: [] });
+    else
+      this.sceneForm.reset({
+        name: '',
+        summary: '',
+        locationId: null,
+        npcIds: [],
+        monsterIds: [],
+        itemIds: [],
+      });
   }
 
   private confirmPendingChanges(): boolean | Promise<boolean> {

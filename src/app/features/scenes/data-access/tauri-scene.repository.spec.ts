@@ -18,11 +18,16 @@ describe('TauriSceneRepository', () => {
     database.select
       .mockResolvedValueOnce([sceneRow])
       .mockResolvedValueOnce([{ scene_id: 'scene-id', resource_id: 'npc-id' }])
+      .mockResolvedValueOnce([{ scene_id: 'scene-id', resource_id: 'monster-id' }])
       .mockResolvedValueOnce([{ scene_id: 'scene-id', resource_id: 'item-id' }]);
     const repository = new TauriSceneRepository();
     await expect(repository.listByCampaign('campaign-id')).resolves.toEqual([scene]);
 
     await repository.save(scene);
+    expect(database.execute).toHaveBeenCalledWith(
+      'INSERT INTO scene_monster (scene_id, monster_id) VALUES ($1, $2)',
+      ['scene-id', 'monster-id'],
+    );
     expect(database.execute).toHaveBeenCalledWith(
       'INSERT INTO scene_npc (scene_id, npc_id) VALUES ($1, $2)',
       ['scene-id', 'npc-id'],
@@ -41,6 +46,7 @@ const scene: Scene = {
   summary: 'Repos nocturne',
   locationId: 'location-id',
   npcIds: ['npc-id'],
+  monsterIds: ['monster-id'],
   itemIds: ['item-id'],
   createdAt: '2026-08-13T12:00:00.000Z',
   updatedAt: '2026-08-13T12:00:00.000Z',

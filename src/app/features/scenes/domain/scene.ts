@@ -5,6 +5,7 @@ export type Scene = Readonly<{
   summary: string;
   locationId: string | null;
   npcIds: readonly string[];
+  monsterIds: readonly string[];
   itemIds: readonly string[];
   createdAt: string;
   updatedAt: string;
@@ -15,6 +16,7 @@ export type UpdateSceneInput = Readonly<{
   summary: string;
   locationId: string | null;
   npcIds: readonly string[];
+  monsterIds: readonly string[];
   itemIds: readonly string[];
 }>;
 
@@ -51,6 +53,7 @@ function normalizeInput(input: UpdateSceneInput): UpdateSceneInput {
     summary: input.summary.trim(),
     locationId: input.locationId || null,
     npcIds: uniqueIds(input.npcIds),
+    monsterIds: uniqueIds(input.monsterIds),
     itemIds: uniqueIds(input.itemIds),
   };
 }

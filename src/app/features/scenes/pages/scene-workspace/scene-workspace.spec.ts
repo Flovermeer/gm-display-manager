@@ -8,6 +8,7 @@ import { JournalEntryService } from '@app/features/journal/application/journal-e
 import { LocationService } from '@app/features/locations/application/location.service';
 import { NarrativeItemService } from '@app/features/items/application/narrative-item.service';
 import { NpcService } from '@app/features/npcs/application/npc.service';
+import { MonsterService } from '@app/features/bestiary/application/monster.service';
 import type { Scene } from '@app/features/scenes/domain/scene';
 import { SceneService } from '@app/features/scenes/application/scene.service';
 import { ActiveSceneService } from '@app/features/scenes/application/active-scene.service';
@@ -36,6 +37,7 @@ describe('SceneWorkspace', () => {
     summary: 'Wakanga reçoit les aventuriers.',
     locationId: 'location-id',
     npcIds: ['npc-id'],
+    monsterIds: ['monster-id'],
     itemIds: ['item-id'],
     createdAt: '2026-08-13T08:00:00.000Z',
     updatedAt: '2026-08-13T08:00:00.000Z',
@@ -95,6 +97,10 @@ describe('SceneWorkspace', () => {
           useValue: { list: () => Promise.resolve([{ id: 'npc-id', name: 'Wakanga' }]) },
         },
         {
+          provide: MonsterService,
+          useValue: { list: () => Promise.resolve([{ id: 'monster-id', name: 'Atropal' }]) },
+        },
+        {
           provide: NarrativeItemService,
           useValue: { list: () => Promise.resolve([{ id: 'item-id', name: "Anneau de l'Hiver" }]) },
         },
@@ -118,6 +124,7 @@ describe('SceneWorkspace', () => {
     await renderUntil(fixture, 'Villa de Wakanga');
     const content = (fixture.nativeElement as HTMLElement).textContent ?? '';
     expect(content).toContain('Wakanga');
+    expect(content).toContain('Atropal');
     expect(content).toContain("Anneau de l'Hiver");
   });
 

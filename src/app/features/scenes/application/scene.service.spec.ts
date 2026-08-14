@@ -13,6 +13,8 @@ import { InMemoryPlayerCharacterRepository } from '@app/features/players/data-ac
 import { InMemorySceneRepository } from '@app/features/scenes/data-access/in-memory-scene.repository';
 import { SceneRepository } from '@app/features/scenes/data-access/scene.repository';
 import { SceneService } from '@app/features/scenes/application/scene.service';
+import { MonsterRepository } from '@app/features/bestiary/data-access/monster.repository';
+import { InMemoryMonsterRepository } from '@app/features/bestiary/data-access/in-memory-monster.repository';
 
 describe('SceneService', () => {
   let service: SceneService;
@@ -22,6 +24,7 @@ describe('SceneService', () => {
       providers: [
         SceneService,
         { provide: SceneRepository, useClass: InMemorySceneRepository },
+        { provide: MonsterRepository, useClass: InMemoryMonsterRepository },
         { provide: LocationRepository, useClass: InMemoryLocationRepository },
         { provide: NpcRepository, useClass: InMemoryNpcRepository },
         { provide: PlayerCharacterRepository, useClass: InMemoryPlayerCharacterRepository },
@@ -38,6 +41,7 @@ describe('SceneService', () => {
       summary: '',
       locationId: null,
       npcIds: [],
+      monsterIds: [],
       itemIds: [],
     });
     await expect(service.list('campaign-id')).resolves.toEqual([scene]);
@@ -52,6 +56,7 @@ describe('SceneService', () => {
         summary: '',
         locationId: 'foreign-location',
         npcIds: [],
+        monsterIds: [],
         itemIds: [],
       }),
     ).rejects.toThrow("Le lieu de la scène n'appartient pas à cette campagne.");

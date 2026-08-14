@@ -1,0 +1,493 @@
+<div class="bestiary-workspace">
+  <aside class="bestiary-sidebar">
+    <input
+      class="bestiary-sidebar__search"
+      type="search"
+      placeholder="Nom, type ou FP…"
+      aria-label="Rechercher dans le bestiaire"
+      (input)="updateSearch($event)"
+    />
+    <div class="bestiary-sidebar__actions">
+      <button appButton="primary" type="button" (click)="createMonster()">+ Nouveau monstre</button>
+      <button appButton="secondary" type="button" (click)="openCatalog()">
+        Ajouter depuis l’univers
+      </button>
+    </div>
+    <div class="bestiary-sidebar__heading">
+      <strong>Bestiaire</strong>
+      <span>{{ monsters().length }}</span>
+    </div>
+    <div class="bestiary-sidebar__list">
+      @for (monster of filteredMonsters(); track monster.id) {
+        <button
+          class="monster-list-item"
+          [class.monster-list-item--selected]="monster.id === selectedMonster()?.id"
+          type="button"
+          (click)="selectMonster(monster)"
+        >
+          <strong>{{ monster.name }}</strong>
+          <small>
+            {{ monster.sheet.creatureType || 'Type inconnu' }}
+            @if (monster.sheet.challengeRating) {
+              · FP {{ monster.sheet.challengeRating }}
+            }
+          </small>
+        </button>
+      } @empty {
+        <p class="bestiary-sidebar__empty">Aucun monstre dans cette campagne.</p>
+      }
+    </div>
+  </aside>
+
+  <main class="bestiary-detail">
+    @if (error(); as message) {
+      <p class="bestiary-error" role="alert">{{ message }}</p>
+    }
+
+    @if (isCatalogOpen()) {
+      <section class="catalog-panel" aria-labelledby="catalog-title">
+        <header class="bestiary-detail__toolbar">
+          <div>
+            <p class="section-kicker">Catalogue partagé</p>
+            <h2 id="catalog-title">Monstres de l’univers</h2>
+          </div>
+          <button appButton="secondary" type="button" (click)="closeCatalog()">Fermer</button>
+        </header>
+        <div class="catalog-grid">
+          @for (monster of availableMonsters(); track monster.id) {
+            <article class="catalog-card">
+              <div>
+                <strong>{{ monster.name }}</strong>
+                <small>{{ typeLine(monster.sheet) }}</small>
+              </div>
+              <button appButton="primary" type="button" (click)="attachMonster(monster)">
+                Ajouter
+              </button>
+            </article>
+          } @empty {
+            <app-empty-state
+              icon="✦"
+              title="Tout le bestiaire est déjà disponible"
+              description="Crée une nouvelle fiche pour enrichir le catalogue de l’univers."
+            />
+          }
+        </div>
+      </section>
+    } @else if (isEditing()) {
+      <form class="monster-form" [formGroup]="monsterForm" (ngSubmit)="saveMonster()">
+        <header class="bestiary-detail__toolbar">
+          <div>
+            <p class="section-kicker">
+              {{ isCreating() ? 'Nouvelle créature' : 'Fiche canonique' }}
+            </p>
+            <h2>{{ isCreating() ? 'Créer un monstre' : 'Modifier ' + selectedMonster()?.name }}</h2>
+          </div>
+          <div class="toolbar-actions">
+            <button appButton="secondary" type="button" (click)="cancelEditing()">Annuler</button>
+            <button
+              appButton="primary"
+              type="submit"
+              [disabled]="monsterForm.invalid || isSaving()"
+            >
+              {{ isSaving() ? 'Enregistrement…' : 'Enregistrer' }}
+            </button>
+          </div>
+        </header>
+
+        <section class="monster-form__identity">
+          <div class="monster-form__identity-fields">
+            <app-form-field inputId="monster-name" label="Nom" formControlName="name" />
+            <div class="form-grid form-grid--three">
+              <app-form-field
+                inputId="monster-size"
+                label="Taille"
+                formControlName="size"
+                placeholder="Moyenne"
+              />
+              <app-form-field
+                inputId="monster-type"
+                label="Type"
+                formControlName="creatureType"
+                placeholder="Mort-vivant"
+              />
+              <app-form-field
+                inputId="monster-alignment"
+                label="Alignement"
+                formControlName="alignment"
+                placeholder="Neutre mauvais"
+              />
+            </div>
+          </div>
+          <button class="monster-image-picker" type="button" (click)="chooseImage()">
+            @if (imageUrl(); as url) {
+              <img [src]="url" alt="Illustration du monstre" />
+            } @else {
+              <span aria-hidden="true">🐉</span>
+            }
+            <strong>Choisir une image</strong>
+          </button>
+        </section>
+
+        <section class="monster-form__section">
+          <h3>Combat</h3>
+          <div class="form-grid form-grid--combat">
+            <app-form-field
+              inputId="monster-ac"
+              label="Classe d’armure"
+              controlType="number"
+              [min]="0"
+              formControlName="armorClass"
+            />
+            <app-form-field
+              inputId="monster-ac-details"
+              label="Détail de l’armure"
+              formControlName="armorClassDetails"
+            />
+            <app-form-field
+              inputId="monster-hp"
+              label="Points de vie"
+              controlType="number"
+              [min]="0"
+              formControlName="hitPoints"
+            />
+            <app-form-field
+              inputId="monster-hp-formula"
+              label="Formule de PV"
+              formControlName="hitPointFormula"
+              placeholder="15d8 + 15"
+            />
+            <app-form-field
+              inputId="monster-speed"
+              label="Vitesse"
+              formControlName="speed"
+              placeholder="9 m"
+            />
+          </div>
+          <div class="ability-grid">
+            <app-form-field
+              inputId="monster-str"
+              label="FOR"
+              controlType="number"
+              [min]="0"
+              formControlName="strength"
+            />
+            <app-form-field
+              inputId="monster-dex"
+              label="DEX"
+              controlType="number"
+              [min]="0"
+              formControlName="dexterity"
+            />
+            <app-form-field
+              inputId="monster-con"
+              label="CON"
+              controlType="number"
+              [min]="0"
+              formControlName="constitution"
+            />
+            <app-form-field
+              inputId="monster-int"
+              label="INT"
+              controlType="number"
+              [min]="0"
+              formControlName="intelligence"
+            />
+            <app-form-field
+              inputId="monster-wis"
+              label="SAG"
+              controlType="number"
+              [min]="0"
+              formControlName="wisdom"
+            />
+            <app-form-field
+              inputId="monster-cha"
+              label="CHA"
+              controlType="number"
+              [min]="0"
+              formControlName="charisma"
+            />
+          </div>
+          <div class="form-grid form-grid--two">
+            <app-form-field
+              inputId="monster-cr"
+              label="Facteur de puissance"
+              formControlName="challengeRating"
+            />
+            <app-form-field
+              inputId="monster-xp"
+              label="Points d’expérience"
+              controlType="number"
+              [min]="0"
+              formControlName="experiencePoints"
+            />
+          </div>
+        </section>
+
+        <section class="monster-form__section">
+          <h3>Défenses, sens et langues</h3>
+          <div class="tag-grid">
+            <app-tag-input
+              inputId="monster-saves"
+              label="Jets de sauvegarde"
+              [value]="monsterForm.controls.savingThrows.value"
+              (valueChange)="updateTags('savingThrows', $event)"
+            />
+            <app-tag-input
+              inputId="monster-skills"
+              label="Compétences"
+              [value]="monsterForm.controls.skills.value"
+              (valueChange)="updateTags('skills', $event)"
+            />
+            <app-tag-input
+              inputId="monster-vulnerabilities"
+              label="Vulnérabilités"
+              [value]="monsterForm.controls.damageVulnerabilities.value"
+              (valueChange)="updateTags('damageVulnerabilities', $event)"
+            />
+            <app-tag-input
+              inputId="monster-resistances"
+              label="Résistances"
+              [value]="monsterForm.controls.damageResistances.value"
+              (valueChange)="updateTags('damageResistances', $event)"
+            />
+            <app-tag-input
+              inputId="monster-immunities"
+              label="Immunités aux dégâts"
+              [value]="monsterForm.controls.damageImmunities.value"
+              (valueChange)="updateTags('damageImmunities', $event)"
+            />
+            <app-tag-input
+              inputId="monster-condition-immunities"
+              label="Immunités aux états"
+              [value]="monsterForm.controls.conditionImmunities.value"
+              (valueChange)="updateTags('conditionImmunities', $event)"
+            />
+            <app-tag-input
+              inputId="monster-senses"
+              label="Sens"
+              [value]="monsterForm.controls.senses.value"
+              (valueChange)="updateTags('senses', $event)"
+            />
+            <app-tag-input
+              inputId="monster-languages"
+              label="Langues"
+              [value]="monsterForm.controls.languages.value"
+              (valueChange)="updateTags('languages', $event)"
+            />
+          </div>
+        </section>
+
+        <section class="monster-form__section">
+          <h3>Description officielle</h3>
+          <app-rich-text-editor
+            [value]="officialDescription()"
+            (valueChange)="updateOfficialDescription($event)"
+          />
+        </section>
+      </form>
+    } @else if (selectedMonster(); as monster) {
+      <article class="monster-sheet">
+        <header class="bestiary-detail__toolbar">
+          <div>
+            <p class="section-kicker">Fiche du bestiaire</p>
+            <h2>{{ monster.name }}</h2>
+            <p>{{ typeLine(monster.sheet) }}</p>
+          </div>
+          <div class="toolbar-actions">
+            <button appButton="primary" type="button" (click)="editMonster()">Modifier</button>
+            <button appButton="danger" type="button" (click)="requestDetach(monster)">
+              Retirer de la campagne
+            </button>
+          </div>
+        </header>
+
+        <div class="monster-sheet__hero">
+          <div class="monster-stat-block">
+            <dl class="combat-lines">
+              <div>
+                <dt>Classe d’armure</dt>
+                <dd>{{ monster.sheet.armorClass ?? '—' }} {{ monster.sheet.armorClassDetails }}</dd>
+              </div>
+              <div>
+                <dt>Points de vie</dt>
+                <dd>
+                  {{ monster.sheet.hitPoints ?? '—' }}
+                  {{
+                    monster.sheet.hitPointFormula ? '(' + monster.sheet.hitPointFormula + ')' : ''
+                  }}
+                </dd>
+              </div>
+              <div>
+                <dt>Vitesse</dt>
+                <dd>{{ monster.sheet.speed || '—' }}</dd>
+              </div>
+            </dl>
+            <div class="ability-grid ability-grid--display">
+              <div>
+                <strong>FOR</strong
+                ><span
+                  >{{ monster.sheet.abilities.strength ?? '—' }} ({{
+                    abilityModifier(monster.sheet.abilities.strength)
+                  }})</span
+                >
+              </div>
+              <div>
+                <strong>DEX</strong
+                ><span
+                  >{{ monster.sheet.abilities.dexterity ?? '—' }} ({{
+                    abilityModifier(monster.sheet.abilities.dexterity)
+                  }})</span
+                >
+              </div>
+              <div>
+                <strong>CON</strong
+                ><span
+                  >{{ monster.sheet.abilities.constitution ?? '—' }} ({{
+                    abilityModifier(monster.sheet.abilities.constitution)
+                  }})</span
+                >
+              </div>
+              <div>
+                <strong>INT</strong
+                ><span
+                  >{{ monster.sheet.abilities.intelligence ?? '—' }} ({{
+                    abilityModifier(monster.sheet.abilities.intelligence)
+                  }})</span
+                >
+              </div>
+              <div>
+                <strong>SAG</strong
+                ><span
+                  >{{ monster.sheet.abilities.wisdom ?? '—' }} ({{
+                    abilityModifier(monster.sheet.abilities.wisdom)
+                  }})</span
+                >
+              </div>
+              <div>
+                <strong>CHA</strong
+                ><span
+                  >{{ monster.sheet.abilities.charisma ?? '—' }} ({{
+                    abilityModifier(monster.sheet.abilities.charisma)
+                  }})</span
+                >
+              </div>
+            </div>
+            <dl class="detail-lines">
+              @if (monster.sheet.savingThrows.length) {
+                <div>
+                  <dt>Jets de sauvegarde</dt>
+                  <dd>{{ monster.sheet.savingThrows.join(', ') }}</dd>
+                </div>
+              }
+              @if (monster.sheet.skills.length) {
+                <div>
+                  <dt>Compétences</dt>
+                  <dd>{{ monster.sheet.skills.join(', ') }}</dd>
+                </div>
+              }
+              @if (monster.sheet.damageVulnerabilities.length) {
+                <div>
+                  <dt>Vulnérabilités</dt>
+                  <dd>{{ monster.sheet.damageVulnerabilities.join(', ') }}</dd>
+                </div>
+              }
+              @if (monster.sheet.damageResistances.length) {
+                <div>
+                  <dt>Résistances</dt>
+                  <dd>{{ monster.sheet.damageResistances.join(', ') }}</dd>
+                </div>
+              }
+              @if (monster.sheet.damageImmunities.length) {
+                <div>
+                  <dt>Immunités aux dégâts</dt>
+                  <dd>{{ monster.sheet.damageImmunities.join(', ') }}</dd>
+                </div>
+              }
+              @if (monster.sheet.conditionImmunities.length) {
+                <div>
+                  <dt>Immunités aux états</dt>
+                  <dd>{{ monster.sheet.conditionImmunities.join(', ') }}</dd>
+                </div>
+              }
+              @if (monster.sheet.senses.length) {
+                <div>
+                  <dt>Sens</dt>
+                  <dd>{{ monster.sheet.senses.join(', ') }}</dd>
+                </div>
+              }
+              @if (monster.sheet.languages.length) {
+                <div>
+                  <dt>Langues</dt>
+                  <dd>{{ monster.sheet.languages.join(', ') }}</dd>
+                </div>
+              }
+              <div>
+                <dt>Dangerosité</dt>
+                <dd>
+                  {{ monster.sheet.challengeRating || '—' }}
+                  @if (monster.sheet.experiencePoints !== null) {
+                    ({{ monster.sheet.experiencePoints }} PX)
+                  }
+                </dd>
+              </div>
+            </dl>
+          </div>
+          <div class="monster-sheet__image">
+            @if (imageUrl(); as url) {
+              <img [src]="url" [alt]="'Illustration de ' + monster.name" />
+            } @else {
+              <span aria-hidden="true">🐉</span>
+            }
+          </div>
+        </div>
+        <section class="monster-description">
+          <h3>Description officielle</h3>
+          <app-rich-text-editor [value]="monster.sheet.officialDescription" [editable]="false" />
+        </section>
+      </article>
+    } @else {
+      <app-empty-state
+        icon="🐉"
+        title="Aucun monstre sélectionné"
+        description="Sélectionne une fiche, ajoute un monstre de l’univers ou crée-en un nouveau."
+      />
+    }
+  </main>
+</div>
+
+@if (showPendingChangesDialog()) {
+  <app-dialog
+    kicker="Modifications non enregistrées"
+    title="Que veux-tu faire ?"
+    headingId="monster-pending-title"
+  >
+    <p>Les modifications de cette fiche seront perdues si tu quittes.</p>
+    <div dialog-actions class="dialog-actions">
+      <button appButton="primary" type="button" [disabled]="isSaving()" (click)="saveAndLeave()">
+        Enregistrer et quitter
+      </button>
+      <button appButton="secondary-danger" type="button" (click)="leaveWithoutSaving()">
+        Quitter sans enregistrer
+      </button>
+      <button appButton="secondary" type="button" (click)="continueEditing()">
+        Continuer la modification
+      </button>
+    </div>
+  </app-dialog>
+}
+
+@if (monsterPendingDetachment(); as monster) {
+  <app-dialog
+    kicker="Sélection de campagne"
+    [title]="'Retirer ' + monster.name + ' ?'"
+    headingId="detach-monster-title"
+  >
+    <p>
+      La fiche restera dans le bestiaire de l’univers et pourra être ajoutée à une autre campagne.
+    </p>
+    <div dialog-actions class="dialog-actions">
+      <button appButton="secondary" type="button" (click)="cancelDetach()">Annuler</button>
+      <button appButton="danger" type="button" (click)="confirmDetach()">Retirer</button>
+    </div>
+  </app-dialog>
+}

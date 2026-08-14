@@ -3,7 +3,7 @@
  * Persiste les scènes et leurs relations dans SQLite.
  *
  * Responsabilités
- * - gère les associations PNJ et objets de façon transactionnelle ;
+ * - gère les associations PNJ, monstres et objets ;
  * - reconstruit le modèle complet à la lecture ;
  */
 
@@ -69,11 +69,18 @@ export class TauriSceneRepository extends SceneRepository {
       ],
     );
     await database.execute('DELETE FROM scene_npc WHERE scene_id = $1', [scene.id]);
+    await database.execute('DELETE FROM scene_monster WHERE scene_id = $1', [scene.id]);
     await database.execute('DELETE FROM scene_item WHERE scene_id = $1', [scene.id]);
     for (const npcId of scene.npcIds) {
       await database.execute('INSERT INTO scene_npc (scene_id, npc_id) VALUES ($1, $2)', [
         scene.id,
         npcId,
+      ]);
+    }
+    for (const monsterId of scene.monsterIds) {
+      await database.execute('INSERT INTO scene_monster (scene_id, monster_id) VALUES ($1, $2)', [
+        scene.id,
+        monsterId,
       ]);
     }
     for (const itemId of scene.itemIds) {
@@ -96,11 +103,17 @@ export class TauriSceneRepository extends SceneRepository {
     if (rows.length === 0) return [];
     const sceneIds = new Set(rows.map(({ id }) => id));
     const campaignId = rows[0].campaign_id;
-    const [npcRows, itemRows] = await Promise.all([
+    const [npcRows, monsterRows, itemRows] = await Promise.all([
       database.select<RelationRow[]>(
         `SELECT scene_npc.scene_id, scene_npc.npc_id AS resource_id
          FROM scene_npc JOIN scene ON scene.id = scene_npc.scene_id
          WHERE scene.campaign_id = $1 ORDER BY scene_npc.npc_id`,
+        [campaignId],
+      ),
+      database.select<RelationRow[]>(
+        `SELECT scene_monster.scene_id, scene_monster.monster_id AS resource_id
+         FROM scene_monster JOIN scene ON scene.id = scene_monster.scene_id
+         WHERE scene.campaign_id = $1 ORDER BY scene_monster.monster_id`,
         [campaignId],
       ),
       database.select<RelationRow[]>(
@@ -117,6 +130,9 @@ export class TauriSceneRepository extends SceneRepository {
       summary: row.summary,
       locationId: row.location_id,
       npcIds: npcRows
+        .filter(({ scene_id }) => scene_id === row.id && sceneIds.has(scene_id))
+        .map(({ resource_id }) => resource_id),
+      monsterIds: monsterRows
         .filter(({ scene_id }) => scene_id === row.id && sceneIds.has(scene_id))
         .map(({ resource_id }) => resource_id),
       itemIds: itemRows

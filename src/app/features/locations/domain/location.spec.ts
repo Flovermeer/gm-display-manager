@@ -24,6 +24,7 @@ describe('Location', () => {
     ).toEqual({
       id: 'location-id',
       campaignId: 'campaign-id',
+      provenance: 'campaign',
       parentLocationId: null,
       name: 'Port Nyanzaru',
       summary: 'Grande cité portuaire',

@@ -1,6 +1,9 @@
+import type { ResourceProvenance } from '@app/shared/domain/resource-provenance';
+
 export type Location = Readonly<{
   id: string;
   campaignId: string;
+  provenance: ResourceProvenance;
   parentLocationId: string | null;
   name: string;
   summary: string;
@@ -45,6 +48,7 @@ export function createLocation(
   return {
     id: dependencies.createId(),
     campaignId: input.campaignId,
+    provenance: 'campaign',
     parentLocationId: input.parentLocationId ?? null,
     name: requiredName(input.name),
     summary: input.summary?.trim() ?? '',

@@ -25,6 +25,10 @@ export class LocationService {
     return this.repository.listByCampaign(campaignId);
   }
 
+  listAvailable(campaignId: string): Promise<readonly Location[]> {
+    return this.repository.listAvailableByCampaign(campaignId);
+  }
+
   async create(
     campaignId: string,
     input: UpdateLocationInput,
@@ -49,6 +53,22 @@ export class LocationService {
 
   delete(location: Location): Promise<void> {
     return this.repository.delete(location.campaignId, location.id);
+  }
+
+  attach(campaignId: string, id: string): Promise<void> {
+    return this.repository.attach(campaignId, id);
+  }
+
+  promotionPlan(location: Location): Promise<readonly Location[]> {
+    return this.repository.promotionPlan(location.campaignId, location.id);
+  }
+
+  promote(location: Location): Promise<void> {
+    return this.repository.promote(location.campaignId, location.id);
+  }
+
+  resetOverride(location: Location): Promise<void> {
+    return this.repository.resetOverride(location.campaignId, location.id);
   }
 
   private async assertValidParent(

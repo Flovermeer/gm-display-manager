@@ -195,6 +195,7 @@ function location(overrides: Partial<Location>): Location {
   return {
     id: 'location-id',
     campaignId: 'campaign-id',
+    provenance: 'campaign',
     parentLocationId: null,
     name: 'Lieu',
     summary: '',

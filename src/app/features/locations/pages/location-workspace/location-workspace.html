@@ -30,6 +30,9 @@
       >
         + Nouveau lieu
       </button>
+      <button appButton="secondary" appButtonFull type="button" (click)="openCatalog()">
+        Ajouter depuis l’univers
+      </button>
     </div>
 
     <div class="location-list">
@@ -79,6 +82,11 @@
       <div class="detail-toolbar entity-workspace__toolbar">
         <div class="detail-actions entity-workspace__actions">
           @if (!isEditing()) {
+            @if (selectedLocation()?.provenance === 'campaign') {
+              <button appButton="secondary" type="button" (click)="requestPromotion()">
+                Enregistrer dans l’univers
+              </button>
+            }
             <button
               class="display-button"
               appButton="secondary"
@@ -90,8 +98,17 @@
               {{ isPublishing() ? 'Envoi…' : 'Afficher aux joueurs' }}
             </button>
             <button appButton="primary" type="button" (click)="editLocation()">Modifier</button>
+            @if (selectedLocation()?.provenance === 'override') {
+              <button appButton="secondary" type="button" (click)="requestReset()">
+                Réinitialiser depuis l’univers
+              </button>
+            }
             <button appButton="secondary-danger" type="button" (click)="requestDeleteLocation()">
-              Supprimer
+              {{
+                selectedLocation()?.provenance === 'campaign'
+                  ? 'Supprimer'
+                  : 'Retirer de la campagne'
+              }}
             </button>
           } @else {
             <button appButton="secondary" type="button" (click)="cancelEditing()">Annuler</button>
@@ -223,15 +240,90 @@
   </app-dialog>
 }
 
+@if (showCatalogDialog()) {
+  <app-dialog
+    kicker="Catalogue de l’univers"
+    title="Ajouter un lieu"
+    headingId="location-catalog-title"
+  >
+    <div class="catalog-grid">
+      @for (location of availableLocations(); track location.id) {
+        <div class="configuration-card">
+          <strong>{{ location.name }}</strong>
+          <span>{{ location.summary || 'Lieu' }}</span>
+          <button appButton="primary" type="button" (click)="attachLocation(location)">
+            Ajouter
+          </button>
+        </div>
+      } @empty {
+        <p>Tous les lieux de l’univers sont déjà utilisés dans cette campagne.</p>
+      }
+    </div>
+    <div dialog-actions class="dialog-actions">
+      <button appButton="secondary" type="button" (click)="showCatalogDialog.set(false)">
+        Fermer
+      </button>
+    </div>
+  </app-dialog>
+}
+
+@if (showPromotionDialog() && selectedLocation(); as location) {
+  <app-dialog
+    kicker="Catalogue de l’univers"
+    [title]="'Enregistrer ' + location.name + ' ?'"
+    headingId="location-promotion-title"
+  >
+    <p>
+      Les lieux suivants deviendront des références canoniques et resteront liés à cette campagne :
+    </p>
+    <ul>
+      @for (candidate of promotionPlan(); track candidate.id) {
+        <li>{{ candidate.name }}</li>
+      }
+    </ul>
+    <div dialog-actions class="dialog-actions">
+      <button appButton="secondary" type="button" (click)="showPromotionDialog.set(false)">
+        Annuler
+      </button>
+      <button appButton="primary" type="button" (click)="confirmPromotion()">Confirmer</button>
+    </div>
+  </app-dialog>
+}
+
+@if (showResetDialog() && selectedLocation(); as location) {
+  <app-dialog
+    kicker="Version de campagne"
+    [title]="'Réinitialiser ' + location.name + ' ?'"
+    headingId="location-reset-title"
+  >
+    <p>La personnalisation locale sera remplacée par la dernière fiche de l’univers.</p>
+    <div dialog-actions class="dialog-actions">
+      <button appButton="secondary" type="button" (click)="showResetDialog.set(false)">
+        Annuler
+      </button>
+      <button appButton="danger" type="button" (click)="confirmReset()">Réinitialiser</button>
+    </div>
+  </app-dialog>
+}
+
 @if (showDeleteDialog()) {
   <app-dialog
-    kicker="Suppression définitive"
-    [title]="'Supprimer ' + selectedLocation()?.name + ' ?'"
+    [kicker]="
+      selectedLocation()?.provenance === 'campaign' ? 'Corbeille' : 'Catalogue de la campagne'
+    "
+    [title]="
+      (selectedLocation()?.provenance === 'campaign' ? 'Supprimer ' : 'Retirer ') +
+      selectedLocation()?.name +
+      ' ?'
+    "
     headingId="delete-title"
   >
     <p>
-      Cette action supprimera définitivement ce lieu. Ses lieux enfants seront replacés à la racine
-      de la campagne.
+      @if (selectedLocation()?.provenance === 'campaign') {
+        Ce lieu sera placé dans la corbeille. Ses lieux enfants locaux seront replacés à la racine.
+      } @else {
+        La fiche restera disponible dans l’univers et pourra être ajoutée à nouveau plus tard.
+      }
     </p>
     <div dialog-actions class="dialog-actions">
       <button appButton="secondary" type="button" (click)="cancelDelete()">Annuler</button>
@@ -241,7 +333,7 @@
         [disabled]="isSaving()"
         (click)="confirmDeleteLocation()"
       >
-        Supprimer définitivement
+        {{ selectedLocation()?.provenance === 'campaign' ? 'Mettre à la corbeille' : 'Retirer' }}
       </button>
     </div>
   </app-dialog>

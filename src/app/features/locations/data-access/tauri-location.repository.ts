@@ -1,10 +1,11 @@
 /**
  * But
- * Persiste les lieux dans SQLite via Tauri.
+ * Persiste les lieux partagés et leur hiérarchie dans SQLite.
  *
  * Responsabilités
- * - exécute les requêtes de lieu ;
- * - convertit les lignes SQLite vers le domaine ;
+ * - projette une fiche canonique dans le contexte de la campagne ;
+ * - conserve les personnalisations de campagne sous forme de snapshot ;
+ * - maintient la chaîne des lieux parents lors d'un import ou d'une promotion.
  */
 
 import { Injectable } from '@angular/core';
@@ -25,54 +26,89 @@ type LocationRow = Readonly<{
   image_path: string | null;
   created_at: string;
   updated_at: string;
+  source_campaign_id: string | null;
+  override_snapshot: string | null;
 }>;
 
 @Injectable()
 export class TauriLocationRepository extends LocationRepository {
   private databasePromise?: Promise<Database>;
 
-  override async listByCampaign(campaignId: string): Promise<readonly Location[]> {
-    const database = await this.getDatabase();
-    const rows = await database.select<LocationRow[]>(
+  override listByCampaign(campaignId: string): Promise<readonly Location[]> {
+    return this.select(
       `${LOCATION_COLUMNS}
        FROM campaign_location
-       JOIN location ON location.id = campaign_location.location_id
-       WHERE campaign_location.campaign_id = $1
+       JOIN location ON location.id=campaign_location.location_id
+       LEFT JOIN campaign_resource_override AS resource_override
+         ON resource_override.campaign_id=campaign_location.campaign_id
+        AND resource_override.resource_type='location'
+        AND resource_override.resource_id=location.id
+       WHERE campaign_location.campaign_id=$1
+         AND NOT (location.source_campaign_id=$1 AND location.deleted_at IS NOT NULL)
        ORDER BY location.name COLLATE NOCASE, location.id`,
       [campaignId],
     );
+  }
 
-    return rows.map(mapLocationRow);
+  override listAvailableByCampaign(campaignId: string): Promise<readonly Location[]> {
+    return this.select(
+      `SELECT location.id, campaign.id AS campaign_id, location.parent_location_id,
+              location.name, location.summary, '' AS notes, location.image_path,
+              location.created_at, location.updated_at, location.source_campaign_id,
+              NULL AS override_snapshot
+       FROM campaign JOIN location ON location.universe_id=campaign.universe_id
+       WHERE campaign.id=$1 AND location.source_campaign_id IS NULL
+         AND location.deleted_at IS NULL
+         AND NOT EXISTS (
+           SELECT 1 FROM campaign_location
+           WHERE campaign_location.campaign_id=campaign.id
+             AND campaign_location.location_id=location.id
+         )
+       ORDER BY location.name COLLATE NOCASE, location.id`,
+      [campaignId],
+    );
   }
 
   override async findById(campaignId: string, id: string): Promise<Location | null> {
-    const database = await this.getDatabase();
-    const rows = await database.select<LocationRow[]>(
+    const locations = await this.select(
       `${LOCATION_COLUMNS}
        FROM campaign_location
-       JOIN location ON location.id = campaign_location.location_id
-       WHERE campaign_location.campaign_id = $1 AND location.id = $2`,
+       JOIN location ON location.id=campaign_location.location_id
+       LEFT JOIN campaign_resource_override AS resource_override
+         ON resource_override.campaign_id=campaign_location.campaign_id
+        AND resource_override.resource_type='location'
+        AND resource_override.resource_id=location.id
+       WHERE campaign_location.campaign_id=$1 AND location.id=$2`,
       [campaignId, id],
     );
-
-    return rows[0] ? mapLocationRow(rows[0]) : null;
+    return locations[0] ?? null;
   }
 
   override async save(location: Location): Promise<void> {
-    const database = await this.getDatabase();
+    const database = await this.database();
+    if (location.provenance !== 'campaign') {
+      await database.execute(
+        `INSERT INTO campaign_resource_override(
+           campaign_id, resource_type, resource_id, snapshot_json, created_at, updated_at
+         ) VALUES ($1,'location',$2,$3,$4,$4)
+         ON CONFLICT(campaign_id, resource_type, resource_id) DO UPDATE SET
+           snapshot_json=excluded.snapshot_json, updated_at=excluded.updated_at`,
+        [location.campaignId, location.id, JSON.stringify(snapshot(location)), location.updatedAt],
+      );
+      return;
+    }
+
     await database.execute(
-      `INSERT INTO location (
-         id, universe_id, parent_location_id, name, summary, image_path, created_at, updated_at,
-         source_campaign_id
-       ) VALUES ($1, (SELECT universe_id FROM campaign WHERE id=$2), $3, $4, $5, $6, $7, $8, $2)
+      `INSERT INTO location(
+         id, universe_id, parent_location_id, name, summary, image_path,
+         created_at, updated_at, source_campaign_id
+       ) VALUES ($1,(SELECT universe_id FROM campaign WHERE id=$2),$3,$4,$5,$6,$7,$8,$2)
        ON CONFLICT(id) DO UPDATE SET
-         parent_location_id = excluded.parent_location_id,
-         name = excluded.name,
-         summary = excluded.summary,
-         image_path = excluded.image_path,
-         updated_at = excluded.updated_at
-       WHERE location.universe_id = excluded.universe_id
-         AND location.source_campaign_id = excluded.source_campaign_id`,
+         parent_location_id=excluded.parent_location_id,
+         name=excluded.name, summary=excluded.summary,
+         image_path=excluded.image_path, updated_at=excluded.updated_at
+       WHERE location.universe_id=excluded.universe_id
+         AND location.source_campaign_id=excluded.source_campaign_id`,
       [
         location.id,
         location.campaignId,
@@ -84,46 +120,164 @@ export class TauriLocationRepository extends LocationRepository {
         location.updatedAt,
       ],
     );
-    await database.execute(
-      `INSERT INTO campaign_location(campaign_id, location_id, created_at)
-       VALUES ($1, $2, $3) ON CONFLICT(campaign_id, location_id) DO NOTHING`,
-      [location.campaignId, location.id, location.createdAt],
-    );
+    await this.attachAssociation(location.campaignId, location.id, location.createdAt);
   }
 
   override async delete(campaignId: string, id: string): Promise<void> {
-    const database = await this.getDatabase();
-    await database.execute('DELETE FROM campaign_location WHERE campaign_id = $1 AND location_id = $2', [
-      campaignId,
-      id,
-    ]);
+    const database = await this.database();
+    const local = await database.execute(
+      `UPDATE location SET deleted_at=CURRENT_TIMESTAMP, updated_at=CURRENT_TIMESTAMP
+       WHERE id=$2 AND source_campaign_id=$1`,
+      [campaignId, id],
+    );
+    if (local.rowsAffected > 0) {
+      await database.execute(
+        `UPDATE location SET parent_location_id=NULL, updated_at=CURRENT_TIMESTAMP
+         WHERE parent_location_id=$2 AND source_campaign_id=$1`,
+        [campaignId, id],
+      );
+      return;
+    }
+
+    await database.execute(
+      `DELETE FROM campaign_resource_override
+       WHERE campaign_id=$1 AND resource_type='location' AND resource_id=$2`,
+      [campaignId, id],
+    );
+    await database.execute(
+      'DELETE FROM campaign_location WHERE campaign_id=$1 AND location_id=$2',
+      [campaignId, id],
+    );
   }
 
-  private getDatabase(): Promise<Database> {
+  override async attach(campaignId: string, id: string): Promise<void> {
+    const database = await this.database();
+    const result = await database.execute(
+      `WITH RECURSIVE ancestors(id, parent_location_id) AS (
+         SELECT location.id, location.parent_location_id
+         FROM campaign JOIN location ON location.id=$2
+         WHERE campaign.id=$1 AND campaign.universe_id=location.universe_id
+           AND location.source_campaign_id IS NULL AND location.deleted_at IS NULL
+         UNION ALL
+         SELECT parent.id, parent.parent_location_id
+         FROM location AS parent
+         JOIN ancestors ON parent.id=ancestors.parent_location_id
+         WHERE parent.source_campaign_id IS NULL AND parent.deleted_at IS NULL
+       )
+       INSERT INTO campaign_location(campaign_id, location_id, created_at)
+       SELECT $1, id, CURRENT_TIMESTAMP FROM ancestors WHERE true
+       ON CONFLICT(campaign_id, location_id) DO NOTHING`,
+      [campaignId, id],
+    );
+    if (result.rowsAffected === 0 && !(await this.findById(campaignId, id))) {
+      throw new Error("Ce lieu n'appartient pas à l'univers de la campagne.");
+    }
+  }
+
+  override async promotionPlan(campaignId: string, id: string): Promise<readonly Location[]> {
+    const locations = await this.listByCampaign(campaignId);
+    const byId = new Map(locations.map((location) => [location.id, location]));
+    const plan: Location[] = [];
+    let current = byId.get(id);
+    const visited = new Set<string>();
+    while (current?.provenance === 'campaign' && !visited.has(current.id)) {
+      visited.add(current.id);
+      plan.unshift(current);
+      current = current.parentLocationId ? byId.get(current.parentLocationId) : undefined;
+    }
+    return plan;
+  }
+
+  override async promote(campaignId: string, id: string): Promise<void> {
+    const result = await (
+      await this.database()
+    ).execute(
+      `WITH RECURSIVE ancestors(id, parent_location_id) AS (
+         SELECT id, parent_location_id FROM location
+         WHERE id=$2 AND source_campaign_id=$1 AND deleted_at IS NULL
+         UNION ALL
+         SELECT parent.id, parent.parent_location_id
+         FROM location AS parent
+         JOIN ancestors ON parent.id=ancestors.parent_location_id
+         WHERE parent.source_campaign_id=$1 AND parent.deleted_at IS NULL
+       )
+       UPDATE location
+       SET source_campaign_id=NULL, deleted_at=NULL, updated_at=CURRENT_TIMESTAMP
+       WHERE id IN (SELECT id FROM ancestors)`,
+      [campaignId, id],
+    );
+    if (result.rowsAffected === 0) {
+      throw new Error("Seul un lieu local peut être enregistré dans l'univers.");
+    }
+  }
+
+  override async resetOverride(campaignId: string, id: string): Promise<void> {
+    await (
+      await this.database()
+    ).execute(
+      `DELETE FROM campaign_resource_override
+       WHERE campaign_id=$1 AND resource_type='location' AND resource_id=$2`,
+      [campaignId, id],
+    );
+  }
+
+  private async attachAssociation(
+    campaignId: string,
+    id: string,
+    createdAt: string,
+  ): Promise<void> {
+    await (
+      await this.database()
+    ).execute(
+      `INSERT INTO campaign_location(campaign_id, location_id, created_at)
+       VALUES ($1,$2,$3) ON CONFLICT(campaign_id, location_id) DO NOTHING`,
+      [campaignId, id, createdAt],
+    );
+  }
+
+  private async select(query: string, values: readonly unknown[]): Promise<readonly Location[]> {
+    const rows = await (await this.database()).select<LocationRow[]>(query, [...values]);
+    return rows.map(mapLocationRow);
+  }
+
+  private database(): Promise<Database> {
     this.databasePromise ??= Database.load(DATABASE_URL).catch((error: unknown) => {
       this.databasePromise = undefined;
       throw error;
     });
-
     return this.databasePromise;
   }
 }
 
 const LOCATION_COLUMNS = `SELECT location.id, campaign_location.campaign_id,
-                                 location.parent_location_id, location.name,
-                                 location.summary, '' AS notes, location.image_path,
-                                 location.created_at, location.updated_at`;
+  location.parent_location_id, location.name, location.summary, '' AS notes,
+  location.image_path, location.created_at, location.updated_at,
+  location.source_campaign_id, resource_override.snapshot_json AS override_snapshot`;
 
 function mapLocationRow(row: LocationRow): Location {
+  const override = row.override_snapshot
+    ? (JSON.parse(row.override_snapshot) as ReturnType<typeof snapshot>)
+    : null;
   return {
     id: row.id,
     campaignId: row.campaign_id,
-    parentLocationId: row.parent_location_id,
-    name: row.name,
-    summary: row.summary,
+    provenance: row.source_campaign_id ? 'campaign' : override ? 'override' : 'universe',
+    parentLocationId: override?.parentLocationId ?? row.parent_location_id,
+    name: override?.name ?? row.name,
+    summary: override?.summary ?? row.summary,
     notes: row.notes,
-    imagePath: row.image_path,
+    imagePath: override?.imagePath ?? row.image_path,
     createdAt: row.created_at,
-    updatedAt: row.updated_at,
+    updatedAt: override?.updatedAt ?? row.updated_at,
+  };
+}
+
+function snapshot(location: Location) {
+  return {
+    parentLocationId: location.parentLocationId,
+    name: location.name,
+    summary: location.summary,
+    imagePath: location.imagePath,
+    updatedAt: location.updatedAt,
   };
 }

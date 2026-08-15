@@ -16,7 +16,7 @@ describe('TauriLocationRepository', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.mocked(Database.load).mockResolvedValue(database as never);
-    database.execute.mockResolvedValue(undefined);
+    database.execute.mockResolvedValue({ rowsAffected: 1 });
   });
 
   it('maps location rows for one campaign', async () => {
@@ -24,12 +24,12 @@ describe('TauriLocationRepository', () => {
     const repository = new TauriLocationRepository();
 
     await expect(repository.listByCampaign('campaign-id')).resolves.toEqual([location]);
-    expect(database.select).toHaveBeenCalledWith(expect.stringContaining('campaign_id = $1'), [
+    expect(database.select).toHaveBeenCalledWith(expect.stringContaining('campaign_id=$1'), [
       'campaign-id',
     ]);
   });
 
-  it('scopes lookup and deletion to the campaign', async () => {
+  it('scopes lookup and soft deletion to the campaign', async () => {
     database.select.mockResolvedValue([]);
     const repository = new TauriLocationRepository();
 
@@ -37,7 +37,7 @@ describe('TauriLocationRepository', () => {
     await repository.delete('campaign-id', 'location-id');
 
     expect(database.execute).toHaveBeenCalledWith(
-      'DELETE FROM campaign_location WHERE campaign_id = $1 AND location_id = $2',
+      expect.stringContaining('UPDATE location SET deleted_at='),
       ['campaign-id', 'location-id'],
     );
   });
@@ -47,16 +47,20 @@ describe('TauriLocationRepository', () => {
 
     await repository.save(location);
 
-    expect(database.execute).toHaveBeenNthCalledWith(1, expect.stringContaining('ON CONFLICT(id)'), [
-      'location-id',
-      'campaign-id',
-      'parent-id',
-      "Beholder's Inn",
-      'Auberge de Port Nyanzaru',
-      'campaigns/campaign-id/media/locations/inn.webp',
-      '2026-08-12T18:30:00.000Z',
-      '2026-08-12T18:30:00.000Z',
-    ]);
+    expect(database.execute).toHaveBeenNthCalledWith(
+      1,
+      expect.stringContaining('ON CONFLICT(id)'),
+      [
+        'location-id',
+        'campaign-id',
+        'parent-id',
+        "Beholder's Inn",
+        'Auberge de Port Nyanzaru',
+        'campaigns/campaign-id/media/locations/inn.webp',
+        '2026-08-12T18:30:00.000Z',
+        '2026-08-12T18:30:00.000Z',
+      ],
+    );
     expect(database.execute).toHaveBeenNthCalledWith(
       2,
       expect.stringContaining('campaign_location'),
@@ -68,6 +72,7 @@ describe('TauriLocationRepository', () => {
 const location: Location = {
   id: 'location-id',
   campaignId: 'campaign-id',
+  provenance: 'campaign',
   parentLocationId: 'parent-id',
   name: "Beholder's Inn",
   summary: 'Auberge de Port Nyanzaru',
@@ -87,4 +92,6 @@ const locationRow = {
   image_path: 'campaigns/campaign-id/media/locations/inn.webp',
   created_at: '2026-08-12T18:30:00.000Z',
   updated_at: '2026-08-12T18:30:00.000Z',
+  source_campaign_id: 'campaign-id',
+  override_snapshot: null,
 };

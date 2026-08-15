@@ -49,6 +49,8 @@ export class LocationWorkspace implements OnInit, PendingChangesAware {
 
   protected readonly campaign = this.campaignContext.campaign;
   protected readonly locations = signal<readonly Location[]>([]);
+  protected readonly availableLocations = signal<readonly Location[]>([]);
+  protected readonly promotionPlan = signal<readonly Location[]>([]);
   protected readonly parentFieldOptions = computed<readonly FormFieldOption[]>(() =>
     this.parentOptions().map((entry) => ({ value: entry.location.id, label: entry.path })),
   );
@@ -66,6 +68,9 @@ export class LocationWorkspace implements OnInit, PendingChangesAware {
   protected readonly isCreating = signal(false);
   protected readonly showPendingChangesDialog = signal(false);
   protected readonly showDeleteDialog = signal(false);
+  protected readonly showCatalogDialog = signal(false);
+  protected readonly showPromotionDialog = signal(false);
+  protected readonly showResetDialog = signal(false);
   protected readonly error = signal<string | null>(null);
   protected readonly focusedJournalEntryId = signal<string | null>(null);
   protected readonly effectiveImagePath = computed(
@@ -153,6 +158,55 @@ export class LocationWorkspace implements OnInit, PendingChangesAware {
     this.locationForm.markAsPristine();
   }
 
+  protected async openCatalog(): Promise<void> {
+    const campaign = this.campaign();
+    if (!campaign || !(await this.confirmPendingChanges())) return;
+    this.availableLocations.set(await this.locationService.listAvailable(campaign.id));
+    this.showCatalogDialog.set(true);
+  }
+
+  protected async attachLocation(location: Location): Promise<void> {
+    const campaign = this.campaign();
+    if (!campaign) return;
+    await this.locationService.attach(campaign.id, location.id);
+    this.showCatalogDialog.set(false);
+    await this.reloadLocations();
+    const attached = this.locations().find(({ id }) => id === location.id);
+    if (attached) this.openReadOnly(attached);
+  }
+
+  protected async requestPromotion(): Promise<void> {
+    const location = this.selectedLocation();
+    if (!location) return;
+    this.promotionPlan.set(await this.locationService.promotionPlan(location));
+    this.showPromotionDialog.set(true);
+  }
+
+  protected async confirmPromotion(): Promise<void> {
+    const location = this.selectedLocation();
+    if (!location) return;
+    await this.locationService.promote(location);
+    this.showPromotionDialog.set(false);
+    this.promotionPlan.set([]);
+    await this.reloadLocations();
+    const refreshed = this.locations().find(({ id }) => id === location.id);
+    if (refreshed) this.openReadOnly(refreshed);
+  }
+
+  protected requestReset(): void {
+    this.showResetDialog.set(true);
+  }
+
+  protected async confirmReset(): Promise<void> {
+    const location = this.selectedLocation();
+    if (!location) return;
+    await this.locationService.resetOverride(location);
+    this.showResetDialog.set(false);
+    await this.reloadLocations();
+    const refreshed = this.locations().find(({ id }) => id === location.id);
+    if (refreshed) this.openReadOnly(refreshed);
+  }
+
   protected editLocation(): void {
     const location = this.selectedLocation();
     if (!location) {
@@ -234,7 +288,11 @@ export class LocationWorkspace implements OnInit, PendingChangesAware {
       await this.reloadLocations();
       this.openReadOnly(savedLocation);
       await this.refreshPublishedLocation(savedLocation);
-      if (previousImagePath && previousImagePath !== savedLocation.imagePath) {
+      if (
+        selectedLocation?.provenance === 'campaign' &&
+        previousImagePath &&
+        previousImagePath !== savedLocation.imagePath
+      ) {
         await this.discardImageSafely(previousImagePath);
       }
       return true;
@@ -309,7 +367,7 @@ export class LocationWorkspace implements OnInit, PendingChangesAware {
       }
 
       await this.locationService.delete(location);
-      if (location.imagePath) {
+      if (location.provenance === 'campaign' && location.imagePath) {
         await this.discardImageSafely(location.imagePath);
       }
       await this.reloadLocations();

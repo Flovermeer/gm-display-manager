@@ -59,6 +59,43 @@ describe('LocationService', () => {
       service.update(chult, { ...locationInput('Chult'), parentLocationId: port.id }),
     ).rejects.toThrow('Un lieu ne peut pas être placé dans un de ses descendants.');
   });
+
+  it('promotes the missing local parent chain with the selected location', async () => {
+    const chult = await service.create('campaign-id', locationInput('Chult'));
+    const port = await service.create('campaign-id', {
+      ...locationInput('Port Nyanzaru'),
+      parentLocationId: chult.id,
+    });
+
+    await expect(service.promotionPlan(port)).resolves.toMatchObject([
+      { id: chult.id, provenance: 'campaign' },
+      { id: port.id, provenance: 'campaign' },
+    ]);
+    await service.promote(port);
+
+    await expect(service.list('campaign-id')).resolves.toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ id: chult.id, provenance: 'universe' }),
+        expect.objectContaining({ id: port.id, provenance: 'universe' }),
+      ]),
+    );
+  });
+
+  it('stores campaign edits as an override that can be reset', async () => {
+    const canonical = await service.create('campaign-id', locationInput('Chult'));
+    await service.promote(canonical);
+    const shared = (await service.list('campaign-id')).find(({ id }) => id === canonical.id)!;
+
+    await service.update(shared, { ...locationInput('Chult revisité'), parentLocationId: null });
+    await expect(service.list('campaign-id')).resolves.toContainEqual(
+      expect.objectContaining({ id: canonical.id, name: 'Chult revisité', provenance: 'override' }),
+    );
+
+    await service.resetOverride({ ...shared, provenance: 'override' });
+    await expect(service.list('campaign-id')).resolves.toContainEqual(
+      expect.objectContaining({ id: canonical.id, name: 'Chult', provenance: 'universe' }),
+    );
+  });
 });
 
 function locationInput(name: string) {

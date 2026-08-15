@@ -11,7 +11,12 @@ import type { Location } from '@app/features/locations/domain/location';
 
 export abstract class LocationRepository {
   abstract listByCampaign(campaignId: string): Promise<readonly Location[]>;
+  abstract listAvailableByCampaign(campaignId: string): Promise<readonly Location[]>;
   abstract findById(campaignId: string, id: string): Promise<Location | null>;
   abstract save(location: Location): Promise<void>;
   abstract delete(campaignId: string, id: string): Promise<void>;
+  abstract attach(campaignId: string, id: string): Promise<void>;
+  abstract promotionPlan(campaignId: string, id: string): Promise<readonly Location[]>;
+  abstract promote(campaignId: string, id: string): Promise<void>;
+  abstract resetOverride(campaignId: string, id: string): Promise<void>;
 }

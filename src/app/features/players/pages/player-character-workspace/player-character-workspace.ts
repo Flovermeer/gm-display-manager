@@ -58,6 +58,7 @@ export class PlayerCharacterWorkspace implements OnInit, PendingChangesAware {
 
   protected readonly campaign = this.campaignContext.campaign;
   protected readonly characters = signal<readonly PlayerCharacter[]>([]);
+  protected readonly availableCharacters = signal<readonly PlayerCharacter[]>([]);
   protected readonly selectedCharacter = signal<PlayerCharacter | null>(null);
   protected readonly portraitUrl = signal<string | null>(null);
   protected readonly draftPortraitPath = signal<string | null>(null);
@@ -71,6 +72,9 @@ export class PlayerCharacterWorkspace implements OnInit, PendingChangesAware {
   protected readonly showPendingChangesDialog = signal(false);
   protected readonly showDeleteDialog = signal(false);
   protected readonly showResetHitPointsDialog = signal(false);
+  protected readonly showCatalogDialog = signal(false);
+  protected readonly showPromotionDialog = signal(false);
+  protected readonly showResetDialog = signal(false);
   protected readonly showValidationErrors = signal(false);
   protected readonly error = signal<string | null>(null);
   protected readonly focusedJournalEntryId = signal<string | null>(null);
@@ -169,6 +173,51 @@ export class PlayerCharacterWorkspace implements OnInit, PendingChangesAware {
     this.populateEmptyForm();
   }
 
+  protected async openCatalog(): Promise<void> {
+    const campaign = this.campaign();
+    if (!campaign || !(await this.confirmPendingChanges())) return;
+    this.availableCharacters.set(await this.characterService.listAvailable(campaign.id));
+    this.showCatalogDialog.set(true);
+  }
+
+  protected async attachCharacter(character: PlayerCharacter): Promise<void> {
+    const campaign = this.campaign();
+    if (!campaign) return;
+    await this.characterService.attach(campaign.id, character.id);
+    this.showCatalogDialog.set(false);
+    await this.reloadCharacters();
+    const attached = this.characters().find(({ id }) => id === character.id);
+    if (attached) this.openReadOnly(attached);
+  }
+
+  protected requestPromotion(): void {
+    this.showPromotionDialog.set(true);
+  }
+
+  protected async confirmPromotion(): Promise<void> {
+    const character = this.selectedCharacter();
+    if (!character) return;
+    await this.characterService.promote(character);
+    this.showPromotionDialog.set(false);
+    await this.reloadCharacters();
+    const refreshed = this.characters().find(({ id }) => id === character.id);
+    if (refreshed) this.openReadOnly(refreshed);
+  }
+
+  protected requestReset(): void {
+    this.showResetDialog.set(true);
+  }
+
+  protected async confirmReset(): Promise<void> {
+    const character = this.selectedCharacter();
+    if (!character) return;
+    await this.characterService.resetOverride(character);
+    this.showResetDialog.set(false);
+    await this.reloadCharacters();
+    const refreshed = this.characters().find(({ id }) => id === character.id);
+    if (refreshed) this.openReadOnly(refreshed);
+  }
+
   protected editCharacter(): void {
     const character = this.selectedCharacter();
     if (!character) return;
@@ -232,7 +281,11 @@ export class PlayerCharacterWorkspace implements OnInit, PendingChangesAware {
       this.showValidationErrors.set(false);
       await this.reloadCharacters();
       this.openReadOnly(saved);
-      if (previousPortraitPath && previousPortraitPath !== saved.portraitPath) {
+      if (
+        selected?.provenance === 'campaign' &&
+        previousPortraitPath &&
+        previousPortraitPath !== saved.portraitPath
+      ) {
         await this.portraitGateway.discard(previousPortraitPath);
       }
       return true;
@@ -289,7 +342,7 @@ export class PlayerCharacterWorkspace implements OnInit, PendingChangesAware {
     this.error.set(null);
     try {
       await this.characterService.delete(character);
-      if (character.portraitPath) {
+      if (character.provenance === 'campaign' && character.portraitPath) {
         try {
           await this.portraitGateway.discard(character.portraitPath);
         } catch (error) {

@@ -246,12 +246,17 @@
     title="Ajouter un lieu"
     headingId="location-catalog-title"
   >
-    <div class="catalog-grid">
+    <div class="resource-catalog__list">
       @for (location of availableLocations(); track location.id) {
-        <div class="configuration-card">
+        <div class="resource-catalog__item">
           <strong>{{ location.name }}</strong>
-          <span>{{ location.summary || 'Lieu' }}</span>
-          <button appButton="primary" type="button" (click)="attachLocation(location)">
+          <span class="resource-catalog__summary">{{ location.summary || 'Lieu' }}</span>
+          <button
+            class="resource-catalog__action"
+            appButton="primary"
+            type="button"
+            (click)="attachLocation(location)"
+          >
             Ajouter
           </button>
         </div>

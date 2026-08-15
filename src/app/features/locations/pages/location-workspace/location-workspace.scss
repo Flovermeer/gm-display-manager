@@ -94,33 +94,6 @@
   gap: 0.65rem;
 }
 
-.catalog-grid {
-  display: grid;
-  gap: 0.75rem;
-  max-height: min(32rem, 60vh);
-  overflow: auto;
-}
-
-.configuration-card {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  gap: 0.35rem 1rem;
-  align-items: center;
-  padding: 0.8rem;
-  border: 1px solid #c8bfb3;
-  border-radius: 0.5rem;
-}
-
-.configuration-card span {
-  grid-column: 1;
-  color: #746b60;
-}
-
-.configuration-card button {
-  grid-column: 2;
-  grid-row: 1 / span 2;
-}
-
 .danger-button {
   color: #a43e46;
 }

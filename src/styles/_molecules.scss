@@ -56,6 +56,33 @@
   gap: 0.65rem;
 }
 
+.resource-catalog__list {
+  display: grid;
+  gap: 0.75rem;
+  max-height: min(32rem, 60vh);
+  overflow: auto;
+}
+
+.resource-catalog__item {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.35rem 1rem;
+  align-items: center;
+  padding: 0.8rem;
+  border: 1px solid #c8bfb3;
+  border-radius: 0.5rem;
+}
+
+.resource-catalog__summary {
+  grid-column: 1;
+  color: var(--color-workspace-muted);
+}
+
+.resource-catalog__action {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+}
+
 .entity-workspace__empty-state {
   display: grid;
   min-height: 60vh;

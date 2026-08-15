@@ -26,6 +26,7 @@ describe('PlayerCharacterWorkspace', () => {
   const character: PlayerCharacter = {
     id: 'character-id',
     campaignId: campaign.id,
+    provenance: 'campaign',
     name: 'Nyssa',
     playerName: 'Flore',
     status: 'active',
@@ -47,10 +48,14 @@ describe('PlayerCharacterWorkspace', () => {
   const campaignService = { findById: vi.fn(), activate: vi.fn() };
   const characterService = {
     list: vi.fn(),
+    listAvailable: vi.fn(),
     create: vi.fn(),
     update: vi.fn(),
     updateHitPoints: vi.fn(),
     delete: vi.fn(),
+    attach: vi.fn(),
+    promote: vi.fn(),
+    resetOverride: vi.fn(),
   };
   const journalEntryService = {
     listForTarget: vi.fn(),
@@ -70,6 +75,7 @@ describe('PlayerCharacterWorkspace', () => {
     campaignService.findById.mockResolvedValue(campaign);
     campaignService.activate.mockResolvedValue(undefined);
     characterService.list.mockResolvedValue([character]);
+    characterService.listAvailable.mockResolvedValue([]);
     characterService.create.mockResolvedValue(character);
     characterService.update.mockResolvedValue(character);
     characterService.updateHitPoints.mockResolvedValue(character);

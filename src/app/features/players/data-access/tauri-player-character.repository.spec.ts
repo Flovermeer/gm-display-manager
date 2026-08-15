@@ -14,7 +14,7 @@ describe('TauriPlayerCharacterRepository', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.mocked(Database.load).mockResolvedValue(database as never);
-    database.execute.mockResolvedValue(undefined);
+    database.execute.mockResolvedValue({ rowsAffected: 1 });
   });
 
   it('maps player character rows for one campaign', async () => {
@@ -24,7 +24,7 @@ describe('TauriPlayerCharacterRepository', () => {
     await expect(repository.listByCampaign('campaign-id')).resolves.toEqual([
       { ...character, sheetSchemaVersion: 1 },
     ]);
-    expect(database.select).toHaveBeenCalledWith(expect.stringContaining('campaign_id = $1'), [
+    expect(database.select).toHaveBeenCalledWith(expect.stringContaining('campaign_id=$1'), [
       'campaign-id',
     ]);
   });
@@ -33,17 +33,21 @@ describe('TauriPlayerCharacterRepository', () => {
     const repository = new TauriPlayerCharacterRepository();
     await repository.save(character);
 
-    expect(database.execute).toHaveBeenNthCalledWith(1, expect.stringContaining('ON CONFLICT(id)'), [
-      'character-id',
-      'campaign-id',
-      'Nyssa',
-      24,
-      'campaigns/campaign-id/media/player-character-portraits/nyssa.webp',
-      JSON.stringify(character.sheet),
-      2,
-      '2026-08-12T18:30:00.000Z',
-      '2026-08-12T18:30:00.000Z',
-    ]);
+    expect(database.execute).toHaveBeenNthCalledWith(
+      1,
+      expect.stringContaining('ON CONFLICT(id)'),
+      [
+        'character-id',
+        'campaign-id',
+        'Nyssa',
+        24,
+        'campaigns/campaign-id/media/player-character-portraits/nyssa.webp',
+        JSON.stringify(character.sheet),
+        2,
+        '2026-08-12T18:30:00.000Z',
+        '2026-08-12T18:30:00.000Z',
+      ],
+    );
     expect(database.execute).toHaveBeenNthCalledWith(
       2,
       expect.stringContaining('campaign_player_character'),
@@ -63,6 +67,7 @@ describe('TauriPlayerCharacterRepository', () => {
 const character: PlayerCharacter = {
   id: 'character-id',
   campaignId: 'campaign-id',
+  provenance: 'campaign',
   name: 'Nyssa',
   playerName: 'Flore',
   status: 'active',
@@ -102,4 +107,6 @@ const characterRow = {
   sheet_schema_version: 1,
   created_at: '2026-08-12T18:30:00.000Z',
   updated_at: '2026-08-12T18:30:00.000Z',
+  source_campaign_id: 'campaign-id',
+  override_snapshot: null,
 };

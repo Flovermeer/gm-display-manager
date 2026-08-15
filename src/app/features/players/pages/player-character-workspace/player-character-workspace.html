@@ -30,6 +30,9 @@
       >
         + Nouveau PJ
       </button>
+      <button appButton="secondary" appButtonFull type="button" (click)="openCatalog()">
+        Ajouter depuis l’univers
+      </button>
     </div>
 
     <div class="character-list">
@@ -98,9 +101,23 @@
         </div>
         <div class="detail-actions entity-workspace__actions">
           @if (!isEditing()) {
+            @if (selectedCharacter()?.provenance === 'campaign') {
+              <button appButton="secondary" type="button" (click)="requestPromotion()">
+                Enregistrer dans l’univers
+              </button>
+            }
             <button appButton="primary" type="button" (click)="editCharacter()">Modifier</button>
+            @if (selectedCharacter()?.provenance === 'override') {
+              <button appButton="secondary" type="button" (click)="requestReset()">
+                Réinitialiser depuis l’univers
+              </button>
+            }
             <button appButton="secondary-danger" type="button" (click)="requestDeleteCharacter()">
-              Supprimer
+              {{
+                selectedCharacter()?.provenance === 'campaign'
+                  ? 'Supprimer'
+                  : 'Retirer de la campagne'
+              }}
             </button>
           } @else {
             <button appButton="secondary" type="button" (click)="cancelEditing()">Annuler</button>
@@ -515,13 +532,95 @@
   </app-dialog>
 }
 
+@if (showCatalogDialog()) {
+  <app-dialog
+    kicker="Catalogue de l’univers"
+    title="Ajouter un PJ"
+    headingId="character-catalog-title"
+  >
+    <div class="resource-catalog__list">
+      @for (character of availableCharacters(); track character.id) {
+        <div class="resource-catalog__item">
+          <strong>{{ character.name }}</strong>
+          <span class="resource-catalog__summary">{{ classAndLevel(character) }}</span>
+          <button
+            class="resource-catalog__action"
+            appButton="primary"
+            type="button"
+            (click)="attachCharacter(character)"
+          >
+            Ajouter
+          </button>
+        </div>
+      } @empty {
+        <p>Tous les PJ de l’univers sont déjà utilisés dans cette campagne.</p>
+      }
+    </div>
+    <div dialog-actions class="dialog-actions">
+      <button appButton="secondary" type="button" (click)="showCatalogDialog.set(false)">
+        Fermer
+      </button>
+    </div>
+  </app-dialog>
+}
+
+@if (showPromotionDialog() && selectedCharacter(); as character) {
+  <app-dialog
+    kicker="Catalogue de l’univers"
+    [title]="'Enregistrer ' + character.name + ' ?'"
+    headingId="character-promotion-title"
+  >
+    <p>
+      La fiche de référence deviendra canonique. Le joueur, le statut, les PV actuels et les notes
+      resteront propres à cette campagne.
+    </p>
+    <div dialog-actions class="dialog-actions">
+      <button appButton="secondary" type="button" (click)="showPromotionDialog.set(false)">
+        Annuler
+      </button>
+      <button appButton="primary" type="button" (click)="confirmPromotion()">Confirmer</button>
+    </div>
+  </app-dialog>
+}
+
+@if (showResetDialog() && selectedCharacter(); as character) {
+  <app-dialog
+    kicker="Version de campagne"
+    [title]="'Réinitialiser ' + character.name + ' ?'"
+    headingId="character-reset-title"
+  >
+    <p>
+      La fiche personnalisée sera remplacée par la dernière version de l’univers. Le joueur, le
+      statut et les PV actuels seront conservés.
+    </p>
+    <div dialog-actions class="dialog-actions">
+      <button appButton="secondary" type="button" (click)="showResetDialog.set(false)">
+        Annuler
+      </button>
+      <button appButton="danger" type="button" (click)="confirmReset()">Réinitialiser</button>
+    </div>
+  </app-dialog>
+}
+
 @if (showDeleteDialog()) {
   <app-dialog
-    kicker="Suppression définitive"
-    [title]="'Supprimer ' + selectedCharacter()?.name + ' ?'"
+    [kicker]="
+      selectedCharacter()?.provenance === 'campaign' ? 'Corbeille' : 'Catalogue de la campagne'
+    "
+    [title]="
+      (selectedCharacter()?.provenance === 'campaign' ? 'Supprimer ' : 'Retirer ') +
+      selectedCharacter()?.name +
+      ' ?'
+    "
     headingId="delete-title"
   >
-    <p>Cette action supprimera définitivement la fiche et son état courant.</p>
+    <p>
+      @if (selectedCharacter()?.provenance === 'campaign') {
+        La fiche locale sera placée dans la corbeille avec son état courant.
+      } @else {
+        La fiche restera disponible dans l’univers. Son état propre à cette campagne sera retiré.
+      }
+    </p>
     <div dialog-actions class="dialog-actions">
       <button appButton="secondary" type="button" (click)="cancelDelete()">Annuler</button>
       <button
@@ -530,7 +629,7 @@
         [disabled]="isSaving()"
         (click)="confirmDeleteCharacter()"
       >
-        Supprimer définitivement
+        {{ selectedCharacter()?.provenance === 'campaign' ? 'Mettre à la corbeille' : 'Retirer' }}
       </button>
     </div>
   </app-dialog>

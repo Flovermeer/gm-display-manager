@@ -26,6 +26,10 @@ export class PlayerCharacterService {
     return this.repository.listByCampaign(campaignId);
   }
 
+  listAvailable(campaignId: string): Promise<readonly PlayerCharacter[]> {
+    return this.repository.listAvailableByCampaign(campaignId);
+  }
+
   async create(
     campaignId: string,
     input: UpdatePlayerCharacterInput,
@@ -51,11 +55,23 @@ export class PlayerCharacterService {
     currentHitPoints: number,
   ): Promise<PlayerCharacter> {
     const updatedCharacter = updatePlayerCharacterHitPoints(character, currentHitPoints);
-    await this.repository.save(updatedCharacter);
+    await this.repository.saveCampaignState(updatedCharacter);
     return updatedCharacter;
   }
 
   delete(character: PlayerCharacter): Promise<void> {
     return this.repository.delete(character.campaignId, character.id);
+  }
+
+  attach(campaignId: string, id: string): Promise<void> {
+    return this.repository.attach(campaignId, id);
+  }
+
+  promote(character: PlayerCharacter): Promise<void> {
+    return this.repository.promote(character.campaignId, character.id);
+  }
+
+  resetOverride(character: PlayerCharacter): Promise<void> {
+    return this.repository.resetOverride(character.campaignId, character.id);
   }
 }

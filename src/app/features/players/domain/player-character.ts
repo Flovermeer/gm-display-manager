@@ -21,6 +21,7 @@ export type PlayerCharacterSheet = Readonly<{
 export type PlayerCharacter = Readonly<{
   id: string;
   campaignId: string;
+  provenance: ResourceProvenance;
   name: string;
   playerName: string;
   status: PlayerCharacterStatus;
@@ -80,6 +81,7 @@ export function createPlayerCharacter(
   return {
     id: dependencies.createId(),
     campaignId,
+    provenance: 'campaign',
     ...normalized,
     portraitPath: input.portraitPath ?? null,
     sheetSchemaVersion: 2,
@@ -201,3 +203,4 @@ function normalizeTags(values: readonly string[]): readonly string[] {
   }
   return normalized;
 }
+import type { ResourceProvenance } from '@app/shared/domain/resource-provenance';

@@ -17,7 +17,7 @@ Dernière consolidation : 14 août 2026
 | 6 — Médias locaux           | Terminé pour images et portraits animés  | Import/copie locale des portraits PNJ/PJ, images de lieux et d’objets, vidéo idle PNJ et nettoyage des médias. Une validation plus large des fichiers cassés reste à inclure au durcissement.                    |
 | 7 — Tiptap et journal       | Terminé pour l’usage actuel              | Chapitres et descriptions riches, notes journalisées éditables, regroupement quotidien, mentions `@` cliquables vers les ressources de campagne et fallback texte si la cible disparaît.                         |
 | 8 — Scènes                  | Terminé                                  | Composition facultative lieu + PNJ + monstres + objets, activation/désactivation et retour à l’écran par défaut sont livrés.                                                                                     |
-| 9 — Bestiaire               | En cours, socle fonctionnel livré        | Catalogue canonique par univers, sélection par campagne, fiche D&D, illustration, scènes, notes journalisées et mentions `@` sont disponibles. Restent les blocs détaillés de capacités et d’actions.            |
+| 9 — Bestiaire               | Terminé                                  | Catalogue canonique par univers, sélection par campagne, fiche D&D complète, illustration, scènes, notes journalisées, mentions `@` et blocs riches répétables sont disponibles.                                 |
 | 10 — Combat léger           | Planifié après le bestiaire              | Le tracker réunira les PJ, PNJ et monstres ; le bestiaire doit donc être disponible avant cette tranche.                                                                                                         |
 | 11 — Historique récent      | Planifié après le combat                 | Pills cliquables des dernières ressources consultées sous la navigation de campagne.                                                                                                                             |
 | 12 — Carte heuristique      | Planifiée après l’historique             | Graphe automatique et navigable des chapitres, ressources liées et mentions `@`, sans édition manuelle du graphe.                                                                                                |
@@ -42,12 +42,11 @@ Dernière consolidation : 14 août 2026
 
 Le prochain ordre de livraison retenu est :
 
-1. **Jalon 9 — Bestiaire**, en réutilisant les fondations de la tranche PNJ sans recopier son workspace ;
-2. **Jalon 10 — Combat léger**, alimenté par les PJ, les PNJ et le Bestiaire ;
-3. **Jalon 11 — Historique récent**, pour accélérer la navigation pendant la partie ;
-4. **Jalon 12 — Carte heuristique**, générée depuis les chapitres, les ressources liées et les mentions `@` ;
-5. **Jalon 13 — Tables aléatoires**, à cadrer fonctionnellement après la carte ;
-6. **Jalon 14 — Durcissement et livraison Windows**.
+1. **Jalon 10 — Combat léger**, alimenté par les PJ, les PNJ et le Bestiaire ;
+2. **Jalon 11 — Historique récent**, pour accélérer la navigation pendant la partie ;
+3. **Jalon 12 — Carte heuristique**, générée depuis les chapitres, les ressources liées et les mentions `@` ;
+4. **Jalon 13 — Tables aléatoires**, à cadrer fonctionnellement après la carte ;
+5. **Jalon 14 — Durcissement et livraison Windows**.
 
 Les tables aléatoires sont désormais inscrites dans la séquence, mais leur modèle et leur expérience d’utilisation seront décidés avec le MJ au début du jalon 13.
 
@@ -431,10 +430,11 @@ Les notes journalisées sont affichées sous la fiche, apparaissent dans le Jour
 ouvrent directement le monstre ciblé. Les monstres sont également proposés et navigables dans les
 mentions `@`, avec le même fallback texte qu’une autre ressource supprimée.
 
-Reste dans ce jalon : l’édition détaillée des cinq blocs répétables déjà présents dans la fiche
-(`capacités`, `actions`, `actions bonus`, `réactions` et `actions légendaires`), avec le même éditeur
-riche que pour les PNJ. Les actions de repaire, mécaniques mythiques et autres blocs spécialisés
-restent différés après la V1.
+Les cinq blocs répétables (`capacités`, `actions`, `actions bonus`, `réactions` et `actions
+légendaires`) sont éditables en texte riche et affichés dans la fiche détaillée. Leur éditeur et leur
+rendu sont partagés avec les PNJ afin de conserver le même comportement sans dupliquer les pages.
+Les actions de repaire, mécaniques mythiques et autres blocs spécialisés restent différés après la
+V1.
 
 ### Jalon 10 — Suivi de combat léger
 

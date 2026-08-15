@@ -284,6 +284,16 @@
             (valueChange)="updateOfficialDescription($event)"
           />
         </section>
+
+        @for (section of featureSections; track section.key) {
+          <app-rich-text-feature-editor
+            inputIdPrefix="monster-feature"
+            [title]="section.label"
+            [singularLabel]="section.singularLabel"
+            [features]="featureDrafts()[section.key]"
+            (featuresChange)="updateFeatureSection(section.key, $event)"
+          />
+        }
       </form>
     } @else if (selectedMonster(); as monster) {
       <article class="monster-sheet">
@@ -440,6 +450,14 @@
             }
           </div>
         </div>
+        @for (section of featureSections; track section.key) {
+          @if (monster.sheet[section.key].length) {
+            <app-rich-text-feature-section
+              [title]="section.label"
+              [features]="monster.sheet[section.key]"
+            />
+          }
+        }
         <section class="monster-description">
           <h3>Description officielle</h3>
           <app-rich-text-editor [value]="monster.sheet.officialDescription" [editable]="false" />

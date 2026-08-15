@@ -18,6 +18,15 @@ import { Dialog } from '@app/shared/ui/dialog/dialog';
 import { EmptyState } from '@app/shared/ui/empty-state/empty-state';
 import { FormField } from '@app/shared/ui/form-field/form-field';
 import { TagInput } from '@app/shared/ui/tag-input/tag-input';
+import { RichTextFeatureEditor } from '@app/shared/ui/rich-text-feature-editor/rich-text-feature-editor';
+import { RichTextFeatureSection } from '@app/shared/ui/rich-text-feature-section/rich-text-feature-section';
+import {
+  CREATURE_FEATURE_SECTIONS,
+  creatureFeatureDraftsFrom,
+  emptyCreatureFeatureDrafts,
+  type CreatureFeatureDrafts,
+  type CreatureFeatureSection,
+} from '@app/shared/ui/rich-text-feature-editor/creature-feature-sections';
 import type { PendingChangesAware } from '@app/core/navigation/pending-changes.guard';
 import { JournalEntryList } from '@app/features/journal/ui/journal-entry-list/journal-entry-list';
 
@@ -43,6 +52,8 @@ type PendingDecisionResolver = (canLeave: boolean) => void;
     FormField,
     JournalEntryList,
     RichTextEditor,
+    RichTextFeatureEditor,
+    RichTextFeatureSection,
     TagInput,
   ],
   templateUrl: './bestiary-workspace.html',
@@ -76,6 +87,8 @@ export class BestiaryWorkspace implements OnInit, PendingChangesAware {
   protected readonly officialDescription = signal<RichTextDocument>(
     createEmptyMonsterSheet().officialDescription,
   );
+  protected readonly featureSections = CREATURE_FEATURE_SECTIONS;
+  protected readonly featureDrafts = signal<CreatureFeatureDrafts>(emptyCreatureFeatureDrafts());
   protected readonly filteredMonsters = computed(() => {
     const term = this.searchTerm().trim().toLocaleLowerCase('fr');
     if (!term) return this.monsters();
@@ -289,6 +302,14 @@ export class BestiaryWorkspace implements OnInit, PendingChangesAware {
     this.monsterForm.controls[field].markAsDirty();
   }
 
+  protected updateFeatureSection(
+    section: CreatureFeatureSection,
+    features: CreatureFeatureDrafts[CreatureFeatureSection],
+  ): void {
+    this.featureDrafts.update((drafts) => ({ ...drafts, [section]: features }));
+    this.monsterForm.markAsDirty();
+  }
+
   protected abilityModifier(score: number | null): string {
     if (score === null) return '—';
     const modifier = Math.floor((score - 10) / 2);
@@ -390,6 +411,7 @@ export class BestiaryWorkspace implements OnInit, PendingChangesAware {
       experiencePoints: sheet.experiencePoints,
     });
     this.officialDescription.set(sheet.officialDescription);
+    this.featureDrafts.set(creatureFeatureDraftsFrom(sheet));
     this.monsterForm.markAsPristine();
   }
 
@@ -425,6 +447,7 @@ export class BestiaryWorkspace implements OnInit, PendingChangesAware {
       challengeRating: value.challengeRating,
       experiencePoints: value.experiencePoints,
       officialDescription: this.officialDescription(),
+      ...this.featureDrafts(),
     };
   }
 

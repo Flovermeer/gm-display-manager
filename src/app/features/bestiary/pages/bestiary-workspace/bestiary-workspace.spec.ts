@@ -49,6 +49,12 @@ describe('BestiaryWorkspace', () => {
   beforeEach(async () => {
     vi.clearAllMocks();
     monsterService.list.mockResolvedValue([monster]);
+    monsterService.update.mockImplementation(
+      async (current: Monster, input: Pick<Monster, 'name' | 'imagePath' | 'sheet'>) => ({
+        ...current,
+        ...input,
+      }),
+    );
     journalEntryService.listForTarget.mockResolvedValue([]);
     const queryParamMap = new BehaviorSubject(
       convertToParamMap({ resourceId: monster.id, entryId: 'entry-id' }),
@@ -90,7 +96,84 @@ describe('BestiaryWorkspace', () => {
       resourceId: monster.id,
     });
   });
+
+  it('edits and saves a repeatable monster action', async () => {
+    const fixture = TestBed.createComponent(BestiaryWorkspace);
+    fixture.detectChanges();
+    await renderUntil(fixture, 'Atropal');
+    const element = fixture.nativeElement as HTMLElement;
+
+    findButton(element, 'Modifier').click();
+    await renderUntil(fixture, 'Actions légendaires');
+    const actionsEditor = [...element.querySelectorAll('app-rich-text-feature-editor')].find(
+      (editor) => editor.querySelector('h3')?.textContent?.trim() === 'Actions',
+    );
+    if (!actionsEditor) throw new Error('Monster actions editor not found.');
+    actionsEditor.querySelector<HTMLButtonElement>('.ui-button')?.click();
+    fixture.detectChanges();
+
+    const nameInput = actionsEditor.querySelector<HTMLInputElement>('input');
+    if (!nameInput) throw new Error('Monster action name field not found.');
+    nameInput.value = 'Attaques multiples';
+    nameInput.dispatchEvent(new Event('input'));
+    fixture.detectChanges();
+    findButton(element, 'Enregistrer').click();
+
+    await vi.waitFor(() => {
+      expect(monsterService.update).toHaveBeenCalledWith(
+        monster,
+        expect.objectContaining({
+          sheet: expect.objectContaining({
+            actions: [expect.objectContaining({ name: 'Attaques multiples' })],
+          }),
+        }),
+      );
+    });
+  });
+
+  it('renders saved monster actions in the detailed sheet', async () => {
+    monsterService.list.mockResolvedValue([
+      {
+        ...monster,
+        sheet: {
+          ...monster.sheet,
+          actions: [
+            {
+              id: 'action-id',
+              name: 'Morsure',
+              description: {
+                schemaVersion: 1,
+                content: {
+                  type: 'doc',
+                  content: [
+                    {
+                      type: 'paragraph',
+                      content: [{ type: 'text', text: 'Attaque au corps à corps.' }],
+                    },
+                  ],
+                },
+              },
+            },
+          ],
+        },
+      },
+    ]);
+    const fixture = TestBed.createComponent(BestiaryWorkspace);
+    fixture.detectChanges();
+
+    await renderUntil(fixture, 'Attaque au corps à corps.');
+
+    expect((fixture.nativeElement as HTMLElement).textContent).toContain('Morsure');
+  });
 });
+
+function findButton(element: HTMLElement, label: string): HTMLButtonElement {
+  const button = [...element.querySelectorAll<HTMLButtonElement>('button')].find((candidate) =>
+    candidate.textContent?.includes(label),
+  );
+  if (!button) throw new Error(`Button not found: ${label}`);
+  return button;
+}
 
 async function renderUntil(
   fixture: ComponentFixture<BestiaryWorkspace>,

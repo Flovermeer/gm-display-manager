@@ -72,6 +72,7 @@ export class NarrativeItemWorkspace implements OnInit, PendingChangesAware {
 
   protected readonly campaign = this.campaignContext.campaign;
   protected readonly items = signal<readonly NarrativeItem[]>([]);
+  protected readonly availableItems = signal<readonly NarrativeItem[]>([]);
   protected readonly itemTypes = signal<readonly ItemConfigurationOption[]>([]);
   protected readonly itemRarities = signal<readonly ItemConfigurationOption[]>([]);
   protected readonly ownerOptions = signal<readonly OwnerOption[]>([]);
@@ -92,6 +93,9 @@ export class NarrativeItemWorkspace implements OnInit, PendingChangesAware {
   protected readonly isCreating = signal(false);
   protected readonly showPendingChangesDialog = signal(false);
   protected readonly showDeleteDialog = signal(false);
+  protected readonly showCatalogDialog = signal(false);
+  protected readonly showPromotionDialog = signal(false);
+  protected readonly showResetDialog = signal(false);
   protected readonly error = signal<string | null>(null);
   protected readonly focusedJournalEntryId = signal<string | null>(null);
   protected readonly typeFieldOptions = computed<readonly FormFieldOption[]>(() =>
@@ -186,6 +190,51 @@ export class NarrativeItemWorkspace implements OnInit, PendingChangesAware {
     this.descriptionDirty.set(false);
   }
 
+  protected async openCatalog(): Promise<void> {
+    const campaign = this.campaign();
+    if (!campaign || !(await this.confirmPendingChanges())) return;
+    this.availableItems.set(await this.itemService.listAvailable(campaign.id));
+    this.showCatalogDialog.set(true);
+  }
+
+  protected async attachItem(item: NarrativeItem): Promise<void> {
+    const campaign = this.campaign();
+    if (!campaign) return;
+    await this.itemService.attach(campaign.id, item.id);
+    this.showCatalogDialog.set(false);
+    await this.reloadItems();
+    const attached = this.items().find(({ id }) => id === item.id);
+    if (attached) this.openReadOnly(attached);
+  }
+
+  protected requestPromotion(): void {
+    this.showPromotionDialog.set(true);
+  }
+
+  protected async confirmPromotion(): Promise<void> {
+    const item = this.selectedItem();
+    if (!item) return;
+    await this.itemService.promote(item);
+    this.showPromotionDialog.set(false);
+    await this.reloadItems();
+    const refreshed = this.items().find(({ id }) => id === item.id);
+    if (refreshed) this.openReadOnly(refreshed);
+  }
+
+  protected requestReset(): void {
+    this.showResetDialog.set(true);
+  }
+
+  protected async confirmReset(): Promise<void> {
+    const item = this.selectedItem();
+    if (!item) return;
+    await this.itemService.resetOverride(item);
+    this.showResetDialog.set(false);
+    await this.reloadItems();
+    const refreshed = this.items().find(({ id }) => id === item.id);
+    if (refreshed) this.openReadOnly(refreshed);
+  }
+
   protected editItem(): void {
     const item = this.selectedItem();
     if (!item) return;
@@ -248,7 +297,9 @@ export class NarrativeItemWorkspace implements OnInit, PendingChangesAware {
       this.draftImagePath.set(null);
       await this.reloadItems();
       this.openReadOnly(saved);
-      if (oldImagePath && oldImagePath !== saved.imagePath) await this.discardImage(oldImagePath);
+      if (selected?.provenance === 'campaign' && oldImagePath && oldImagePath !== saved.imagePath) {
+        await this.discardImage(oldImagePath);
+      }
       return true;
     } catch (error) {
       this.error.set(errorMessage(error));
@@ -282,7 +333,7 @@ export class NarrativeItemWorkspace implements OnInit, PendingChangesAware {
           await this.displayGateway.sendPlayerDisplayState({ mode: 'blank' });
       }
       await this.itemService.delete(item);
-      if (item.imagePath) await this.discardImage(item.imagePath);
+      if (item.provenance === 'campaign' && item.imagePath) await this.discardImage(item.imagePath);
       await this.reloadItems();
       this.selectedItem.set(null);
       this.imageUrl.set(DEMO_ITEM_IMAGE_URL);

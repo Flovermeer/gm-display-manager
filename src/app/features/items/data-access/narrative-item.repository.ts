@@ -10,9 +10,14 @@ import type { NarrativeItem } from '@app/features/items/domain/narrative-item';
 
 export abstract class NarrativeItemRepository {
   abstract listByCampaign(campaignId: string): Promise<readonly NarrativeItem[]>;
+  abstract listAvailableByCampaign(campaignId: string): Promise<readonly NarrativeItem[]>;
   abstract findById(campaignId: string, id: string): Promise<NarrativeItem | null>;
   abstract save(item: NarrativeItem): Promise<void>;
+  abstract saveCampaignState(item: NarrativeItem): Promise<void>;
   abstract delete(campaignId: string, id: string): Promise<void>;
+  abstract attach(campaignId: string, id: string): Promise<void>;
+  abstract promote(campaignId: string, id: string): Promise<void>;
+  abstract resetOverride(campaignId: string, id: string): Promise<void>;
   abstract countUsingConfiguration(
     campaignId: string,
     kind: 'type' | 'rarity',

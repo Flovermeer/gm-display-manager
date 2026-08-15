@@ -33,6 +33,10 @@ export class NarrativeItemService {
     return this.repository.listByCampaign(campaignId);
   }
 
+  listAvailable(campaignId: string): Promise<readonly NarrativeItem[]> {
+    return this.repository.listAvailableByCampaign(campaignId);
+  }
+
   async create(
     campaignId: string,
     input: UpdateNarrativeItemInput,
@@ -53,6 +57,18 @@ export class NarrativeItemService {
 
   delete(item: NarrativeItem): Promise<void> {
     return this.repository.delete(item.campaignId, item.id);
+  }
+
+  attach(campaignId: string, id: string): Promise<void> {
+    return this.repository.attach(campaignId, id);
+  }
+
+  promote(item: NarrativeItem): Promise<void> {
+    return this.repository.promote(item.campaignId, item.id);
+  }
+
+  resetOverride(item: NarrativeItem): Promise<void> {
+    return this.repository.resetOverride(item.campaignId, item.id);
   }
 
   private async assertReferences(

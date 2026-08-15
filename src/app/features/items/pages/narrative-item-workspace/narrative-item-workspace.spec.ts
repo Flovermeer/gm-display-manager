@@ -29,6 +29,7 @@ describe('NarrativeItemWorkspace', () => {
   const item: NarrativeItem = {
     id: 'item-id',
     campaignId: campaign.id,
+    provenance: 'campaign',
     itemTypeId: 'type-id',
     itemRarityId: 'rarity-id',
     owner: { resourceType: 'npc', resourceId: 'npc-id' },
@@ -44,9 +45,13 @@ describe('NarrativeItemWorkspace', () => {
   };
   const itemService = {
     list: vi.fn(),
+    listAvailable: vi.fn(),
     create: vi.fn(),
     update: vi.fn(),
     delete: vi.fn(),
+    attach: vi.fn(),
+    promote: vi.fn(),
+    resetOverride: vi.fn(),
   };
   const configurationService = { ensureDefaults: vi.fn(), list: vi.fn() };
   const npcService = { list: vi.fn() };
@@ -68,6 +73,7 @@ describe('NarrativeItemWorkspace', () => {
   beforeEach(async () => {
     vi.clearAllMocks();
     itemService.list.mockResolvedValue([item]);
+    itemService.listAvailable.mockResolvedValue([]);
     configurationService.ensureDefaults.mockResolvedValue(undefined);
     configurationService.list
       .mockResolvedValueOnce([{ id: 'type-id', name: 'Artefact' }])

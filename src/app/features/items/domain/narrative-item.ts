@@ -2,6 +2,7 @@ import {
   createEmptyRichTextDocument,
   type RichTextDocument,
 } from '@app/shared/rich-text-editor/rich-text-document';
+import type { ResourceProvenance } from '@app/shared/domain/resource-provenance';
 
 export const NARRATIVE_ITEM_STATUSES = ['active', 'lost', 'destroyed', 'retired'] as const;
 export type NarrativeItemStatus = (typeof NARRATIVE_ITEM_STATUSES)[number];
@@ -13,6 +14,7 @@ export type ItemOwner = Readonly<{ resourceType: ItemOwnerType; resourceId: stri
 export type NarrativeItem = Readonly<{
   id: string;
   campaignId: string;
+  provenance: ResourceProvenance;
   itemTypeId: string;
   itemRarityId: string | null;
   owner: ItemOwner | null;
@@ -64,6 +66,7 @@ export function createNarrativeItem(
   return {
     id: createId(),
     campaignId,
+    provenance: 'campaign',
     ...normalizeInput(input),
     imagePath,
     createdAt: timestamp,

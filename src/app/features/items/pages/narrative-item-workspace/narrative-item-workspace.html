@@ -19,6 +19,9 @@
       <button appButton="primary" appButtonFull type="button" (click)="requestCreateItem()">
         + Nouvel objet
       </button>
+      <button appButton="secondary" appButtonFull type="button" (click)="openCatalog()">
+        Ajouter depuis l’univers
+      </button>
     </div>
 
     <div class="item-list">
@@ -75,6 +78,11 @@
       <div class="detail-toolbar entity-workspace__toolbar">
         <div class="detail-actions entity-workspace__actions">
           @if (!isEditing()) {
+            @if (selectedItem()?.provenance === 'campaign') {
+              <button appButton="secondary" type="button" (click)="requestPromotion()">
+                Enregistrer dans l’univers
+              </button>
+            }
             <button
               appButton="secondary"
               type="button"
@@ -91,8 +99,15 @@
               {{ isPublishing() ? 'Envoi…' : 'Afficher aux joueurs' }}
             </button>
             <button appButton="primary" type="button" (click)="editItem()">Modifier</button>
+            @if (selectedItem()?.provenance === 'override') {
+              <button appButton="secondary" type="button" (click)="requestReset()">
+                Réinitialiser depuis l’univers
+              </button>
+            }
             <button appButton="secondary-danger" type="button" (click)="requestDeleteItem()">
-              Supprimer
+              {{
+                selectedItem()?.provenance === 'campaign' ? 'Supprimer' : 'Retirer de la campagne'
+              }}
             </button>
           } @else {
             <button appButton="secondary" type="button" (click)="cancelEditing()">Annuler</button>
@@ -304,13 +319,95 @@
   </app-dialog>
 }
 
+@if (showCatalogDialog()) {
+  <app-dialog
+    kicker="Catalogue de l’univers"
+    title="Ajouter un objet"
+    headingId="item-catalog-title"
+  >
+    <div class="resource-catalog__list">
+      @for (item of availableItems(); track item.id) {
+        <div class="resource-catalog__item">
+          <strong>{{ item.name }}</strong>
+          <span class="resource-catalog__summary">{{
+            item.summary || configurationName(item.itemTypeId)
+          }}</span>
+          <button
+            class="resource-catalog__action"
+            appButton="primary"
+            type="button"
+            (click)="attachItem(item)"
+          >
+            Ajouter
+          </button>
+        </div>
+      } @empty {
+        <p>Tous les objets de l’univers sont déjà utilisés dans cette campagne.</p>
+      }
+    </div>
+    <div dialog-actions class="dialog-actions">
+      <button appButton="secondary" type="button" (click)="showCatalogDialog.set(false)">
+        Fermer
+      </button>
+    </div>
+  </app-dialog>
+}
+
+@if (showPromotionDialog() && selectedItem(); as item) {
+  <app-dialog
+    kicker="Catalogue de l’univers"
+    [title]="'Enregistrer ' + item.name + ' ?'"
+    headingId="item-promotion-title"
+  >
+    <p>
+      La fiche deviendra canonique. Son statut, son détenteur et ses notes resteront propres à cette
+      campagne.
+    </p>
+    <div dialog-actions class="dialog-actions">
+      <button appButton="secondary" type="button" (click)="showPromotionDialog.set(false)">
+        Annuler
+      </button>
+      <button appButton="primary" type="button" (click)="confirmPromotion()">Confirmer</button>
+    </div>
+  </app-dialog>
+}
+
+@if (showResetDialog() && selectedItem(); as item) {
+  <app-dialog
+    kicker="Version de campagne"
+    [title]="'Réinitialiser ' + item.name + ' ?'"
+    headingId="item-reset-title"
+  >
+    <p>
+      La fiche personnalisée sera remplacée par la version de l’univers. Le statut et le détenteur
+      seront conservés.
+    </p>
+    <div dialog-actions class="dialog-actions">
+      <button appButton="secondary" type="button" (click)="showResetDialog.set(false)">
+        Annuler
+      </button>
+      <button appButton="danger" type="button" (click)="confirmReset()">Réinitialiser</button>
+    </div>
+  </app-dialog>
+}
+
 @if (showDeleteDialog()) {
   <app-dialog
-    kicker="Suppression définitive"
-    [title]="'Supprimer ' + selectedItem()?.name + ' ?'"
+    [kicker]="selectedItem()?.provenance === 'campaign' ? 'Corbeille' : 'Catalogue de la campagne'"
+    [title]="
+      (selectedItem()?.provenance === 'campaign' ? 'Supprimer ' : 'Retirer ') +
+      selectedItem()?.name +
+      ' ?'
+    "
     headingId="delete-title"
   >
-    <p>Cette action supprimera définitivement cet objet et ses notes.</p>
+    <p>
+      @if (selectedItem()?.provenance === 'campaign') {
+        L’objet local sera placé dans la corbeille.
+      } @else {
+        L’objet restera disponible dans l’univers et pourra être ajouté à nouveau.
+      }
+    </p>
     <div dialog-actions class="dialog-actions">
       <button appButton="secondary" type="button" (click)="cancelDelete()">Annuler</button>
       <button
@@ -319,7 +416,7 @@
         [disabled]="isSaving()"
         (click)="confirmDeleteItem()"
       >
-        Supprimer définitivement
+        {{ selectedItem()?.provenance === 'campaign' ? 'Mettre à la corbeille' : 'Retirer' }}
       </button>
     </div>
   </app-dialog>

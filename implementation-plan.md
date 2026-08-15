@@ -436,6 +436,20 @@ rendu sont partagés avec les PNJ afin de conserver le même comportement sans d
 Les actions de repaire, mécaniques mythiques et autres blocs spécialisés restent différés après la
 V1.
 
+Évolution des référentiels de règles à intégrer avant le suivi de combat :
+
+- les alignements et tailles sont des valeurs natives, immuables, définies par le système de jeu ;
+- les types de créatures et les langues combinent des valeurs natives du système et des valeurs
+  propres à l’univers ;
+- les sous-espèces sont rattachées à un type de créature et peuvent également être enrichies au
+  niveau de l’univers ;
+- le modèle de référentiel reste extensible afin d’accueillir plus tard d’autres catégories de
+  règles sans multiplier les tables spécialisées ;
+- la première version permet uniquement d’ajouter des valeurs au niveau de l’univers : aucune
+  suppression n’est exposée dans l’interface ;
+- la suppression sécurisée des valeurs personnalisées, avec contrôle des fiches qui les utilisent,
+  est reportée à une version ultérieure.
+
 ### Jalon 10 — Suivi de combat léger
 
 Objectif : fournir au MJ un onglet **Combat** avec un panneau superposé

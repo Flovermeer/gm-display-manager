@@ -62,6 +62,10 @@
   background: #76538d;
 }
 
+.configuration-menu__item:disabled {
+  opacity: 0.45;
+}
+
 .configuration-workspace {
   padding: clamp(1.5rem, 4vw, 3rem);
   color: #29251f;

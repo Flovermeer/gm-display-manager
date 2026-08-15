@@ -1,0 +1,103 @@
+<div class="rule-catalog">
+  <header class="rule-catalog__header">
+    <p class="configuration-workspace__kicker">Règles de {{ system().name }}</p>
+    <h2>Référentiels de {{ universe().name }}</h2>
+    <p>
+      Les valeurs du système sont protégées. L’univers peut enrichir les types, les sous-espèces
+      et les langues.
+    </p>
+  </header>
+
+  @if (isLoading()) {
+    <p>Chargement…</p>
+  } @else {
+    <section class="rule-section">
+      <h3>Alignements</h3>
+      <div class="rule-list">
+        @for (option of alignments(); track option.id) {
+          <span class="rule-pill"><strong>{{ option.code }}</strong> {{ option.label }}</span>
+        }
+      </div>
+    </section>
+
+    <section class="rule-section">
+      <h3>Tailles</h3>
+      <div class="rule-list">
+        @for (option of sizes(); track option.id) {
+          <span class="rule-pill"><strong>{{ option.code }}</strong> {{ option.label }}</span>
+        }
+      </div>
+    </section>
+
+    <section class="rule-section">
+      <h3>Types de créatures</h3>
+      <div class="inline-create">
+        <app-form-field inputId="new-creature-type" label="Nouveau type" [formControl]="newType" />
+        <button appButton="primary" type="button" [disabled]="newType.invalid || isSaving()" (click)="addType()">
+          Ajouter
+        </button>
+      </div>
+      <div class="rule-list">
+        @for (option of creatureTypes(); track option.id) {
+          <span class="rule-pill">
+            {{ option.label }} <small>{{ origin(option) }}</small>
+          </span>
+        }
+      </div>
+    </section>
+
+    <section class="rule-section">
+      <h3>Sous-espèces</h3>
+      <div class="rule-create rule-create--subspecies">
+        <app-form-field
+          inputId="subspecies-parent"
+          label="Type parent"
+          controlType="select"
+          [options]="typeOptions()"
+          emptyLabel="Choisir un type"
+          emptyValue=""
+          [formControl]="subspeciesParentId"
+        />
+        <app-form-field inputId="new-subspecies" label="Nouvelle sous-espèce" [formControl]="newSubspecies" />
+        <button
+          appButton="primary"
+          type="button"
+          [disabled]="newSubspecies.invalid || subspeciesParentId.invalid || isSaving()"
+          (click)="addSubspecies()"
+        >
+          Ajouter
+        </button>
+      </div>
+      <div class="rule-list">
+        @for (option of subspecies(); track option.id) {
+          <span class="rule-pill">
+            {{ option.label }} <small>{{ parentLabel(option) }} · {{ origin(option) }}</small>
+          </span>
+        } @empty {
+          <span class="rule-empty">Aucune sous-espèce configurée.</span>
+        }
+      </div>
+    </section>
+
+    <section class="rule-section">
+      <h3>Langues</h3>
+      <div class="inline-create">
+        <app-form-field inputId="new-language" label="Nouvelle langue" [formControl]="newLanguage" />
+        <button appButton="primary" type="button" [disabled]="newLanguage.invalid || isSaving()" (click)="addLanguage()">
+          Ajouter
+        </button>
+      </div>
+      <div class="rule-list">
+        @for (option of languages(); track option.id) {
+          <span class="rule-pill">
+            {{ option.label }} <small>{{ origin(option) }}</small>
+          </span>
+        }
+      </div>
+    </section>
+  }
+
+  @if (error(); as message) {
+    <p class="configuration-error" role="alert">{{ message }}</p>
+  }
+</div>

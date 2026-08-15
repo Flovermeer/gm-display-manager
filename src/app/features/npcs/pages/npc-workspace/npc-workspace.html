@@ -238,20 +238,39 @@
               <app-form-field
                 inputId="npc-size"
                 label="Taille"
+                controlType="select"
+                [options]="sizeOptions()"
+                emptyLabel="Non renseignée"
+                emptyValue=""
                 formControlName="size"
-                placeholder="Moyenne"
               />
               <app-form-field
                 inputId="npc-creature-type"
                 label="Type"
+                controlType="select"
+                [options]="typeOptions()"
+                emptyLabel="Non renseigné"
+                emptyValue=""
                 formControlName="creatureType"
-                placeholder="Humanoïde (humain)"
+                (valueChange)="typeChanged()"
+              />
+              <app-form-field
+                inputId="npc-subspecies"
+                label="Sous-espèce"
+                controlType="select"
+                [options]="subspeciesOptions()"
+                emptyLabel="Aucune"
+                emptyValue=""
+                formControlName="creatureSubspecies"
               />
               <app-form-field
                 inputId="npc-alignment"
                 label="Alignement"
+                controlType="select"
+                [options]="alignmentOptions()"
+                emptyLabel="Non renseigné"
+                emptyValue=""
                 formControlName="alignment"
-                placeholder="Neutre bon"
               />
             </div>
 
@@ -390,12 +409,12 @@
                 [value]="npcForm.controls.senses.value"
                 (valueChange)="updateTags('senses', $event)"
               />
-              <app-tag-input
+              <app-multi-select-field
                 inputId="npc-languages"
                 label="Langues"
-                placeholder="Commun"
+                [options]="languageOptions()"
                 [value]="npcForm.controls.languages.value"
-                (valueChange)="updateTags('languages', $event)"
+                (valueChange)="updateLanguages($event)"
               />
             </div>
 

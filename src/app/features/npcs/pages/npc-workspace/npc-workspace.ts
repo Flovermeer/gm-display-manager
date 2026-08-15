@@ -39,6 +39,14 @@ import { EntityTitle } from '@app/shared/ui/entity-title/entity-title';
 import { FormField, type FormFieldOption } from '@app/shared/ui/form-field/form-field';
 import { RichTextFeatureEditor } from '@app/shared/ui/rich-text-feature-editor/rich-text-feature-editor';
 import { RichTextFeatureSection } from '@app/shared/ui/rich-text-feature-section/rich-text-feature-section';
+import { CreatureRuleCatalogService } from '@app/features/game-systems/application/creature-rule-catalog.service';
+import {
+  EMPTY_CREATURE_RULE_CATALOG,
+  optionIdFor,
+  optionLabel,
+  type CreatureRuleCatalog,
+} from '@app/features/game-systems/domain/creature-rule-catalog';
+import { MultiSelectField } from '@app/shared/ui/multi-select-field/multi-select-field';
 import {
   CREATURE_FEATURE_SECTIONS,
   creatureFeatureDraftsFrom,
@@ -56,8 +64,7 @@ type NpcTagField =
   | 'damageResistances'
   | 'damageImmunities'
   | 'conditionImmunities'
-  | 'senses'
-  | 'languages';
+  | 'senses';
 
 @Component({
   selector: 'app-npc-workspace',
@@ -73,6 +80,7 @@ type NpcTagField =
     FormField,
     RichTextFeatureEditor,
     RichTextFeatureSection,
+    MultiSelectField,
   ],
   templateUrl: './npc-workspace.html',
   styleUrl: './npc-workspace.scss',
@@ -86,6 +94,7 @@ export class NpcWorkspace implements OnInit, PendingChangesAware {
   private readonly npcIdleVideoGateway = inject(NpcIdleVideoGateway);
   private readonly displayGateway = inject(DisplayGateway);
   private readonly playerDisplayStore = inject(PlayerDisplayStore);
+  private readonly creatureRules = inject(CreatureRuleCatalogService);
   private pendingDecisionResolver?: PendingDecisionResolver;
   private readonly journalEntries = viewChild<JournalEntryList>(JournalEntryList);
 
@@ -121,6 +130,11 @@ export class NpcWorkspace implements OnInit, PendingChangesAware {
   protected readonly officialDescriptionDraft = signal<RichTextDocument>(
     createEmptyRichTextDocument(),
   );
+  protected readonly ruleCatalog = signal<CreatureRuleCatalog>(EMPTY_CREATURE_RULE_CATALOG);
+  protected readonly sizeOptions = computed(() => this.formOptions(this.ruleCatalog().sizes));
+  protected readonly typeOptions = computed(() => this.formOptions(this.ruleCatalog().creatureTypes));
+  protected readonly alignmentOptions = computed(() => this.formOptions(this.ruleCatalog().alignments));
+  protected readonly languageOptions = computed(() => this.formOptions(this.ruleCatalog().languages));
   protected readonly effectivePortraitPath = computed(
     () => this.draftPortraitPath() ?? this.selectedNpc()?.portraitPath ?? null,
   );
@@ -145,6 +159,7 @@ export class NpcWorkspace implements OnInit, PendingChangesAware {
     notes: new FormControl('', { nonNullable: true }),
     size: new FormControl('', { nonNullable: true }),
     creatureType: new FormControl('', { nonNullable: true }),
+    creatureSubspecies: new FormControl('', { nonNullable: true }),
     alignment: new FormControl('', { nonNullable: true }),
     armorClass: new FormControl<number | null>(null, [Validators.min(0), integerValidator]),
     armorClassDetails: new FormControl('', { nonNullable: true }),
@@ -188,6 +203,25 @@ export class NpcWorkspace implements OnInit, PendingChangesAware {
 
   protected updateSearch(event: Event): void {
     this.searchTerm.set((event.target as HTMLInputElement).value);
+  }
+
+  protected subspeciesOptions(): readonly FormFieldOption[] {
+    const typeId = this.npcForm.controls.creatureType.value;
+    return this.formOptions(
+      this.ruleCatalog().subspecies.filter(({ parentOptionId }) => parentOptionId === typeId),
+    );
+  }
+
+  protected typeChanged(): void {
+    const current = this.npcForm.controls.creatureSubspecies.value;
+    if (!this.subspeciesOptions().some(({ value }) => value === current)) {
+      this.npcForm.controls.creatureSubspecies.setValue('');
+    }
+  }
+
+  protected updateLanguages(values: readonly string[]): void {
+    this.npcForm.controls.languages.setValue(values);
+    this.npcForm.controls.languages.markAsDirty();
   }
 
   protected async requestSelectNpc(npc: Npc): Promise<void> {
@@ -530,6 +564,7 @@ export class NpcWorkspace implements OnInit, PendingChangesAware {
   private async initialize(): Promise<void> {
     try {
       if (!(await this.campaignContext.load())) return;
+      await this.loadRuleCatalog();
       await this.reloadNpcs();
       await this.openRequestedNpc(
         this.route.snapshot.queryParamMap?.get('resourceId'),
@@ -578,9 +613,22 @@ export class NpcWorkspace implements OnInit, PendingChangesAware {
       status: npc.status,
       summary: npc.summary,
       notes: '',
-      size: sheet.size,
-      creatureType: sheet.creatureType,
-      alignment: sheet.alignment,
+      size: optionIdFor(sheet.sizeOptionId, sheet.size, this.ruleCatalog().sizes),
+      creatureType: optionIdFor(
+        sheet.creatureTypeOptionId,
+        sheet.creatureType,
+        this.ruleCatalog().creatureTypes,
+      ),
+      creatureSubspecies: optionIdFor(
+        sheet.creatureSubspeciesOptionId,
+        sheet.creatureSubspecies,
+        this.ruleCatalog().subspecies,
+      ),
+      alignment: optionIdFor(
+        sheet.alignmentOptionId,
+        sheet.alignment,
+        this.ruleCatalog().alignments,
+      ),
       armorClass: sheet.armorClass,
       armorClassDetails: sheet.armorClassDetails,
       hitPoints: sheet.hitPoints,
@@ -599,7 +647,13 @@ export class NpcWorkspace implements OnInit, PendingChangesAware {
       damageImmunities: sheet.damageImmunities,
       conditionImmunities: sheet.conditionImmunities,
       senses: sheet.senses,
-      languages: sheet.languages,
+      languages:
+        sheet.languageOptionIds.length > 0
+          ? sheet.languageOptionIds
+          : sheet.languages.flatMap((label) => {
+              const id = optionIdFor(null, label, this.ruleCatalog().languages);
+              return id ? [id] : [];
+            }),
       challengeRating: sheet.challengeRating,
       experiencePoints: sheet.experiencePoints,
     });
@@ -617,6 +671,7 @@ export class NpcWorkspace implements OnInit, PendingChangesAware {
       notes: '',
       size: sheet.size,
       creatureType: sheet.creatureType,
+      creatureSubspecies: sheet.creatureSubspecies,
       alignment: sheet.alignment,
       armorClass: sheet.armorClass,
       armorClassDetails: sheet.armorClassDetails,
@@ -636,7 +691,7 @@ export class NpcWorkspace implements OnInit, PendingChangesAware {
       damageImmunities: sheet.damageImmunities,
       conditionImmunities: sheet.conditionImmunities,
       senses: sheet.senses,
-      languages: sheet.languages,
+      languages: sheet.languageOptionIds,
       challengeRating: sheet.challengeRating,
       experiencePoints: sheet.experiencePoints,
     });
@@ -685,9 +740,17 @@ export class NpcWorkspace implements OnInit, PendingChangesAware {
       summary: value.summary,
       notes: '',
       sheet: {
-        size: value.size,
-        creatureType: value.creatureType,
-        alignment: value.alignment,
+        sizeOptionId: value.size || null,
+        size: optionLabel(value.size, this.ruleCatalog().sizes),
+        creatureTypeOptionId: value.creatureType || null,
+        creatureType: optionLabel(value.creatureType, this.ruleCatalog().creatureTypes),
+        creatureSubspeciesOptionId: value.creatureSubspecies || null,
+        creatureSubspecies: optionLabel(
+          value.creatureSubspecies,
+          this.ruleCatalog().subspecies,
+        ),
+        alignmentOptionId: value.alignment || null,
+        alignment: optionLabel(value.alignment, this.ruleCatalog().alignments),
         armorClass: value.armorClass,
         armorClassDetails: value.armorClassDetails,
         hitPoints: value.hitPoints,
@@ -708,13 +771,24 @@ export class NpcWorkspace implements OnInit, PendingChangesAware {
         damageImmunities: value.damageImmunities,
         conditionImmunities: value.conditionImmunities,
         senses: value.senses,
-        languages: value.languages,
+        languageOptionIds: value.languages,
+        languages: value.languages.map((id) => optionLabel(id, this.ruleCatalog().languages, id)),
         challengeRating: value.challengeRating,
         experiencePoints: value.experiencePoints,
         officialDescription: this.officialDescriptionDraft(),
         ...this.featureDrafts(),
       },
     };
+  }
+
+  private async loadRuleCatalog(): Promise<void> {
+    const campaign = this.campaign();
+    if (!campaign) return;
+    this.ruleCatalog.set(await this.creatureRules.loadForUniverse(campaign.universeId));
+  }
+
+  private formOptions(options: readonly { id: string; label: string }[]): readonly FormFieldOption[] {
+    return options.map(({ id, label }) => ({ value: id, label }));
   }
 
   private async loadPortraitPreview(relativePath: string | null): Promise<void> {

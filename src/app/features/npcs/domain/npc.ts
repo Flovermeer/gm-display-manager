@@ -4,7 +4,7 @@ import {
 } from '@app/shared/rich-text-editor/rich-text-document';
 
 export const NPC_STATUSES = ['active', 'dead', 'retired', 'missing'] as const;
-export const NPC_SHEET_SCHEMA_VERSION = 3 as const;
+export const NPC_SHEET_SCHEMA_VERSION = 4 as const;
 
 export type NpcStatus = (typeof NPC_STATUSES)[number];
 
@@ -24,8 +24,13 @@ export type NpcFeature = Readonly<{
 }>;
 
 export type NpcSheet = Readonly<{
+  sizeOptionId: string | null;
   size: string;
+  creatureTypeOptionId: string | null;
   creatureType: string;
+  creatureSubspeciesOptionId: string | null;
+  creatureSubspecies: string;
+  alignmentOptionId: string | null;
   alignment: string;
   armorClass: number | null;
   armorClassDetails: string;
@@ -41,6 +46,7 @@ export type NpcSheet = Readonly<{
   conditionImmunities: readonly string[];
   senses: readonly string[];
   languages: readonly string[];
+  languageOptionIds: readonly string[];
   challengeRating: string;
   experiencePoints: number | null;
   officialDescription: RichTextDocument;
@@ -97,8 +103,13 @@ const defaultDependencies: NpcFactoryDependencies = {
 
 export function createEmptyNpcSheet(): NpcSheet {
   return {
+    sizeOptionId: null,
     size: '',
+    creatureTypeOptionId: null,
     creatureType: '',
+    creatureSubspeciesOptionId: null,
+    creatureSubspecies: '',
+    alignmentOptionId: null,
     alignment: '',
     armorClass: null,
     armorClassDetails: '',
@@ -121,6 +132,7 @@ export function createEmptyNpcSheet(): NpcSheet {
     conditionImmunities: [],
     senses: [],
     languages: [],
+    languageOptionIds: [],
     challengeRating: '',
     experiencePoints: null,
     officialDescription: createEmptyRichTextDocument(),
@@ -177,8 +189,13 @@ export function normalizeNpcSheet(value: unknown): NpcSheet {
   const abilities = isRecord(source['abilities']) ? source['abilities'] : source;
 
   return {
+    sizeOptionId: nullableText(source['sizeOptionId']),
     size: text(source['size']),
+    creatureTypeOptionId: nullableText(source['creatureTypeOptionId']),
     creatureType: text(source['creatureType']),
+    creatureSubspeciesOptionId: nullableText(source['creatureSubspeciesOptionId']),
+    creatureSubspecies: text(source['creatureSubspecies']),
+    alignmentOptionId: nullableText(source['alignmentOptionId']),
     alignment: text(source['alignment']),
     armorClass: nullableNonNegativeInteger(source['armorClass'], 'Armor class'),
     armorClassDetails: text(source['armorClassDetails']),
@@ -201,6 +218,7 @@ export function normalizeNpcSheet(value: unknown): NpcSheet {
     conditionImmunities: tags(source['conditionImmunities']),
     senses: tags(source['senses']),
     languages: tags(source['languages']),
+    languageOptionIds: tags(source['languageOptionIds']),
     challengeRating: text(source['challengeRating']),
     experiencePoints: nullableNonNegativeInteger(source['experiencePoints'], 'Experience points'),
     officialDescription: richTextDocument(source['officialDescription']),
@@ -228,6 +246,11 @@ function nullableNonNegativeInteger(value: unknown, label: string): number | nul
 
 function text(value: unknown): string {
   return typeof value === 'string' ? value.trim() : '';
+}
+
+function nullableText(value: unknown): string | null {
+  const normalized = text(value);
+  return normalized || null;
 }
 
 function tags(value: unknown): readonly string[] {

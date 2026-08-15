@@ -114,20 +114,39 @@
               <app-form-field
                 inputId="monster-size"
                 label="Taille"
+                controlType="select"
+                [options]="sizeOptions()"
+                emptyLabel="Non renseignée"
+                emptyValue=""
                 formControlName="size"
-                placeholder="Moyenne"
               />
               <app-form-field
                 inputId="monster-type"
                 label="Type"
+                controlType="select"
+                [options]="typeOptions()"
+                emptyLabel="Non renseigné"
+                emptyValue=""
                 formControlName="creatureType"
-                placeholder="Mort-vivant"
+                (valueChange)="typeChanged()"
+              />
+              <app-form-field
+                inputId="monster-subspecies"
+                label="Sous-espèce"
+                controlType="select"
+                [options]="subspeciesOptions()"
+                emptyLabel="Aucune"
+                emptyValue=""
+                formControlName="creatureSubspecies"
               />
               <app-form-field
                 inputId="monster-alignment"
                 label="Alignement"
+                controlType="select"
+                [options]="alignmentOptions()"
+                emptyLabel="Non renseigné"
+                emptyValue=""
                 formControlName="alignment"
-                placeholder="Neutre mauvais"
               />
             </div>
           </div>
@@ -281,11 +300,12 @@
               [value]="monsterForm.controls.senses.value"
               (valueChange)="updateTags('senses', $event)"
             />
-            <app-tag-input
+            <app-multi-select-field
               inputId="monster-languages"
               label="Langues"
+              [options]="languageOptions()"
               [value]="monsterForm.controls.languages.value"
-              (valueChange)="updateTags('languages', $event)"
+              (valueChange)="updateLanguages($event)"
             />
           </div>
         </section>

@@ -9,12 +9,31 @@
 
   <div class="configuration-layout">
     <nav class="configuration-menu" aria-label="Sections de configuration">
-      <button class="configuration-menu__item configuration-menu__item--active" type="button">
+      <button
+        class="configuration-menu__item"
+        [class.configuration-menu__item--active]="section() === 'systems'"
+        type="button"
+        (click)="openSection('systems')"
+      >
         Systèmes de jeu
+      </button>
+      <button
+        class="configuration-menu__item"
+        [class.configuration-menu__item--active]="section() === 'rules'"
+        type="button"
+        [disabled]="!selectedUniverse()"
+        (click)="openSection('rules')"
+      >
+        Référentiels de règles
       </button>
     </nav>
 
     <section class="configuration-workspace" aria-labelledby="systems-title">
+      @if (section() === 'rules' && selectedSystem(); as system) {
+        @if (selectedUniverse(); as universe) {
+          <app-rule-catalog-settings [system]="system" [universe]="universe" />
+        }
+      } @else {
       <div class="configuration-workspace__heading">
         <p class="configuration-workspace__kicker">Catalogue global</p>
         <h2 id="systems-title">Systèmes de jeu</h2>
@@ -73,11 +92,15 @@
             }
 
             @for (universe of universes(); track universe.id) {
-              <article class="configuration-card" [class.configuration-card--trashed]="universe.deletedAt">
-                <div class="configuration-card__main">
+              <article
+                class="configuration-card"
+                [class.configuration-card--selected]="universe.id === selectedUniverseId()"
+                [class.configuration-card--trashed]="universe.deletedAt"
+              >
+                <button type="button" class="configuration-card__main" (click)="selectUniverse(universe.id)">
                   <strong>{{ universe.name }}</strong>
                   <small>{{ universe.deletedAt ? 'Dans la corbeille' : 'Actif' }}</small>
-                </div>
+                </button>
                 <div class="configuration-card__actions">
                   @if (universe.deletedAt) {
                     <button appButton="secondary" type="button" (click)="restoreUniverse(universe)">Restaurer</button>
@@ -97,6 +120,7 @@
 
       @if (error(); as message) {
         <p class="configuration-error" role="alert">{{ message }}</p>
+      }
       }
     </section>
   </div>

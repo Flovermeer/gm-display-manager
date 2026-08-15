@@ -1,0 +1,64 @@
+:host {
+  display: block;
+}
+
+.rule-catalog {
+  display: grid;
+  gap: 1.5rem;
+}
+
+.rule-catalog__header h2,
+.rule-catalog__header p {
+  margin: 0.3rem 0 0;
+}
+
+.rule-section {
+  display: grid;
+  gap: 0.8rem;
+  padding: 1.2rem;
+  border: 1px solid #d3cabd;
+  border-radius: 0.75rem;
+  background: #fff;
+}
+
+.rule-section h3 {
+  margin: 0;
+}
+
+.rule-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.rule-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  min-height: 2rem;
+  padding: 0.35rem 0.7rem;
+  border-radius: 999px;
+  color: #fff;
+  background: #76538d;
+}
+
+.rule-pill small {
+  opacity: 0.72;
+}
+
+.rule-create--subspecies {
+  display: grid;
+  grid-template-columns: minmax(12rem, 0.8fr) minmax(14rem, 1fr) auto;
+  align-items: end;
+  gap: 0.65rem;
+}
+
+.rule-empty {
+  color: #746b61;
+}
+
+@media (max-width: 62rem) {
+  .rule-create--subspecies {
+    grid-template-columns: 1fr;
+  }
+}

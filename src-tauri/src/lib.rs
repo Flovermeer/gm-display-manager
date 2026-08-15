@@ -102,5 +102,11 @@ fn migrations() -> Vec<Migration> {
             sql: include_str!("../migrations/0014_create_monster.sql"),
             kind: MigrationKind::Up,
         },
+        Migration {
+            version: 15,
+            description: "create_game_rule_catalog",
+            sql: include_str!("../migrations/0015_create_game_rule_catalog.sql"),
+            kind: MigrationKind::Up,
+        },
     ]
 }

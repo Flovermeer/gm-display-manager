@@ -10,6 +10,9 @@ import type {
 import { ButtonDirective } from '@app/shared/ui/button/button.directive';
 import { Dialog } from '@app/shared/ui/dialog/dialog';
 import { FormField } from '@app/shared/ui/form-field/form-field';
+import { RuleCatalogSettings } from '@app/features/game-systems/ui/rule-catalog-settings/rule-catalog-settings';
+
+type ConfigurationSection = 'systems' | 'rules';
 
 type PurgeTarget =
   | Readonly<{ kind: 'system'; item: GameSystem }>
@@ -17,7 +20,7 @@ type PurgeTarget =
 
 @Component({
   selector: 'app-global-configuration',
-  imports: [ReactiveFormsModule, RouterLink, ButtonDirective, Dialog, FormField],
+  imports: [ReactiveFormsModule, RouterLink, ButtonDirective, Dialog, FormField, RuleCatalogSettings],
   templateUrl: './global-configuration.html',
   styleUrl: './global-configuration.scss',
 })
@@ -27,8 +30,13 @@ export class GlobalConfiguration implements OnInit {
   protected readonly systems = signal<readonly GameSystem[]>([]);
   protected readonly universes = signal<readonly GameUniverse[]>([]);
   protected readonly selectedSystemId = signal<string | null>(null);
+  protected readonly selectedUniverseId = signal<string | null>(null);
+  protected readonly section = signal<ConfigurationSection>('systems');
   protected readonly selectedSystem = computed(
     () => this.systems().find(({ id }) => id === this.selectedSystemId()) ?? null,
+  );
+  protected readonly selectedUniverse = computed(
+    () => this.universes().find(({ id }) => id === this.selectedUniverseId()) ?? null,
   );
   protected readonly isLoading = signal(true);
   protected readonly isSubmitting = signal(false);
@@ -50,6 +58,14 @@ export class GlobalConfiguration implements OnInit {
   protected async selectSystem(id: string): Promise<void> {
     this.selectedSystemId.set(id);
     await this.loadUniverses(id);
+  }
+
+  protected selectUniverse(id: string): void {
+    this.selectedUniverseId.set(id);
+  }
+
+  protected openSection(section: ConfigurationSection): void {
+    this.section.set(section);
   }
 
   protected async createSystem(): Promise<void> {
@@ -154,8 +170,13 @@ export class GlobalConfiguration implements OnInit {
   }
 
   private async loadUniverses(gameSystemId: string | null): Promise<void> {
-    this.universes.set(
-      gameSystemId ? await this.service.listUniverses(gameSystemId, true) : [],
+    const universes = gameSystemId ? await this.service.listUniverses(gameSystemId, true) : [];
+    this.universes.set(universes);
+    const currentId = this.selectedUniverseId();
+    this.selectedUniverseId.set(
+      currentId && universes.some(({ id }) => id === currentId)
+        ? currentId
+        : (universes.find(({ deletedAt }) => !deletedAt)?.id ?? universes[0]?.id ?? null),
     );
   }
 

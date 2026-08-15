@@ -16,7 +16,7 @@ describe('TauriNpcRepository', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.mocked(Database.load).mockResolvedValue(database as never);
-    database.execute.mockResolvedValue(undefined);
+    database.execute.mockResolvedValue({ rowsAffected: 1 });
   });
 
   it('maps NPC rows for one campaign', async () => {
@@ -53,7 +53,7 @@ describe('TauriNpcRepository', () => {
       'npc-id',
     ]);
     expect(database.execute).toHaveBeenCalledWith(
-      'DELETE FROM campaign_npc WHERE campaign_id = $1 AND npc_id = $2',
+      expect.stringContaining('UPDATE npc SET deleted_at='),
       ['campaign-id', 'npc-id'],
     );
   });
@@ -92,6 +92,7 @@ describe('TauriNpcRepository', () => {
 const npc: Npc = {
   id: 'npc-id',
   campaignId: 'campaign-id',
+  provenance: 'campaign',
   name: 'Syndra Silvane',
   status: 'active',
   summary: 'Commanditaire',
@@ -117,4 +118,6 @@ const npcRow = {
   sheet_schema_version: 3,
   created_at: '2026-08-12T18:30:00.000Z',
   updated_at: '2026-08-12T18:30:00.000Z',
+  source_campaign_id: 'campaign-id',
+  override_snapshot: null,
 };

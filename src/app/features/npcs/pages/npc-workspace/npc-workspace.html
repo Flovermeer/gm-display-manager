@@ -30,6 +30,9 @@
       >
         + Nouveau PNJ
       </button>
+      <button appButton="secondary" appButtonFull type="button" (click)="openCatalog()">
+        Ajouter depuis l’univers
+      </button>
     </div>
 
     <div class="npc-list">
@@ -88,6 +91,11 @@
       <div class="detail-toolbar entity-workspace__toolbar">
         <div class="detail-actions entity-workspace__actions">
           @if (!isEditing()) {
+            @if (selectedNpc()?.provenance === 'campaign') {
+              <button appButton="secondary" type="button" (click)="requestPromotion()">
+                Enregistrer dans l’univers
+              </button>
+            }
             <button
               class="display-button"
               appButton="secondary"
@@ -99,6 +107,11 @@
               {{ isPublishing() ? 'Envoi…' : 'Afficher aux joueurs' }}
             </button>
             <button appButton="primary" type="button" (click)="editNpc()">Modifier</button>
+            @if (selectedNpc()?.provenance === 'override') {
+              <button appButton="secondary" type="button" (click)="requestReset()">
+                Réinitialiser depuis l’univers
+              </button>
+            }
             <button appButton="secondary-danger" type="button" (click)="requestDeleteNpc()">
               Supprimer
             </button>
@@ -618,6 +631,44 @@
       <button appButton="secondary" type="button" (click)="continueEditing()">
         Continuer la modification
       </button>
+    </div>
+  </app-dialog>
+}
+
+@if (showCatalogDialog()) {
+  <app-dialog kicker="Catalogue de l’univers" title="Ajouter un PNJ" headingId="npc-catalog-title">
+    <div class="catalog-grid">
+      @for (npc of availableNpcs(); track npc.id) {
+        <div class="configuration-card">
+          <strong>{{ npc.name }}</strong>
+          <button appButton="primary" type="button" (click)="attachNpc(npc)">Ajouter</button>
+        </div>
+      } @empty {
+        <p>Tout le catalogue est déjà utilisé dans cette campagne.</p>
+      }
+    </div>
+    <div dialog-actions class="dialog-actions">
+      <button appButton="secondary" type="button" (click)="showCatalogDialog.set(false)">Fermer</button>
+    </div>
+  </app-dialog>
+}
+
+@if (showPromotionDialog() && selectedNpc(); as npc) {
+  <app-dialog kicker="Catalogue de l’univers" [title]="'Enregistrer ' + npc.name + ' ?'" headingId="npc-promotion-title">
+    <p>La fiche actuelle deviendra la référence canonique et restera liée à cette campagne.</p>
+    <div dialog-actions class="dialog-actions">
+      <button appButton="secondary" type="button" (click)="showPromotionDialog.set(false)">Annuler</button>
+      <button appButton="primary" type="button" (click)="confirmPromotion()">Confirmer</button>
+    </div>
+  </app-dialog>
+}
+
+@if (showResetDialog() && selectedNpc(); as npc) {
+  <app-dialog kicker="Version de campagne" [title]="'Réinitialiser ' + npc.name + ' ?'" headingId="npc-reset-title">
+    <p>La personnalisation locale sera remplacée par la dernière fiche de l’univers.</p>
+    <div dialog-actions class="dialog-actions">
+      <button appButton="secondary" type="button" (click)="showResetDialog.set(false)">Annuler</button>
+      <button appButton="danger" type="button" (click)="confirmReset()">Réinitialiser</button>
     </div>
   </app-dialog>
 }

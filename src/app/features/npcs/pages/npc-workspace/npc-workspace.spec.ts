@@ -27,6 +27,7 @@ describe('NpcWorkspace', () => {
   const npc: Npc = {
     id: 'npc-id',
     campaignId: campaign.id,
+    provenance: 'campaign',
     name: 'Syndra Silvane',
     status: 'active',
     summary: 'Commanditaire',

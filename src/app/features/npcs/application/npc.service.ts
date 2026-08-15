@@ -20,6 +20,10 @@ export class NpcService {
     return this.repository.listByCampaign(campaignId);
   }
 
+  listAvailable(campaignId: string): Promise<readonly Npc[]> {
+    return this.repository.listAvailableByCampaign(campaignId);
+  }
+
   async create(
     campaignId: string,
     input: UpdateNpcInput,
@@ -44,5 +48,17 @@ export class NpcService {
 
   delete(npc: Npc): Promise<void> {
     return this.repository.delete(npc.campaignId, npc.id);
+  }
+
+  attach(campaignId: string, id: string): Promise<void> {
+    return this.repository.attach(campaignId, id);
+  }
+
+  promote(npc: Npc): Promise<void> {
+    return this.repository.promote(npc.campaignId, npc.id);
+  }
+
+  resetOverride(npc: Npc): Promise<void> {
+    return this.repository.resetOverride(npc.campaignId, npc.id);
   }
 }

@@ -2,6 +2,7 @@ import {
   createEmptyRichTextDocument,
   type RichTextDocument,
 } from '@app/shared/rich-text-editor/rich-text-document';
+import type { ResourceProvenance } from '@app/shared/domain/resource-provenance';
 
 export const NPC_STATUSES = ['active', 'dead', 'retired', 'missing'] as const;
 export const NPC_SHEET_SCHEMA_VERSION = 4 as const;
@@ -60,6 +61,7 @@ export type NpcSheet = Readonly<{
 export type Npc = Readonly<{
   id: string;
   campaignId: string;
+  provenance: ResourceProvenance;
   name: string;
   status: NpcStatus;
   summary: string;
@@ -154,6 +156,7 @@ export function createNpc(
   return {
     id: dependencies.createId(),
     campaignId: input.campaignId,
+    provenance: 'campaign',
     name,
     status: input.status ?? 'active',
     summary: input.summary?.trim() ?? '',

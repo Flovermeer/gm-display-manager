@@ -26,6 +26,7 @@ describe('Npc', () => {
     ).toEqual({
       id: 'npc-id',
       campaignId: 'campaign-id',
+      provenance: 'campaign',
       name: 'Syndra Silvane',
       status: 'active',
       summary: 'Commanditaire',

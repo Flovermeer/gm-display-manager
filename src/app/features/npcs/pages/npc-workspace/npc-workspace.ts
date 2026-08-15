@@ -100,6 +100,7 @@ export class NpcWorkspace implements OnInit, PendingChangesAware {
 
   protected readonly campaign = this.campaignContext.campaign;
   protected readonly npcs = signal<readonly Npc[]>([]);
+  protected readonly availableNpcs = signal<readonly Npc[]>([]);
   protected readonly selectedNpc = signal<Npc | null>(null);
   protected readonly portraitUrl = signal<string>(DEMO_NPC_PORTRAIT_URL);
   protected readonly draftPortraitPath = signal<string | null>(null);
@@ -116,6 +117,9 @@ export class NpcWorkspace implements OnInit, PendingChangesAware {
   protected readonly isCreating = signal(false);
   protected readonly showPendingChangesDialog = signal(false);
   protected readonly showDeleteDialog = signal(false);
+  protected readonly showCatalogDialog = signal(false);
+  protected readonly showPromotionDialog = signal(false);
+  protected readonly showResetDialog = signal(false);
   protected readonly error = signal<string | null>(null);
   protected readonly focusedJournalEntryId = signal<string | null>(null);
   protected readonly statuses = NPC_STATUSES;
@@ -246,6 +250,47 @@ export class NpcWorkspace implements OnInit, PendingChangesAware {
     this.isCreating.set(true);
     this.isEditing.set(true);
     this.populateEmptyForm();
+  }
+
+  protected async openCatalog(): Promise<void> {
+    const campaign = this.campaign();
+    if (!campaign || !(await this.confirmPendingChanges())) return;
+    this.availableNpcs.set(await this.npcService.listAvailable(campaign.id));
+    this.showCatalogDialog.set(true);
+  }
+
+  protected async attachNpc(npc: Npc): Promise<void> {
+    const campaign = this.campaign();
+    if (!campaign) return;
+    await this.npcService.attach(campaign.id, npc.id);
+    this.showCatalogDialog.set(false);
+    await this.reloadNpcs();
+    const attached = this.npcs().find(({ id }) => id === npc.id);
+    if (attached) this.openReadOnly(attached);
+  }
+
+  protected requestPromotion(): void { this.showPromotionDialog.set(true); }
+
+  protected async confirmPromotion(): Promise<void> {
+    const npc = this.selectedNpc();
+    if (!npc) return;
+    await this.npcService.promote(npc);
+    this.showPromotionDialog.set(false);
+    await this.reloadNpcs();
+    const refreshed = this.npcs().find(({ id }) => id === npc.id);
+    if (refreshed) this.openReadOnly(refreshed);
+  }
+
+  protected requestReset(): void { this.showResetDialog.set(true); }
+
+  protected async confirmReset(): Promise<void> {
+    const npc = this.selectedNpc();
+    if (!npc) return;
+    await this.npcService.resetOverride(npc);
+    this.showResetDialog.set(false);
+    await this.reloadNpcs();
+    const refreshed = this.npcs().find(({ id }) => id === npc.id);
+    if (refreshed) this.openReadOnly(refreshed);
   }
 
   protected editNpc(): void {

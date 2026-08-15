@@ -3,6 +3,7 @@ import {
   normalizeNpcSheet,
   type NpcSheet,
 } from '@app/features/npcs/domain/npc';
+import type { ResourceProvenance } from '@app/shared/domain/resource-provenance';
 
 export const MONSTER_SHEET_SCHEMA_VERSION = 1;
 export type MonsterSheet = NpcSheet;
@@ -10,6 +11,7 @@ export type MonsterSheet = NpcSheet;
 export type Monster = Readonly<{
   id: string;
   campaignId: string;
+  provenance: ResourceProvenance;
   name: string;
   imagePath: string | null;
   sheet: MonsterSheet;
@@ -38,6 +40,7 @@ export function createMonster(
   return {
     id: createId(),
     campaignId,
+    provenance: 'campaign',
     name: requiredName(input.name),
     imagePath: input.imagePath ?? null,
     sheet: normalizeNpcSheet(input.sheet),

@@ -23,6 +23,7 @@ describe('BestiaryWorkspace', () => {
   const monster: Monster = {
     id: 'monster-id',
     campaignId: campaign.id,
+    provenance: 'campaign',
     name: 'Atropal',
     imagePath: null,
     sheet: { ...createEmptyMonsterSheet(), creatureType: 'Mort-vivant' },

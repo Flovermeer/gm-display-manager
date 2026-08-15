@@ -52,4 +52,12 @@ export class MonsterService {
   detach(monster: Monster): Promise<void> {
     return this.repository.detach(monster.campaignId, monster.id);
   }
+
+  promote(monster: Monster): Promise<void> {
+    return this.repository.promote(monster.campaignId, monster.id);
+  }
+
+  resetOverride(monster: Monster): Promise<void> {
+    return this.repository.resetOverride(monster.campaignId, monster.id);
+  }
 }

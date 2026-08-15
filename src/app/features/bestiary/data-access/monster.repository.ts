@@ -16,4 +16,6 @@ export abstract class MonsterRepository {
   abstract save(monster: Monster): Promise<void>;
   abstract attach(campaignId: string, monsterId: string): Promise<void>;
   abstract detach(campaignId: string, monsterId: string): Promise<void>;
+  abstract promote(campaignId: string, monsterId: string): Promise<void>;
+  abstract resetOverride(campaignId: string, monsterId: string): Promise<void>;
 }

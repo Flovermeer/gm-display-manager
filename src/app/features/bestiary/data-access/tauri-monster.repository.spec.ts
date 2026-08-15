@@ -24,7 +24,7 @@ describe('TauriMonsterRepository', () => {
     ]);
   });
 
-  it('persists the canonical sheet then associates it with the campaign', async () => {
+  it('persists a local sheet then associates it with the campaign', async () => {
     const repository = new TauriMonsterRepository();
 
     await repository.save(monster);
@@ -46,13 +46,36 @@ describe('TauriMonsterRepository', () => {
     );
   });
 
-  it('removes only the campaign association', async () => {
+  it('moves a local monster to the campaign trash', async () => {
     const repository = new TauriMonsterRepository();
 
     await repository.detach('campaign-id', 'monster-id');
 
     expect(database.execute).toHaveBeenCalledWith(
-      'DELETE FROM campaign_monster WHERE campaign_id=$1 AND monster_id=$2',
+      expect.stringContaining('UPDATE monster SET deleted_at='),
+      ['campaign-id', 'monster-id'],
+    );
+  });
+
+  it('stores a campaign override without modifying the canonical monster', async () => {
+    const repository = new TauriMonsterRepository();
+
+    await repository.save({ ...monster, provenance: 'universe', name: 'Atropal adapté' });
+
+    expect(database.execute).toHaveBeenCalledTimes(1);
+    expect(database.execute).toHaveBeenCalledWith(
+      expect.stringContaining('campaign_resource_override'),
+      expect.arrayContaining(['campaign-id', 'monster-id']),
+    );
+  });
+
+  it('promotes a local monster without changing its identifier', async () => {
+    const repository = new TauriMonsterRepository();
+
+    await repository.promote('campaign-id', 'monster-id');
+
+    expect(database.execute).toHaveBeenCalledWith(
+      expect.stringContaining('source_campaign_id=NULL'),
       ['campaign-id', 'monster-id'],
     );
   });
@@ -61,6 +84,7 @@ describe('TauriMonsterRepository', () => {
 const monster: Monster = {
   id: 'monster-id',
   campaignId: 'campaign-id',
+  provenance: 'campaign',
   name: 'Atropal',
   imagePath: 'universes/forgotten-realms/media/monsters/atropal.webp',
   sheet: { ...createEmptyMonsterSheet(), hitPoints: 225 },
@@ -78,4 +102,6 @@ const monsterRow = {
   sheet_schema_version: 1,
   created_at: monster.createdAt,
   updated_at: monster.updatedAt,
+  source_campaign_id: 'campaign-id',
+  override_snapshot: null,
 };

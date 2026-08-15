@@ -426,6 +426,12 @@ Première tranche livrée :
 - la fiche reprend les données structurées utiles d’un bloc de statistiques D&D et conserve son
   JSON versionné.
 
+Évolution du partage campagne/univers : une nouvelle fiche créée depuis une campagne reste locale.
+Une action explicite permet de l’enregistrer dans l’univers sans changer son identifiant. Une fiche
+importée reste canonique ; sa modification depuis une campagne crée un snapshot local complet,
+figé, qui peut être supprimé avec l’action **Réinitialiser depuis l’univers**. Les notes et futurs
+états de combat ne font jamais partie du snapshot canonique.
+
 Les notes journalisées sont affichées sous la fiche, apparaissent dans le Journal global et
 ouvrent directement le monstre ciblé. Les monstres sont également proposés et navigables dans les
 mentions `@`, avec le même fallback texte qu’une autre ressource supprimée.

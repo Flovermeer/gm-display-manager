@@ -83,6 +83,8 @@ export class BestiaryWorkspace implements OnInit, PendingChangesAware {
   protected readonly availableMonsters = signal<readonly Monster[]>([]);
   protected readonly selectedMonster = signal<Monster | null>(null);
   protected readonly monsterPendingDetachment = signal<Monster | null>(null);
+  protected readonly monsterPendingPromotion = signal<Monster | null>(null);
+  protected readonly monsterPendingReset = signal<Monster | null>(null);
   protected readonly searchTerm = signal('');
   protected readonly isSidebarCollapsed = signal(false);
   protected readonly isLoading = signal(true);
@@ -299,6 +301,30 @@ export class BestiaryWorkspace implements OnInit, PendingChangesAware {
 
   protected cancelDetach(): void {
     this.monsterPendingDetachment.set(null);
+  }
+
+  protected requestPromotion(monster: Monster): void {
+    this.monsterPendingPromotion.set(monster);
+  }
+
+  protected async confirmPromotion(): Promise<void> {
+    const monster = this.monsterPendingPromotion();
+    if (!monster) return;
+    await this.service.promote(monster);
+    this.monsterPendingPromotion.set(null);
+    await this.load(monster.id);
+  }
+
+  protected requestReset(monster: Monster): void {
+    this.monsterPendingReset.set(monster);
+  }
+
+  protected async confirmReset(): Promise<void> {
+    const monster = this.monsterPendingReset();
+    if (!monster) return;
+    await this.service.resetOverride(monster);
+    this.monsterPendingReset.set(null);
+    await this.load(monster.id);
   }
 
   protected continueEditing(): void {

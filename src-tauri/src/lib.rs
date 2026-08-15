@@ -108,5 +108,11 @@ fn migrations() -> Vec<Migration> {
             sql: include_str!("../migrations/0015_create_game_rule_catalog.sql"),
             kind: MigrationKind::Up,
         },
+        Migration {
+            version: 16,
+            description: "add_campaign_resource_ownership",
+            sql: include_str!("../migrations/0016_add_campaign_resource_ownership.sql"),
+            kind: MigrationKind::Up,
+        },
     ]
 }

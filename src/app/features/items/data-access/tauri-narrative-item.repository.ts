@@ -68,8 +68,8 @@ export class TauriNarrativeItemRepository extends NarrativeItemRepository {
       `INSERT INTO narrative_item (
          id, universe_id, item_type_id, item_rarity_id, name, attunement,
          attunement_condition, summary, description_json, description_schema_version,
-         image_path, created_at, updated_at
-       ) VALUES ($1,(SELECT universe_id FROM campaign WHERE id=$2),$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)
+         image_path, created_at, updated_at, source_campaign_id
+       ) VALUES ($1,(SELECT universe_id FROM campaign WHERE id=$2),$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$2)
        ON CONFLICT(id) DO UPDATE SET
          item_type_id=excluded.item_type_id, item_rarity_id=excluded.item_rarity_id,
          name=excluded.name, attunement=excluded.attunement,
@@ -77,7 +77,8 @@ export class TauriNarrativeItemRepository extends NarrativeItemRepository {
          description_json=excluded.description_json,
          description_schema_version=excluded.description_schema_version,
          image_path=excluded.image_path, updated_at=excluded.updated_at
-       WHERE narrative_item.universe_id=excluded.universe_id`,
+       WHERE narrative_item.universe_id=excluded.universe_id
+         AND narrative_item.source_campaign_id=excluded.source_campaign_id`,
       [
         item.id,
         item.campaignId,

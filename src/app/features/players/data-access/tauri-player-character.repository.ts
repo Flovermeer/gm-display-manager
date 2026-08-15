@@ -71,8 +71,8 @@ export class TauriPlayerCharacterRepository extends PlayerCharacterRepository {
     await database.execute(
       `INSERT INTO player_character (
          id, universe_id, name, max_hit_points, portrait_path, sheet_json,
-         sheet_schema_version, created_at, updated_at
-       ) VALUES ($1, (SELECT universe_id FROM campaign WHERE id=$2), $3, $4, $5, $6, $7, $8, $9)
+         sheet_schema_version, created_at, updated_at, source_campaign_id
+       ) VALUES ($1, (SELECT universe_id FROM campaign WHERE id=$2), $3, $4, $5, $6, $7, $8, $9, $2)
        ON CONFLICT(id) DO UPDATE SET
          name = excluded.name,
          max_hit_points = excluded.max_hit_points,
@@ -80,7 +80,8 @@ export class TauriPlayerCharacterRepository extends PlayerCharacterRepository {
          sheet_json = excluded.sheet_json,
          sheet_schema_version = excluded.sheet_schema_version,
          updated_at = excluded.updated_at
-       WHERE player_character.universe_id = excluded.universe_id`,
+       WHERE player_character.universe_id = excluded.universe_id
+         AND player_character.source_campaign_id = excluded.source_campaign_id`,
       [
         character.id,
         character.campaignId,

@@ -62,15 +62,17 @@ export class TauriLocationRepository extends LocationRepository {
     const database = await this.getDatabase();
     await database.execute(
       `INSERT INTO location (
-         id, universe_id, parent_location_id, name, summary, image_path, created_at, updated_at
-       ) VALUES ($1, (SELECT universe_id FROM campaign WHERE id=$2), $3, $4, $5, $6, $7, $8)
+         id, universe_id, parent_location_id, name, summary, image_path, created_at, updated_at,
+         source_campaign_id
+       ) VALUES ($1, (SELECT universe_id FROM campaign WHERE id=$2), $3, $4, $5, $6, $7, $8, $2)
        ON CONFLICT(id) DO UPDATE SET
          parent_location_id = excluded.parent_location_id,
          name = excluded.name,
          summary = excluded.summary,
          image_path = excluded.image_path,
          updated_at = excluded.updated_at
-       WHERE location.universe_id = excluded.universe_id`,
+       WHERE location.universe_id = excluded.universe_id
+         AND location.source_campaign_id = excluded.source_campaign_id`,
       [
         location.id,
         location.campaignId,

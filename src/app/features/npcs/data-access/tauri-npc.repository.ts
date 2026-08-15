@@ -66,8 +66,8 @@ export class TauriNpcRepository extends NpcRepository {
     await database.execute(
       `INSERT INTO npc (
          id, universe_id, name, portrait_path, idle_video_path,
-         sheet_json, sheet_schema_version, created_at, updated_at
-       ) VALUES ($1, (SELECT universe_id FROM campaign WHERE id=$2), $3, $4, $5, $6, $7, $8, $9)
+         sheet_json, sheet_schema_version, created_at, updated_at, source_campaign_id
+       ) VALUES ($1, (SELECT universe_id FROM campaign WHERE id=$2), $3, $4, $5, $6, $7, $8, $9, $2)
        ON CONFLICT(id) DO UPDATE SET
          name = excluded.name,
          portrait_path = excluded.portrait_path,
@@ -75,7 +75,8 @@ export class TauriNpcRepository extends NpcRepository {
          sheet_json = excluded.sheet_json,
          sheet_schema_version = excluded.sheet_schema_version,
          updated_at = excluded.updated_at
-       WHERE npc.universe_id = excluded.universe_id`,
+       WHERE npc.universe_id = excluded.universe_id
+         AND npc.source_campaign_id = excluded.source_campaign_id`,
       [
         npc.id,
         npc.campaignId,

@@ -30,7 +30,12 @@
     "fs:allow-remove",
     {
       "identifier": "fs:scope",
-      "allow": [{ "path": "$APPDATA/campaigns/*" }, { "path": "$APPDATA/campaigns/**/*" }]
+      "allow": [
+        { "path": "$APPDATA/campaigns/*" },
+        { "path": "$APPDATA/campaigns/**/*" },
+        { "path": "$APPDATA/universes/*" },
+        { "path": "$APPDATA/universes/**/*" }
+      ]
     }
   ]
 }

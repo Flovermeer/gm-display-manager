@@ -28,8 +28,12 @@ export class TauriMonsterImageGateway extends MonsterImageGateway {
     const extension = fileExtension(selectedPath);
     const directory = `universes/${universeId}/media/monsters`;
     const relativePath = `${directory}/${crypto.randomUUID()}.${extension}`;
-    await mkdir(directory, { baseDir: BaseDirectory.AppData, recursive: true });
-    await copyFile(selectedPath, await this.absolutePath(relativePath));
+    try {
+      await mkdir(directory, { baseDir: BaseDirectory.AppData, recursive: true });
+      await copyFile(selectedPath, await this.absolutePath(relativePath));
+    } catch (error) {
+      throw new Error(`Impossible de copier l’illustration : ${nativeErrorMessage(error)}`);
+    }
     return relativePath;
   }
 
@@ -74,4 +78,10 @@ function assertInternalPath(path: string): void {
 
 function assertSafeSegment(value: string): void {
   if (!/^[a-zA-Z0-9-]+$/.test(value)) throw new Error('Invalid universe identifier.');
+}
+
+function nativeErrorMessage(error: unknown): string {
+  if (error instanceof Error) return error.message;
+  if (typeof error === 'string') return error;
+  return String(error);
 }

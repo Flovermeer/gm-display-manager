@@ -492,6 +492,8 @@ export class BestiaryWorkspace implements OnInit, PendingChangesAware {
   }
 
   private errorMessage(error: unknown): string {
-    return error instanceof Error ? error.message : 'Impossible de gérer le bestiaire.';
+    if (error instanceof Error) return error.message;
+    if (typeof error === 'string') return error;
+    return 'Impossible de gérer le bestiaire.';
   }
 }

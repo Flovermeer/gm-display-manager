@@ -1,5 +1,8 @@
-<div class="bestiary-workspace">
-  <aside class="bestiary-sidebar">
+<div
+  class="bestiary-workspace entity-workspace entity-workspace--bestiary"
+  [class.entity-workspace--sidebar-collapsed]="isSidebarCollapsed()"
+>
+  <aside class="bestiary-sidebar entity-workspace__sidebar">
     <input
       class="bestiary-sidebar__search"
       type="search"
@@ -39,7 +42,17 @@
     </div>
   </aside>
 
-  <main class="bestiary-detail">
+  <button
+    class="entity-workspace__sidebar-toggle"
+    type="button"
+    [attr.aria-label]="isSidebarCollapsed() ? 'Déplier le bestiaire' : 'Replier le bestiaire'"
+    [title]="isSidebarCollapsed() ? 'Déplier le bestiaire' : 'Replier le bestiaire'"
+    (click)="isSidebarCollapsed.set(!isSidebarCollapsed())"
+  >
+    {{ isSidebarCollapsed() ? '›' : '‹' }}
+  </button>
+
+  <main class="bestiary-detail entity-workspace__detail">
     @if (error(); as message) {
       <p class="bestiary-error" role="alert">{{ message }}</p>
     }

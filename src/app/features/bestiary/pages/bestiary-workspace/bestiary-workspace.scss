@@ -4,16 +4,12 @@
 }
 
 .bestiary-workspace {
-  display: grid;
-  grid-template-columns: 22rem minmax(0, 1fr);
-  min-height: calc(100dvh - 6.9rem);
   background: #201e1b;
 }
 
 .bestiary-sidebar {
+  grid-template-rows: auto auto auto minmax(0, 1fr);
   padding: 1.25rem;
-  border-right: 1px solid #3e3931;
-  background: #282922;
 }
 
 .bestiary-sidebar__search {
@@ -41,6 +37,8 @@
 
 .bestiary-sidebar__list {
   display: grid;
+  align-content: start;
+  overflow-y: auto;
   gap: 0.55rem;
 }
 
@@ -72,11 +70,7 @@
 }
 
 .bestiary-detail {
-  margin: 2rem;
-  padding: clamp(1.5rem, 4vw, 3rem);
-  border-radius: 0.85rem;
-  color: #28231d;
-  background: #f3f0e8;
+  min-width: 0;
 }
 
 .bestiary-error {
@@ -278,10 +272,6 @@
 }
 
 @media (max-width: 70rem) {
-  .bestiary-workspace {
-    grid-template-columns: 18rem minmax(0, 1fr);
-  }
-
   .form-grid--combat,
   .ability-grid {
     grid-template-columns: repeat(3, 1fr);
@@ -289,7 +279,6 @@
 }
 
 @media (max-width: 52rem) {
-  .bestiary-workspace,
   .monster-form__identity,
   .monster-sheet__hero,
   .form-grid--three,

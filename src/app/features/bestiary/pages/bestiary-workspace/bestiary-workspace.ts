@@ -74,6 +74,7 @@ export class BestiaryWorkspace implements OnInit, PendingChangesAware {
   protected readonly selectedMonster = signal<Monster | null>(null);
   protected readonly monsterPendingDetachment = signal<Monster | null>(null);
   protected readonly searchTerm = signal('');
+  protected readonly isSidebarCollapsed = signal(false);
   protected readonly isLoading = signal(true);
   protected readonly isSaving = signal(false);
   protected readonly isEditing = signal(false);

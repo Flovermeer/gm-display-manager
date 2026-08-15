@@ -5,14 +5,14 @@
 }
 .configuration-workspace {
   display: grid;
-  width: min(76rem, calc(100% - 3rem));
+  width: min(92rem, calc(100% - 3rem));
   min-height: calc(100dvh - 10rem);
   margin: 1.5rem auto;
   overflow: hidden;
   border-radius: 0.75rem;
   color: #25221e;
   background: #f0ece5;
-  grid-template-columns: 15rem minmax(0, 1fr);
+  grid-template-columns: 20rem minmax(0, 1fr);
 }
 .configuration-workspace__navigation {
   padding: 1.5rem 1rem;
@@ -144,7 +144,7 @@
 }
 @media (max-width: 40rem) {
   .configuration-workspace {
-    width: min(100% - 1.5rem, 76rem);
+    width: min(100% - 1.5rem, 92rem);
     grid-template-columns: 1fr;
   }
   .configuration-workspace__navigation {

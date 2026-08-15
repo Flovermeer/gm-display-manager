@@ -97,6 +97,23 @@ describe('BestiaryWorkspace', () => {
     });
   });
 
+  it('uses the shared collapsible sidebar layout', async () => {
+    const fixture = TestBed.createComponent(BestiaryWorkspace);
+    fixture.detectChanges();
+    await renderUntil(fixture, 'Atropal');
+    const element = fixture.nativeElement as HTMLElement;
+    const workspace = element.querySelector('.bestiary-workspace');
+    const toggle = element.querySelector<HTMLButtonElement>('.entity-workspace__sidebar-toggle');
+
+    expect(workspace?.classList).toContain('entity-workspace');
+    expect(toggle?.getAttribute('aria-label')).toBe('Replier le bestiaire');
+    toggle?.click();
+    fixture.detectChanges();
+
+    expect(workspace?.classList).toContain('entity-workspace--sidebar-collapsed');
+    expect(toggle?.getAttribute('aria-label')).toBe('Déplier le bestiaire');
+  });
+
   it('edits and saves a repeatable monster action', async () => {
     const fixture = TestBed.createComponent(BestiaryWorkspace);
     fixture.detectChanges();

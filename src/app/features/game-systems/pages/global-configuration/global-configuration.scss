@@ -5,7 +5,7 @@
 }
 
 .global-configuration {
-  width: min(86rem, 100%);
+  width: min(92rem, 100%);
   min-height: 100dvh;
   margin: 0 auto;
   padding: 2rem;
@@ -35,7 +35,7 @@
 
 .configuration-layout {
   display: grid;
-  grid-template-columns: 14rem minmax(0, 1fr);
+  grid-template-columns: 20rem minmax(0, 1fr);
   min-height: 42rem;
   overflow: hidden;
   border-radius: 1rem;

@@ -1,8 +1,8 @@
 .entity-workspace {
-  --entity-sidebar-width: 19rem;
-  --entity-sidebar-width-compact: 15rem;
+  --entity-sidebar-width: 20rem;
+  --entity-sidebar-width-compact: 16rem;
   --entity-toggle-width: 2.8rem;
-  --entity-detail-max-width: 68rem;
+  --entity-detail-max-width: 72rem;
 
   display: grid;
   min-height: calc(100dvh - 4rem);
@@ -10,21 +10,6 @@
   background: var(--color-workspace-canvas);
   grid-template-columns: var(--entity-sidebar-width) var(--entity-toggle-width) minmax(0, 1fr);
   transition: grid-template-columns 160ms ease;
-}
-
-.entity-workspace--npc {
-  --entity-sidebar-width: 18rem;
-  --entity-detail-max-width: 65rem;
-}
-
-.entity-workspace--player-character {
-  --entity-sidebar-width: 20rem;
-  --entity-sidebar-width-compact: 16rem;
-  --entity-detail-max-width: 72rem;
-}
-
-.entity-workspace--chapter {
-  --entity-detail-max-width: 74rem;
 }
 
 .entity-workspace--sidebar-collapsed {

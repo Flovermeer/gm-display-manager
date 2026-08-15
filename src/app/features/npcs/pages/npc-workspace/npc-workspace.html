@@ -424,42 +424,13 @@
           </section>
 
           @for (section of featureSections; track section.key) {
-            <section class="feature-form-section">
-              <div class="feature-section-heading">
-                <h3>{{ section.label }}</h3>
-                <button appButton="secondary" type="button" (click)="addFeature(section.key)">
-                  + Ajouter {{ section.singularLabel }}
-                </button>
-              </div>
-
-              @for (feature of featureDrafts()[section.key]; track feature.id) {
-                <article class="feature-editor">
-                  <div class="feature-editor-heading">
-                    <button
-                      class="feature-remove"
-                      type="button"
-                      [attr.aria-label]="'Supprimer ' + (feature.name || section.singularLabel)"
-                      (click)="removeFeature(section.key, feature.id)"
-                    >
-                      Supprimer
-                    </button>
-                  </div>
-                  <app-form-field
-                    [inputId]="'npc-feature-' + feature.id"
-                    label="Nom"
-                    [value]="feature.name"
-                    placeholder="Nom de {{ section.singularLabel }}"
-                    (valueChange)="updateFeatureName(section.key, feature.id, $event)"
-                  />
-                  <app-rich-text-editor
-                    [value]="feature.description"
-                    (valueChange)="updateFeatureDescription(section.key, feature.id, $event)"
-                  />
-                </article>
-              } @empty {
-                <p class="empty-features">Aucune entrée pour le moment.</p>
-              }
-            </section>
+            <app-rich-text-feature-editor
+              inputIdPrefix="npc-feature"
+              [title]="section.label"
+              [singularLabel]="section.singularLabel"
+              [features]="featureDrafts()[section.key]"
+              (featuresChange)="updateFeatureSection(section.key, $event)"
+            />
           }
 
           <section class="official-description-form" aria-labelledby="npc-description-form-title">
@@ -577,17 +548,10 @@
 
             @for (section of featureSections; track section.key) {
               @if (npc.sheet[section.key].length) {
-                <section class="stat-feature-section">
-                  <h4>{{ section.label }}</h4>
-                  @for (feature of npc.sheet[section.key]; track feature.id) {
-                    <article class="stat-feature">
-                      @if (feature.name) {
-                        <h5>{{ feature.name }}</h5>
-                      }
-                      <app-rich-text-editor [value]="feature.description" [editable]="false" />
-                    </article>
-                  }
-                </section>
+                <app-rich-text-feature-section
+                  [title]="section.label"
+                  [features]="npc.sheet[section.key]"
+                />
               }
             }
           </section>

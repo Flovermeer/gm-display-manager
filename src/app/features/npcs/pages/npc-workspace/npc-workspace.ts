@@ -18,10 +18,8 @@ import { NpcIdleVideoGateway } from '@app/features/npcs/data-access/npc-idle-vid
 import type { PendingChangesAware } from '@app/core/navigation/pending-changes.guard';
 import {
   createEmptyNpcSheet,
-  createNpcFeature,
   NPC_STATUSES,
   type Npc,
-  type NpcFeature,
   type NpcSheet,
   type NpcStatus,
   type UpdateNpcInput,
@@ -39,6 +37,15 @@ import { Dialog } from '@app/shared/ui/dialog/dialog';
 import { EmptyState } from '@app/shared/ui/empty-state/empty-state';
 import { EntityTitle } from '@app/shared/ui/entity-title/entity-title';
 import { FormField, type FormFieldOption } from '@app/shared/ui/form-field/form-field';
+import { RichTextFeatureEditor } from '@app/shared/ui/rich-text-feature-editor/rich-text-feature-editor';
+import { RichTextFeatureSection } from '@app/shared/ui/rich-text-feature-section/rich-text-feature-section';
+import {
+  CREATURE_FEATURE_SECTIONS,
+  creatureFeatureDraftsFrom,
+  emptyCreatureFeatureDrafts,
+  type CreatureFeatureDrafts,
+  type CreatureFeatureSection,
+} from '@app/shared/ui/rich-text-feature-editor/creature-feature-sections';
 
 type PendingDecisionResolver = (canLeave: boolean) => void;
 const DEMO_NPC_PORTRAIT_URL = '/demo/innkeeper.svg';
@@ -51,8 +58,6 @@ type NpcTagField =
   | 'conditionImmunities'
   | 'senses'
   | 'languages';
-type NpcFeatureSection = 'traits' | 'actions' | 'bonusActions' | 'reactions' | 'legendaryActions';
-type NpcFeatureDrafts = Readonly<Record<NpcFeatureSection, readonly NpcFeature[]>>;
 
 @Component({
   selector: 'app-npc-workspace',
@@ -66,6 +71,8 @@ type NpcFeatureDrafts = Readonly<Record<NpcFeatureSection, readonly NpcFeature[]
     EmptyState,
     EntityTitle,
     FormField,
+    RichTextFeatureEditor,
+    RichTextFeatureSection,
   ],
   templateUrl: './npc-workspace.html',
   styleUrl: './npc-workspace.scss',
@@ -109,22 +116,8 @@ export class NpcWorkspace implements OnInit, PendingChangesAware {
       label: this.statusLabel(status),
     }),
   );
-  protected readonly featureSections: readonly Readonly<{
-    key: NpcFeatureSection;
-    label: string;
-    singularLabel: string;
-  }>[] = [
-    { key: 'traits', label: 'Capacités', singularLabel: 'une capacité' },
-    { key: 'actions', label: 'Actions', singularLabel: 'une action' },
-    { key: 'bonusActions', label: 'Actions bonus', singularLabel: 'une action bonus' },
-    { key: 'reactions', label: 'Réactions', singularLabel: 'une réaction' },
-    {
-      key: 'legendaryActions',
-      label: 'Actions légendaires',
-      singularLabel: 'une action légendaire',
-    },
-  ];
-  protected readonly featureDrafts = signal<NpcFeatureDrafts>(emptyFeatureDrafts());
+  protected readonly featureSections = CREATURE_FEATURE_SECTIONS;
+  protected readonly featureDrafts = signal<CreatureFeatureDrafts>(emptyCreatureFeatureDrafts());
   protected readonly officialDescriptionDraft = signal<RichTextDocument>(
     createEmptyRichTextDocument(),
   );
@@ -474,37 +467,12 @@ export class NpcWorkspace implements OnInit, PendingChangesAware {
     this.npcForm.controls[field].markAsDirty();
   }
 
-  protected addFeature(section: NpcFeatureSection): void {
-    this.featureDrafts.update((drafts) => ({
-      ...drafts,
-      [section]: [...drafts[section], createNpcFeature()],
-    }));
-    this.npcForm.markAsDirty();
-  }
-
-  protected removeFeature(section: NpcFeatureSection, featureId: string): void {
-    this.featureDrafts.update((drafts) => ({
-      ...drafts,
-      [section]: drafts[section].filter((feature) => feature.id !== featureId),
-    }));
-    this.npcForm.markAsDirty();
-  }
-
-  protected updateFeatureName(
-    section: NpcFeatureSection,
-    featureId: string,
-    value: string | number | null,
+  protected updateFeatureSection(
+    section: CreatureFeatureSection,
+    features: CreatureFeatureDrafts[CreatureFeatureSection],
   ): void {
-    const name = String(value ?? '');
-    this.updateFeature(section, featureId, (feature) => ({ ...feature, name }));
-  }
-
-  protected updateFeatureDescription(
-    section: NpcFeatureSection,
-    featureId: string,
-    description: RichTextDocument,
-  ): void {
-    this.updateFeature(section, featureId, (feature) => ({ ...feature, description }));
+    this.featureDrafts.update((drafts) => ({ ...drafts, [section]: features }));
+    this.npcForm.markAsDirty();
   }
 
   protected updateOfficialDescription(description: RichTextDocument): void {
@@ -635,7 +603,7 @@ export class NpcWorkspace implements OnInit, PendingChangesAware {
       challengeRating: sheet.challengeRating,
       experiencePoints: sheet.experiencePoints,
     });
-    this.featureDrafts.set(featureDraftsFromSheet(sheet));
+    this.featureDrafts.set(creatureFeatureDraftsFrom(sheet));
     this.officialDescriptionDraft.set(sheet.officialDescription);
     this.npcForm.markAsPristine();
   }
@@ -672,7 +640,7 @@ export class NpcWorkspace implements OnInit, PendingChangesAware {
       challengeRating: sheet.challengeRating,
       experiencePoints: sheet.experiencePoints,
     });
-    this.featureDrafts.set(emptyFeatureDrafts());
+    this.featureDrafts.set(emptyCreatureFeatureDrafts());
     this.officialDescriptionDraft.set(sheet.officialDescription);
     this.npcForm.markAsPristine();
   }
@@ -749,20 +717,6 @@ export class NpcWorkspace implements OnInit, PendingChangesAware {
     };
   }
 
-  private updateFeature(
-    section: NpcFeatureSection,
-    featureId: string,
-    transform: (feature: NpcFeature) => NpcFeature,
-  ): void {
-    this.featureDrafts.update((drafts) => ({
-      ...drafts,
-      [section]: drafts[section].map((feature) =>
-        feature.id === featureId ? transform(feature) : feature,
-      ),
-    }));
-    this.npcForm.markAsDirty();
-  }
-
   private async loadPortraitPreview(relativePath: string | null): Promise<void> {
     this.portraitUrl.set(DEMO_NPC_PORTRAIT_URL);
     if (!relativePath) {
@@ -828,26 +782,6 @@ export class NpcWorkspace implements OnInit, PendingChangesAware {
     if (typeof error === 'string') return error;
     return 'Une erreur inattendue est survenue.';
   }
-}
-
-function emptyFeatureDrafts(): NpcFeatureDrafts {
-  return {
-    traits: [],
-    actions: [],
-    bonusActions: [],
-    reactions: [],
-    legendaryActions: [],
-  };
-}
-
-function featureDraftsFromSheet(sheet: NpcSheet): NpcFeatureDrafts {
-  return {
-    traits: sheet.traits,
-    actions: sheet.actions,
-    bonusActions: sheet.bonusActions,
-    reactions: sheet.reactions,
-    legendaryActions: sheet.legendaryActions,
-  };
 }
 
 function integerValidator(control: AbstractControl): ValidationErrors | null {

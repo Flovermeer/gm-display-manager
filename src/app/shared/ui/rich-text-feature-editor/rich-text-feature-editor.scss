@@ -1,0 +1,64 @@
+:host {
+  display: block;
+}
+
+.rich-feature-editor {
+  margin: 1.5rem 0;
+  padding: 1.5rem;
+  border: 1px solid #d2cbc0;
+  border-radius: 0.65rem;
+  background: #e8e3da;
+}
+
+.rich-feature-editor__heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.rich-feature-editor__heading h3 {
+  margin: 0;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 1.35rem;
+}
+
+.rich-feature-editor__entry {
+  display: grid;
+  gap: 0.65rem;
+  margin-top: 1rem;
+  padding: 1rem;
+  border: 1px solid #c7bdb0;
+  border-radius: 0.5rem;
+  background: #f4f0e9;
+}
+
+.rich-feature-editor__entry-heading {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.rich-feature-editor__remove {
+  padding: 0.35rem 0.5rem;
+  border: 0;
+  color: #9a3540;
+  background: transparent;
+  cursor: pointer;
+}
+
+.rich-feature-editor__empty {
+  margin: 1rem 0 0;
+  color: #746b60;
+  font-size: 0.85rem;
+}
+
+:host ::ng-deep .rich-feature-editor__entry .rich-text-content .tiptap {
+  min-height: 8rem;
+}
+
+@media (max-width: 52rem) {
+  .rich-feature-editor__heading {
+    align-items: stretch;
+    flex-direction: column;
+  }
+}

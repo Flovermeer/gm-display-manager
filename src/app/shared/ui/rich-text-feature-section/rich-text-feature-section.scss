@@ -1,0 +1,35 @@
+:host {
+  display: block;
+  margin-top: 1.5rem;
+}
+
+.rich-feature-section__title {
+  margin: 0 0 0.75rem;
+  padding-bottom: 0.2rem;
+  border-bottom: 1px solid #7c3440;
+  color: #612d35;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 1.5rem;
+  font-weight: 500;
+  text-transform: uppercase;
+}
+
+.rich-feature-section__entry + .rich-feature-section__entry {
+  margin-top: 1rem;
+}
+
+.rich-feature-section__entry h5 {
+  margin: 0 0 0.25rem;
+  font-size: 1rem;
+  font-style: italic;
+}
+
+:host ::ng-deep .rich-feature-section__entry .rich-text-editor {
+  border: 0;
+  background: transparent;
+}
+
+:host ::ng-deep .rich-feature-section__entry .rich-text-content.readonly .tiptap {
+  min-height: 0;
+  padding: 0;
+}

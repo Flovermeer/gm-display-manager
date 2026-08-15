@@ -1,0 +1,36 @@
+<section class="rich-feature-editor">
+  <div class="rich-feature-editor__heading">
+    <h3>{{ title() }}</h3>
+    <button appButton="secondary" type="button" (click)="add()">
+      + Ajouter {{ singularLabel() }}
+    </button>
+  </div>
+
+  @for (feature of features(); track feature.id) {
+    <article class="rich-feature-editor__entry">
+      <div class="rich-feature-editor__entry-heading">
+        <button
+          class="rich-feature-editor__remove"
+          type="button"
+          [attr.aria-label]="'Supprimer ' + (feature.name || singularLabel())"
+          (click)="remove(feature.id)"
+        >
+          Supprimer
+        </button>
+      </div>
+      <app-form-field
+        [inputId]="inputIdPrefix() + '-' + feature.id"
+        label="Nom"
+        [value]="feature.name"
+        [placeholder]="'Nom de ' + singularLabel()"
+        (valueChange)="updateName(feature.id, $event)"
+      />
+      <app-rich-text-editor
+        [value]="feature.description"
+        (valueChange)="updateDescription(feature.id, $event)"
+      />
+    </article>
+  } @empty {
+    <p class="rich-feature-editor__empty">Aucune entrée pour le moment.</p>
+  }
+</section>

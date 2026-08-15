@@ -1,0 +1,11 @@
+<section class="rich-feature-section">
+  <h4 class="rich-feature-section__title">{{ title() }}</h4>
+  @for (feature of features(); track feature.id) {
+    <article class="rich-feature-section__entry">
+      @if (feature.name) {
+        <h5>{{ feature.name }}</h5>
+      }
+      <app-rich-text-editor [value]="feature.description" [editable]="false" />
+    </article>
+  }
+</section>

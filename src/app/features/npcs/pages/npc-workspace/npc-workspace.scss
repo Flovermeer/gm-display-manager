@@ -131,7 +131,6 @@ textarea {
 }
 
 .sheet-form-section,
-.feature-form-section,
 .official-description-form {
   margin: 1.5rem 0;
   padding: 1.5rem;
@@ -140,24 +139,15 @@ textarea {
   background: #e8e3da;
 }
 
-.form-section-heading,
-.feature-section-heading {
+.form-section-heading {
   margin-bottom: 1.25rem;
 }
 
 .form-section-heading h3,
-.feature-section-heading h3,
 .official-description-readonly h3 {
   margin: 0;
   font-family: Georgia, 'Times New Roman', serif;
   font-size: 1.35rem;
-}
-
-.feature-section-heading {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
 }
 
 .abilities-fieldset {
@@ -199,47 +189,6 @@ textarea {
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 1rem;
   margin-bottom: 1.35rem;
-}
-
-.feature-editor {
-  display: grid;
-  gap: 0.65rem;
-  margin-top: 1rem;
-  padding: 1rem;
-  border: 1px solid #c7bdb0;
-  border-radius: 0.5rem;
-  background: #f4f0e9;
-}
-
-.feature-editor-heading {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-}
-
-.feature-editor-heading label {
-  color: #5d554c;
-  font-size: 0.8rem;
-  font-weight: 800;
-}
-
-.feature-remove {
-  padding: 0.35rem 0.5rem;
-  border: 0;
-  color: #9a3540;
-  background: transparent;
-  cursor: pointer;
-}
-
-.empty-features {
-  margin: 0;
-  color: #746b60;
-  font-size: 0.85rem;
-}
-
-.feature-editor .rich-text-content .tiptap {
-  min-height: 8rem;
 }
 
 .field-error {
@@ -344,41 +293,6 @@ dd {
   font-weight: 800;
 }
 
-.stat-feature-section {
-  margin-top: 1.5rem;
-}
-
-.stat-feature-section h4 {
-  margin: 0 0 0.75rem;
-  padding-bottom: 0.2rem;
-  border-bottom: 1px solid #7c3440;
-  color: #612d35;
-  font-family: Georgia, 'Times New Roman', serif;
-  font-size: 1.5rem;
-  font-weight: 500;
-  text-transform: uppercase;
-}
-
-.stat-feature + .stat-feature {
-  margin-top: 1rem;
-}
-
-.stat-feature h5 {
-  margin: 0 0 0.25rem;
-  font-size: 1rem;
-  font-style: italic;
-}
-
-.stat-feature .rich-text-editor {
-  border: 0;
-  background: transparent;
-}
-
-.stat-feature .rich-text-content.readonly .tiptap {
-  min-height: 0;
-  padding: 0;
-}
-
 .official-description-readonly {
   margin-top: 2.5rem;
   padding-top: 1.5rem;
@@ -413,10 +327,5 @@ dd {
   .ability-inputs,
   .ability-grid {
     grid-template-columns: repeat(3, minmax(4rem, 1fr));
-  }
-
-  .feature-section-heading {
-    align-items: stretch;
-    flex-direction: column;
   }
 }

@@ -1,0 +1,82 @@
+<section class="universe-catalog" aria-labelledby="universe-catalog-title">
+  <header class="universe-catalog__heading">
+    <p>Ressources partagées</p>
+    <h2 id="universe-catalog-title">Catalogue de {{ universe().name }}</h2>
+  </header>
+
+  <nav class="universe-catalog__menu" aria-label="Types de ressources">
+    @for (section of sections; track section.type) {
+      <button
+        type="button"
+        [class.universe-catalog__menu-item--active]="selectedType() === section.type"
+        class="universe-catalog__menu-item"
+        (click)="select(section.type)"
+      >
+        {{ section.label }}
+      </button>
+    }
+  </nav>
+
+  <div class="universe-catalog__content">
+    <h3>{{ sectionLabel() }}</h3>
+    <p class="universe-catalog__help">
+      Une ressource mise à la corbeille reste disponible dans les campagnes qui l’utilisent déjà,
+      mais ne peut plus être importée ailleurs.
+    </p>
+
+    @if (error(); as message) {
+      <p class="configuration-error" role="alert">{{ message }}</p>
+    }
+
+    @if (isLoading()) {
+      <p>Chargement…</p>
+    } @else {
+      <div class="universe-catalog__list">
+        @for (resource of resources(); track resource.id) {
+          <article
+            class="universe-catalog__card"
+            [class.universe-catalog__card--trashed]="resource.deletedAt"
+          >
+            <div>
+              <strong>{{ resource.name }}</strong>
+              <small>{{ resource.summary || usageLabel(resource.campaignCount) }}</small>
+              @if (resource.summary) {
+                <small>{{ usageLabel(resource.campaignCount) }}</small>
+              }
+            </div>
+            @if (resource.deletedAt) {
+              <button appButton="secondary" type="button" (click)="restore(resource)">
+                Restaurer
+              </button>
+            } @else {
+              <button appButton="danger" type="button" (click)="pendingTrash.set(resource)">
+                Corbeille
+              </button>
+            }
+          </article>
+        } @empty {
+          <p class="empty-copy">{{ emptyLabel() }}</p>
+        }
+      </div>
+    }
+  </div>
+</section>
+
+@if (pendingTrash(); as resource) {
+  <app-dialog
+    kicker="Catalogue de l’univers"
+    [title]="'Mettre ' + resource.name + ' à la corbeille ?'"
+    headingId="resource-trash-title"
+  >
+    <p>
+      Les {{ usageLabel(resource.campaignCount) }} qui utilisent déjà cette ressource la
+      conserveront.
+    </p>
+    <div dialog-actions class="dialog-actions">
+      <button appButton="secondary" type="button" (click)="pendingTrash.set(null)">Annuler</button>
+      <button appButton="danger" type="button" [disabled]="isSaving()" (click)="confirmTrash()">
+        Mettre à la corbeille
+      </button>
+    </div>
+  </app-dialog>
+}

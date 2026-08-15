@@ -30,7 +30,8 @@ export function createUniverseRuleOption(
   now: () => Date = () => new Date(),
 ): GameRuleOption {
   const normalizedLabel = label.trim();
-  if (!gameSystemId.trim() || !universeId.trim()) throw new Error('Le système et l’univers sont requis.');
+  if (!gameSystemId.trim() || !universeId.trim())
+    throw new Error('Le système et l’univers sont requis.');
   if (!normalizedLabel) throw new Error('Le libellé est requis.');
   if (category === 'creature_subspecies' && !parentOptionId) {
     throw new Error('Une sous-espèce doit être rattachée à un type.');

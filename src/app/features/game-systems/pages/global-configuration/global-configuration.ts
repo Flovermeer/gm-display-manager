@@ -3,16 +3,14 @@ import { FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 
 import { GameSystemService } from '@app/features/game-systems/application/game-system.service';
-import type {
-  GameSystem,
-  GameUniverse,
-} from '@app/features/game-systems/domain/game-system';
+import type { GameSystem, GameUniverse } from '@app/features/game-systems/domain/game-system';
 import { ButtonDirective } from '@app/shared/ui/button/button.directive';
 import { Dialog } from '@app/shared/ui/dialog/dialog';
 import { FormField } from '@app/shared/ui/form-field/form-field';
 import { RuleCatalogSettings } from '@app/features/game-systems/ui/rule-catalog-settings/rule-catalog-settings';
+import { UniverseResourceCatalog } from '@app/features/game-systems/ui/universe-resource-catalog/universe-resource-catalog';
 
-type ConfigurationSection = 'systems' | 'rules';
+type ConfigurationSection = 'systems' | 'resources' | 'rules';
 
 type PurgeTarget =
   | Readonly<{ kind: 'system'; item: GameSystem }>
@@ -20,7 +18,15 @@ type PurgeTarget =
 
 @Component({
   selector: 'app-global-configuration',
-  imports: [ReactiveFormsModule, RouterLink, ButtonDirective, Dialog, FormField, RuleCatalogSettings],
+  imports: [
+    ReactiveFormsModule,
+    RouterLink,
+    ButtonDirective,
+    Dialog,
+    FormField,
+    RuleCatalogSettings,
+    UniverseResourceCatalog,
+  ],
   templateUrl: './global-configuration.html',
   styleUrl: './global-configuration.scss',
 })

@@ -31,10 +31,6 @@ export function optionIdFor(
   );
 }
 
-export function optionLabel(
-  id: string,
-  options: readonly GameRuleOption[],
-  fallback = '',
-): string {
+export function optionLabel(id: string, options: readonly GameRuleOption[], fallback = ''): string {
   return options.find((option) => option.id === id)?.label ?? fallback;
 }

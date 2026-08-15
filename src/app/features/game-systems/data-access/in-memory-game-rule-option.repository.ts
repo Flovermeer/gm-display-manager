@@ -61,6 +61,8 @@ export class InMemoryGameRuleOptionRepository extends GameRuleOptionRepository {
           option.category === category &&
           (universeId === undefined || option.universeId === universeId),
       )
-      .sort((left, right) => left.label.localeCompare(right.label) || left.id.localeCompare(right.id));
+      .sort(
+        (left, right) => left.label.localeCompare(right.label) || left.id.localeCompare(right.id),
+      );
   }
 }

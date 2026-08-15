@@ -63,6 +63,9 @@ import { TauriMonsterImageGateway } from '@app/features/bestiary/data-access/tau
 import { GameRuleOptionRepository } from '@app/features/game-systems/data-access/game-rule-option.repository';
 import { InMemoryGameRuleOptionRepository } from '@app/features/game-systems/data-access/in-memory-game-rule-option.repository';
 import { TauriGameRuleOptionRepository } from '@app/features/game-systems/data-access/tauri-game-rule-option.repository';
+import { UniverseResourceRepository } from '@app/features/game-systems/data-access/universe-resource.repository';
+import { InMemoryUniverseResourceRepository } from '@app/features/game-systems/data-access/in-memory-universe-resource.repository';
+import { TauriUniverseResourceRepository } from '@app/features/game-systems/data-access/tauri-universe-resource.repository';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -86,9 +89,14 @@ export const appConfig: ApplicationConfig = {
     {
       provide: GameRuleOptionRepository,
       useFactory: () =>
+        isTauri() ? new TauriGameRuleOptionRepository() : new InMemoryGameRuleOptionRepository(),
+    },
+    {
+      provide: UniverseResourceRepository,
+      useFactory: () =>
         isTauri()
-          ? new TauriGameRuleOptionRepository()
-          : new InMemoryGameRuleOptionRepository(),
+          ? new TauriUniverseResourceRepository()
+          : new InMemoryUniverseResourceRepository(),
     },
     {
       provide: ChapterRepository,

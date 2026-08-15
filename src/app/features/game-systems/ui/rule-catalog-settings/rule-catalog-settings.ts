@@ -27,10 +27,22 @@ export class RuleCatalogSettings {
   protected readonly isLoading = signal(true);
   protected readonly isSaving = signal(false);
   protected readonly error = signal<string | null>(null);
-  protected readonly newType = new FormControl('', { nonNullable: true, validators: [Validators.required] });
-  protected readonly newLanguage = new FormControl('', { nonNullable: true, validators: [Validators.required] });
-  protected readonly newSubspecies = new FormControl('', { nonNullable: true, validators: [Validators.required] });
-  protected readonly subspeciesParentId = new FormControl('', { nonNullable: true, validators: [Validators.required] });
+  protected readonly newType = new FormControl('', {
+    nonNullable: true,
+    validators: [Validators.required],
+  });
+  protected readonly newLanguage = new FormControl('', {
+    nonNullable: true,
+    validators: [Validators.required],
+  });
+  protected readonly newSubspecies = new FormControl('', {
+    nonNullable: true,
+    validators: [Validators.required],
+  });
+  protected readonly subspeciesParentId = new FormControl('', {
+    nonNullable: true,
+    validators: [Validators.required],
+  });
   protected readonly typeOptions = computed(() =>
     this.creatureTypes().map(({ id, label }) => ({ value: id, label })),
   );
@@ -63,7 +75,9 @@ export class RuleCatalogSettings {
   }
 
   protected parentLabel(option: GameRuleOption): string {
-    return this.creatureTypes().find(({ id }) => id === option.parentOptionId)?.label ?? 'Type inconnu';
+    return (
+      this.creatureTypes().find(({ id }) => id === option.parentOptionId)?.label ?? 'Type inconnu'
+    );
   }
 
   private async add(
@@ -109,7 +123,9 @@ export class RuleCatalogSettings {
       this.subspecies.set(subspecies);
       this.languages.set(languages);
     } catch (error) {
-      this.error.set(error instanceof Error ? error.message : 'Impossible de charger les référentiels.');
+      this.error.set(
+        error instanceof Error ? error.message : 'Impossible de charger les référentiels.',
+      );
     } finally {
       this.isLoading.set(false);
     }

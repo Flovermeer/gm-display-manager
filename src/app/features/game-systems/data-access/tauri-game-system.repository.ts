@@ -121,7 +121,9 @@ export class TauriGameSystemRepository extends GameSystemRepository {
 
   override async purgeUniverse(id: string): Promise<void> {
     const database = await this.getDatabase();
-    await database.execute('DELETE FROM game_universe WHERE id=$1 AND deleted_at IS NOT NULL', [id]);
+    await database.execute('DELETE FROM game_universe WHERE id=$1 AND deleted_at IS NOT NULL', [
+      id,
+    ]);
   }
 
   private getDatabase(): Promise<Database> {

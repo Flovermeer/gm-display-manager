@@ -2,7 +2,7 @@
 
 Date de cadrage : 12 août 2026
 
-Dernière consolidation : 14 août 2026
+Dernière consolidation : 15 août 2026
 
 ## Statut consolidé
 
@@ -12,7 +12,7 @@ Dernière consolidation : 14 août 2026
 | 1 — Shell Angular + Tauri   | Terminé                                  | Application standalone zoneless, routes Angular, fenêtre principale maximisée et capabilities Tauri en place.                                                                                                    |
 | 2 — Multi-écran             | Fonctionnel, validation avancée restante | Détection, choix persistant du moniteur et fenêtre joueurs dédiée plein écran validés sur le matériel nominal. Restent les cas de déconnexion, remplacement, coordonnées négatives et facteurs d’échelle variés. |
 | 3 — Régie verticale         | Terminé                                  | Écran noir, lieux, PNJ et objets peuvent être envoyés au Player Display ; synchronisation `ready` et fallback statique des PNJ en place.                                                                         |
-| 4 — SQLite                  | Terminé pour les tranches livrées        | Quatorze migrations couvrent notamment systèmes, univers, campagnes et catalogues partagés avec contexte de campagne. Repositories Tauri et mémoire isolés derrière des interfaces.                              |
+| 4 — SQLite                  | Terminé pour les tranches livrées        | Seize migrations couvrent notamment systèmes, univers, campagnes, propriété des ressources et snapshots de campagne. Repositories Tauri et mémoire isolés derrière des interfaces.                       |
 | 5 — Gestion de campagne     | Terminé et étendu                        | CRUD campagnes, lieux hiérarchiques, PNJ structurés, PJ orientés MJ et objets narratifs. Navigation campagne persistante et protection des modifications non enregistrées.                                       |
 | 6 — Médias locaux           | Terminé pour images et portraits animés  | Import/copie locale des portraits PNJ/PJ, images de lieux et d’objets, vidéo idle PNJ et nettoyage des médias. Une validation plus large des fichiers cassés reste à inclure au durcissement.                    |
 | 7 — Tiptap et journal       | Terminé pour l’usage actuel              | Chapitres et descriptions riches, notes journalisées éditables, regroupement quotidien, mentions `@` cliquables vers les ressources de campagne et fallback texte si la cible disparaît.                         |
@@ -37,16 +37,22 @@ Dernière consolidation : 14 août 2026
 - navigation Retour commune aux écrans d’une campagne.
 - configuration globale des systèmes et univers avec corbeille, restauration et purge ;
 - ressources partagées par univers et associations explicites aux campagnes.
+- création locale, import, promotion, personnalisation figée et réinitialisation depuis
+  l’univers pour les PNJ, PJ, lieux, objets narratifs et monstres ;
+- premier panneau global des ressources canoniques par univers, avec usage par les campagnes,
+  corbeille et restauration.
 
 ### Prochaine priorité recommandée
 
 Le prochain ordre de livraison retenu est :
 
-1. **Jalon 10 — Combat léger**, alimenté par les PJ, les PNJ et le Bestiaire ;
-2. **Jalon 11 — Historique récent**, pour accélérer la navigation pendant la partie ;
-3. **Jalon 12 — Carte heuristique**, générée depuis les chapitres, les ressources liées et les mentions `@` ;
-4. **Jalon 13 — Tables aléatoires**, à cadrer fonctionnellement après la carte ;
-5. **Jalon 14 — Durcissement et livraison Windows**.
+1. **Finaliser le catalogue global**, avec les éditeurs détaillés des fiches canoniques et
+   les types/raretés d’objets de l’univers ;
+2. **Jalon 10 — Combat léger**, alimenté par les PJ, les PNJ et le Bestiaire ;
+3. **Jalon 11 — Historique récent**, pour accélérer la navigation pendant la partie ;
+4. **Jalon 12 — Carte heuristique**, générée depuis les chapitres, les ressources liées et les mentions `@` ;
+5. **Jalon 13 — Tables aléatoires**, à cadrer fonctionnellement après la carte ;
+6. **Jalon 14 — Durcissement et livraison Windows**.
 
 Les tables aléatoires sont désormais inscrites dans la séquence, mais leur modèle et leur expérience d’utilisation seront décidés avec le MJ au début du jalon 13.
 

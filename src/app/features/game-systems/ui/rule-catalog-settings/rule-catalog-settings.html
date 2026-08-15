@@ -3,8 +3,8 @@
     <p class="configuration-workspace__kicker">Règles de {{ system().name }}</p>
     <h2>Référentiels de {{ universe().name }}</h2>
     <p>
-      Les valeurs du système sont protégées. L’univers peut enrichir les types, les sous-espèces
-      et les langues.
+      Les valeurs du système sont protégées. L’univers peut enrichir les types, les sous-espèces et
+      les langues.
     </p>
   </header>
 
@@ -15,7 +15,9 @@
       <h3>Alignements</h3>
       <div class="rule-list">
         @for (option of alignments(); track option.id) {
-          <span class="rule-pill"><strong>{{ option.code }}</strong> {{ option.label }}</span>
+          <span class="rule-pill"
+            ><strong>{{ option.code }}</strong> {{ option.label }}</span
+          >
         }
       </div>
     </section>
@@ -24,7 +26,9 @@
       <h3>Tailles</h3>
       <div class="rule-list">
         @for (option of sizes(); track option.id) {
-          <span class="rule-pill"><strong>{{ option.code }}</strong> {{ option.label }}</span>
+          <span class="rule-pill"
+            ><strong>{{ option.code }}</strong> {{ option.label }}</span
+          >
         }
       </div>
     </section>
@@ -33,7 +37,12 @@
       <h3>Types de créatures</h3>
       <div class="inline-create">
         <app-form-field inputId="new-creature-type" label="Nouveau type" [formControl]="newType" />
-        <button appButton="primary" type="button" [disabled]="newType.invalid || isSaving()" (click)="addType()">
+        <button
+          appButton="primary"
+          type="button"
+          [disabled]="newType.invalid || isSaving()"
+          (click)="addType()"
+        >
           Ajouter
         </button>
       </div>
@@ -58,7 +67,11 @@
           emptyValue=""
           [formControl]="subspeciesParentId"
         />
-        <app-form-field inputId="new-subspecies" label="Nouvelle sous-espèce" [formControl]="newSubspecies" />
+        <app-form-field
+          inputId="new-subspecies"
+          label="Nouvelle sous-espèce"
+          [formControl]="newSubspecies"
+        />
         <button
           appButton="primary"
           type="button"
@@ -82,8 +95,17 @@
     <section class="rule-section">
       <h3>Langues</h3>
       <div class="inline-create">
-        <app-form-field inputId="new-language" label="Nouvelle langue" [formControl]="newLanguage" />
-        <button appButton="primary" type="button" [disabled]="newLanguage.invalid || isSaving()" (click)="addLanguage()">
+        <app-form-field
+          inputId="new-language"
+          label="Nouvelle langue"
+          [formControl]="newLanguage"
+        />
+        <button
+          appButton="primary"
+          type="button"
+          [disabled]="newLanguage.invalid || isSaving()"
+          (click)="addLanguage()"
+        >
           Ajouter
         </button>
       </div>

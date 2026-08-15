@@ -40,7 +40,9 @@ export class InMemoryGameSystemRepository extends GameSystemRepository {
   ]);
 
   override listSystems(includeDeleted = false): Promise<readonly GameSystem[]> {
-    return Promise.resolve(sort([...this.systems.values()].filter((item) => includeDeleted || !item.deletedAt)));
+    return Promise.resolve(
+      sort([...this.systems.values()].filter((item) => includeDeleted || !item.deletedAt)),
+    );
   }
 
   override saveSystem(gameSystem: GameSystem): Promise<void> {
@@ -99,5 +101,7 @@ export class InMemoryGameSystemRepository extends GameSystemRepository {
 }
 
 function sort<T extends { name: string; id: string }>(values: T[]): readonly T[] {
-  return values.sort((left, right) => left.name.localeCompare(right.name) || left.id.localeCompare(right.id));
+  return values.sort(
+    (left, right) => left.name.localeCompare(right.name) || left.id.localeCompare(right.id),
+  );
 }

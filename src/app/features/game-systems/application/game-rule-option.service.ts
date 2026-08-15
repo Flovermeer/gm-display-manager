@@ -25,7 +25,10 @@ type ExtensibleCategory = Extract<
 export class GameRuleOptionService {
   private readonly repository = inject(GameRuleOptionRepository);
 
-  listForSystem(gameSystemId: string, category: GameRuleCategory): Promise<readonly GameRuleOption[]> {
+  listForSystem(
+    gameSystemId: string,
+    category: GameRuleCategory,
+  ): Promise<readonly GameRuleOption[]> {
     return this.repository.listForSystem(gameSystemId, category);
   }
 

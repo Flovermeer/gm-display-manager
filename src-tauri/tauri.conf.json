@@ -5,7 +5,7 @@
   "identifier": "com.beholdersinn.app",
   "build": {
     "frontendDist": "../dist/gm-display-manager/browser",
-    "devUrl": "http://localhost:4200",
+    "devUrl": "http://localhost:4300",
     "beforeDevCommand": "npm run start",
     "beforeBuildCommand": "npm run build"
   },

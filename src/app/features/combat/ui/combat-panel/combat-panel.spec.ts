@@ -36,10 +36,14 @@ describe('CombatPanel', () => {
 
   it('shows zero-hit-point participants without removing them', async () => {
     const fixture = await createFixture();
-    const text = (fixture.nativeElement as HTMLElement).textContent;
+    const element = fixture.nativeElement as HTMLElement;
+    const text = element.textContent;
     expect(text).toContain('Hors combat');
     expect(text).toContain('Mort');
-    expect((fixture.nativeElement as HTMLElement).querySelectorAll('.combatant')).toHaveLength(2);
+    expect(element.querySelectorAll('.combatant')).toHaveLength(2);
+    expect(element.querySelector('.combatant__identity')?.firstElementChild?.classList).toContain(
+      'combatant__kind',
+    );
   });
 
   it('applies quick damage through the combat store', async () => {

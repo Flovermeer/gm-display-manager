@@ -60,6 +60,7 @@
             @for (combatant of combat.combatants; track combatant.id) {
               <article class="combatant" [class.combatant--out]="statusLabel(combatant) !== null">
                 <div class="combatant__identity">
+                  <span class="combatant__kind">{{ kindLabel(combatant) }}</span>
                   @if (combatant.kind === 'monster') {
                     <input
                       class="combatant__name-input"
@@ -71,7 +72,6 @@
                   } @else {
                     <strong>{{ combatant.displayName }}</strong>
                   }
-                  <span>{{ kindLabel(combatant) }}</span>
                   @if (statusLabel(combatant); as status) {
                     <span class="combatant__status">{{ status }}</span>
                   }

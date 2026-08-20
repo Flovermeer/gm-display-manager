@@ -152,6 +152,25 @@ divergence entre copies.
 la préparation narrative de la scène ; les futurs exemplaires rencontrés, leurs PV courants et
 leurs conditions appartiendront au suivi de combat et ne modifieront pas la fiche canonique.
 
+## Combat actif
+
+`active_combat` porte l'unique rencontre active d'une campagne. Sa suppression termine la rencontre ;
+aucun historique de combat n'est conservé dans ce jalon.
+
+`combatant` référence un PJ, un PNJ ou un monstre sélectionné dans la campagne. Il stocke le nom
+d'affichage, l'initiative manuelle et l'ordre d'ajout. Une contrainte interdit plusieurs occurrences
+du même PJ ou PNJ, tandis qu'un même monstre peut produire plusieurs instances indépendantes.
+
+Les PV suivent deux stratégies explicites :
+
+- pour un PJ, `combatant` ne stocke aucun PV ; le tracker lit et met à jour directement
+  `campaign_player_character.current_hit_points` et le maximum effectif de la fiche de campagne ;
+- pour un PNJ ou un monstre, les PV actuels et maximum sont temporaires et appartiennent à
+  `combatant`, sans modifier la ressource canonique ou son éventuelle personnalisation de campagne.
+
+Les PV restent compris entre zéro et le maximum. Un combattant à zéro reste dans la liste jusqu'à
+son retrait explicite ou jusqu'à la fin du combat.
+
 ## Chapitres et sections
 
 Les chapitres forment une liste ordonnée et réorganisable dans la campagne. Un chapitre contient des `chapter_section` également ordonnées.

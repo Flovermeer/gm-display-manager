@@ -1,0 +1,214 @@
+@if (store.isOpen()) {
+  <div class="combat-overlay" (click)="store.close()">
+    <aside
+      class="combat-panel"
+      aria-labelledby="combat-panel-title"
+      (click)="$event.stopPropagation()"
+    >
+      <header class="combat-panel__header">
+        <div>
+          <p>Suivi privé du MJ</p>
+          <h2 id="combat-panel-title">Combat</h2>
+        </div>
+        <div class="combat-panel__header-actions">
+          @if (store.combat()) {
+            <button appButton="danger" type="button" (click)="showEndConfirmation.set(true)">
+              Terminer
+            </button>
+          }
+          <button appButton="secondary" type="button" (click)="store.close()">Replier</button>
+        </div>
+      </header>
+
+      <section class="combat-panel__add" aria-labelledby="combat-add-title">
+        <div>
+          <h3 id="combat-add-title">Ajouter un combattant</h3>
+          <p>Le premier ajout crée automatiquement le combat.</p>
+        </div>
+        <div class="combat-panel__add-controls">
+          <app-form-field
+            inputId="combat-source"
+            label="Combattant"
+            controlType="select"
+            [options]="selectableOptions()"
+            emptyLabel="Choisir une fiche"
+            emptyValue=""
+            [formControl]="selectedSourceKey"
+          />
+          <button
+            appButton="primary"
+            type="button"
+            [disabled]="!selectedSourceKey.value || store.isBusy()"
+            (click)="addSelected()"
+          >
+            Ajouter
+          </button>
+        </div>
+      </section>
+
+      @if (store.error(); as message) {
+        <p class="combat-panel__error" role="alert">{{ message }}</p>
+      }
+
+      @if (store.combat(); as combat) {
+        <section class="combat-panel__tracker" aria-label="Combattants">
+          <div class="combat-panel__summary">
+            <strong>{{ combat.combatants.length }} combattant(s)</strong>
+            <span>Initiative décroissante</span>
+          </div>
+          <div class="combat-list">
+            @for (combatant of combat.combatants; track combatant.id) {
+              <article class="combatant" [class.combatant--out]="statusLabel(combatant) !== null">
+                <div class="combatant__identity">
+                  @if (combatant.kind === 'monster') {
+                    <input
+                      class="combatant__name-input"
+                      type="text"
+                      [value]="combatant.displayName"
+                      aria-label="Nom de l'instance"
+                      (change)="renameMonster(combatant, $event)"
+                    />
+                  } @else {
+                    <strong>{{ combatant.displayName }}</strong>
+                  }
+                  <span>{{ kindLabel(combatant) }}</span>
+                  @if (statusLabel(combatant); as status) {
+                    <span class="combatant__status">{{ status }}</span>
+                  }
+                </div>
+
+                <label class="combatant__initiative">
+                  <span>Initiative</span>
+                  <input
+                    type="number"
+                    [value]="combatant.initiative"
+                    (change)="updateInitiative(combatant, $event)"
+                  />
+                </label>
+
+                <div class="combatant__hit-points">
+                  <label>
+                    <span>PV</span>
+                    <input
+                      #currentHitPoints
+                      type="number"
+                      min="0"
+                      [max]="combatant.maxHitPoints ?? 1"
+                      [value]="combatant.currentHitPoints ?? 0"
+                      (change)="
+                        updatePool(
+                          combatant,
+                          currentHitPoints.valueAsNumber,
+                          maxHitPoints.valueAsNumber
+                        )
+                      "
+                    />
+                  </label>
+                  <span aria-hidden="true">/</span>
+                  <label>
+                    <span>Maximum</span>
+                    <input
+                      #maxHitPoints
+                      type="number"
+                      min="1"
+                      [value]="combatant.maxHitPoints ?? 1"
+                      (change)="
+                        updatePool(
+                          combatant,
+                          currentHitPoints.valueAsNumber,
+                          maxHitPoints.valueAsNumber
+                        )
+                      "
+                    />
+                  </label>
+                </div>
+
+                <div class="combatant__quick-actions">
+                  <input
+                    type="number"
+                    min="1"
+                    [value]="quickAmount(combatant.id)"
+                    aria-label="Quantité de PV"
+                    (input)="updateQuickAmount(combatant.id, $event)"
+                  />
+                  <button
+                    appButton="secondary-danger"
+                    type="button"
+                    (click)="applyDamage(combatant)"
+                  >
+                    Dégâts
+                  </button>
+                  <button appButton="secondary" type="button" (click)="applyHealing(combatant)">
+                    Soins
+                  </button>
+                </div>
+
+                <button
+                  class="combatant__remove"
+                  appButton="secondary-danger"
+                  type="button"
+                  (click)="pendingRemoval.set(combatant)"
+                >
+                  Retirer
+                </button>
+              </article>
+            } @empty {
+              <p class="combat-panel__empty">Ajoute un combattant pour commencer la rencontre.</p>
+            }
+          </div>
+        </section>
+      } @else {
+        <p class="combat-panel__empty">Aucun combat actif pour cette campagne.</p>
+      }
+    </aside>
+  </div>
+}
+
+@if (store.pendingMaximum(); as source) {
+  <app-dialog
+    kicker="Ajout au combat"
+    [title]="'PV maximum de ' + source.name"
+    headingId="combat-missing-maximum-title"
+  >
+    <p>La fiche ne renseigne pas ses PV maximum. Indique-les pour créer ce combattant.</p>
+    <app-form-field
+      inputId="combat-missing-maximum"
+      label="PV maximum"
+      controlType="number"
+      [min]="1"
+      [formControl]="missingMaximum"
+    />
+    <div dialog-actions class="dialog-actions">
+      <button appButton="secondary" type="button" (click)="store.cancelMaximum()">Annuler</button>
+      <button appButton="primary" type="button" (click)="confirmMaximum()">Ajouter</button>
+    </div>
+  </app-dialog>
+}
+
+@if (pendingRemoval(); as combatant) {
+  <app-dialog
+    kicker="Combat actif"
+    [title]="'Retirer ' + combatant.displayName + ' ?'"
+    headingId="combat-remove-title"
+  >
+    <p>Ses PV et son initiative temporaires seront perdus.</p>
+    <div dialog-actions class="dialog-actions">
+      <button appButton="secondary" type="button" (click)="pendingRemoval.set(null)">
+        Annuler
+      </button>
+      <button appButton="danger" type="button" (click)="confirmRemoval()">Retirer</button>
+    </div>
+  </app-dialog>
+}
+
+@if (showEndConfirmation()) {
+  <app-dialog kicker="Combat actif" title="Terminer ce combat ?" headingId="combat-end-title">
+    <p>La rencontre et les données temporaires des PNJ et monstres seront supprimées.</p>
+    <div dialog-actions class="dialog-actions">
+      <button appButton="secondary" type="button" (click)="showEndConfirmation.set(false)">
+        Annuler
+      </button>
+      <button appButton="danger" type="button" (click)="endCombat()">Terminer le combat</button>
+    </div>
+  </app-dialog>
+}

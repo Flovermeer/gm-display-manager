@@ -1,6 +1,13 @@
 @if (campaign(); as activeCampaign) {
-  <app-campaign-navigation [campaignName]="activeCampaign.name" [campaignId]="activeCampaign.id" />
+  <app-campaign-navigation
+    [campaignName]="activeCampaign.name"
+    [campaignId]="activeCampaign.id"
+    [combatOpen]="combat.isOpen()"
+    [combatantCount]="combat.combatantCount()"
+    (combatToggle)="combat.toggle()"
+  />
   <router-outlet />
+  <app-combat-panel [campaignId]="activeCampaign.id" />
 } @else if (error(); as errorMessage) {
   <main class="campaign-layout-state">
     <p role="alert">{{ errorMessage }}</p>

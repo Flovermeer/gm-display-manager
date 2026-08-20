@@ -11,6 +11,8 @@ import {
 } from '@angular/forms';
 
 import { CampaignContext } from '@app/features/campaigns/application/campaign-context';
+import { CombatStore } from '@app/features/combat/application/combat.store';
+import { npcCombatantSource } from '@app/features/combat/domain/combatant-source';
 import { DisplayGateway } from '@app/features/display/data-access/display.gateway';
 import { PlayerDisplayStore } from '@app/features/display/application/player-display.store';
 import { NpcPortraitGateway } from '@app/features/npcs/data-access/npc-portrait.gateway';
@@ -95,6 +97,7 @@ export class NpcWorkspace implements OnInit, PendingChangesAware {
   private readonly displayGateway = inject(DisplayGateway);
   private readonly playerDisplayStore = inject(PlayerDisplayStore);
   private readonly creatureRules = inject(CreatureRuleCatalogService);
+  private readonly combat = inject(CombatStore, { optional: true });
   private pendingDecisionResolver?: PendingDecisionResolver;
   private readonly journalEntries = viewChild<JournalEntryList>(JournalEntryList);
 
@@ -187,6 +190,10 @@ export class NpcWorkspace implements OnInit, PendingChangesAware {
     challengeRating: new FormControl('', { nonNullable: true }),
     experiencePoints: new FormControl<number | null>(null, [Validators.min(0), integerValidator]),
   });
+
+  protected addToCombat(npc: Npc): void {
+    void this.combat?.requestAdd(npcCombatantSource(npc));
+  }
 
   ngOnInit(): void {
     this.route.queryParamMap

@@ -44,22 +44,33 @@
         </p>
       } @else {
         @for (character of filteredCharacters(); track character.id) {
-          <button
-            class="character-list-item"
-            type="button"
-            [class.active]="selectedCharacter()?.id === character.id && !isCreating()"
-            [attr.data-status]="character.status"
-            (click)="requestSelectCharacter(character)"
-          >
-            <span class="list-row">
-              <strong>{{ character.name }}</strong>
-              <span class="hit-point-pill" [class.full]="hasFullHitPoints(character)">
-                {{ hitPointLabel(character) }}
+          <div class="entity-list-entry">
+            <button
+              class="character-list-item"
+              type="button"
+              [class.active]="selectedCharacter()?.id === character.id && !isCreating()"
+              [attr.data-status]="character.status"
+              (click)="requestSelectCharacter(character)"
+            >
+              <span class="list-row">
+                <strong>{{ character.name }}</strong>
+                <span class="hit-point-pill" [class.full]="hasFullHitPoints(character)">
+                  {{ hitPointLabel(character) }}
+                </span>
               </span>
-            </span>
-            <span>{{ character.playerName || 'Joueur non renseigné' }}</span>
-            <span>{{ classAndLevel(character) }}</span>
-          </button>
+              <span>{{ character.playerName || 'Joueur non renseigné' }}</span>
+              <span>{{ classAndLevel(character) }}</span>
+            </button>
+            <button
+              class="entity-list-entry__combat"
+              type="button"
+              [attr.aria-label]="'Ajouter ' + character.name + ' au combat'"
+              [title]="'Ajouter ' + character.name + ' au combat'"
+              (click)="addToCombat(character)"
+            >
+              Combat
+            </button>
+          </div>
         }
       }
     </div>
@@ -101,6 +112,11 @@
         </div>
         <div class="detail-actions entity-workspace__actions">
           @if (!isEditing()) {
+            @if (selectedCharacter(); as character) {
+              <button appButton="secondary" type="button" (click)="addToCombat(character)">
+                Ajouter au combat
+              </button>
+            }
             @if (selectedCharacter()?.provenance === 'campaign') {
               <button appButton="secondary" type="button" (click)="requestPromotion()">
                 Enregistrer dans l’univers

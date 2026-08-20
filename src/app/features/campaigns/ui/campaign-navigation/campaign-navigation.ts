@@ -1,5 +1,5 @@
 import { Location } from '@angular/common';
-import { Component, inject, input } from '@angular/core';
+import { Component, inject, input, output } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 
 @Component({
@@ -13,6 +13,9 @@ export class CampaignNavigation {
 
   readonly campaignName = input.required<string>();
   readonly campaignId = input.required<string>();
+  readonly combatOpen = input(false);
+  readonly combatantCount = input(0);
+  readonly combatToggle = output<void>();
 
   protected goBack(): void {
     this.location.back();

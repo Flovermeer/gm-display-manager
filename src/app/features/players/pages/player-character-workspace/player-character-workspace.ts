@@ -12,6 +12,8 @@ import {
 } from '@angular/forms';
 
 import { CampaignContext } from '@app/features/campaigns/application/campaign-context';
+import { CombatStore } from '@app/features/combat/application/combat.store';
+import { playerCharacterCombatantSource } from '@app/features/combat/domain/combatant-source';
 import type { PendingChangesAware } from '@app/core/navigation/pending-changes.guard';
 import { PlayerCharacterPortraitGateway } from '@app/features/players/data-access/player-character-portrait.gateway';
 import {
@@ -53,6 +55,7 @@ export class PlayerCharacterWorkspace implements OnInit, PendingChangesAware {
   private readonly destroyRef = inject(DestroyRef);
   private readonly characterService = inject(PlayerCharacterService);
   private readonly portraitGateway = inject(PlayerCharacterPortraitGateway);
+  private readonly combat = inject(CombatStore, { optional: true });
   private pendingDecisionResolver?: PendingDecisionResolver;
   private readonly journalEntries = viewChild<JournalEntryList>(JournalEntryList);
 
@@ -135,6 +138,10 @@ export class PlayerCharacterWorkspace implements OnInit, PendingChangesAware {
     { validators: hitPointRangeValidator },
   );
   protected readonly hitPointsControl = new FormControl<number | null>(null, [Validators.min(0)]);
+
+  protected addToCombat(character: PlayerCharacter): void {
+    void this.combat?.requestAdd(playerCharacterCombatantSource(character));
+  }
 
   ngOnInit(): void {
     this.route.queryParamMap

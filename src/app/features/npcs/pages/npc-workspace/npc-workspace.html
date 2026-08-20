@@ -46,25 +46,36 @@
         </p>
       } @else {
         @for (npc of filteredNpcs(); track npc.id) {
-          <button
-            class="npc-list-item"
-            type="button"
-            [class.active]="selectedNpc()?.id === npc.id && !isCreating()"
-            (click)="requestSelectNpc(npc)"
-          >
-            <span class="npc-list-heading">
-              <span
-                class="npc-status-icon"
-                [attr.data-status]="npc.status"
-                [attr.aria-label]="'Statut : ' + statusLabel(npc.status)"
-                [attr.title]="statusLabel(npc.status)"
-              >
-                {{ statusIcon(npc.status) }}
+          <div class="entity-list-entry">
+            <button
+              class="npc-list-item"
+              type="button"
+              [class.active]="selectedNpc()?.id === npc.id && !isCreating()"
+              (click)="requestSelectNpc(npc)"
+            >
+              <span class="npc-list-heading">
+                <span
+                  class="npc-status-icon"
+                  [attr.data-status]="npc.status"
+                  [attr.aria-label]="'Statut : ' + statusLabel(npc.status)"
+                  [attr.title]="statusLabel(npc.status)"
+                >
+                  {{ statusIcon(npc.status) }}
+                </span>
+                <strong>{{ npc.name }}</strong>
               </span>
-              <strong>{{ npc.name }}</strong>
-            </span>
-            <span class="npc-list-summary">{{ npc.summary || statusLabel(npc.status) }}</span>
-          </button>
+              <span class="npc-list-summary">{{ npc.summary || statusLabel(npc.status) }}</span>
+            </button>
+            <button
+              class="entity-list-entry__combat"
+              type="button"
+              [attr.aria-label]="'Ajouter ' + npc.name + ' au combat'"
+              [title]="'Ajouter ' + npc.name + ' au combat'"
+              (click)="addToCombat(npc)"
+            >
+              Combat
+            </button>
+          </div>
         }
       }
     </div>
@@ -91,6 +102,11 @@
       <div class="detail-toolbar entity-workspace__toolbar">
         <div class="detail-actions entity-workspace__actions">
           @if (!isEditing()) {
+            @if (selectedNpc(); as npc) {
+              <button appButton="secondary" type="button" (click)="addToCombat(npc)">
+                Ajouter au combat
+              </button>
+            }
             @if (selectedNpc()?.provenance === 'campaign') {
               <button appButton="secondary" type="button" (click)="requestPromotion()">
                 Enregistrer dans l’univers

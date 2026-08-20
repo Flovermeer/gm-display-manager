@@ -36,6 +36,30 @@ describe('CampaignNavigation', () => {
       'Accueil',
     ]);
     expect([...element.querySelectorAll('[aria-disabled="true"]')]).toHaveLength(0);
+    expect(
+      [...element.querySelectorAll('button')].some((button) =>
+        button.textContent?.includes('Combat'),
+      ),
+    ).toBe(true);
+  });
+
+  it('emits the combat toggle without changing route', async () => {
+    await TestBed.configureTestingModule({
+      imports: [CampaignNavigation],
+      providers: [provideRouter([]), { provide: Location, useValue: location }],
+    }).compileComponents();
+    const fixture = TestBed.createComponent(CampaignNavigation);
+    fixture.componentRef.setInput('campaignName', 'Tomb of Annihilation');
+    fixture.componentRef.setInput('campaignId', 'campaign-id');
+    const toggle = vi.fn();
+    fixture.componentInstance.combatToggle.subscribe(toggle);
+    fixture.detectChanges();
+
+    [...(fixture.nativeElement as HTMLElement).querySelectorAll('button')]
+      .find((button) => button.textContent?.includes('Combat'))
+      ?.click();
+
+    expect(toggle).toHaveBeenCalledOnce();
   });
 
   it('returns to the previous history entry', async () => {

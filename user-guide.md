@@ -118,7 +118,27 @@ Les statuts, propriétaires, noms de joueurs, PV courants et notes de campagne n
 figurent pas dans ces éditeurs : ils restent propres à chaque campagne. Quitter
 une fiche modifiée déclenche une confirmation avant d'abandonner le brouillon.
 
-## 4. Choisir l'écran des joueurs
+## 4. Suivre un combat
+
+Le bouton **Combat** de la barre supérieure ouvre un panneau privé au MJ au-dessus de la page
+courante. Le panneau peut être replié puis rouvert sans perdre la rencontre.
+
+- Ajoute un PJ, PNJ ou monstre depuis le sélecteur du panneau, depuis sa ligne dans la liste
+  latérale ou depuis sa fiche.
+- Le premier ajout crée automatiquement le combat. Un PJ ou PNJ déjà présent ne peut pas être
+  ajouté deux fois ; les monstres acceptent plusieurs instances numérotées et renommables.
+- Renseigne l'initiative manuellement. La liste est triée par initiative décroissante, puis PJ,
+  PNJ et monstres en cas d'égalité.
+- Corrige directement les PV actuels ou maximum, ou saisis une quantité puis utilise **Dégâts** ou
+  **Soins**. Les PV restent entre zéro et le maximum.
+- Un PJ ou PNJ à zéro reste marqué **Hors combat**. Un monstre à zéro reste marqué **Mort**.
+- Retirer un combattant demande confirmation. **Terminer** supprime définitivement la rencontre
+  active après confirmation.
+
+Le combat est enregistré dans SQLite et survit à un redémarrage de l'application. Les PV des PJ
+restent synchronisés avec leur fiche de campagne. Le combat n'est jamais envoyé au Player Display.
+
+## 5. Choisir l'écran des joueurs
 
 Dans la section **Écran joueurs** :
 
@@ -135,7 +155,7 @@ prochain lancement, il est automatiquement présélectionné s'il peut être rec
 sans ambiguïté. Si deux moniteurs identiques partagent la même empreinte,
 l'application demande une nouvelle sélection au lieu de choisir arbitrairement.
 
-## 5. Ouvrir l'écran joueurs
+## 6. Ouvrir l'écran joueurs
 
 Après avoir sélectionné un moniteur, clique sur **Ouvrir l'écran joueurs**.
 
@@ -148,7 +168,7 @@ L'application crée une seconde fenêtre Tauri qui :
 
 La fenêtre principale reste ouverte sur le panneau du maître de jeu.
 
-## 6. Piloter le contenu affiché
+## 7. Piloter le contenu affiché
 
 La section **Contenu affiché** fournit actuellement trois actions de
 démonstration :
@@ -163,7 +183,7 @@ démonstration sont inclus dans le projet et fonctionnent hors ligne.
 Tu peux choisir un contenu avant d'ouvrir la fenêtre joueurs : l'état complet
 sera envoyé automatiquement lorsque cette fenêtre annoncera qu'elle est prête.
 
-## 7. Déplacer l'écran joueurs
+## 8. Déplacer l'écran joueurs
 
 Lorsque la fenêtre joueurs existe déjà, le bouton devient **Déplacer l'écran
 joueurs**.
@@ -182,7 +202,7 @@ Lorsque le moniteur sélectionné héberge déjà la fenêtre joueurs, le bouton
 indique **Déjà affiché sur cet écran** et reste désactivé. Cela évite de
 réappliquer inutilement le plein écran et de provoquer un flicker.
 
-## 8. Fermer l'écran joueurs
+## 9. Fermer l'écran joueurs
 
 Clique sur **Fermer l'écran joueurs** depuis le panneau MJ. La fenêtre dédiée
 est fermée sans fermer l'application principale.
@@ -190,7 +210,7 @@ est fermée sans fermer l'application principale.
 Si la fenêtre a été fermée directement depuis Windows, clique sur **Actualiser**
 pour synchroniser l'état affiché dans le panneau MJ.
 
-## 9. Prévisualisation dans le navigateur
+## 10. Prévisualisation dans le navigateur
 
 Angular peut être lancé sans Tauri :
 
@@ -203,7 +223,7 @@ Les actions de contenu modifient tout de même l'état de prévisualisation loca
 Le lien de prévisualisation ouvre la route `/player-display` dans la même page et
 affiche un bouton **Retour au panneau MJ**.
 
-## 10. Arrêter l'application de développement
+## 11. Arrêter l'application de développement
 
 Ferme les fenêtres puis, dans le terminal qui exécute Tauri, utilise :
 
@@ -211,7 +231,7 @@ Ferme les fenêtres puis, dans le terminal qui exécute Tauri, utilise :
 Ctrl + C
 ```
 
-## 11. Limites actuelles
+## 12. Limites actuelles
 
 - l'état de la fenêtre n'est pas encore synchronisé en temps réel si elle est
   fermée directement par Windows ;
@@ -221,7 +241,7 @@ Ctrl + C
 - la reconnexion automatique après le retrait d'un moniteur reste à implémenter ;
 - la validation multi-écran est pour l'instant manuelle et ciblée sur Windows.
 
-## 12. Dépannage rapide
+## 13. Dépannage rapide
 
 ### Aucun moniteur détecté
 

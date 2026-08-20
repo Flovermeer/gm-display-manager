@@ -43,7 +43,7 @@ export class CombatStore {
 
   async requestAdd(source: CombatantSource): Promise<void> {
     this.open();
-    if (source.maxHitPoints === null) {
+    if (source.maxHitPoints === null || source.maxHitPoints <= 0) {
       this.pendingMaximum.set(source);
       return;
     }

@@ -22,20 +22,31 @@
     </div>
     <div class="bestiary-sidebar__list">
       @for (monster of filteredMonsters(); track monster.id) {
-        <button
-          class="monster-list-item"
-          [class.monster-list-item--selected]="monster.id === selectedMonster()?.id"
-          type="button"
-          (click)="selectMonster(monster)"
-        >
-          <strong>{{ monster.name }}</strong>
-          <small>
-            {{ monster.sheet.creatureType || 'Type inconnu' }}
-            @if (monster.sheet.challengeRating) {
-              · FP {{ monster.sheet.challengeRating }}
-            }
-          </small>
-        </button>
+        <div class="entity-list-entry">
+          <button
+            class="monster-list-item"
+            [class.monster-list-item--selected]="monster.id === selectedMonster()?.id"
+            type="button"
+            (click)="selectMonster(monster)"
+          >
+            <strong>{{ monster.name }}</strong>
+            <small>
+              {{ monster.sheet.creatureType || 'Type inconnu' }}
+              @if (monster.sheet.challengeRating) {
+                · FP {{ monster.sheet.challengeRating }}
+              }
+            </small>
+          </button>
+          <button
+            class="entity-list-entry__combat"
+            type="button"
+            [attr.aria-label]="'Ajouter ' + monster.name + ' au combat'"
+            [title]="'Ajouter ' + monster.name + ' au combat'"
+            (click)="addToCombat(monster)"
+          >
+            Combat
+          </button>
+        </div>
       } @empty {
         <p class="bestiary-sidebar__empty">Aucun monstre dans cette campagne.</p>
       }
@@ -343,6 +354,9 @@
             <p>{{ typeLine(monster.sheet) }}</p>
           </div>
           <div class="toolbar-actions">
+            <button appButton="secondary" type="button" (click)="addToCombat(monster)">
+              Ajouter au combat
+            </button>
             @if (monster.provenance === 'campaign') {
               <button appButton="secondary" type="button" (click)="requestPromotion(monster)">
                 Enregistrer dans l’univers

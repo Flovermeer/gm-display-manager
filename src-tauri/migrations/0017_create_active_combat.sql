@@ -22,7 +22,9 @@ CREATE TABLE combatant (
     CHECK (
         (kind = 'player-character' AND current_hit_points IS NULL AND max_hit_points IS NULL)
         OR
-        (kind <> 'player-character' AND current_hit_points >= 0 AND max_hit_points > 0
+        (kind <> 'player-character'
+            AND current_hit_points IS NOT NULL AND max_hit_points IS NOT NULL
+            AND current_hit_points >= 0 AND max_hit_points > 0
             AND current_hit_points <= max_hit_points)
     ),
     UNIQUE (combat_id, added_order)

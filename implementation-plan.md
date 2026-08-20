@@ -18,7 +18,7 @@ Dernière consolidation : 20 août 2026
 | 7 — Tiptap et journal       | Terminé pour l’usage actuel              | Chapitres et descriptions riches, notes journalisées éditables, regroupement quotidien, mentions `@` cliquables vers les ressources de campagne et fallback texte si la cible disparaît.                            |
 | 8 — Scènes                  | Terminé                                  | Composition facultative lieu + PNJ + monstres + objets, activation/désactivation et retour à l’écran par défaut sont livrés.                                                                                        |
 | 9 — Bestiaire               | Terminé et catalogue global finalisé     | Les catalogues canoniques PNJ, PJ, lieux, objets et monstres disposent d’éditeurs détaillés par univers. Le bestiaire conserve sa sélection par campagne, sa fiche D&D complète, ses scènes, notes et mentions `@`. |
-| 10 — Combat léger           | Planifié après le bestiaire              | Le tracker réunira les PJ, PNJ et monstres ; le bestiaire doit donc être disponible avant cette tranche.                                                                                                            |
+| 10 — Combat léger           | Terminé                                  | Un combat actif persistant par campagne, panneau MJ superposé, ajout PJ/PNJ/monstres, initiative manuelle triée et suivi rapide des PV.                                                                               |
 | 11 — Historique récent      | Planifié après le combat                 | Pills cliquables des dernières ressources consultées sous la navigation de campagne.                                                                                                                                |
 | 12 — Carte heuristique      | Planifiée après l’historique             | Graphe automatique et navigable des chapitres, ressources liées et mentions `@`, sans édition manuelle du graphe.                                                                                                   |
 | 13 — Tables aléatoires      | À cadrer après la carte                  | Outil de préparation et de tirage pour les tables propres à la campagne ; modèle, types de résultats et historique des tirages restent à définir.                                                                   |
@@ -42,16 +42,16 @@ Dernière consolidation : 20 août 2026
 - catalogue global complet des ressources canoniques par univers, avec création, édition détaillée,
   médias, usage par les campagnes, corbeille et restauration ;
 - types et raretés d’objets administrables au niveau de l’univers et partagés par ses campagnes.
+- combat actif privé au MJ, persistant et accessible depuis toute page de campagne sans perdre le contexte courant.
 
 ### Prochaine priorité recommandée
 
 Le prochain ordre de livraison retenu est :
 
-1. **Jalon 10 — Combat léger**, alimenté par les PJ, les PNJ et le Bestiaire ;
-2. **Jalon 11 — Historique récent**, pour accélérer la navigation pendant la partie ;
-3. **Jalon 12 — Carte heuristique**, générée depuis les chapitres, les ressources liées et les mentions `@` ;
-4. **Jalon 13 — Tables aléatoires**, à cadrer fonctionnellement après la carte ;
-5. **Jalon 14 — Durcissement et livraison Windows**.
+1. **Jalon 11 — Historique récent**, pour accélérer la navigation pendant la partie ;
+2. **Jalon 12 — Carte heuristique**, générée depuis les chapitres, les ressources liées et les mentions `@` ;
+3. **Jalon 13 — Tables aléatoires**, à cadrer fonctionnellement après la carte ;
+4. **Jalon 14 — Durcissement et livraison Windows**.
 
 Les tables aléatoires sont désormais inscrites dans la séquence, mais leur modèle et leur expérience d’utilisation seront décidés avec le MJ au début du jalon 13.
 
@@ -463,28 +463,28 @@ V1.
 
 ### Jalon 10 — Suivi de combat léger
 
-Objectif : fournir au MJ un onglet **Combat** avec un panneau superposé
+Objectif livré : fournir au MJ un accès **Combat** avec un panneau superposé
 permettant de suivre rapidement les points de vie pendant une rencontre, sans
 remplacer la gestion de combat de Foundry ni implémenter les règles complètes de
 D&D.
 
-Périmètre proposé, à confirmer avant l'implémentation :
+Périmètre livré :
 
-- ajouter à une rencontre des PNJ de la campagne et des monstres ponctuels ;
-- proposer une action explicite **Ajouter au combat** sur la fiche d'un PNJ ou
-  d'un monstre ;
-- proposer la même action directement sur chaque entrée de la liste latérale,
-  sans remplacer le clic de sélection de la fiche ;
-- afficher les combattants sous forme de liste compacte ;
-- suivre leurs points de vie actuels et maximum ;
-- appliquer rapidement des dégâts ou des soins ;
-- conserver l'état temporaire du combat séparé de la fiche canonique du PNJ ;
-- ouvrir et replier le panneau sans perdre le contexte de la page courante.
+- un seul combat actif par campagne, persisté dans SQLite et créé automatiquement au premier ajout ;
+- panneau intégré superposé, privé au MJ, ouvert ou replié depuis la navigation supérieure ;
+- ajout direct depuis le panneau, les listes et les fiches PJ, PNJ et monstres ;
+- une occurrence maximum par PJ ou PNJ, mais plusieurs instances nommées d'un même monstre ;
+- initiative manuelle, initialisée à zéro et triée par ordre décroissant ;
+- à initiative égale, priorité PJ, PNJ, monstre, puis ordre d'ajout ;
+- correction directe des PV actuels et maximum, plus actions rapides de dégâts et soins ;
+- PV bornés entre zéro et le maximum selon les règles D&D : « Hors combat » pour un PJ/PNJ à zéro,
+  « Mort » pour un monstre à zéro, sans retrait automatique de la liste ;
+- PV des PJ synchronisés immédiatement avec leur état de campagne ; PV des PNJ et monstres isolés
+  dans l'instance de combat ;
+- confirmation avant de retirer un combattant ou de terminer définitivement le combat.
 
-Décisions différées : comportement de l'action lorsqu'aucun combat n'est actif,
-persistance d'une rencontre après fermeture, gestion des ajouts en double et de
-plusieurs exemplaires d'un même monstre, initiative, états temporaires et contenu
-éventuellement visible sur le Player Display.
+Décisions différées : PV temporaires, états et sauvegardes de mort, lancer automatique de
+l'initiative, historique des rencontres et contenu visible sur le Player Display.
 
 ### Jalon 11 — Historique récent
 

@@ -41,6 +41,18 @@
     </a>
     <a [routerLink]="['/campaigns', campaignId(), 'items']" routerLinkActive="active">Objets</a>
     <a [routerLink]="['/campaigns', campaignId(), 'journal']" routerLinkActive="active">Journal</a>
+    <button
+      class="combat-toggle"
+      type="button"
+      [class.active]="combatOpen()"
+      [attr.aria-expanded]="combatOpen()"
+      (click)="combatToggle.emit()"
+    >
+      Combat
+      @if (combatantCount() > 0) {
+        <span>{{ combatantCount() }}</span>
+      }
+    </button>
     <a [routerLink]="['/campaigns', campaignId(), 'configuration']" routerLinkActive="active">
       <span aria-hidden="true">⚙</span> Configuration
     </a>

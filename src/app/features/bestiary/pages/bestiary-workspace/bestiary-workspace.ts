@@ -4,6 +4,8 @@ import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angula
 import { ActivatedRoute } from '@angular/router';
 
 import { CampaignContext } from '@app/features/campaigns/application/campaign-context';
+import { CombatStore } from '@app/features/combat/application/combat.store';
+import { monsterCombatantSource } from '@app/features/combat/domain/combatant-source';
 import { MonsterService } from '@app/features/bestiary/application/monster.service';
 import { MonsterImageGateway } from '@app/features/bestiary/data-access/monster-image.gateway';
 import {
@@ -75,6 +77,7 @@ export class BestiaryWorkspace implements OnInit, PendingChangesAware {
   private readonly service = inject(MonsterService);
   private readonly imageGateway = inject(MonsterImageGateway);
   private readonly creatureRules = inject(CreatureRuleCatalogService);
+  private readonly combat = inject(CombatStore, { optional: true });
   private readonly journalEntries = viewChild<JournalEntryList>(JournalEntryList);
   private pendingDecisionResolver?: PendingDecisionResolver;
 
@@ -150,6 +153,10 @@ export class BestiaryWorkspace implements OnInit, PendingChangesAware {
     challengeRating: new FormControl('', { nonNullable: true }),
     experiencePoints: new FormControl<number | null>(null, [Validators.min(0)]),
   });
+
+  protected addToCombat(monster: Monster): void {
+    void this.combat?.requestAdd(monsterCombatantSource(monster));
+  }
 
   ngOnInit(): void {
     this.route.queryParamMap

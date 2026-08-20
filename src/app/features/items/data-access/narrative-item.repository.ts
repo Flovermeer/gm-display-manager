@@ -19,7 +19,7 @@ export abstract class NarrativeItemRepository {
   abstract promote(campaignId: string, id: string): Promise<void>;
   abstract resetOverride(campaignId: string, id: string): Promise<void>;
   abstract countUsingConfiguration(
-    campaignId: string,
+    universeId: string,
     kind: 'type' | 'rarity',
     id: string,
   ): Promise<number>;

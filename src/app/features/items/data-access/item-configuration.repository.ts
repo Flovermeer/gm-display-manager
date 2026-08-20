@@ -13,14 +13,14 @@ import type {
 
 export abstract class ItemConfigurationRepository {
   abstract list(
-    campaignId: string,
+    universeId: string,
     kind: ItemConfigurationKind,
   ): Promise<readonly ItemConfigurationOption[]>;
-  abstract findById(
+  abstract findByIdForCampaign(
     campaignId: string,
     kind: ItemConfigurationKind,
     id: string,
   ): Promise<ItemConfigurationOption | null>;
   abstract save(option: ItemConfigurationOption): Promise<void>;
-  abstract delete(campaignId: string, kind: ItemConfigurationKind, id: string): Promise<void>;
+  abstract delete(universeId: string, kind: ItemConfigurationKind, id: string): Promise<void>;
 }

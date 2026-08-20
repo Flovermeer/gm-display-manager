@@ -112,11 +112,11 @@ export class InMemoryNarrativeItemRepository extends NarrativeItemRepository {
   }
 
   override async countUsingConfiguration(
-    campaignId: string,
+    _universeId: string,
     kind: 'type' | 'rarity',
     id: string,
   ): Promise<number> {
-    const items = await this.listByCampaign(campaignId);
+    const items = [...this.items.values()];
     return items.filter((item) =>
       kind === 'type' ? item.itemTypeId === id : item.itemRarityId === id,
     ).length;

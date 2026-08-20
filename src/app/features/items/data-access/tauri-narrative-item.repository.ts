@@ -231,14 +231,19 @@ export class TauriNarrativeItemRepository extends NarrativeItemRepository {
   }
 
   override async countUsingConfiguration(
-    campaignId: string,
+    universeId: string,
     kind: 'type' | 'rarity',
     id: string,
   ): Promise<number> {
-    const items = await this.listByCampaign(campaignId);
-    return items.filter((item) =>
-      kind === 'type' ? item.itemTypeId === id : item.itemRarityId === id,
-    ).length;
+    const column = kind === 'type' ? 'item_type_id' : 'item_rarity_id';
+    const rows = await (
+      await this.database()
+    ).select<Readonly<{ usage_count: number }>[]>(
+      `SELECT COUNT(*) AS usage_count FROM narrative_item
+       WHERE universe_id=$1 AND ${column}=$2`,
+      [universeId, id],
+    );
+    return rows[0]?.usage_count ?? 0;
   }
 
   private async select(query: string, values: readonly unknown[]) {

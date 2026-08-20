@@ -24,6 +24,13 @@
       mais ne peut plus être importée ailleurs.
     </p>
 
+    @if (selectedType() === 'item') {
+      <app-item-configuration-settings
+        [universeId]="universe().id"
+        [universeName]="universe().name"
+      />
+    }
+
     @if (error(); as message) {
       <p class="configuration-error" role="alert">{{ message }}</p>
     }

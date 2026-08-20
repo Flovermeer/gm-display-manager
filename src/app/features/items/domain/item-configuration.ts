@@ -2,7 +2,7 @@ export type ItemConfigurationKind = 'type' | 'rarity';
 
 export type ItemConfigurationOption = Readonly<{
   id: string;
-  campaignId: string;
+  universeId: string;
   kind: ItemConfigurationKind;
   name: string;
   createdAt: string;
@@ -10,7 +10,7 @@ export type ItemConfigurationOption = Readonly<{
 }>;
 
 export function createItemConfigurationOption(
-  campaignId: string,
+  universeId: string,
   kind: ItemConfigurationKind,
   name: string,
   createId: () => string = () => crypto.randomUUID(),
@@ -20,7 +20,7 @@ export function createItemConfigurationOption(
   const timestamp = now().toISOString();
   return {
     id: createId(),
-    campaignId,
+    universeId,
     kind,
     name: normalizedName,
     createdAt: timestamp,

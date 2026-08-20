@@ -18,7 +18,7 @@ import { ItemConfigurationRepository } from '@app/features/items/data-access/ite
 const DATABASE_URL = 'sqlite:beholders-inn.db';
 type OptionRow = Readonly<{
   id: string;
-  campaign_id: string;
+  universe_id: string;
   name: string;
   created_at: string;
   updated_at: string;
@@ -28,25 +28,24 @@ type OptionRow = Readonly<{
 export class TauriItemConfigurationRepository extends ItemConfigurationRepository {
   private databasePromise?: Promise<Database>;
 
-  override async list(campaignId: string, kind: ItemConfigurationKind) {
+  override async list(universeId: string, kind: ItemConfigurationKind) {
     const rows = await (
       await this.database()
     ).select<OptionRow[]>(
-      `SELECT config.id, campaign.id AS campaign_id, config.name,
+      `SELECT config.id, config.universe_id, config.name,
               config.created_at, config.updated_at
        FROM ${table(kind)} AS config
-       JOIN campaign ON campaign.universe_id=config.universe_id
-       WHERE campaign.id = $1 ORDER BY config.name COLLATE NOCASE, config.id`,
-      [campaignId],
+       WHERE config.universe_id = $1 ORDER BY config.name COLLATE NOCASE, config.id`,
+      [universeId],
     );
     return rows.map((row) => mapRow(row, kind));
   }
 
-  override async findById(campaignId: string, kind: ItemConfigurationKind, id: string) {
+  override async findByIdForCampaign(campaignId: string, kind: ItemConfigurationKind, id: string) {
     const rows = await (
       await this.database()
     ).select<OptionRow[]>(
-      `SELECT config.id, campaign.id AS campaign_id, config.name,
+      `SELECT config.id, config.universe_id, config.name,
               config.created_at, config.updated_at
        FROM ${table(kind)} AS config
        JOIN campaign ON campaign.universe_id=config.universe_id
@@ -61,20 +60,20 @@ export class TauriItemConfigurationRepository extends ItemConfigurationRepositor
       await this.database()
     ).execute(
       `INSERT INTO ${table(option.kind)} (id, universe_id, name, created_at, updated_at)
-       VALUES ($1, (SELECT universe_id FROM campaign WHERE id=$2), $3, $4, $5)
+       VALUES ($1, $2, $3, $4, $5)
        ON CONFLICT(id) DO UPDATE SET name = excluded.name, updated_at = excluded.updated_at
        WHERE universe_id = excluded.universe_id`,
-      [option.id, option.campaignId, option.name, option.createdAt, option.updatedAt],
+      [option.id, option.universeId, option.name, option.createdAt, option.updatedAt],
     );
   }
 
-  override async delete(campaignId: string, kind: ItemConfigurationKind, id: string) {
+  override async delete(universeId: string, kind: ItemConfigurationKind, id: string) {
     await (
       await this.database()
     ).execute(
       `DELETE FROM ${table(kind)}
-       WHERE id=$2 AND universe_id=(SELECT universe_id FROM campaign WHERE id=$1)`,
-      [campaignId, id],
+       WHERE id=$2 AND universe_id=$1`,
+      [universeId, id],
     );
   }
 
@@ -94,7 +93,7 @@ function table(kind: ItemConfigurationKind): 'item_type' | 'item_rarity' {
 function mapRow(row: OptionRow, kind: ItemConfigurationKind): ItemConfigurationOption {
   return {
     id: row.id,
-    campaignId: row.campaign_id,
+    universeId: row.universe_id,
     kind,
     name: row.name,
     createdAt: row.created_at,

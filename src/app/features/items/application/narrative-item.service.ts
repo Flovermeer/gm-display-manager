@@ -76,9 +76,9 @@ export class NarrativeItemService {
     input: UpdateNarrativeItemInput,
   ): Promise<void> {
     const [type, rarity] = await Promise.all([
-      this.configurationRepository.findById(campaignId, 'type', input.itemTypeId),
+      this.configurationRepository.findByIdForCampaign(campaignId, 'type', input.itemTypeId),
       input.itemRarityId
-        ? this.configurationRepository.findById(campaignId, 'rarity', input.itemRarityId)
+        ? this.configurationRepository.findByIdForCampaign(campaignId, 'rarity', input.itemRarityId)
         : null,
     ]);
     if (!type) throw new Error("Le type d'objet n'appartient pas à cette campagne.");

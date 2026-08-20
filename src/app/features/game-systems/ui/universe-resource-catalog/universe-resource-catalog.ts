@@ -8,6 +8,7 @@ import {
 } from '@app/features/game-systems/domain/universe-resource';
 import { ButtonDirective } from '@app/shared/ui/button/button.directive';
 import { Dialog } from '@app/shared/ui/dialog/dialog';
+import { ItemConfigurationSettings } from '@app/features/items/ui/item-configuration-settings/item-configuration-settings';
 
 type CatalogSection = Readonly<{
   type: UniverseResourceType;
@@ -17,7 +18,7 @@ type CatalogSection = Readonly<{
 
 @Component({
   selector: 'app-universe-resource-catalog',
-  imports: [ButtonDirective, Dialog],
+  imports: [ButtonDirective, Dialog, ItemConfigurationSettings],
   templateUrl: './universe-resource-catalog.html',
   styleUrl: './universe-resource-catalog.scss',
 })

@@ -58,7 +58,14 @@
   >
     {{ isSidebarCollapsed() ? '→' : '←' }}
   </button>
-  <section class="entity-workspace__detail" aria-labelledby="scene-detail-title">
+  <section
+    class="entity-workspace__detail"
+    aria-labelledby="scene-detail-title"
+    appRecentResourceTracker
+    recentResourceType="scene"
+    [recentResourceId]="isCreating() ? null : (selectedScene()?.id ?? null)"
+    [recentResourceLabel]="isCreating() ? null : (selectedScene()?.name ?? null)"
+  >
     @if (error(); as message) {
       <p class="scene-error" role="alert">{{ message }}</p>
     }

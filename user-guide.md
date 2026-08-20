@@ -138,7 +138,17 @@ courante. Le panneau peut être replié puis rouvert sans perdre la rencontre.
 Le combat est enregistré dans SQLite et survit à un redémarrage de l'application. Les PV des PJ
 restent synchronisés avec leur fiche de campagne. Le combat n'est jamais envoyé au Player Display.
 
-## 5. Choisir l'écran des joueurs
+## 5. Revenir aux ressources récentes
+
+Lorsqu'une fiche PJ, PNJ, monstre, lieu, chapitre, objet ou scène est affichée, elle rejoint la rangée
+**Récents** sous la navigation de campagne. Chaque pill indique son type et son nom ; clique dessus
+pour rouvrir directement la fiche.
+
+La liste conserve automatiquement les huit dernières ressources, sans doublon, de la plus récente à
+la plus ancienne. Elle est propre à chaque campagne, enregistrée dans SQLite et masquée lorsqu'elle
+est vide. Une ressource supprimée ou retirée de la campagne disparaît également de cette liste.
+
+## 6. Choisir l'écran des joueurs
 
 Dans la section **Écran joueurs** :
 
@@ -155,7 +165,7 @@ prochain lancement, il est automatiquement présélectionné s'il peut être rec
 sans ambiguïté. Si deux moniteurs identiques partagent la même empreinte,
 l'application demande une nouvelle sélection au lieu de choisir arbitrairement.
 
-## 6. Ouvrir l'écran joueurs
+## 7. Ouvrir l'écran joueurs
 
 Après avoir sélectionné un moniteur, clique sur **Ouvrir l'écran joueurs**.
 
@@ -168,7 +178,7 @@ L'application crée une seconde fenêtre Tauri qui :
 
 La fenêtre principale reste ouverte sur le panneau du maître de jeu.
 
-## 7. Piloter le contenu affiché
+## 8. Piloter le contenu affiché
 
 La section **Contenu affiché** fournit actuellement trois actions de
 démonstration :
@@ -183,7 +193,7 @@ démonstration sont inclus dans le projet et fonctionnent hors ligne.
 Tu peux choisir un contenu avant d'ouvrir la fenêtre joueurs : l'état complet
 sera envoyé automatiquement lorsque cette fenêtre annoncera qu'elle est prête.
 
-## 8. Déplacer l'écran joueurs
+## 9. Déplacer l'écran joueurs
 
 Lorsque la fenêtre joueurs existe déjà, le bouton devient **Déplacer l'écran
 joueurs**.
@@ -202,7 +212,7 @@ Lorsque le moniteur sélectionné héberge déjà la fenêtre joueurs, le bouton
 indique **Déjà affiché sur cet écran** et reste désactivé. Cela évite de
 réappliquer inutilement le plein écran et de provoquer un flicker.
 
-## 9. Fermer l'écran joueurs
+## 10. Fermer l'écran joueurs
 
 Clique sur **Fermer l'écran joueurs** depuis le panneau MJ. La fenêtre dédiée
 est fermée sans fermer l'application principale.
@@ -210,7 +220,7 @@ est fermée sans fermer l'application principale.
 Si la fenêtre a été fermée directement depuis Windows, clique sur **Actualiser**
 pour synchroniser l'état affiché dans le panneau MJ.
 
-## 10. Prévisualisation dans le navigateur
+## 11. Prévisualisation dans le navigateur
 
 Angular peut être lancé sans Tauri :
 
@@ -223,7 +233,7 @@ Les actions de contenu modifient tout de même l'état de prévisualisation loca
 Le lien de prévisualisation ouvre la route `/player-display` dans la même page et
 affiche un bouton **Retour au panneau MJ**.
 
-## 11. Arrêter l'application de développement
+## 12. Arrêter l'application de développement
 
 Ferme les fenêtres puis, dans le terminal qui exécute Tauri, utilise :
 
@@ -231,7 +241,7 @@ Ferme les fenêtres puis, dans le terminal qui exécute Tauri, utilise :
 Ctrl + C
 ```
 
-## 12. Limites actuelles
+## 13. Limites actuelles
 
 - l'état de la fenêtre n'est pas encore synchronisé en temps réel si elle est
   fermée directement par Windows ;
@@ -241,7 +251,7 @@ Ctrl + C
 - la reconnexion automatique après le retrait d'un moniteur reste à implémenter ;
 - la validation multi-écran est pour l'instant manuelle et ciblée sur Windows.
 
-## 13. Dépannage rapide
+## 14. Dépannage rapide
 
 ### Aucun moniteur détecté
 

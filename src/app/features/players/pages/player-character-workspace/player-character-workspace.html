@@ -88,7 +88,14 @@
     {{ isSidebarCollapsed() ? '→' : '←' }}
   </button>
 
-  <section class="detail-panel entity-workspace__detail" aria-labelledby="character-detail-title">
+  <section
+    class="detail-panel entity-workspace__detail"
+    aria-labelledby="character-detail-title"
+    appRecentResourceTracker
+    recentResourceType="player-character"
+    [recentResourceId]="isCreating() ? null : (selectedCharacter()?.id ?? null)"
+    [recentResourceLabel]="isCreating() ? null : (selectedCharacter()?.name ?? null)"
+  >
     @if (error(); as errorMessage) {
       <p class="error" role="alert">{{ errorMessage }}</p>
     }

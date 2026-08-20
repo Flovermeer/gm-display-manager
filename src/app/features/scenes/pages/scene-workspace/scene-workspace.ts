@@ -27,6 +27,8 @@ import {
   SceneDisplayService,
 } from '@app/features/scenes/application/scene-display.service';
 import { JournalEntryList } from '@app/features/journal/ui/journal-entry-list/journal-entry-list';
+import { RecentResourceTrackerDirective } from '@app/features/recent-resources/ui/recent-resource-tracker.directive';
+import { RecentResourceStore } from '@app/features/recent-resources/application/recent-resource.store';
 import { errorMessage as resolveErrorMessage } from '@app/shared/error-message';
 import { ButtonDirective } from '@app/shared/ui/button/button.directive';
 import { Dialog } from '@app/shared/ui/dialog/dialog';
@@ -51,6 +53,7 @@ type PendingDecisionResolver = (canLeave: boolean) => void;
     EntityTitle,
     FormField,
     SearchableSelect,
+    RecentResourceTrackerDirective,
   ],
   templateUrl: './scene-workspace.html',
   styleUrl: './scene-workspace.scss',
@@ -71,6 +74,7 @@ export class SceneWorkspace implements OnInit, PendingChangesAware {
   private readonly npcPortraitGateway = inject(NpcPortraitGateway);
   private readonly npcIdleVideoGateway = inject(NpcIdleVideoGateway);
   private readonly itemImageGateway = inject(ItemImageGateway);
+  private readonly recentResources = inject(RecentResourceStore, { optional: true });
   private readonly journalEntries = viewChild<JournalEntryList>(JournalEntryList);
   private pendingDecisionResolver?: PendingDecisionResolver;
 
@@ -284,6 +288,7 @@ export class SceneWorkspace implements OnInit, PendingChangesAware {
     try {
       const wasActive = this.activeSceneId() === scene.id;
       await this.sceneService.delete(scene);
+      await this.recentResources?.remove('scene', scene.id);
       if (wasActive) {
         await this.activeSceneService.clear(scene.campaignId);
         this.activeSceneId.set(null);

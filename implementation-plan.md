@@ -12,14 +12,14 @@ Dernière consolidation : 20 août 2026
 | 1 — Shell Angular + Tauri   | Terminé                                  | Application standalone zoneless, routes Angular, fenêtre principale maximisée et capabilities Tauri en place.                                                                                                       |
 | 2 — Multi-écran             | Fonctionnel, validation avancée restante | Détection, choix persistant du moniteur et fenêtre joueurs dédiée plein écran validés sur le matériel nominal. Restent les cas de déconnexion, remplacement, coordonnées négatives et facteurs d’échelle variés.    |
 | 3 — Régie verticale         | Terminé                                  | Écran noir, lieux, PNJ et objets peuvent être envoyés au Player Display ; synchronisation `ready` et fallback statique des PNJ en place.                                                                            |
-| 4 — SQLite                  | Terminé pour les tranches livrées        | Seize migrations couvrent notamment systèmes, univers, campagnes, propriété des ressources et snapshots de campagne. Repositories Tauri et mémoire isolés derrière des interfaces.                                  |
+| 4 — SQLite                  | Terminé pour les tranches livrées        | Dix-huit migrations couvrent notamment systèmes, univers, campagnes, propriété des ressources, combat et historique récent. Repositories Tauri et mémoire isolés derrière des interfaces.                           |
 | 5 — Gestion de campagne     | Terminé et étendu                        | CRUD campagnes, lieux hiérarchiques, PNJ structurés, PJ orientés MJ et objets narratifs. Navigation campagne persistante et protection des modifications non enregistrées.                                          |
 | 6 — Médias locaux           | Terminé pour images et portraits animés  | Import/copie locale des portraits PNJ/PJ, images de lieux et d’objets, vidéo idle PNJ et nettoyage des médias. Une validation plus large des fichiers cassés reste à inclure au durcissement.                       |
 | 7 — Tiptap et journal       | Terminé pour l’usage actuel              | Chapitres et descriptions riches, notes journalisées éditables, regroupement quotidien, mentions `@` cliquables vers les ressources de campagne et fallback texte si la cible disparaît.                            |
 | 8 — Scènes                  | Terminé                                  | Composition facultative lieu + PNJ + monstres + objets, activation/désactivation et retour à l’écran par défaut sont livrés.                                                                                        |
 | 9 — Bestiaire               | Terminé et catalogue global finalisé     | Les catalogues canoniques PNJ, PJ, lieux, objets et monstres disposent d’éditeurs détaillés par univers. Le bestiaire conserve sa sélection par campagne, sa fiche D&D complète, ses scènes, notes et mentions `@`. |
 | 10 — Combat léger           | Terminé                                  | Un combat actif persistant par campagne, panneau MJ superposé, ajout PJ/PNJ/monstres, initiative manuelle triée et suivi rapide des PV.                                                                               |
-| 11 — Historique récent      | Planifié après le combat                 | Pills cliquables des dernières ressources consultées sous la navigation de campagne.                                                                                                                                |
+| 11 — Historique récent      | Terminé                                  | Huit pills persistées et cliquables par campagne, dédupliquées par récence et purgées lorsque leur cible disparaît.                                                                                                  |
 | 12 — Carte heuristique      | Planifiée après l’historique             | Graphe automatique et navigable des chapitres, ressources liées et mentions `@`, sans édition manuelle du graphe.                                                                                                   |
 | 13 — Tables aléatoires      | À cadrer après la carte                  | Outil de préparation et de tirage pour les tables propres à la campagne ; modèle, types de résultats et historique des tirages restent à définir.                                                                   |
 | 14 — Durcissement/livraison | Non commencé                             | Sauvegarde/restauration, tests matériels dégradés, session longue, journal technique, installeur Windows et guide de dépannage restent à faire.                                                                     |
@@ -43,15 +43,15 @@ Dernière consolidation : 20 août 2026
   médias, usage par les campagnes, corbeille et restauration ;
 - types et raretés d’objets administrables au niveau de l’univers et partagés par ses campagnes.
 - combat actif privé au MJ, persistant et accessible depuis toute page de campagne sans perdre le contexte courant.
+- historique des huit dernières ressources consultées, persistant par campagne et accessible sous la navigation.
 
 ### Prochaine priorité recommandée
 
 Le prochain ordre de livraison retenu est :
 
-1. **Jalon 11 — Historique récent**, pour accélérer la navigation pendant la partie ;
-2. **Jalon 12 — Carte heuristique**, générée depuis les chapitres, les ressources liées et les mentions `@` ;
-3. **Jalon 13 — Tables aléatoires**, à cadrer fonctionnellement après la carte ;
-4. **Jalon 14 — Durcissement et livraison Windows**.
+1. **Jalon 12 — Carte heuristique**, générée depuis les chapitres, les ressources liées et les mentions `@` ;
+2. **Jalon 13 — Tables aléatoires**, à cadrer fonctionnellement après la carte ;
+3. **Jalon 14 — Durcissement et livraison Windows**.
 
 Les tables aléatoires sont désormais inscrites dans la séquence, mais leur modèle et leur expérience d’utilisation seront décidés avec le MJ au début du jalon 13.
 
@@ -488,14 +488,19 @@ l'initiative, historique des rencontres et contenu visible sur le Player Display
 
 ### Jalon 11 — Historique récent
 
-Objectif : retrouver rapidement les dernières ressources consultées pendant une partie.
+Objectif livré : retrouver rapidement les dernières ressources consultées pendant une partie.
 
-Périmètre initial à confirmer au début du jalon :
+Périmètre livré :
 
 - afficher sous la barre de navigation des pills cliquables pour les dernières ressources consultées ;
 - couvrir PNJ, PJ, lieux, chapitres, objets, scènes et monstres ;
 - dédupliquer une ressource revisitée et la replacer en tête ;
-- décider du nombre maximum d’entrées, de la suppression manuelle et de la persistance entre lancements.
+- conserver au maximum huit entrées persistées dans SQLite et isolées par campagne ;
+- enregistrer une consultation dès que la fiche est effectivement affichée, quel que soit son point d'entrée ;
+- afficher le type abrégé et le nom actuel de chaque ressource ;
+- masquer entièrement la rangée lorsqu'elle est vide ;
+- purger automatiquement une cible supprimée ou retirée de la campagne ;
+- ne proposer aucune suppression manuelle dans cette première version.
 
 ### Jalon 12 — Carte heuristique automatique
 

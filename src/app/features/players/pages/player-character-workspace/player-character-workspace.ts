@@ -25,6 +25,8 @@ import {
 } from '@app/features/players/domain/player-character';
 import { PlayerCharacterService } from '@app/features/players/application/player-character.service';
 import { JournalEntryList } from '@app/features/journal/ui/journal-entry-list/journal-entry-list';
+import { RecentResourceTrackerDirective } from '@app/features/recent-resources/ui/recent-resource-tracker.directive';
+import { RecentResourceStore } from '@app/features/recent-resources/application/recent-resource.store';
 import { TagInput } from '@app/shared/ui/tag-input/tag-input';
 import { ButtonDirective } from '@app/shared/ui/button/button.directive';
 import { Dialog } from '@app/shared/ui/dialog/dialog';
@@ -45,6 +47,7 @@ type PendingDecisionResolver = (canLeave: boolean) => void;
     EmptyState,
     EntityTitle,
     FormField,
+    RecentResourceTrackerDirective,
   ],
   templateUrl: './player-character-workspace.html',
   styleUrl: './player-character-workspace.scss',
@@ -56,6 +59,7 @@ export class PlayerCharacterWorkspace implements OnInit, PendingChangesAware {
   private readonly characterService = inject(PlayerCharacterService);
   private readonly portraitGateway = inject(PlayerCharacterPortraitGateway);
   private readonly combat = inject(CombatStore, { optional: true });
+  private readonly recentResources = inject(RecentResourceStore, { optional: true });
   private pendingDecisionResolver?: PendingDecisionResolver;
   private readonly journalEntries = viewChild<JournalEntryList>(JournalEntryList);
 
@@ -349,6 +353,7 @@ export class PlayerCharacterWorkspace implements OnInit, PendingChangesAware {
     this.error.set(null);
     try {
       await this.characterService.delete(character);
+      await this.recentResources?.remove('player-character', character.id);
       if (character.provenance === 'campaign' && character.portraitPath) {
         try {
           await this.portraitGateway.discard(character.portraitPath);

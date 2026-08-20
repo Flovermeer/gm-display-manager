@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { provideRouter } from '@angular/router';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, convertToParamMap, provideRouter } from '@angular/router';
+import { BehaviorSubject } from 'rxjs';
 
 import type { Campaign } from '@app/features/campaigns/domain/campaign';
 import { CampaignService } from '@app/features/campaigns/application/campaign.service';
@@ -33,6 +33,7 @@ describe('ChapterWorkspace', () => {
     delete: vi.fn(),
   };
   const emptyResourceService = { list: vi.fn() };
+  const queryParamMap = new BehaviorSubject(convertToParamMap({}));
 
   beforeEach(async () => {
     vi.clearAllMocks();
@@ -44,6 +45,7 @@ describe('ChapterWorkspace', () => {
     chapterService.move.mockResolvedValue(chapter);
     chapterService.delete.mockResolvedValue(undefined);
     emptyResourceService.list.mockResolvedValue([]);
+    queryParamMap.next(convertToParamMap({}));
 
     await TestBed.configureTestingModule({
       imports: [ChapterWorkspace],
@@ -61,7 +63,13 @@ describe('ChapterWorkspace', () => {
         { provide: NarrativeItemService, useValue: emptyResourceService },
         {
           provide: ActivatedRoute,
-          useValue: { snapshot: { paramMap: { get: () => campaign.id } } },
+          useValue: {
+            queryParamMap,
+            snapshot: {
+              paramMap: { get: () => campaign.id },
+              queryParamMap: queryParamMap.value,
+            },
+          },
         },
       ],
     }).compileComponents();
@@ -127,6 +135,19 @@ describe('ChapterWorkspace', () => {
     expect(buttons[1]?.disabled).toBe(false);
     buttons[1]?.click();
     await vi.waitFor(() => expect(chapterService.move).toHaveBeenCalledWith(chapter, 1));
+  });
+
+  it('opens a chapter requested through the recent-resource query parameter', async () => {
+    const fixture = TestBed.createComponent(ChapterWorkspace);
+    fixture.detectChanges();
+    await renderUntil(fixture, 'Le port');
+
+    queryParamMap.next(convertToParamMap({ resourceId: chapter.id }));
+    await renderUntil(fixture, 'Bienvenue à Chult');
+
+    expect((fixture.nativeElement as HTMLElement).querySelector('h2')?.textContent).toContain(
+      'Le port',
+    );
   });
 });
 

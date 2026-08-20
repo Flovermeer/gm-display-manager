@@ -171,6 +171,18 @@ Les PV suivent deux stratégies explicites :
 Les PV restent compris entre zéro et le maximum. Un combattant à zéro reste dans la liste jusqu'à
 son retrait explicite ou jusqu'à la fin du combat.
 
+## Historique récent
+
+`recent_resource` conserve au maximum huit ressources consultées par campagne. Une entrée associe
+le type de ressource, son identifiant, son nom d'affichage courant et un ordre de consultation
+monotone. La clé composée `(campaign_id, resource_type, resource_id)` garantit qu'une ressource
+revisitée est remontée en tête sans être dupliquée.
+
+Les types suivis sont les PJ, PNJ, monstres, lieux, chapitres, objets narratifs et scènes. Le nom
+est resynchronisé au chargement. Comme la cible est polymorphe, l'application vérifie son appartenance
+à la campagne et supprime l'entrée si la ressource a été supprimée ou retirée. La suppression d'une
+campagne efface son historique par cascade SQLite.
+
 ## Chapitres et sections
 
 Les chapitres forment une liste ordonnée et réorganisable dans la campagne. Un chapitre contient des `chapter_section` également ordonnées.

@@ -11,6 +11,8 @@ import { LocationService } from '@app/features/locations/application/location.se
 import { LocationImageGateway } from '@app/features/locations/data-access/location-image.gateway';
 import type { PendingChangesAware } from '@app/core/navigation/pending-changes.guard';
 import { JournalEntryList } from '@app/features/journal/ui/journal-entry-list/journal-entry-list';
+import { RecentResourceTrackerDirective } from '@app/features/recent-resources/ui/recent-resource-tracker.directive';
+import { RecentResourceStore } from '@app/features/recent-resources/application/recent-resource.store';
 import { ButtonDirective } from '@app/shared/ui/button/button.directive';
 import { Dialog } from '@app/shared/ui/dialog/dialog';
 import { EmptyState } from '@app/shared/ui/empty-state/empty-state';
@@ -32,6 +34,7 @@ const DEMO_LOCATION_IMAGE_URL = '/demo/tavern.svg';
     EmptyState,
     EntityTitle,
     FormField,
+    RecentResourceTrackerDirective,
   ],
   templateUrl: './location-workspace.html',
   styleUrl: './location-workspace.scss',
@@ -44,6 +47,7 @@ export class LocationWorkspace implements OnInit, PendingChangesAware {
   private readonly locationImageGateway = inject(LocationImageGateway);
   private readonly displayGateway = inject(DisplayGateway);
   private readonly playerDisplayStore = inject(PlayerDisplayStore);
+  private readonly recentResources = inject(RecentResourceStore, { optional: true });
   private pendingDecisionResolver?: PendingDecisionResolver;
   private readonly journalEntries = viewChild<JournalEntryList>(JournalEntryList);
 
@@ -367,6 +371,7 @@ export class LocationWorkspace implements OnInit, PendingChangesAware {
       }
 
       await this.locationService.delete(location);
+      await this.recentResources?.remove('location', location.id);
       if (location.provenance === 'campaign' && location.imagePath) {
         await this.discardImageSafely(location.imagePath);
       }

@@ -6,6 +6,7 @@
     [combatantCount]="combat.combatantCount()"
     (combatToggle)="combat.toggle()"
   />
+  <app-recent-resource-list />
   <router-outlet />
   <app-combat-panel [campaignId]="activeCampaign.id" />
 } @else if (error(); as errorMessage) {

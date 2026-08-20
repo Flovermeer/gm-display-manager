@@ -1,0 +1,20 @@
+@if (store.resources().length > 0) {
+  <nav class="recent-resources" aria-label="Ressources récemment consultées">
+    <span class="recent-resources__label">Récents</span>
+    <div class="recent-resources__list">
+      @for (
+        resource of store.resources();
+        track resource.resourceType + ':' + resource.resourceId
+      ) {
+        <a
+          [routerLink]="['/campaigns', resource.campaignId, segment(resource.resourceType)]"
+          [queryParams]="{ resourceId: resource.resourceId }"
+          [title]="typeLabel(resource.resourceType) + ' · ' + resource.displayName"
+        >
+          <span>{{ typeLabel(resource.resourceType) }}</span>
+          <strong>{{ resource.displayName }}</strong>
+        </a>
+      }
+    </div>
+  </nav>
+}

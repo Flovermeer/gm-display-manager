@@ -93,7 +93,14 @@
     {{ isSidebarCollapsed() ? '→' : '←' }}
   </button>
 
-  <section class="detail-panel entity-workspace__detail" aria-labelledby="npc-detail-title">
+  <section
+    class="detail-panel entity-workspace__detail"
+    aria-labelledby="npc-detail-title"
+    appRecentResourceTracker
+    recentResourceType="npc"
+    [recentResourceId]="isCreating() ? null : (selectedNpc()?.id ?? null)"
+    [recentResourceLabel]="isCreating() ? null : (selectedNpc()?.name ?? null)"
+  >
     @if (error(); as errorMessage) {
       <p class="error" role="alert">{{ errorMessage }}</p>
     }

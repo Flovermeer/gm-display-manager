@@ -28,6 +28,8 @@ import {
 } from '@app/features/npcs/domain/npc';
 import { NpcService } from '@app/features/npcs/application/npc.service';
 import { JournalEntryList } from '@app/features/journal/ui/journal-entry-list/journal-entry-list';
+import { RecentResourceTrackerDirective } from '@app/features/recent-resources/ui/recent-resource-tracker.directive';
+import { RecentResourceStore } from '@app/features/recent-resources/application/recent-resource.store';
 import { RichTextEditor } from '@app/shared/rich-text-editor/rich-text-editor';
 import {
   createEmptyRichTextDocument,
@@ -83,6 +85,7 @@ type NpcTagField =
     RichTextFeatureEditor,
     RichTextFeatureSection,
     MultiSelectField,
+    RecentResourceTrackerDirective,
   ],
   templateUrl: './npc-workspace.html',
   styleUrl: './npc-workspace.scss',
@@ -98,6 +101,7 @@ export class NpcWorkspace implements OnInit, PendingChangesAware {
   private readonly playerDisplayStore = inject(PlayerDisplayStore);
   private readonly creatureRules = inject(CreatureRuleCatalogService);
   private readonly combat = inject(CombatStore, { optional: true });
+  private readonly recentResources = inject(RecentResourceStore, { optional: true });
   private pendingDecisionResolver?: PendingDecisionResolver;
   private readonly journalEntries = viewChild<JournalEntryList>(JournalEntryList);
 
@@ -484,6 +488,7 @@ export class NpcWorkspace implements OnInit, PendingChangesAware {
       }
 
       await this.npcService.delete(npc);
+      await this.recentResources?.remove('npc', npc.id);
       if (npc.portraitPath) {
         try {
           await this.npcPortraitGateway.discard(npc.portraitPath);

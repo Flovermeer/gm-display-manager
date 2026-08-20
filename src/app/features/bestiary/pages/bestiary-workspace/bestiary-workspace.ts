@@ -31,6 +31,8 @@ import {
 } from '@app/shared/ui/rich-text-feature-editor/creature-feature-sections';
 import type { PendingChangesAware } from '@app/core/navigation/pending-changes.guard';
 import { JournalEntryList } from '@app/features/journal/ui/journal-entry-list/journal-entry-list';
+import { RecentResourceTrackerDirective } from '@app/features/recent-resources/ui/recent-resource-tracker.directive';
+import { RecentResourceStore } from '@app/features/recent-resources/application/recent-resource.store';
 import { CreatureRuleCatalogService } from '@app/features/game-systems/application/creature-rule-catalog.service';
 import {
   EMPTY_CREATURE_RULE_CATALOG,
@@ -66,6 +68,7 @@ type PendingDecisionResolver = (canLeave: boolean) => void;
     RichTextFeatureSection,
     TagInput,
     MultiSelectField,
+    RecentResourceTrackerDirective,
   ],
   templateUrl: './bestiary-workspace.html',
   styleUrl: './bestiary-workspace.scss',
@@ -78,6 +81,7 @@ export class BestiaryWorkspace implements OnInit, PendingChangesAware {
   private readonly imageGateway = inject(MonsterImageGateway);
   private readonly creatureRules = inject(CreatureRuleCatalogService);
   private readonly combat = inject(CombatStore, { optional: true });
+  private readonly recentResources = inject(RecentResourceStore, { optional: true });
   private readonly journalEntries = viewChild<JournalEntryList>(JournalEntryList);
   private pendingDecisionResolver?: PendingDecisionResolver;
 
@@ -301,6 +305,7 @@ export class BestiaryWorkspace implements OnInit, PendingChangesAware {
     const monster = this.monsterPendingDetachment();
     if (!monster) return;
     await this.service.detach(monster);
+    await this.recentResources?.remove('monster', monster.id);
     this.monsterPendingDetachment.set(null);
     this.selectedMonster.set(null);
     await this.load();

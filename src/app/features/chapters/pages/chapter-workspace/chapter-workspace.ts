@@ -1,5 +1,7 @@
-import { Component, computed, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, DestroyRef, inject, OnInit, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { ActivatedRoute } from '@angular/router';
 import type { JSONContent } from '@tiptap/core';
 
 import { CampaignContext } from '@app/features/campaigns/application/campaign-context';
@@ -13,6 +15,8 @@ import { LocationService } from '@app/features/locations/application/location.se
 import type { PendingChangesAware } from '@app/core/navigation/pending-changes.guard';
 import { NpcService } from '@app/features/npcs/application/npc.service';
 import { PlayerCharacterService } from '@app/features/players/application/player-character.service';
+import { RecentResourceTrackerDirective } from '@app/features/recent-resources/ui/recent-resource-tracker.directive';
+import { RecentResourceStore } from '@app/features/recent-resources/application/recent-resource.store';
 import type { RichTextDocument } from '@app/shared/rich-text-editor/rich-text-document';
 import { RichTextEditor } from '@app/shared/rich-text-editor/rich-text-editor';
 import type { ResourceMentionCandidate } from '@app/shared/rich-text-editor/resource-mention';
@@ -35,17 +39,21 @@ type PendingDecisionResolver = (canLeave: boolean) => void;
     EmptyState,
     EntityTitle,
     FormField,
+    RecentResourceTrackerDirective,
   ],
   templateUrl: './chapter-workspace.html',
   styleUrl: './chapter-workspace.scss',
 })
 export class ChapterWorkspace implements OnInit, PendingChangesAware {
   private readonly campaignContext = inject(CampaignContext);
+  private readonly route = inject(ActivatedRoute);
+  private readonly destroyRef = inject(DestroyRef);
   private readonly chapterService = inject(ChapterService);
   private readonly locationService = inject(LocationService);
   private readonly npcService = inject(NpcService);
   private readonly characterService = inject(PlayerCharacterService);
   private readonly mentionNavigation = inject(ResourceMentionNavigationService);
+  private readonly recentResources = inject(RecentResourceStore, { optional: true });
   private pendingDecisionResolver?: PendingDecisionResolver;
 
   protected readonly campaign = this.campaignContext.campaign;
@@ -89,6 +97,9 @@ export class ChapterWorkspace implements OnInit, PendingChangesAware {
   });
 
   ngOnInit(): void {
+    this.route.queryParamMap
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((params) => void this.openRequestedChapter(params.get('resourceId')));
     void this.initialize();
   }
 
@@ -212,6 +223,7 @@ export class ChapterWorkspace implements OnInit, PendingChangesAware {
     this.error.set(null);
     try {
       await this.chapterService.delete(chapter);
+      await this.recentResources?.remove('chapter', chapter.id);
       await this.reloadChapters();
       this.selectedChapter.set(null);
       this.showDeleteDialog.set(false);
@@ -262,6 +274,7 @@ export class ChapterWorkspace implements OnInit, PendingChangesAware {
           label: location.name,
         })),
       ]);
+      await this.openRequestedChapter(this.route.snapshot.queryParamMap.get('resourceId'));
     } catch (error) {
       this.error.set(errorMessage(error));
     } finally {
@@ -272,6 +285,13 @@ export class ChapterWorkspace implements OnInit, PendingChangesAware {
   private async reloadChapters(): Promise<void> {
     const campaign = this.campaign();
     if (campaign) this.chapters.set(await this.chapterService.list(campaign.id));
+  }
+
+  private async openRequestedChapter(resourceId: string | null): Promise<void> {
+    const requested = this.chapters().find(({ id }) => id === resourceId);
+    if (!requested || requested.id === this.selectedChapter()?.id) return;
+    if (!(await this.confirmPendingChanges())) return;
+    this.openReadOnly(requested);
   }
 
   private openReadOnly(chapter: Chapter): void {

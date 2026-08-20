@@ -25,6 +25,8 @@ import { NarrativeItemService } from '@app/features/items/application/narrative-
 import { NpcService } from '@app/features/npcs/application/npc.service';
 import { PlayerCharacterService } from '@app/features/players/application/player-character.service';
 import { JournalEntryList } from '@app/features/journal/ui/journal-entry-list/journal-entry-list';
+import { RecentResourceTrackerDirective } from '@app/features/recent-resources/ui/recent-resource-tracker.directive';
+import { RecentResourceStore } from '@app/features/recent-resources/application/recent-resource.store';
 import { RichTextEditor } from '@app/shared/rich-text-editor/rich-text-editor';
 import { ResourceMentionNavigationService } from '@app/shared/rich-text-editor/resource-mention-navigation.service';
 import type { ResourceMentionCandidate } from '@app/shared/rich-text-editor/resource-mention';
@@ -50,6 +52,7 @@ const DEMO_ITEM_IMAGE_URL = '/demo/item-placeholder.svg';
     EmptyState,
     EntityTitle,
     FormField,
+    RecentResourceTrackerDirective,
   ],
   templateUrl: './narrative-item-workspace.html',
   styleUrl: './narrative-item-workspace.scss',
@@ -67,6 +70,7 @@ export class NarrativeItemWorkspace implements OnInit, PendingChangesAware {
   private readonly displayGateway = inject(DisplayGateway);
   private readonly displayStore = inject(PlayerDisplayStore);
   private readonly mentionNavigation = inject(ResourceMentionNavigationService);
+  private readonly recentResources = inject(RecentResourceStore, { optional: true });
   private readonly journalEntries = viewChild<JournalEntryList>(JournalEntryList);
   private pendingDecisionResolver?: PendingDecisionResolver;
 
@@ -333,6 +337,7 @@ export class NarrativeItemWorkspace implements OnInit, PendingChangesAware {
           await this.displayGateway.sendPlayerDisplayState({ mode: 'blank' });
       }
       await this.itemService.delete(item);
+      await this.recentResources?.remove('item', item.id);
       if (item.provenance === 'campaign' && item.imagePath) await this.discardImage(item.imagePath);
       await this.reloadItems();
       this.selectedItem.set(null);

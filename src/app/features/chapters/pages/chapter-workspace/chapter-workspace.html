@@ -66,7 +66,14 @@
     {{ isSidebarCollapsed() ? '→' : '←' }}
   </button>
 
-  <section class="detail-panel entity-workspace__detail" aria-labelledby="chapter-detail-title">
+  <section
+    class="detail-panel entity-workspace__detail"
+    aria-labelledby="chapter-detail-title"
+    appRecentResourceTracker
+    recentResourceType="chapter"
+    [recentResourceId]="isCreating() ? null : (selectedChapter()?.id ?? null)"
+    [recentResourceLabel]="isCreating() ? null : (selectedChapter()?.title ?? null)"
+  >
     @if (error(); as errorMessage) {
       <p class="error" role="alert">{{ errorMessage }}</p>
     }

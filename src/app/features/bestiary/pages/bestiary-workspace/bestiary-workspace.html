@@ -63,7 +63,17 @@
     {{ isSidebarCollapsed() ? '›' : '‹' }}
   </button>
 
-  <main class="bestiary-detail entity-workspace__detail">
+  <main
+    class="bestiary-detail entity-workspace__detail"
+    appRecentResourceTracker
+    recentResourceType="monster"
+    [recentResourceId]="
+      isCreating() || isCatalogOpen() ? null : (selectedMonster()?.id ?? null)
+    "
+    [recentResourceLabel]="
+      isCreating() || isCatalogOpen() ? null : (selectedMonster()?.name ?? null)
+    "
+  >
     @if (error(); as message) {
       <p class="bestiary-error" role="alert">{{ message }}</p>
     }

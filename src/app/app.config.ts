@@ -69,6 +69,9 @@ import { TauriUniverseResourceRepository } from '@app/features/game-systems/data
 import { CombatRepository } from '@app/features/combat/data-access/combat.repository';
 import { InMemoryCombatRepository } from '@app/features/combat/data-access/in-memory-combat.repository';
 import { TauriCombatRepository } from '@app/features/combat/data-access/tauri-combat.repository';
+import { RecentResourceRepository } from '@app/features/recent-resources/data-access/recent-resource.repository';
+import { InMemoryRecentResourceRepository } from '@app/features/recent-resources/data-access/in-memory-recent-resource.repository';
+import { TauriRecentResourceRepository } from '@app/features/recent-resources/data-access/tauri-recent-resource.repository';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -104,6 +107,13 @@ export const appConfig: ApplicationConfig = {
     {
       provide: CombatRepository,
       useFactory: () => (isTauri() ? new TauriCombatRepository() : new InMemoryCombatRepository()),
+    },
+    {
+      provide: RecentResourceRepository,
+      useFactory: () =>
+        isTauri()
+          ? new TauriRecentResourceRepository()
+          : new InMemoryRecentResourceRepository(),
     },
     {
       provide: ChapterRepository,

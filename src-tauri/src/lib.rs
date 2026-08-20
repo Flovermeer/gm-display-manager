@@ -120,5 +120,11 @@ fn migrations() -> Vec<Migration> {
             sql: include_str!("../migrations/0017_create_active_combat.sql"),
             kind: MigrationKind::Up,
         },
+        Migration {
+            version: 18,
+            description: "create_recent_resource",
+            sql: include_str!("../migrations/0018_create_recent_resource.sql"),
+            kind: MigrationKind::Up,
+        },
     ]
 }

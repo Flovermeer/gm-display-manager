@@ -120,6 +120,25 @@ export function updatePlayerCharacterHitPoints(
   };
 }
 
+export function updatePlayerCharacterHitPointPool(
+  character: PlayerCharacter,
+  currentHitPoints: number,
+  maxHitPoints: number,
+  now: () => Date = () => new Date(),
+): PlayerCharacter {
+  const normalizedMaximum = nonNegativeInteger(maxHitPoints, 'Maximum hit points');
+  const normalizedCurrent = nonNegativeInteger(currentHitPoints, 'Current hit points');
+  assertHitPointRange(normalizedCurrent, normalizedMaximum);
+
+  return {
+    ...character,
+    currentHitPoints: normalizedCurrent,
+    maxHitPoints: normalizedMaximum,
+    sheetSchemaVersion: 2,
+    updatedAt: now().toISOString(),
+  };
+}
+
 function normalizeInput(input: UpdatePlayerCharacterInput): UpdatePlayerCharacterInput {
   const currentHitPoints = nullableNonNegativeInteger(input.currentHitPoints, 'Current hit points');
   const maxHitPoints = nullableNonNegativeInteger(input.maxHitPoints, 'Maximum hit points');

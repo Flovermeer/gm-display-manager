@@ -12,6 +12,7 @@ import { inject, Injectable } from '@angular/core';
 import {
   createPlayerCharacter,
   updatePlayerCharacter,
+  updatePlayerCharacterHitPointPool,
   updatePlayerCharacterHitPoints,
   type PlayerCharacter,
   type UpdatePlayerCharacterInput,
@@ -28,6 +29,10 @@ export class PlayerCharacterService {
 
   listAvailable(campaignId: string): Promise<readonly PlayerCharacter[]> {
     return this.repository.listAvailableByCampaign(campaignId);
+  }
+
+  find(campaignId: string, id: string): Promise<PlayerCharacter | null> {
+    return this.repository.findById(campaignId, id);
   }
 
   async create(
@@ -56,6 +61,20 @@ export class PlayerCharacterService {
   ): Promise<PlayerCharacter> {
     const updatedCharacter = updatePlayerCharacterHitPoints(character, currentHitPoints);
     await this.repository.saveCampaignState(updatedCharacter);
+    return updatedCharacter;
+  }
+
+  async updateHitPointPool(
+    character: PlayerCharacter,
+    currentHitPoints: number,
+    maxHitPoints: number,
+  ): Promise<PlayerCharacter> {
+    const updatedCharacter = updatePlayerCharacterHitPointPool(
+      character,
+      currentHitPoints,
+      maxHitPoints,
+    );
+    await this.repository.save(updatedCharacter);
     return updatedCharacter;
   }
 

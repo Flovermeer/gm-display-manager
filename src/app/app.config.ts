@@ -66,6 +66,9 @@ import { TauriGameRuleOptionRepository } from '@app/features/game-systems/data-a
 import { UniverseResourceRepository } from '@app/features/game-systems/data-access/universe-resource.repository';
 import { InMemoryUniverseResourceRepository } from '@app/features/game-systems/data-access/in-memory-universe-resource.repository';
 import { TauriUniverseResourceRepository } from '@app/features/game-systems/data-access/tauri-universe-resource.repository';
+import { CombatRepository } from '@app/features/combat/data-access/combat.repository';
+import { InMemoryCombatRepository } from '@app/features/combat/data-access/in-memory-combat.repository';
+import { TauriCombatRepository } from '@app/features/combat/data-access/tauri-combat.repository';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -97,6 +100,10 @@ export const appConfig: ApplicationConfig = {
         isTauri()
           ? new TauriUniverseResourceRepository()
           : new InMemoryUniverseResourceRepository(),
+    },
+    {
+      provide: CombatRepository,
+      useFactory: () => (isTauri() ? new TauriCombatRepository() : new InMemoryCombatRepository()),
     },
     {
       provide: ChapterRepository,

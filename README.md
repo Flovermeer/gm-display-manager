@@ -50,6 +50,8 @@ Routes actuelles :
 - `http://localhost:4300/campaigns/:campaignId/npcs` : gestion des PNJ de la campagne ;
 - `http://localhost:4300/campaigns/:campaignId/player-characters` : fiches PJ utiles au MJ et
   suivi persistant de leurs points de vie ;
+- `http://localhost:4300/campaigns/:campaignId/tables` : préparation et tirage privé des tables
+  aléatoires de la campagne ;
 - `http://localhost:4300/player-display` : rendu sans contrôles pour les joueurs.
 
 Lancer Angular dans la fenêtre desktop Tauri :

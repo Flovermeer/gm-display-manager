@@ -183,6 +183,23 @@ est resynchronisé au chargement. Comme la cible est polymorphe, l'application v
 à la campagne et supprime l'entrée si la ressource a été supprimée ou retirée. La suppression d'une
 campagne efface son historique par cascade SQLite.
 
+## Tables aléatoires
+
+`random_table` appartient à une campagne et stocke son nom, sa description et l'ensemble versionné
+de ses résultats dans `entries_json`. Les résultats forment un seul agrégat sans relation externe ;
+une sauvegarde remplace donc atomiquement le nom, la description et toutes les entrées de la table.
+La suppression d'une campagne supprime ses tables par cascade SQLite.
+
+Chaque entrée possède un identifiant stable, une borne minimale, une borne maximale et un résultat
+textuel. Les bornes peuvent rester nulles dans un brouillon enregistré. Lorsqu'elles sont définies,
+elles sont entières, inclusives et comprises entre 1 et 100 ; deux bornes égales représentent une
+valeur unique. Les entrées sont normalisées par borne minimale puis maximale.
+
+Le tirage est autorisé seulement si toutes les entrées sont complètes et couvrent chaque entier de
+1 à la borne maximale sans trou ni chevauchement. Il est uniforme sur cet intervalle. Les tables ne
+référencent pas d'autres ressources, ne s'appellent pas entre elles et ne produisent ni historique,
+ni entrée de Journal, ni commande vers le Player Display.
+
 ## Chapitres et sections
 
 Les chapitres forment une liste ordonnée et réorganisable dans la campagne. Un chapitre contient des `chapter_section` également ordonnées.

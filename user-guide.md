@@ -148,7 +148,23 @@ La liste conserve automatiquement les huit dernières ressources, sans doublon, 
 la plus ancienne. Elle est propre à chaque campagne, enregistrée dans SQLite et masquée lorsqu'elle
 est vide. Une ressource supprimée ou retirée de la campagne disparaît également de cette liste.
 
-## 6. Choisir l'écran des joueurs
+## 6. Utiliser les tables aléatoires
+
+Ouvre **Tables** dans la navigation de la campagne. Une table possède un nom obligatoire, une
+description facultative et autant de résultats textuels que nécessaire.
+
+Pour chaque résultat, saisis une borne **De** et une borne **À** entre 1 et 100. Utilise la même
+borne pour une valeur unique. Les lignes se réordonnent automatiquement par borne basse. Une table
+vide ou incomplète peut être enregistrée afin de reprendre sa préparation plus tard.
+
+Le bouton **Tirer** devient disponible lorsque les plages couvrent tous les entiers depuis 1 jusqu'à
+la borne maximale, sans trou ni chevauchement, et que chaque résultat contient un texte. Le tirage
+et son dernier résultat restent privés dans le panneau MJ. Ils ne sont ni journalisés, ni envoyés à
+l'écran joueurs.
+
+La suppression d'une table demande confirmation et supprime définitivement toutes ses entrées.
+
+## 7. Choisir l'écran des joueurs
 
 Dans la section **Écran joueurs** :
 
@@ -165,7 +181,7 @@ prochain lancement, il est automatiquement présélectionné s'il peut être rec
 sans ambiguïté. Si deux moniteurs identiques partagent la même empreinte,
 l'application demande une nouvelle sélection au lieu de choisir arbitrairement.
 
-## 7. Ouvrir l'écran joueurs
+## 8. Ouvrir l'écran joueurs
 
 Après avoir sélectionné un moniteur, clique sur **Ouvrir l'écran joueurs**.
 
@@ -178,7 +194,7 @@ L'application crée une seconde fenêtre Tauri qui :
 
 La fenêtre principale reste ouverte sur le panneau du maître de jeu.
 
-## 8. Piloter le contenu affiché
+## 9. Piloter le contenu affiché
 
 La section **Contenu affiché** fournit actuellement trois actions de
 démonstration :
@@ -193,7 +209,7 @@ démonstration sont inclus dans le projet et fonctionnent hors ligne.
 Tu peux choisir un contenu avant d'ouvrir la fenêtre joueurs : l'état complet
 sera envoyé automatiquement lorsque cette fenêtre annoncera qu'elle est prête.
 
-## 9. Déplacer l'écran joueurs
+## 10. Déplacer l'écran joueurs
 
 Lorsque la fenêtre joueurs existe déjà, le bouton devient **Déplacer l'écran
 joueurs**.
@@ -212,7 +228,7 @@ Lorsque le moniteur sélectionné héberge déjà la fenêtre joueurs, le bouton
 indique **Déjà affiché sur cet écran** et reste désactivé. Cela évite de
 réappliquer inutilement le plein écran et de provoquer un flicker.
 
-## 10. Fermer l'écran joueurs
+## 11. Fermer l'écran joueurs
 
 Clique sur **Fermer l'écran joueurs** depuis le panneau MJ. La fenêtre dédiée
 est fermée sans fermer l'application principale.
@@ -220,7 +236,7 @@ est fermée sans fermer l'application principale.
 Si la fenêtre a été fermée directement depuis Windows, clique sur **Actualiser**
 pour synchroniser l'état affiché dans le panneau MJ.
 
-## 11. Prévisualisation dans le navigateur
+## 12. Prévisualisation dans le navigateur
 
 Angular peut être lancé sans Tauri :
 
@@ -233,7 +249,7 @@ Les actions de contenu modifient tout de même l'état de prévisualisation loca
 Le lien de prévisualisation ouvre la route `/player-display` dans la même page et
 affiche un bouton **Retour au panneau MJ**.
 
-## 12. Arrêter l'application de développement
+## 13. Arrêter l'application de développement
 
 Ferme les fenêtres puis, dans le terminal qui exécute Tauri, utilise :
 
@@ -241,7 +257,7 @@ Ferme les fenêtres puis, dans le terminal qui exécute Tauri, utilise :
 Ctrl + C
 ```
 
-## 13. Limites actuelles
+## 14. Limites actuelles
 
 - l'état de la fenêtre n'est pas encore synchronisé en temps réel si elle est
   fermée directement par Windows ;
@@ -251,7 +267,7 @@ Ctrl + C
 - la reconnexion automatique après le retrait d'un moniteur reste à implémenter ;
 - la validation multi-écran est pour l'instant manuelle et ciblée sur Windows.
 
-## 14. Dépannage rapide
+## 15. Dépannage rapide
 
 ### Aucun moniteur détecté
 

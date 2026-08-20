@@ -107,6 +107,15 @@ export const routes: Routes = [
         title: "Beholder's Inn — Journal",
       },
       {
+        path: 'tables',
+        loadComponent: () =>
+          import('@app/features/random-tables/pages/random-table-workspace/random-table-workspace').then(
+            ({ RandomTableWorkspace }) => RandomTableWorkspace,
+          ),
+        canDeactivate: [pendingChangesGuard],
+        title: "Beholder's Inn — Tables aléatoires",
+      },
+      {
         path: 'configuration',
         loadComponent: () =>
           import('@app/features/campaigns/pages/campaign-configuration/campaign-configuration-workspace').then(

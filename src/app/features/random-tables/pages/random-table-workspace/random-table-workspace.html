@@ -1,0 +1,272 @@
+<main
+  class="entity-workspace random-table-workspace"
+  [class.entity-workspace--sidebar-collapsed]="isSidebarCollapsed()"
+>
+  <aside class="entity-workspace__sidebar" aria-label="Liste des tables aléatoires">
+    <div class="entity-workspace__sidebar-tools">
+      <label class="entity-workspace__visually-hidden" for="random-table-search">
+        Rechercher une table
+      </label>
+      <input
+        id="random-table-search"
+        type="search"
+        placeholder="Nom ou description…"
+        [value]="searchTerm()"
+        (input)="updateSearch($event)"
+      />
+      <div class="entity-workspace__sidebar-heading">
+        <h1>Tables</h1>
+        <span>{{ tables().length }}</span>
+      </div>
+      <button appButton="primary" appButtonFull type="button" (click)="requestCreateTable()">
+        + Nouvelle table
+      </button>
+    </div>
+
+    <div class="random-table-list">
+      @if (isLoading()) {
+        <p class="random-table-list__message">Chargement…</p>
+      } @else {
+        @for (table of filteredTables(); track table.id) {
+          <button
+            class="random-table-list__entry"
+            type="button"
+            [class.random-table-list__entry--active]="
+              selectedTable()?.id === table.id && !isCreating()
+            "
+            (click)="requestSelectTable(table)"
+          >
+            <strong>{{ table.name }}</strong>
+            <small>{{ table.entries.length }} résultat(s)</small>
+          </button>
+        } @empty {
+          <p class="random-table-list__message">
+            {{ searchTerm() ? 'Aucune table ne correspond.' : 'Aucune table pour le moment.' }}
+          </p>
+        }
+      }
+    </div>
+  </aside>
+
+  <button
+    class="entity-workspace__sidebar-toggle"
+    type="button"
+    [attr.aria-label]="
+      isSidebarCollapsed() ? 'Afficher la liste des tables' : 'Replier la liste des tables'
+    "
+    (click)="toggleSidebar()"
+  >
+    {{ isSidebarCollapsed() ? '→' : '←' }}
+  </button>
+
+  <section class="entity-workspace__detail" aria-labelledby="random-table-title">
+    @if (error(); as message) {
+      <p class="random-table-error" role="alert">{{ message }}</p>
+    }
+
+    @if (isEditing()) {
+      <form class="random-table-form" [formGroup]="tableForm" (ngSubmit)="saveTable()">
+        <div class="entity-workspace__toolbar">
+          <div class="entity-workspace__actions">
+            <button appButton="secondary" type="button" (click)="cancelEditing()">Annuler</button>
+            <button appButton="primary" type="submit" [disabled]="tableForm.invalid || isSaving()">
+              {{ isSaving() ? 'Enregistrement…' : 'Enregistrer' }}
+            </button>
+          </div>
+        </div>
+
+        <app-entity-title
+          kicker="Table aléatoire"
+          [title]="isCreating() ? 'Nouvelle table' : (selectedTable()?.name ?? '')"
+          headingId="random-table-title"
+        />
+
+        <div class="random-table-form__identity">
+          <app-form-field
+            inputId="random-table-name"
+            label="Nom"
+            [formControl]="tableForm.controls.name"
+            [errorMessage]="
+              tableForm.controls.name.touched && tableForm.controls.name.invalid
+                ? 'Le nom est obligatoire.'
+                : null
+            "
+          />
+          <app-form-field
+            inputId="random-table-description"
+            label="Description"
+            controlType="textarea"
+            [formControl]="tableForm.controls.description"
+          />
+        </div>
+
+        <section class="random-table-entries" aria-labelledby="random-table-entries-title">
+          <header>
+            <div>
+              <h3 id="random-table-entries-title">Résultats</h3>
+              <p>Plages de 1 à {{ maximumBound }}, triées automatiquement.</p>
+            </div>
+            <button appButton="secondary" type="button" (click)="addEntry()">
+              + Ajouter un résultat
+            </button>
+          </header>
+
+          <div class="random-table-entry-list">
+            @for (
+              entry of tableForm.controls.entries.controls;
+              track entry.controls.id.value;
+              let index = $index
+            ) {
+              <div class="random-table-entry-form" [formGroup]="entry">
+                <label>
+                  <span>De</span>
+                  <input
+                    type="number"
+                    min="1"
+                    [max]="maximumBound"
+                    formControlName="minimum"
+                    (change)="sortEntries()"
+                  />
+                </label>
+                <label>
+                  <span>À</span>
+                  <input
+                    type="number"
+                    min="1"
+                    [max]="maximumBound"
+                    formControlName="maximum"
+                    (change)="sortEntries()"
+                  />
+                </label>
+                <label class="random-table-entry-form__result">
+                  <span>Résultat</span>
+                  <textarea rows="2" formControlName="resultText"></textarea>
+                </label>
+                <button
+                  class="random-table-entry-form__remove"
+                  type="button"
+                  title="Retirer ce résultat"
+                  aria-label="Retirer ce résultat"
+                  (click)="removeEntry(index)"
+                >
+                  ×
+                </button>
+                @if (entry.invalid && entry.touched) {
+                  <p class="random-table-entry-form__error" role="alert">
+                    Utilise des entiers de 1 à {{ maximumBound }}, avec De inférieur ou égal à À.
+                  </p>
+                }
+              </div>
+            } @empty {
+              <p class="random-table-empty">Cette table ne contient encore aucun résultat.</p>
+            }
+          </div>
+        </section>
+      </form>
+    } @else if (selectedTable(); as table) {
+      <div class="entity-workspace__toolbar">
+        <div class="entity-workspace__actions">
+          <button appButton="primary" type="button" (click)="editTable()">Modifier</button>
+          <button appButton="secondary-danger" type="button" (click)="requestDeleteTable()">
+            Supprimer
+          </button>
+        </div>
+      </div>
+
+      <app-entity-title
+        kicker="Table aléatoire"
+        [title]="table.name"
+        headingId="random-table-title"
+      >
+        @if (table.description) {
+          <p>{{ table.description }}</p>
+        }
+      </app-entity-title>
+
+      <section class="random-table-roll" aria-labelledby="random-table-roll-title">
+        <div>
+          <p class="random-table-roll__kicker">Tirage privé du MJ</p>
+          <h3 id="random-table-roll-title">
+            1–{{ maximum(table) ?? '—' }} · {{ table.entries.length }} résultat(s)
+          </h3>
+          @if (rollIssue(table); as issue) {
+            <p class="random-table-roll__issue">{{ issue }}</p>
+          }
+        </div>
+        <button
+          appButton="primary"
+          type="button"
+          [disabled]="rollIssue(table) !== null"
+          (click)="roll(table)"
+        >
+          Tirer
+        </button>
+        @if (lastRoll(); as result) {
+          <output class="random-table-roll__result" aria-live="polite">
+            <span>{{ result.value }}</span>
+            <strong>{{ result.entry.resultText }}</strong>
+          </output>
+        }
+      </section>
+
+      <div class="random-table-results" role="table" aria-label="Résultats de la table">
+        <div class="random-table-results__header" role="row">
+          <span role="columnheader">Valeur</span>
+          <span role="columnheader">Résultat</span>
+        </div>
+        @for (entry of table.entries; track entry.id) {
+          <div class="random-table-results__row" role="row">
+            <strong role="cell">{{ rangeLabel(entry) }}</strong>
+            <span role="cell">{{ entry.resultText || 'Résultat non renseigné' }}</span>
+          </div>
+        } @empty {
+          <p class="random-table-empty">Cette table ne contient encore aucun résultat.</p>
+        }
+      </div>
+    } @else {
+      <app-empty-state
+        icon="⌁"
+        title="Prépare tes tables de partie"
+        description="Crée une table pour tirer rapidement un résultat privé pendant la session."
+        headingId="random-table-title"
+      />
+    }
+  </section>
+</main>
+
+@if (showDeleteDialog() && selectedTable(); as table) {
+  <app-dialog
+    kicker="Suppression définitive"
+    [title]="'Supprimer ' + table.name + ' ?'"
+    headingId="random-table-delete-title"
+  >
+    <p>Toutes les entrées de cette table seront définitivement supprimées.</p>
+    <div dialog-actions class="dialog-actions">
+      <button appButton="secondary" type="button" (click)="showDeleteDialog.set(false)">
+        Annuler
+      </button>
+      <button appButton="danger" type="button" (click)="confirmDeleteTable()">Supprimer</button>
+    </div>
+  </app-dialog>
+}
+
+@if (showPendingChangesDialog()) {
+  <app-dialog
+    kicker="Modifications non enregistrées"
+    title="Quitter cette table ?"
+    headingId="random-table-pending-title"
+  >
+    <p>Enregistre les modifications ou quitte sans les conserver.</p>
+    <div dialog-actions class="dialog-actions three-actions">
+      <button appButton="secondary" type="button" (click)="continueEditing()">
+        Continuer la modification
+      </button>
+      <button appButton="secondary-danger" type="button" (click)="leaveWithoutSaving()">
+        Quitter sans enregistrer
+      </button>
+      <button appButton="primary" type="button" (click)="saveAndLeave()">
+        Enregistrer et quitter
+      </button>
+    </div>
+  </app-dialog>
+}

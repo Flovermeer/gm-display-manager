@@ -12,7 +12,7 @@ Dernière consolidation : 20 août 2026
 | 1 — Shell Angular + Tauri   | Terminé                                  | Application standalone zoneless, routes Angular, fenêtre principale maximisée et capabilities Tauri en place.                                                                                                       |
 | 2 — Multi-écran             | Fonctionnel, validation avancée restante | Détection, choix persistant du moniteur et fenêtre joueurs dédiée plein écran validés sur le matériel nominal. Restent les cas de déconnexion, remplacement, coordonnées négatives et facteurs d’échelle variés.    |
 | 3 — Régie verticale         | Terminé                                  | Écran noir, lieux, PNJ et objets peuvent être envoyés au Player Display ; synchronisation `ready` et fallback statique des PNJ en place.                                                                            |
-| 4 — SQLite                  | Terminé pour les tranches livrées        | Dix-huit migrations couvrent notamment systèmes, univers, campagnes, propriété des ressources, combat et historique récent. Repositories Tauri et mémoire isolés derrière des interfaces.                           |
+| 4 — SQLite                  | Terminé pour les tranches livrées        | Dix-neuf migrations couvrent notamment systèmes, univers, campagnes, propriété des ressources, combat, historique récent et tables aléatoires. Repositories Tauri et mémoire isolés derrière des interfaces.          |
 | 5 — Gestion de campagne     | Terminé et étendu                        | CRUD campagnes, lieux hiérarchiques, PNJ structurés, PJ orientés MJ et objets narratifs. Navigation campagne persistante et protection des modifications non enregistrées.                                          |
 | 6 — Médias locaux           | Terminé pour images et portraits animés  | Import/copie locale des portraits PNJ/PJ, images de lieux et d’objets, vidéo idle PNJ et nettoyage des médias. Une validation plus large des fichiers cassés reste à inclure au durcissement.                       |
 | 7 — Tiptap et journal       | Terminé pour l’usage actuel              | Chapitres et descriptions riches, notes journalisées éditables, regroupement quotidien, mentions `@` cliquables vers les ressources de campagne et fallback texte si la cible disparaît.                            |
@@ -20,8 +20,8 @@ Dernière consolidation : 20 août 2026
 | 9 — Bestiaire               | Terminé et catalogue global finalisé     | Les catalogues canoniques PNJ, PJ, lieux, objets et monstres disposent d’éditeurs détaillés par univers. Le bestiaire conserve sa sélection par campagne, sa fiche D&D complète, ses scènes, notes et mentions `@`. |
 | 10 — Combat léger           | Terminé                                  | Un combat actif persistant par campagne, panneau MJ superposé, ajout PJ/PNJ/monstres, initiative manuelle triée et suivi rapide des PV.                                                                               |
 | 11 — Historique récent      | Terminé                                  | Huit pills persistées et cliquables par campagne, dédupliquées par récence et purgées lorsque leur cible disparaît.                                                                                                  |
-| 12 — Carte heuristique      | Planifiée après l’historique             | Graphe automatique et navigable des chapitres, ressources liées et mentions `@`, sans édition manuelle du graphe.                                                                                                   |
-| 13 — Tables aléatoires      | À cadrer après la carte                  | Outil de préparation et de tirage pour les tables propres à la campagne ; modèle, types de résultats et historique des tirages restent à définir.                                                                   |
+| 12 — Carte heuristique      | Reporté, hors priorité jouable           | Graphe automatique et navigable des chapitres, ressources liées et mentions `@`, sans édition manuelle du graphe. Le jalon sera repris après les priorités nécessaires au jeu.                                      |
+| 13 — Tables aléatoires      | Terminé                                  | CRUD atomique de tables privées au MJ, plages de 1 à 100 triées automatiquement, validation de couverture continue et tirage uniforme sans historique.                                                              |
 | 14 — Durcissement/livraison | Non commencé                             | Sauvegarde/restauration, tests matériels dégradés, session longue, journal technique, installeur Windows et guide de dépannage restent à faire.                                                                     |
 
 ### Tranches supplémentaires déjà livrées
@@ -44,16 +44,18 @@ Dernière consolidation : 20 août 2026
 - types et raretés d’objets administrables au niveau de l’univers et partagés par ses campagnes.
 - combat actif privé au MJ, persistant et accessible depuis toute page de campagne sans perdre le contexte courant.
 - historique des huit dernières ressources consultées, persistant par campagne et accessible sous la navigation.
+- tables aléatoires privées au MJ avec brouillons incomplets, plages continues et tirage local.
 
 ### Prochaine priorité recommandée
 
 Le prochain ordre de livraison retenu est :
 
-1. **Jalon 12 — Carte heuristique**, générée depuis les chapitres, les ressources liées et les mentions `@` ;
-2. **Jalon 13 — Tables aléatoires**, à cadrer fonctionnellement après la carte ;
-3. **Jalon 14 — Durcissement et livraison Windows**.
+1. **Jalon 14 — Durcissement et livraison Windows** ;
+2. **Jalon 12 — Carte heuristique**, reporté sans échéance après les priorités nécessaires au jeu.
 
-Les tables aléatoires sont désormais inscrites dans la séquence, mais leur modèle et leur expérience d’utilisation seront décidés avec le MJ au début du jalon 13.
+Le jalon 13 est livré. Les tables restent volontairement un outil privé et autonome : elles ne
+créent pas de note de Journal, n'alimentent pas les ressources récentes et n'envoient rien au
+Player Display.
 
 ## 1. Résultat recherché
 
@@ -512,13 +514,20 @@ La carte est générée depuis l’arborescence des chapitres, leurs relations e
 
 Objectif : permettre au MJ de préparer et utiliser des tables aléatoires propres à une campagne.
 
-Cette tranche doit être cadrée avant implémentation. Il faudra notamment décider :
+Livré :
 
-- si une table contient uniquement du texte ou peut cibler des ressources de campagne ;
-- si les plages sont pondérées, basées sur une formule de dés ou les deux ;
-- si les tables peuvent s’appeler entre elles ;
-- si les tirages doivent être historisés dans le Journal ;
-- si un résultat peut être envoyé au Player Display.
+- page dédiée **Tables** dans la campagne, avec liste, recherche, lecture, création, modification et
+  suppression confirmée ;
+- nom obligatoire, description facultative et résultats textuels uniquement ;
+- chaque résultat porte une valeur ou une plage inclusive `De / À`, bornée de 1 à 100 ;
+- réordonnancement automatique par borne basse puis haute ;
+- sauvegarde atomique de l'agrégat complet, y compris vide ou incomplet ;
+- tirage uniforme de 1 à la borne maximale uniquement lorsque toutes les valeurs sont couvertes
+  sans trou ni chevauchement ;
+- dernier résultat visible dans la page jusqu'au prochain changement de table.
+
+Les appels imbriqués, l'historique des tirages, les liens vers les ressources, le Journal et le
+Player Display restent hors de cette tranche.
 
 ### Jalon 14 — Durcissement et livraison Windows
 
@@ -620,7 +629,7 @@ Jalons 7 à 8   -> gestion de campagne et scènes narratives
 Jalon 9        -> bestiaire réutilisable
 Jalon 10       -> suivi de combat léger
 Jalon 11       -> historique récent des ressources
-Jalon 12       -> carte heuristique automatique
+Jalon 12       -> carte heuristique automatique, reportée
 Jalon 13       -> tables aléatoires
 Jalon 14       -> version Windows distribuable
 ```

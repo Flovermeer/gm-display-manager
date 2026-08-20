@@ -1,0 +1,245 @@
+:host {
+  display: block;
+  min-height: 100dvh;
+  background: #151411;
+}
+
+.random-table-list {
+  overflow-y: auto;
+  padding: 0.75rem;
+}
+
+.random-table-list__entry {
+  display: grid;
+  width: 100%;
+  padding: 0.8rem 0.9rem;
+  border: 1px solid transparent;
+  border-radius: 0.4rem;
+  color: #e5ded2;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+  gap: 0.25rem;
+}
+
+.random-table-list__entry:hover,
+.random-table-list__entry--active {
+  border-color: #8f7448;
+  background: #453a28;
+}
+
+.random-table-list__entry small,
+.random-table-list__message {
+  color: #aaa194;
+  font-size: 0.75rem;
+}
+
+.random-table-list__message {
+  padding: 1rem 0.5rem;
+}
+
+app-entity-title {
+  display: block;
+  padding: 2rem 0;
+  border-bottom: 1px solid #d2cbc0;
+}
+
+app-entity-title p {
+  margin-bottom: 0;
+  color: #6c6257;
+  line-height: 1.5;
+}
+
+.random-table-form__identity {
+  display: grid;
+  padding-top: 2rem;
+  grid-template-columns: minmax(12rem, 0.7fr) minmax(16rem, 1.3fr);
+  gap: 1rem;
+}
+
+.random-table-entries {
+  padding-top: 2rem;
+}
+
+.random-table-entries > header {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.random-table-entries h3,
+.random-table-entries p,
+.random-table-roll h3,
+.random-table-roll p {
+  margin: 0;
+}
+
+.random-table-entries header p {
+  margin-top: 0.3rem;
+  color: #766d63;
+  font-size: 0.8rem;
+}
+
+.random-table-entry-list,
+.random-table-results {
+  display: grid;
+  margin-top: 1rem;
+  gap: 0.45rem;
+}
+
+.random-table-entry-form {
+  display: grid;
+  align-items: start;
+  padding: 0.75rem;
+  border: 1px solid #d2cbc0;
+  border-radius: 0.4rem;
+  grid-template-columns: 5.5rem 5.5rem minmax(12rem, 1fr) 2.4rem;
+  gap: 0.65rem;
+}
+
+.random-table-entry-form label {
+  display: grid;
+  color: #62594f;
+  font-size: 0.7rem;
+  font-weight: 800;
+  gap: 0.25rem;
+}
+
+.random-table-entry-form input,
+.random-table-entry-form textarea {
+  width: 100%;
+  min-width: 0;
+  padding: 0.55rem;
+  border: 1px solid #bdb4a8;
+  border-radius: 0.3rem;
+  color: #2b2722;
+  background: #fff;
+}
+
+.random-table-entry-form__remove {
+  width: 2.4rem;
+  aspect-ratio: 1;
+  align-self: end;
+  border: 1px solid #b87076;
+  border-radius: 0.3rem;
+  color: #8a3038;
+  background: #fff4f5;
+  cursor: pointer;
+  font-size: 1.2rem;
+}
+
+.random-table-entry-form__error {
+  grid-column: 1 / -1;
+  color: #a43e46;
+  font-size: 0.75rem;
+}
+
+.random-table-roll {
+  display: grid;
+  align-items: center;
+  margin-top: 2rem;
+  padding: 1rem;
+  border-block: 1px solid #d2cbc0;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 1rem;
+}
+
+.random-table-roll__kicker {
+  color: #846a3f;
+  font-size: 0.68rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.random-table-roll h3 {
+  margin-top: 0.25rem;
+  font-size: 1rem;
+}
+
+.random-table-roll__issue {
+  margin-top: 0.4rem !important;
+  color: #8a4d24;
+  font-size: 0.78rem;
+}
+
+.random-table-roll__result {
+  display: grid;
+  grid-column: 1 / -1;
+  padding: 1rem;
+  color: #f7edda;
+  background: #493a25;
+  grid-template-columns: 3rem minmax(0, 1fr);
+  gap: 0.8rem;
+}
+
+.random-table-roll__result span {
+  font-size: 1.4rem;
+  font-weight: 900;
+  text-align: center;
+}
+
+.random-table-results__header,
+.random-table-results__row {
+  display: grid;
+  padding: 0.75rem 1rem;
+  grid-template-columns: 8rem minmax(0, 1fr);
+  gap: 1rem;
+}
+
+.random-table-results__header {
+  color: #6c6257;
+  font-size: 0.7rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.random-table-results__row {
+  border-top: 1px solid #ddd5c9;
+}
+
+.random-table-empty {
+  padding: 1.5rem;
+  color: #766d63;
+  text-align: center;
+}
+
+.random-table-error {
+  padding: 0.8rem;
+  border: 1px solid #d9a3a7;
+  color: #8b2831;
+  background: #fff0f1;
+}
+
+@media (max-width: 54rem) {
+  .random-table-form__identity,
+  .random-table-entry-form {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .random-table-entry-form__result {
+    grid-column: 1 / -1;
+  }
+
+  .random-table-entry-form__remove {
+    grid-column: 2;
+    justify-self: end;
+  }
+}
+
+@media (max-width: 34rem) {
+  .random-table-entries > header {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .random-table-roll {
+    align-items: stretch;
+    grid-template-columns: 1fr;
+  }
+
+  .random-table-results__header,
+  .random-table-results__row {
+    grid-template-columns: 5rem minmax(0, 1fr);
+  }
+}

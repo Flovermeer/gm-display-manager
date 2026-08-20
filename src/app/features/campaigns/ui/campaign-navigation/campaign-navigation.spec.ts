@@ -32,6 +32,7 @@ describe('CampaignNavigation', () => {
       'PJ',
       'Objets',
       'Journal',
+      'Tables',
       '⚙ Configuration',
       'Accueil',
     ]);

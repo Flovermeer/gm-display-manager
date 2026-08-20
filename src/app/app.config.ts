@@ -72,6 +72,9 @@ import { TauriCombatRepository } from '@app/features/combat/data-access/tauri-co
 import { RecentResourceRepository } from '@app/features/recent-resources/data-access/recent-resource.repository';
 import { InMemoryRecentResourceRepository } from '@app/features/recent-resources/data-access/in-memory-recent-resource.repository';
 import { TauriRecentResourceRepository } from '@app/features/recent-resources/data-access/tauri-recent-resource.repository';
+import { RandomTableRepository } from '@app/features/random-tables/data-access/random-table.repository';
+import { InMemoryRandomTableRepository } from '@app/features/random-tables/data-access/in-memory-random-table.repository';
+import { TauriRandomTableRepository } from '@app/features/random-tables/data-access/tauri-random-table.repository';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -114,6 +117,11 @@ export const appConfig: ApplicationConfig = {
         isTauri()
           ? new TauriRecentResourceRepository()
           : new InMemoryRecentResourceRepository(),
+    },
+    {
+      provide: RandomTableRepository,
+      useFactory: () =>
+        isTauri() ? new TauriRandomTableRepository() : new InMemoryRandomTableRepository(),
     },
     {
       provide: ChapterRepository,

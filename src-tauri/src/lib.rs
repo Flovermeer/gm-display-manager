@@ -126,5 +126,11 @@ fn migrations() -> Vec<Migration> {
             sql: include_str!("../migrations/0018_create_recent_resource.sql"),
             kind: MigrationKind::Up,
         },
+        Migration {
+            version: 19,
+            description: "create_random_table",
+            sql: include_str!("../migrations/0019_create_random_table.sql"),
+            kind: MigrationKind::Up,
+        },
     ]
 }

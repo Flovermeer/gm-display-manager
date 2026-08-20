@@ -1,4 +1,4 @@
-import { Component, computed, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, inject, OnInit, signal, viewChild } from '@angular/core';
 import { FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 
@@ -9,6 +9,7 @@ import { Dialog } from '@app/shared/ui/dialog/dialog';
 import { FormField } from '@app/shared/ui/form-field/form-field';
 import { RuleCatalogSettings } from '@app/features/game-systems/ui/rule-catalog-settings/rule-catalog-settings';
 import { UniverseResourceCatalog } from '@app/features/game-systems/ui/universe-resource-catalog/universe-resource-catalog';
+import type { PendingChangesAware } from '@app/core/navigation/pending-changes.guard';
 
 type ConfigurationSection = 'systems' | 'resources' | 'rules';
 
@@ -30,8 +31,9 @@ type PurgeTarget =
   templateUrl: './global-configuration.html',
   styleUrl: './global-configuration.scss',
 })
-export class GlobalConfiguration implements OnInit {
+export class GlobalConfiguration implements OnInit, PendingChangesAware {
   private readonly service = inject(GameSystemService);
+  private readonly resourceCatalog = viewChild(UniverseResourceCatalog);
 
   protected readonly systems = signal<readonly GameSystem[]>([]);
   protected readonly universes = signal<readonly GameUniverse[]>([]);
@@ -70,8 +72,17 @@ export class GlobalConfiguration implements OnInit {
     this.selectedUniverseId.set(id);
   }
 
-  protected openSection(section: ConfigurationSection): void {
+  protected async openSection(section: ConfigurationSection): Promise<void> {
+    if (!(await this.confirmPendingChanges())) return;
     this.section.set(section);
+  }
+
+  canDeactivate(): boolean | Promise<boolean> {
+    return this.confirmPendingChanges();
+  }
+
+  private confirmPendingChanges(): boolean | Promise<boolean> {
+    return this.resourceCatalog()?.confirmPendingChanges() ?? true;
   }
 
   protected async createSystem(): Promise<void> {

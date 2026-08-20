@@ -22,6 +22,7 @@ import { NarrativeItemRepository } from '@app/features/items/data-access/narrati
 export class ItemConfigurationService {
   private readonly repository = inject(ItemConfigurationRepository);
   private readonly itemRepository = inject(NarrativeItemRepository);
+  private readonly defaultInitializations = new Map<string, Promise<void>>();
 
   list(
     universeId: string,
@@ -30,7 +31,17 @@ export class ItemConfigurationService {
     return this.repository.list(universeId, kind);
   }
 
-  async ensureDefaults(universeId: string): Promise<void> {
+  ensureDefaults(universeId: string): Promise<void> {
+    const pending = this.defaultInitializations.get(universeId);
+    if (pending) return pending;
+    const initialization = this.initializeDefaults(universeId).finally(() =>
+      this.defaultInitializations.delete(universeId),
+    );
+    this.defaultInitializations.set(universeId, initialization);
+    return initialization;
+  }
+
+  private async initializeDefaults(universeId: string): Promise<void> {
     const [types, rarities] = await Promise.all([
       this.list(universeId, 'type'),
       this.list(universeId, 'rarity'),

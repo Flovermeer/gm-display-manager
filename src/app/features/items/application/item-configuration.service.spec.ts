@@ -58,4 +58,13 @@ describe('ItemConfigurationService', () => {
     await expect(service.delete(option)).rejects.toThrow('Cette valeur est utilisée par 2 objets.');
     expect(configurationRepository.delete).not.toHaveBeenCalled();
   });
+
+  it('serializes concurrent default initialization for one universe', async () => {
+    await Promise.all([
+      service.ensureDefaults('universe-id'),
+      service.ensureDefaults('universe-id'),
+    ]);
+
+    expect(configurationRepository.save).toHaveBeenCalledTimes(12);
+  });
 });

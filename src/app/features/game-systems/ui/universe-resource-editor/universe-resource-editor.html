@@ -1,0 +1,492 @@
+<section class="canonical-editor" aria-labelledby="canonical-editor-title">
+  <header class="canonical-editor__toolbar">
+    <div>
+      <p>Fiche canonique de l’univers</p>
+      <h3 id="canonical-editor-title">{{ title() }}</h3>
+    </div>
+    <div class="canonical-editor__actions">
+      <button appButton="secondary" type="button" (click)="requestCancel()">Retour</button>
+      <button appButton="primary" type="button" [disabled]="isSaving()" (click)="save()">
+        {{ isSaving() ? 'Enregistrement…' : 'Enregistrer' }}
+      </button>
+    </div>
+  </header>
+
+  @if (error(); as message) {
+    <p class="configuration-error" role="alert">{{ message }}</p>
+  }
+
+  @if (isLoading()) {
+    <p>Chargement…</p>
+  } @else if (detail()) {
+    @if (type() === 'npc' || type() === 'monster') {
+      <form class="canonical-form" [formGroup]="creatureForm" (ngSubmit)="save()">
+        <section class="canonical-form__section canonical-form__identity">
+          <div class="canonical-form__fields">
+            <app-form-field inputId="canonical-creature-name" label="Nom" formControlName="name" />
+            <div class="canonical-form__grid canonical-form__grid--four">
+              <app-form-field
+                inputId="canonical-creature-size"
+                label="Taille"
+                controlType="select"
+                [options]="sizeOptions()"
+                emptyLabel="Non renseignée"
+                emptyValue=""
+                formControlName="size"
+              />
+              <app-form-field
+                inputId="canonical-creature-type"
+                label="Type"
+                controlType="select"
+                [options]="typeOptions()"
+                emptyLabel="Non renseigné"
+                emptyValue=""
+                formControlName="creatureType"
+                (valueChange)="typeChanged()"
+              />
+              <app-form-field
+                inputId="canonical-creature-subspecies"
+                label="Sous-espèce"
+                controlType="select"
+                [options]="subspeciesOptions()"
+                emptyLabel="Aucune"
+                emptyValue=""
+                formControlName="creatureSubspecies"
+              />
+              <app-form-field
+                inputId="canonical-creature-alignment"
+                label="Alignement"
+                controlType="select"
+                [options]="alignmentOptions()"
+                emptyLabel="Non renseigné"
+                emptyValue=""
+                formControlName="alignment"
+              />
+            </div>
+          </div>
+          <button class="canonical-form__media" type="button" (click)="choosePrimaryMedia()">
+            @if (primaryMediaUrl(); as url) {
+              <img [src]="url" alt="Aperçu de l’illustration" />
+            } @else {
+              <span aria-hidden="true">◇</span>
+            }
+            <strong>{{ type() === 'npc' ? 'Choisir un portrait' : 'Choisir une image' }}</strong>
+          </button>
+        </section>
+
+        @if (type() === 'npc') {
+          <section class="canonical-form__section canonical-form__media-row">
+            <div>
+              <h4>Animation idle</h4>
+              <p>Vidéo WebM ou MP4 facultative, avec le portrait statique comme fallback.</p>
+            </div>
+            <button appButton="secondary" type="button" (click)="chooseIdleVideo()">
+              Choisir une vidéo
+            </button>
+          </section>
+        }
+
+        <section class="canonical-form__section">
+          <h4>Combat</h4>
+          <div class="canonical-form__grid canonical-form__grid--three">
+            <app-form-field
+              inputId="canonical-creature-ac"
+              label="Classe d’armure"
+              controlType="number"
+              [min]="0"
+              formControlName="armorClass"
+            />
+            <app-form-field
+              inputId="canonical-creature-ac-details"
+              label="Détail de l’armure"
+              formControlName="armorClassDetails"
+            />
+            <app-form-field
+              inputId="canonical-creature-hp"
+              label="Points de vie"
+              controlType="number"
+              [min]="0"
+              formControlName="hitPoints"
+            />
+            <app-form-field
+              inputId="canonical-creature-hp-formula"
+              label="Formule de PV"
+              placeholder="15d8 + 15"
+              formControlName="hitPointFormula"
+            />
+            <app-form-field
+              inputId="canonical-creature-speed"
+              label="Vitesse"
+              placeholder="9 m"
+              formControlName="speed"
+            />
+            <app-form-field
+              inputId="canonical-creature-cr"
+              label="Facteur de puissance"
+              formControlName="challengeRating"
+            />
+            <app-form-field
+              inputId="canonical-creature-xp"
+              label="Points d’expérience"
+              controlType="number"
+              [min]="0"
+              formControlName="experiencePoints"
+            />
+          </div>
+          <div class="canonical-form__abilities">
+            <app-form-field
+              inputId="canonical-str"
+              label="FOR"
+              controlType="number"
+              [min]="0"
+              formControlName="strength"
+            />
+            <app-form-field
+              inputId="canonical-dex"
+              label="DEX"
+              controlType="number"
+              [min]="0"
+              formControlName="dexterity"
+            />
+            <app-form-field
+              inputId="canonical-con"
+              label="CON"
+              controlType="number"
+              [min]="0"
+              formControlName="constitution"
+            />
+            <app-form-field
+              inputId="canonical-int"
+              label="INT"
+              controlType="number"
+              [min]="0"
+              formControlName="intelligence"
+            />
+            <app-form-field
+              inputId="canonical-wis"
+              label="SAG"
+              controlType="number"
+              [min]="0"
+              formControlName="wisdom"
+            />
+            <app-form-field
+              inputId="canonical-cha"
+              label="CHA"
+              controlType="number"
+              [min]="0"
+              formControlName="charisma"
+            />
+          </div>
+        </section>
+
+        <section class="canonical-form__section">
+          <h4>Défenses, sens et langues</h4>
+          <div class="canonical-form__tag-grid">
+            <app-tag-input
+              inputId="canonical-saves"
+              label="Jets de sauvegarde"
+              [value]="creatureForm.controls.savingThrows.value"
+              (valueChange)="updateCreatureTags('savingThrows', $event)"
+            />
+            <app-tag-input
+              inputId="canonical-skills"
+              label="Compétences"
+              [value]="creatureForm.controls.skills.value"
+              (valueChange)="updateCreatureTags('skills', $event)"
+            />
+            <app-tag-input
+              inputId="canonical-vulnerabilities"
+              label="Vulnérabilités"
+              [value]="creatureForm.controls.damageVulnerabilities.value"
+              (valueChange)="updateCreatureTags('damageVulnerabilities', $event)"
+            />
+            <app-tag-input
+              inputId="canonical-resistances"
+              label="Résistances"
+              [value]="creatureForm.controls.damageResistances.value"
+              (valueChange)="updateCreatureTags('damageResistances', $event)"
+            />
+            <app-tag-input
+              inputId="canonical-immunities"
+              label="Immunités aux dégâts"
+              [value]="creatureForm.controls.damageImmunities.value"
+              (valueChange)="updateCreatureTags('damageImmunities', $event)"
+            />
+            <app-tag-input
+              inputId="canonical-condition-immunities"
+              label="Immunités aux états"
+              [value]="creatureForm.controls.conditionImmunities.value"
+              (valueChange)="updateCreatureTags('conditionImmunities', $event)"
+            />
+            <app-tag-input
+              inputId="canonical-senses"
+              label="Sens"
+              [value]="creatureForm.controls.senses.value"
+              (valueChange)="updateCreatureTags('senses', $event)"
+            />
+            <app-multi-select-field
+              inputId="canonical-languages"
+              label="Langues"
+              [options]="languageOptions()"
+              [value]="creatureForm.controls.languages.value"
+              (valueChange)="updateCreatureLanguages($event)"
+            />
+          </div>
+        </section>
+
+        <section class="canonical-form__section">
+          <h4>Description officielle</h4>
+          <app-rich-text-editor
+            [value]="officialDescription()"
+            (valueChange)="updateOfficialDescription($event)"
+          />
+        </section>
+
+        @for (section of featureSections; track section.key) {
+          <app-rich-text-feature-editor
+            inputIdPrefix="canonical-creature-feature"
+            [title]="section.label"
+            [singularLabel]="section.singularLabel"
+            [features]="featureDrafts()[section.key]"
+            (featuresChange)="updateFeatureSection(section.key, $event)"
+          />
+        }
+      </form>
+    } @else if (type() === 'player-character') {
+      <form class="canonical-form" [formGroup]="playerForm" (ngSubmit)="save()">
+        <section class="canonical-form__section canonical-form__identity">
+          <div class="canonical-form__fields">
+            <app-form-field
+              inputId="canonical-player-name"
+              label="Nom du personnage"
+              formControlName="name"
+            />
+            <div class="canonical-form__grid canonical-form__grid--four">
+              <app-form-field
+                inputId="canonical-player-species"
+                label="Espèce"
+                formControlName="species"
+              />
+              <app-form-field
+                inputId="canonical-player-class"
+                label="Classe"
+                formControlName="className"
+              />
+              <app-form-field
+                inputId="canonical-player-level"
+                label="Niveau"
+                controlType="number"
+                [min]="1"
+                [max]="20"
+                formControlName="level"
+              />
+              <app-form-field
+                inputId="canonical-player-max-hp"
+                label="PV maximum"
+                controlType="number"
+                [min]="0"
+                formControlName="maxHitPoints"
+              />
+            </div>
+          </div>
+          <button class="canonical-form__media" type="button" (click)="choosePrimaryMedia()">
+            @if (primaryMediaUrl(); as url) {
+              <img [src]="url" alt="Portrait du personnage" />
+            } @else {
+              <span aria-hidden="true">◇</span>
+            }
+            <strong>Choisir un portrait</strong>
+          </button>
+        </section>
+
+        <section class="canonical-form__section">
+          <h4>Référence MJ</h4>
+          <div class="canonical-form__grid canonical-form__grid--four">
+            <app-form-field
+              inputId="canonical-player-ac"
+              label="Classe d’armure"
+              controlType="number"
+              [min]="0"
+              formControlName="armorClass"
+            />
+            <app-form-field
+              inputId="canonical-player-speed"
+              label="Vitesse"
+              controlType="number"
+              [min]="0"
+              formControlName="speed"
+            />
+            <app-form-field
+              inputId="canonical-player-perception"
+              label="Perception passive"
+              controlType="number"
+              [min]="0"
+              formControlName="passivePerception"
+            />
+            <app-form-field
+              inputId="canonical-player-insight"
+              label="Intuition passive"
+              controlType="number"
+              [min]="0"
+              formControlName="passiveInsight"
+            />
+            <app-form-field
+              inputId="canonical-player-investigation"
+              label="Investigation passive"
+              controlType="number"
+              [min]="0"
+              formControlName="passiveInvestigation"
+            />
+            <app-form-field
+              inputId="canonical-player-exhaustion"
+              label="Épuisement"
+              controlType="number"
+              [min]="0"
+              [max]="6"
+              formControlName="exhaustionLevel"
+            />
+          </div>
+          <div class="canonical-form__tag-grid">
+            <app-tag-input
+              inputId="canonical-player-senses"
+              label="Sens particuliers"
+              [value]="playerForm.controls.senses.value"
+              (valueChange)="updatePlayerTags('senses', $event)"
+            />
+            <app-tag-input
+              inputId="canonical-player-languages"
+              label="Langues"
+              [value]="playerForm.controls.languages.value"
+              (valueChange)="updatePlayerTags('languages', $event)"
+            />
+            <app-tag-input
+              inputId="canonical-player-conditions"
+              label="Conditions"
+              [value]="playerForm.controls.conditions.value"
+              (valueChange)="updatePlayerTags('conditions', $event)"
+            />
+          </div>
+        </section>
+      </form>
+    } @else if (type() === 'location') {
+      <form class="canonical-form" [formGroup]="locationForm" (ngSubmit)="save()">
+        <section class="canonical-form__section canonical-form__identity">
+          <div class="canonical-form__fields">
+            <app-form-field inputId="canonical-location-name" label="Nom" formControlName="name" />
+            <app-form-field
+              inputId="canonical-location-parent"
+              label="Lieu parent"
+              controlType="select"
+              [options]="locationOptions()"
+              emptyLabel="Aucun lieu parent"
+              [emptyValue]="null"
+              formControlName="parentLocationId"
+            />
+            <app-form-field
+              inputId="canonical-location-summary"
+              label="Résumé"
+              controlType="textarea"
+              formControlName="summary"
+            />
+          </div>
+          <button
+            class="canonical-form__media canonical-form__media--landscape"
+            type="button"
+            (click)="choosePrimaryMedia()"
+          >
+            @if (primaryMediaUrl(); as url) {
+              <img [src]="url" alt="Illustration du lieu" />
+            } @else {
+              <span aria-hidden="true">◇</span>
+            }
+            <strong>Choisir une illustration</strong>
+          </button>
+        </section>
+      </form>
+    } @else if (type() === 'item') {
+      <form class="canonical-form" [formGroup]="itemForm" (ngSubmit)="save()">
+        <section class="canonical-form__section canonical-form__identity">
+          <div class="canonical-form__fields">
+            <app-form-field inputId="canonical-item-name" label="Nom" formControlName="name" />
+            <div class="canonical-form__grid canonical-form__grid--two">
+              <app-form-field
+                inputId="canonical-item-type"
+                label="Type"
+                controlType="select"
+                [options]="itemTypeOptions()"
+                emptyLabel="Choisir un type"
+                emptyValue=""
+                formControlName="itemTypeId"
+              />
+              <app-form-field
+                inputId="canonical-item-rarity"
+                label="Rareté"
+                controlType="select"
+                [options]="itemRarityOptions()"
+                emptyLabel="Aucune rareté"
+                [emptyValue]="null"
+                formControlName="itemRarityId"
+              />
+              <app-form-field
+                inputId="canonical-item-attunement"
+                label="Harmonisation"
+                controlType="select"
+                [options]="[
+                  { value: 'none', label: 'Aucune' },
+                  { value: 'required', label: 'Requise' },
+                  { value: 'conditional', label: 'Sous condition' },
+                ]"
+                formControlName="attunement"
+              />
+              @if (itemForm.controls.attunement.value === 'conditional') {
+                <app-form-field
+                  inputId="canonical-item-attunement-condition"
+                  label="Condition"
+                  formControlName="attunementCondition"
+                />
+              }
+            </div>
+            <app-form-field
+              inputId="canonical-item-summary"
+              label="Résumé"
+              controlType="textarea"
+              formControlName="summary"
+            />
+          </div>
+          <button class="canonical-form__media" type="button" (click)="choosePrimaryMedia()">
+            @if (primaryMediaUrl(); as url) {
+              <img [src]="url" alt="Illustration de l’objet" />
+            } @else {
+              <span aria-hidden="true">◇</span>
+            }
+            <strong>Choisir une illustration</strong>
+          </button>
+        </section>
+        <section class="canonical-form__section">
+          <h4>Description officielle</h4>
+          <app-rich-text-editor
+            [value]="itemDescription()"
+            (valueChange)="updateItemDescription($event)"
+          />
+        </section>
+      </form>
+    }
+  }
+</section>
+
+@if (showPendingChangesDialog()) {
+  <app-dialog
+    kicker="Modifications non enregistrées"
+    title="Quitter l’éditeur ?"
+    headingId="canonical-resource-pending-title"
+  >
+    <p>Tu peux enregistrer la fiche, abandonner le brouillon ou continuer à la modifier.</p>
+    <div dialog-actions class="dialog-actions">
+      <button appButton="secondary" type="button" (click)="continueEditing()">Continuer</button>
+      <button appButton="secondary-danger" type="button" (click)="leaveWithoutSaving()">
+        Abandonner
+      </button>
+      <button appButton="primary" type="button" (click)="saveAndLeave()">Enregistrer</button>
+    </div>
+  </app-dialog>
+}

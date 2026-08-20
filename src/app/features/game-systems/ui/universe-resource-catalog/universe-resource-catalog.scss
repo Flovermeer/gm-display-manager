@@ -57,6 +57,13 @@
   margin: 0;
 }
 
+.universe-catalog__content-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
 .universe-catalog__help {
   margin: 0.4rem 0 1.25rem;
   color: #746b61;
@@ -93,6 +100,11 @@
   opacity: 0.65;
 }
 
+.universe-catalog__card .universe-catalog__card-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
 @media (max-width: 58rem) {
   .universe-catalog {
     grid-template-columns: 1fr;
@@ -100,5 +112,11 @@
 
   .universe-catalog__menu {
     grid-template-columns: repeat(auto-fit, minmax(7rem, 1fr));
+  }
+
+  .universe-catalog__content-heading,
+  .universe-catalog__card {
+    align-items: stretch;
+    flex-direction: column;
   }
 }

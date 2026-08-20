@@ -1,8 +1,7 @@
 # Guide d'utilisation — Beholder's Inn
 
-Ce guide décrit l'état actuel de la preuve de concept Angular + Tauri. Les
-fonctionnalités de campagne, de médias et de régie narrative seront ajoutées
-progressivement.
+Ce guide décrit l'application locale Angular + Tauri, ses catalogues d'univers,
+ses campagnes et sa régie narrative multi-écran.
 
 ## 1. Lancer l'application
 
@@ -100,7 +99,26 @@ Si tu tentes de changer de fiche ou de page avec un brouillon, l'application
 propose trois choix : **Enregistrer et quitter**, **Quitter sans enregistrer** ou
 **Continuer la modification**.
 
-## 3. Choisir l'écran des joueurs
+## 3. Gérer les ressources d'un univers
+
+Depuis l'accueil, ouvre **Configuration**, sélectionne un système et un univers,
+puis choisis **Ressources de l'univers**. Les onglets PNJ, PJ, Lieux, Objets et
+Bestiaire présentent les fiches canoniques partagées par toutes les campagnes de
+cet univers.
+
+- **Ajouter** crée directement une fiche canonique sans l'associer à une campagne.
+- **Modifier** ouvre l'éditeur détaillé et ses médias stockés dans le dossier de
+  l'univers.
+- Pour les objets, les types et raretés sont administrés au-dessus du catalogue.
+  Une valeur utilisée par une fiche ne peut pas être supprimée.
+- **Corbeille** empêche les nouveaux imports dans les campagnes sans casser les
+  campagnes qui utilisent déjà la fiche. **Restaurer** la rend de nouveau disponible.
+
+Les statuts, propriétaires, noms de joueurs, PV courants et notes de campagne ne
+figurent pas dans ces éditeurs : ils restent propres à chaque campagne. Quitter
+une fiche modifiée déclenche une confirmation avant d'abandonner le brouillon.
+
+## 4. Choisir l'écran des joueurs
 
 Dans la section **Écran joueurs** :
 
@@ -117,7 +135,7 @@ prochain lancement, il est automatiquement présélectionné s'il peut être rec
 sans ambiguïté. Si deux moniteurs identiques partagent la même empreinte,
 l'application demande une nouvelle sélection au lieu de choisir arbitrairement.
 
-## 4. Ouvrir l'écran joueurs
+## 5. Ouvrir l'écran joueurs
 
 Après avoir sélectionné un moniteur, clique sur **Ouvrir l'écran joueurs**.
 
@@ -130,7 +148,7 @@ L'application crée une seconde fenêtre Tauri qui :
 
 La fenêtre principale reste ouverte sur le panneau du maître de jeu.
 
-## 5. Piloter le contenu affiché
+## 6. Piloter le contenu affiché
 
 La section **Contenu affiché** fournit actuellement trois actions de
 démonstration :
@@ -145,7 +163,7 @@ démonstration sont inclus dans le projet et fonctionnent hors ligne.
 Tu peux choisir un contenu avant d'ouvrir la fenêtre joueurs : l'état complet
 sera envoyé automatiquement lorsque cette fenêtre annoncera qu'elle est prête.
 
-## 6. Déplacer l'écran joueurs
+## 7. Déplacer l'écran joueurs
 
 Lorsque la fenêtre joueurs existe déjà, le bouton devient **Déplacer l'écran
 joueurs**.
@@ -164,7 +182,7 @@ Lorsque le moniteur sélectionné héberge déjà la fenêtre joueurs, le bouton
 indique **Déjà affiché sur cet écran** et reste désactivé. Cela évite de
 réappliquer inutilement le plein écran et de provoquer un flicker.
 
-## 7. Fermer l'écran joueurs
+## 8. Fermer l'écran joueurs
 
 Clique sur **Fermer l'écran joueurs** depuis le panneau MJ. La fenêtre dédiée
 est fermée sans fermer l'application principale.
@@ -172,7 +190,7 @@ est fermée sans fermer l'application principale.
 Si la fenêtre a été fermée directement depuis Windows, clique sur **Actualiser**
 pour synchroniser l'état affiché dans le panneau MJ.
 
-## 8. Prévisualisation dans le navigateur
+## 9. Prévisualisation dans le navigateur
 
 Angular peut être lancé sans Tauri :
 
@@ -185,7 +203,7 @@ Les actions de contenu modifient tout de même l'état de prévisualisation loca
 Le lien de prévisualisation ouvre la route `/player-display` dans la même page et
 affiche un bouton **Retour au panneau MJ**.
 
-## 9. Arrêter l'application de développement
+## 10. Arrêter l'application de développement
 
 Ferme les fenêtres puis, dans le terminal qui exécute Tauri, utilise :
 
@@ -193,7 +211,7 @@ Ferme les fenêtres puis, dans le terminal qui exécute Tauri, utilise :
 Ctrl + C
 ```
 
-## 10. Limites actuelles
+## 11. Limites actuelles
 
 - l'état de la fenêtre n'est pas encore synchronisé en temps réel si elle est
   fermée directement par Windows ;
@@ -203,7 +221,7 @@ Ctrl + C
 - la reconnexion automatique après le retrait d'un moniteur reste à implémenter ;
 - la validation multi-écran est pour l'instant manuelle et ciblée sur Windows.
 
-## 11. Dépannage rapide
+## 12. Dépannage rapide
 
 ### Aucun moniteur détecté
 

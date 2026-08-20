@@ -1,14 +1,16 @@
-import { Component, effect, inject, input, signal } from '@angular/core';
+import { Component, computed, effect, inject, input, signal, viewChild } from '@angular/core';
 
 import { UniverseResourceService } from '@app/features/game-systems/application/universe-resource.service';
 import type { GameUniverse } from '@app/features/game-systems/domain/game-system';
 import {
+  type UniverseResourceDetail,
   type UniverseResourceSummary,
   type UniverseResourceType,
 } from '@app/features/game-systems/domain/universe-resource';
 import { ButtonDirective } from '@app/shared/ui/button/button.directive';
 import { Dialog } from '@app/shared/ui/dialog/dialog';
 import { ItemConfigurationSettings } from '@app/features/items/ui/item-configuration-settings/item-configuration-settings';
+import { UniverseResourceEditor } from '@app/features/game-systems/ui/universe-resource-editor/universe-resource-editor';
 
 type CatalogSection = Readonly<{
   type: UniverseResourceType;
@@ -18,12 +20,13 @@ type CatalogSection = Readonly<{
 
 @Component({
   selector: 'app-universe-resource-catalog',
-  imports: [ButtonDirective, Dialog, ItemConfigurationSettings],
+  imports: [ButtonDirective, Dialog, ItemConfigurationSettings, UniverseResourceEditor],
   templateUrl: './universe-resource-catalog.html',
   styleUrl: './universe-resource-catalog.scss',
 })
 export class UniverseResourceCatalog {
   private readonly service = inject(UniverseResourceService);
+  private readonly editor = viewChild(UniverseResourceEditor);
 
   readonly universe = input.required<GameUniverse>();
 
@@ -37,6 +40,11 @@ export class UniverseResourceCatalog {
   protected readonly selectedType = signal<UniverseResourceType>('npc');
   protected readonly resources = signal<readonly UniverseResourceSummary[]>([]);
   protected readonly pendingTrash = signal<UniverseResourceSummary | null>(null);
+  protected readonly editingResourceId = signal<string | null>(null);
+  protected readonly isCreating = signal(false);
+  protected readonly isEditorOpen = computed(
+    () => this.isCreating() || this.editingResourceId() !== null,
+  );
   protected readonly isLoading = signal(true);
   protected readonly isSaving = signal(false);
   protected readonly error = signal<string | null>(null);
@@ -50,7 +58,34 @@ export class UniverseResourceCatalog {
   }
 
   protected select(type: UniverseResourceType): void {
+    if (this.isEditorOpen()) return;
     this.selectedType.set(type);
+  }
+
+  protected createResource(): void {
+    this.editingResourceId.set(null);
+    this.isCreating.set(true);
+  }
+
+  protected editResource(resource: UniverseResourceSummary): void {
+    if (resource.deletedAt) return;
+    this.editingResourceId.set(resource.id);
+    this.isCreating.set(false);
+  }
+
+  protected closeEditor(): void {
+    this.editingResourceId.set(null);
+    this.isCreating.set(false);
+  }
+
+  protected async resourceSaved(resource: UniverseResourceDetail): Promise<void> {
+    this.editingResourceId.set(resource.id);
+    this.isCreating.set(false);
+    await this.reload();
+  }
+
+  confirmPendingChanges(): boolean | Promise<boolean> {
+    return this.editor()?.confirmPendingChanges() ?? true;
   }
 
   protected sectionLabel(): string {
@@ -59,6 +94,16 @@ export class UniverseResourceCatalog {
 
   protected emptyLabel(): string {
     return this.sections.find(({ type }) => type === this.selectedType())?.emptyLabel ?? '';
+  }
+
+  protected createLabel(): string {
+    return {
+      npc: 'Ajouter un PNJ',
+      'player-character': 'Ajouter un PJ',
+      location: 'Ajouter un lieu',
+      item: 'Ajouter un objet',
+      monster: 'Ajouter un monstre',
+    }[this.selectedType()];
   }
 
   protected usageLabel(count: number): string {

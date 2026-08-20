@@ -9,6 +9,7 @@ export const routes: Routes = [
       import('@app/features/game-systems/pages/global-configuration/global-configuration').then(
         ({ GlobalConfiguration }) => GlobalConfiguration,
       ),
+    canDeactivate: [pendingChangesGuard],
     title: "Beholder's Inn — Configuration",
   },
   {

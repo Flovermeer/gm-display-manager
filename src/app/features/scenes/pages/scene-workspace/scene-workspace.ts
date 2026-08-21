@@ -1,9 +1,11 @@
 import { Component, computed, DestroyRef, inject, OnInit, signal, viewChild } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 
 import { CampaignContext } from '@app/features/campaigns/application/campaign-context';
+import { ChapterService } from '@app/features/chapters/application/chapter.service';
+import type { Chapter } from '@app/features/chapters/domain/chapter';
 import { DisplayGateway } from '@app/features/display/data-access/display.gateway';
 import type { PlayerDisplayState } from '@app/features/display/domain/player-display-state';
 import { PlayerDisplayStore } from '@app/features/display/application/player-display.store';
@@ -34,7 +36,7 @@ import { ButtonDirective } from '@app/shared/ui/button/button.directive';
 import { Dialog } from '@app/shared/ui/dialog/dialog';
 import { EmptyState } from '@app/shared/ui/empty-state/empty-state';
 import { EntityTitle } from '@app/shared/ui/entity-title/entity-title';
-import { FormField } from '@app/shared/ui/form-field/form-field';
+import { FormField, type FormFieldOption } from '@app/shared/ui/form-field/form-field';
 import {
   SearchableSelect,
   type SearchableSelectOption,
@@ -61,8 +63,10 @@ type PendingDecisionResolver = (canLeave: boolean) => void;
 export class SceneWorkspace implements OnInit, PendingChangesAware {
   private readonly campaignContext = inject(CampaignContext);
   private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
   private readonly destroyRef = inject(DestroyRef);
   private readonly sceneService = inject(SceneService);
+  private readonly chapterService = inject(ChapterService);
   private readonly locationService = inject(LocationService);
   private readonly npcService = inject(NpcService);
   private readonly monsterService = inject(MonsterService);
@@ -80,6 +84,7 @@ export class SceneWorkspace implements OnInit, PendingChangesAware {
 
   protected readonly campaign = this.campaignContext.campaign;
   protected readonly scenes = signal<readonly Scene[]>([]);
+  protected readonly chapters = signal<readonly Chapter[]>([]);
   protected readonly locations = signal<readonly Location[]>([]);
   protected readonly npcs = signal<readonly Npc[]>([]);
   protected readonly monsters = signal<readonly Monster[]>([]);
@@ -98,6 +103,8 @@ export class SceneWorkspace implements OnInit, PendingChangesAware {
   protected readonly isPlayerDisplayOpen = signal(false);
   protected readonly isPublishing = signal(false);
   protected readonly focusedJournalEntryId = signal<string | null>(null);
+  protected readonly fixedChapterId = signal<string | null>(null);
+  protected readonly returnChapterId = signal<string | null>(null);
   protected readonly filteredScenes = computed(() => {
     const term = this.searchTerm().trim().toLocaleLowerCase('fr');
     return term
@@ -118,7 +125,11 @@ export class SceneWorkspace implements OnInit, PendingChangesAware {
   protected readonly itemOptions = computed<readonly SearchableSelectOption[]>(() =>
     this.items().map(({ id, name }) => ({ value: id, label: name })),
   );
+  protected readonly chapterOptions = computed<readonly FormFieldOption[]>(() =>
+    this.chapters().map(({ id, title }) => ({ value: id, label: title })),
+  );
   protected readonly sceneForm = new FormGroup({
+    chapterId: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
     name: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
     summary: new FormControl('', { nonNullable: true }),
     locationId: new FormControl<string | null>(null),
@@ -128,11 +139,10 @@ export class SceneWorkspace implements OnInit, PendingChangesAware {
   });
 
   ngOnInit(): void {
-    this.route.queryParamMap
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe(
-        (params) => void this.openRequestedScene(params.get('resourceId'), params.get('entryId')),
-      );
+    this.route.queryParamMap.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((params) => {
+      this.returnChapterId.set(params.get('returnChapterId'));
+      void this.openRequestedScene(params.get('resourceId'), params.get('entryId'));
+    });
     void this.initialize();
   }
 
@@ -153,12 +163,19 @@ export class SceneWorkspace implements OnInit, PendingChangesAware {
     if (await this.confirmPendingChanges()) this.openReadOnly(scene);
   }
 
-  protected async requestCreateScene(): Promise<void> {
+  protected async requestCreateScene(chapterId: string | null = null): Promise<void> {
+    if (this.chapters().length === 0) {
+      this.error.set('Crée un chapitre avant de préparer une scène.');
+      return;
+    }
     if (!(await this.confirmPendingChanges())) return;
+    const fixedChapter = this.chapters().find(({ id }) => id === chapterId)?.id ?? null;
     this.selectedScene.set(null);
+    this.fixedChapterId.set(fixedChapter);
     this.isCreating.set(true);
     this.isEditing.set(true);
     this.sceneForm.reset({
+      chapterId: fixedChapter ?? '',
       name: '',
       summary: '',
       locationId: null,
@@ -192,13 +209,28 @@ export class SceneWorkspace implements OnInit, PendingChangesAware {
     try {
       const selected = this.selectedScene();
       const input = this.formInput();
-      const saved = this.isCreating()
-        ? await this.sceneService.create(campaign.id, input)
+      const wasCreating = this.isCreating();
+      const saved = wasCreating
+        ? await this.sceneService.create(
+            campaign.id,
+            this.sceneForm.controls.chapterId.value,
+            input,
+          )
         : selected
           ? await this.sceneService.update(selected, input)
           : null;
       if (!saved) return false;
       await this.reloadScenes();
+      const returnChapterId = this.returnChapterId();
+      if (wasCreating && returnChapterId) {
+        this.sceneForm.markAsPristine();
+        this.isCreating.set(false);
+        this.isEditing.set(false);
+        await this.router.navigate(['/campaigns', campaign.id, 'chapters'], {
+          queryParams: { resourceId: returnChapterId },
+        });
+        return true;
+      }
       this.openReadOnly(saved);
       return true;
     } catch (error) {
@@ -310,6 +342,20 @@ export class SceneWorkspace implements OnInit, PendingChangesAware {
       : 'Aucun lieu';
   }
 
+  protected chapterName(id: string): string {
+    return this.chapters().find((chapter) => chapter.id === id)?.title ?? 'Chapitre inconnu';
+  }
+
+  protected returnToChapter(): void {
+    const campaign = this.campaign();
+    const chapterId = this.returnChapterId();
+    if (campaign && chapterId) {
+      void this.router.navigate(['/campaigns', campaign.id, 'chapters'], {
+        queryParams: { resourceId: chapterId },
+      });
+    }
+  }
+
   protected selectedNpcs(scene: Scene): readonly Npc[] {
     return this.npcs().filter((npc) => scene.npcIds.includes(npc.id));
   }
@@ -344,14 +390,16 @@ export class SceneWorkspace implements OnInit, PendingChangesAware {
     try {
       const campaign = await this.campaignContext.load();
       if (!campaign) return;
-      const [scenes, locations, npcs, monsters, items] = await Promise.all([
+      const [scenes, chapters, locations, npcs, monsters, items] = await Promise.all([
         this.sceneService.list(campaign.id),
+        this.chapterService.list(campaign.id),
         this.locationService.list(campaign.id),
         this.npcService.list(campaign.id),
         this.monsterService.list(campaign.id),
         this.itemService.list(campaign.id),
       ]);
       this.scenes.set(scenes);
+      this.chapters.set(chapters);
       this.locations.set(locations);
       this.npcs.set(npcs);
       this.monsters.set(monsters);
@@ -360,10 +408,13 @@ export class SceneWorkspace implements OnInit, PendingChangesAware {
       if (this.displayGateway.isDesktop) {
         this.isPlayerDisplayOpen.set(await this.displayGateway.isPlayerDisplayOpen());
       }
-      await this.openRequestedScene(
-        this.route.snapshot.queryParamMap.get('resourceId'),
-        this.route.snapshot.queryParamMap.get('entryId'),
-      );
+      const queryParams = this.route.snapshot.queryParamMap;
+      this.returnChapterId.set(queryParams.get('returnChapterId'));
+      if (queryParams.get('create') === 'true') {
+        await this.requestCreateScene(queryParams.get('chapterId'));
+      } else {
+        await this.openRequestedScene(queryParams.get('resourceId'), queryParams.get('entryId'));
+      }
     } catch (error) {
       this.error.set(errorMessage(error));
     } finally {
@@ -409,6 +460,7 @@ export class SceneWorkspace implements OnInit, PendingChangesAware {
   private openReadOnly(scene: Scene): void {
     const refreshed = this.scenes().find(({ id }) => id === scene.id) ?? scene;
     this.selectedScene.set(refreshed);
+    this.fixedChapterId.set(null);
     this.isCreating.set(false);
     this.isEditing.set(false);
     this.populateForm(refreshed);
@@ -416,6 +468,7 @@ export class SceneWorkspace implements OnInit, PendingChangesAware {
 
   private populateForm(scene: Scene): void {
     this.sceneForm.reset({
+      chapterId: scene.chapterId,
       name: scene.name,
       summary: scene.summary,
       locationId: scene.locationId,
@@ -427,7 +480,8 @@ export class SceneWorkspace implements OnInit, PendingChangesAware {
   }
 
   private formInput(): UpdateSceneInput {
-    return this.sceneForm.getRawValue();
+    const { chapterId: _chapterId, ...input } = this.sceneForm.getRawValue();
+    return input;
   }
 
   private async abandonChanges(): Promise<void> {
@@ -437,6 +491,7 @@ export class SceneWorkspace implements OnInit, PendingChangesAware {
     if (selected) this.populateForm(selected);
     else
       this.sceneForm.reset({
+        chapterId: '',
         name: '',
         summary: '',
         locationId: null,

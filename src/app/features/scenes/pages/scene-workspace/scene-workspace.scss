@@ -52,6 +52,20 @@ app-entity-title {
 .scene-form__summary {
   grid-column: 1 / -1;
 }
+.scene-form__chapter {
+  display: grid;
+  align-content: center;
+  padding: 0.65rem 0.85rem;
+  border: 1px solid #c9c0b5;
+  border-radius: 0.4rem;
+  background: #e7e1d8;
+  gap: 0.25rem;
+}
+.scene-form__chapter span {
+  color: #665d53;
+  font-size: 0.75rem;
+  font-weight: 800;
+}
 .scene-sheet {
   padding-top: 2rem;
 }

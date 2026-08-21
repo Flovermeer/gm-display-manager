@@ -1,5 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, convertToParamMap, Router } from '@angular/router';
 import { BehaviorSubject } from 'rxjs';
 
 import type { Campaign } from '@app/features/campaigns/domain/campaign';
@@ -20,6 +20,7 @@ import { NpcIdleVideoGateway } from '@app/features/npcs/data-access/npc-idle-vid
 import { ItemImageGateway } from '@app/features/items/data-access/item-image.gateway';
 import { ResourceMentionNavigationService } from '@app/shared/rich-text-editor/resource-mention-navigation.service';
 import { SceneWorkspace } from '@app/features/scenes/pages/scene-workspace/scene-workspace';
+import { ChapterService } from '@app/features/chapters/application/chapter.service';
 
 describe('SceneWorkspace', () => {
   const campaign: Campaign = {
@@ -33,6 +34,8 @@ describe('SceneWorkspace', () => {
   const scene: Scene = {
     id: 'scene-id',
     campaignId: campaign.id,
+    chapterId: 'chapter-id',
+    position: 0,
     name: 'Audience à la villa',
     summary: 'Wakanga reçoit les aventuriers.',
     locationId: 'location-id',
@@ -43,6 +46,8 @@ describe('SceneWorkspace', () => {
     updatedAt: '2026-08-13T08:00:00.000Z',
   };
   const sceneService = { list: vi.fn(), create: vi.fn(), update: vi.fn(), delete: vi.fn() };
+  const chapterService = { list: vi.fn() };
+  const router = { navigate: vi.fn() };
   const activeSceneService = {
     get: vi.fn(),
     clear: vi.fn(),
@@ -61,6 +66,16 @@ describe('SceneWorkspace', () => {
   beforeEach(async () => {
     vi.clearAllMocks();
     sceneService.list.mockResolvedValue([scene]);
+    sceneService.create.mockResolvedValue(scene);
+    chapterService.list.mockResolvedValue([
+      {
+        id: 'chapter-id',
+        campaignId: campaign.id,
+        title: 'Port Nyanzaru',
+        position: 0,
+      },
+    ]);
+    router.navigate.mockResolvedValue(true);
     activeSceneService.get.mockResolvedValue(null);
     activeSceneService.clear.mockResolvedValue(undefined);
     activeSceneService.clearIfActive.mockResolvedValue(false);
@@ -79,6 +94,8 @@ describe('SceneWorkspace', () => {
           },
         },
         { provide: SceneService, useValue: sceneService },
+        { provide: ChapterService, useValue: chapterService },
+        { provide: Router, useValue: router },
         { provide: ActiveSceneService, useValue: activeSceneService },
         { provide: SceneDisplayService, useValue: { activate: vi.fn(), build: vi.fn() } },
         { provide: DisplayGateway, useValue: { isDesktop: false } },
@@ -152,7 +169,48 @@ describe('SceneWorkspace', () => {
       });
     });
   });
+
+  it('creates a scene for a fixed chapter and returns to that chapter', async () => {
+    const route = TestBed.inject(ActivatedRoute);
+    (route.snapshot as unknown as { queryParamMap: ReturnType<typeof convertToParamMap> })
+      .queryParamMap = convertToParamMap({
+      create: 'true',
+      chapterId: 'chapter-id',
+      returnChapterId: 'chapter-id',
+    });
+    const fixture = TestBed.createComponent(SceneWorkspace);
+    fixture.detectChanges();
+    await renderUntil(fixture, 'Port Nyanzaru');
+    const element = fixture.nativeElement as HTMLElement;
+    const nameInput = element.querySelector<HTMLInputElement>('#scene-name');
+    if (!nameInput) throw new Error('Scene name input not found.');
+    nameInput.value = 'Arrivée au port';
+    nameInput.dispatchEvent(new Event('input'));
+    fixture.detectChanges();
+    findButton(element, 'Enregistrer').click();
+
+    await vi.waitFor(() =>
+      expect(sceneService.create).toHaveBeenCalledWith(
+        campaign.id,
+        'chapter-id',
+        expect.objectContaining({ name: 'Arrivée au port' }),
+      ),
+    );
+    await vi.waitFor(() =>
+      expect(router.navigate).toHaveBeenCalledWith(['/campaigns', campaign.id, 'chapters'], {
+        queryParams: { resourceId: 'chapter-id' },
+      }),
+    );
+  });
 });
+
+function findButton(element: HTMLElement, label: string): HTMLButtonElement {
+  const button = [...element.querySelectorAll<HTMLButtonElement>('button')].find((candidate) =>
+    candidate.textContent?.includes(label),
+  );
+  if (!button) throw new Error(`Button not found: ${label}`);
+  return button;
+}
 
 async function renderUntil(fixture: ComponentFixture<SceneWorkspace>, text: string): Promise<void> {
   await vi.waitFor(() => {

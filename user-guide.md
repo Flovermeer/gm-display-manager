@@ -99,6 +99,24 @@ Si tu tentes de changer de fiche ou de page avec un brouillon, l'application
 propose trois choix : **Enregistrer et quitter**, **Quitter sans enregistrer** ou
 **Continuer la modification**.
 
+### Classer les scènes dans les chapitres
+
+Chaque scène appartient à un chapitre. Crée donc au moins un chapitre avant de
+préparer les scènes de la campagne.
+
+La fiche d'un chapitre affiche ses scènes dans leur ordre de jeu :
+
+- **Nouvelle scène** ouvre le formulaire complet avec le chapitre déjà fixé ;
+  après l'enregistrement, l'application revient au chapitre ;
+- le sélecteur des scènes existantes permet de déplacer une scène depuis un autre
+  chapitre, après confirmation ;
+- les flèches haut et bas modifient l'ordre des scènes dans le chapitre ;
+- cliquer sur une scène ouvre sa fiche dédiée. Son chapitre n'est pas modifiable
+  depuis cette fiche.
+
+La suppression d'un chapitre est définitive et supprime aussi toutes ses scènes
+et leurs notes. La confirmation rappelle cette conséquence avant l'opération.
+
 ## 3. Gérer les ressources d'un univers
 
 Depuis l'accueil, ouvre **Configuration**, sélectionne un système et un univers,

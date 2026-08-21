@@ -1,0 +1,69 @@
+<section class="chapter-scenes" aria-labelledby="chapter-scenes-title">
+  <header>
+    <div>
+      <p>Déroulé narratif</p>
+      <h3 id="chapter-scenes-title">Scènes</h3>
+    </div>
+    <button appButton="primary" type="button" [disabled]="isBusy()" (click)="createScene.emit()">
+      + Nouvelle scène
+    </button>
+  </header>
+
+  @if (candidates().length > 0) {
+    <div class="chapter-scenes__attach">
+      <app-form-field
+        inputId="chapter-existing-scene"
+        label="Déplacer une scène existante"
+        controlType="select"
+        emptyLabel="Choisir une scène"
+        emptyValue=""
+        [options]="candidateOptions()"
+        [formControl]="selectedSceneId"
+      />
+      <button
+        appButton="secondary"
+        type="button"
+        [disabled]="!selectedSceneId.value || isBusy()"
+        (click)="requestAttach()"
+      >
+        Rattacher
+      </button>
+    </div>
+  }
+
+  <div class="chapter-scenes__list">
+    @for (scene of scenes(); track scene.id; let index = $index) {
+      <article class="chapter-scene">
+        <button class="chapter-scene__open" type="button" (click)="openScene.emit(scene)">
+          <span>{{ index + 1 }}</span>
+          <span>
+            <strong>{{ scene.name }}</strong>
+            <small>{{ scene.summary || 'Sans résumé' }}</small>
+          </span>
+        </button>
+        <div class="chapter-scene__order" aria-label="Ordre de la scène">
+          <button
+            type="button"
+            title="Déplacer cette scène avant la précédente"
+            aria-label="Monter la scène"
+            [disabled]="!canMove(index, -1) || isBusy()"
+            (click)="moveScene.emit({ scene, direction: -1 })"
+          >
+            ↑
+          </button>
+          <button
+            type="button"
+            title="Déplacer cette scène après la suivante"
+            aria-label="Descendre la scène"
+            [disabled]="!canMove(index, 1) || isBusy()"
+            (click)="moveScene.emit({ scene, direction: 1 })"
+          >
+            ↓
+          </button>
+        </div>
+      </article>
+    } @empty {
+      <p class="chapter-scenes__empty">Aucune scène dans ce chapitre.</p>
+    }
+  </div>
+</section>

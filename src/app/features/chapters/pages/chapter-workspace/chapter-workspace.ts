@@ -1,10 +1,12 @@
 import { Component, computed, DestroyRef, inject, OnInit, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import type { JSONContent } from '@tiptap/core';
 
 import { CampaignContext } from '@app/features/campaigns/application/campaign-context';
+import { DisplayGateway } from '@app/features/display/data-access/display.gateway';
+import { PlayerDisplayStore } from '@app/features/display/application/player-display.store';
 import {
   emptyChapterInput,
   type Chapter,
@@ -15,6 +17,10 @@ import { LocationService } from '@app/features/locations/application/location.se
 import type { PendingChangesAware } from '@app/core/navigation/pending-changes.guard';
 import { NpcService } from '@app/features/npcs/application/npc.service';
 import { PlayerCharacterService } from '@app/features/players/application/player-character.service';
+import { SceneService } from '@app/features/scenes/application/scene.service';
+import { ActiveSceneService } from '@app/features/scenes/application/active-scene.service';
+import { defaultSceneState } from '@app/features/scenes/application/scene-display.service';
+import type { Scene } from '@app/features/scenes/domain/scene';
 import { RecentResourceTrackerDirective } from '@app/features/recent-resources/ui/recent-resource-tracker.directive';
 import { RecentResourceStore } from '@app/features/recent-resources/application/recent-resource.store';
 import type { RichTextDocument } from '@app/shared/rich-text-editor/rich-text-document';
@@ -26,6 +32,10 @@ import { Dialog } from '@app/shared/ui/dialog/dialog';
 import { EmptyState } from '@app/shared/ui/empty-state/empty-state';
 import { EntityTitle } from '@app/shared/ui/entity-title/entity-title';
 import { FormField } from '@app/shared/ui/form-field/form-field';
+import {
+  ChapterSceneList,
+  type ChapterSceneCandidate,
+} from '@app/features/chapters/ui/chapter-scene-list/chapter-scene-list';
 
 type PendingDecisionResolver = (canLeave: boolean) => void;
 
@@ -40,6 +50,7 @@ type PendingDecisionResolver = (canLeave: boolean) => void;
     EntityTitle,
     FormField,
     RecentResourceTrackerDirective,
+    ChapterSceneList,
   ],
   templateUrl: './chapter-workspace.html',
   styleUrl: './chapter-workspace.scss',
@@ -47,8 +58,13 @@ type PendingDecisionResolver = (canLeave: boolean) => void;
 export class ChapterWorkspace implements OnInit, PendingChangesAware {
   private readonly campaignContext = inject(CampaignContext);
   private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
   private readonly destroyRef = inject(DestroyRef);
   private readonly chapterService = inject(ChapterService);
+  private readonly sceneService = inject(SceneService);
+  private readonly activeSceneService = inject(ActiveSceneService);
+  private readonly displayGateway = inject(DisplayGateway);
+  private readonly displayStore = inject(PlayerDisplayStore);
   private readonly locationService = inject(LocationService);
   private readonly npcService = inject(NpcService);
   private readonly characterService = inject(PlayerCharacterService);
@@ -58,6 +74,7 @@ export class ChapterWorkspace implements OnInit, PendingChangesAware {
 
   protected readonly campaign = this.campaignContext.campaign;
   protected readonly chapters = signal<readonly Chapter[]>([]);
+  protected readonly scenes = signal<readonly Scene[]>([]);
   protected readonly selectedChapter = signal<Chapter | null>(null);
   protected readonly draftContent = signal<RichTextDocument>(emptyChapterInput().content);
   protected readonly contentDirty = signal(false);
@@ -69,6 +86,7 @@ export class ChapterWorkspace implements OnInit, PendingChangesAware {
   protected readonly isCreating = signal(false);
   protected readonly showPendingChangesDialog = signal(false);
   protected readonly showDeleteDialog = signal(false);
+  protected readonly pendingSceneMove = signal<Scene | null>(null);
   protected readonly error = signal<string | null>(null);
   protected readonly mentionCandidates = signal<readonly ResourceMentionCandidate[]>([]);
 
@@ -94,6 +112,25 @@ export class ChapterWorkspace implements OnInit, PendingChangesAware {
   protected readonly canMoveChapterDown = computed(() => {
     const index = this.selectedChapterIndex();
     return index >= 0 && index < this.chapters().length - 1;
+  });
+  protected readonly selectedChapterScenes = computed(() => {
+    const chapterId = this.selectedChapter()?.id;
+    return chapterId
+      ? this.scenes()
+          .filter((scene) => scene.chapterId === chapterId)
+          .sort((left, right) => left.position - right.position || left.id.localeCompare(right.id))
+      : [];
+  });
+  protected readonly sceneCandidates = computed<readonly ChapterSceneCandidate[]>(() => {
+    const chapterId = this.selectedChapter()?.id;
+    return this.scenes()
+      .filter((scene) => scene.chapterId !== chapterId)
+      .map((scene) => ({
+        scene,
+        chapterTitle:
+          this.chapters().find((chapter) => chapter.id === scene.chapterId)?.title ??
+          'Chapitre inconnu',
+      }));
   });
 
   ngOnInit(): void {
@@ -212,6 +249,63 @@ export class ChapterWorkspace implements OnInit, PendingChangesAware {
     if (this.selectedChapter()) this.showDeleteDialog.set(true);
   }
 
+  protected createSceneForChapter(): void {
+    const campaign = this.campaign();
+    const chapter = this.selectedChapter();
+    if (!campaign || !chapter) return;
+    void this.router.navigate(['/campaigns', campaign.id, 'scenes'], {
+      queryParams: {
+        create: 'true',
+        chapterId: chapter.id,
+        returnChapterId: chapter.id,
+      },
+    });
+  }
+
+  protected openScene(scene: Scene): void {
+    const campaign = this.campaign();
+    const chapter = this.selectedChapter();
+    if (!campaign || !chapter) return;
+    void this.router.navigate(['/campaigns', campaign.id, 'scenes'], {
+      queryParams: { resourceId: scene.id, returnChapterId: chapter.id },
+    });
+  }
+
+  protected requestMoveScene(scene: Scene): void {
+    if (scene.chapterId !== this.selectedChapter()?.id) this.pendingSceneMove.set(scene);
+  }
+
+  protected async confirmMoveScene(): Promise<void> {
+    const scene = this.pendingSceneMove();
+    const chapter = this.selectedChapter();
+    if (!scene || !chapter || this.isSaving()) return;
+    this.isSaving.set(true);
+    this.error.set(null);
+    try {
+      await this.sceneService.moveToChapter(scene, chapter.id);
+      await this.reloadScenes();
+      this.pendingSceneMove.set(null);
+    } catch (error) {
+      this.error.set(errorMessage(error));
+    } finally {
+      this.isSaving.set(false);
+    }
+  }
+
+  protected async moveScene(event: Readonly<{ scene: Scene; direction: -1 | 1 }>): Promise<void> {
+    if (this.isSaving()) return;
+    this.isSaving.set(true);
+    this.error.set(null);
+    try {
+      await this.sceneService.move(event.scene, event.direction);
+      await this.reloadScenes();
+    } catch (error) {
+      this.error.set(errorMessage(error));
+    } finally {
+      this.isSaving.set(false);
+    }
+  }
+
   protected cancelDelete(): void {
     this.showDeleteDialog.set(false);
   }
@@ -222,9 +316,21 @@ export class ChapterWorkspace implements OnInit, PendingChangesAware {
     this.isSaving.set(true);
     this.error.set(null);
     try {
+      const scenes = this.selectedChapterScenes();
+      const activeSceneId = await this.activeSceneService.get(chapter.campaignId);
       await this.chapterService.delete(chapter);
+      await Promise.all(scenes.map((scene) => this.sceneService.delete(scene)));
+      await Promise.all(scenes.map((scene) => this.recentResources?.remove('scene', scene.id)));
+      if (scenes.some(({ id }) => id === activeSceneId)) {
+        const state = defaultSceneState();
+        await this.activeSceneService.clear(chapter.campaignId);
+        this.displayStore.setState(state);
+        if (this.displayGateway.isDesktop && (await this.displayGateway.isPlayerDisplayOpen())) {
+          await this.displayGateway.sendPlayerDisplayState(state);
+        }
+      }
       await this.recentResources?.remove('chapter', chapter.id);
-      await this.reloadChapters();
+      await Promise.all([this.reloadChapters(), this.reloadScenes()]);
       this.selectedChapter.set(null);
       this.showDeleteDialog.set(false);
     } catch (error) {
@@ -250,13 +356,15 @@ export class ChapterWorkspace implements OnInit, PendingChangesAware {
     try {
       const campaign = await this.campaignContext.load();
       if (!campaign) return;
-      const [chapters, locations, npcs, characters] = await Promise.all([
+      const [chapters, scenes, locations, npcs, characters] = await Promise.all([
         this.chapterService.list(campaign.id),
+        this.sceneService.list(campaign.id),
         this.locationService.list(campaign.id),
         this.npcService.list(campaign.id),
         this.characterService.list(campaign.id),
       ]);
       this.chapters.set(chapters);
+      this.scenes.set(scenes);
       this.mentionCandidates.set([
         ...characters.map((character) => ({
           resourceType: 'player-character' as const,
@@ -285,6 +393,11 @@ export class ChapterWorkspace implements OnInit, PendingChangesAware {
   private async reloadChapters(): Promise<void> {
     const campaign = this.campaign();
     if (campaign) this.chapters.set(await this.chapterService.list(campaign.id));
+  }
+
+  private async reloadScenes(): Promise<void> {
+    const campaign = this.campaign();
+    if (campaign) this.scenes.set(await this.sceneService.list(campaign.id));
   }
 
   private async openRequestedChapter(resourceId: string | null): Promise<void> {

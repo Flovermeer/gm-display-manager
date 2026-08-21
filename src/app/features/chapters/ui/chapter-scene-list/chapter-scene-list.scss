@@ -1,0 +1,135 @@
+.chapter-scenes {
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid #d2cbc0;
+}
+
+.chapter-scenes > header,
+.chapter-scenes__attach,
+.chapter-scene,
+.chapter-scene__open,
+.chapter-scene__order {
+  display: flex;
+  align-items: center;
+}
+
+.chapter-scenes > header {
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.chapter-scenes header p,
+.chapter-scenes header h3 {
+  margin: 0;
+}
+
+.chapter-scenes header p {
+  color: #76538d;
+  font-size: 0.7rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.chapter-scenes header h3 {
+  margin-top: 0.25rem;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 1.4rem;
+}
+
+.chapter-scenes__attach {
+  align-items: end;
+  max-width: 42rem;
+  margin-top: 1rem;
+  gap: 0.65rem;
+}
+
+.chapter-scenes__attach app-form-field {
+  flex: 1 1 auto;
+}
+
+.chapter-scenes__attach button {
+  min-height: 2.7rem;
+}
+
+.chapter-scenes__list {
+  display: grid;
+  margin-top: 1rem;
+  gap: 0.5rem;
+}
+
+.chapter-scene {
+  min-width: 0;
+  border: 1px solid #cec5b9;
+  border-radius: 0.45rem;
+  background: #faf8f4;
+}
+
+.chapter-scene__open {
+  min-width: 0;
+  padding: 0.8rem 1rem;
+  border: 0;
+  color: #302b26;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+  flex: 1 1 auto;
+  gap: 0.8rem;
+}
+
+.chapter-scene__open > span:first-child {
+  display: grid;
+  width: 2rem;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  color: #fff;
+  background: #76538d;
+  place-items: center;
+  flex: 0 0 auto;
+}
+
+.chapter-scene__open > span:last-child {
+  display: grid;
+  min-width: 0;
+  gap: 0.2rem;
+}
+
+.chapter-scene__open small {
+  overflow: hidden;
+  color: #71685e;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.chapter-scene__order {
+  padding-right: 0.65rem;
+  gap: 0.3rem;
+}
+
+.chapter-scene__order button {
+  width: 2.2rem;
+  aspect-ratio: 1;
+  border: 1px solid #aca398;
+  border-radius: 0.35rem;
+  color: #453f38;
+  background: transparent;
+  cursor: pointer;
+}
+
+.chapter-scene__order button:disabled {
+  cursor: not-allowed;
+  opacity: 0.35;
+}
+
+.chapter-scenes__empty {
+  padding: 1.5rem;
+  color: #71685e;
+  text-align: center;
+}
+
+@media (max-width: 38rem) {
+  .chapter-scenes > header,
+  .chapter-scenes__attach {
+    align-items: stretch;
+    flex-direction: column;
+  }
+}

@@ -171,6 +171,15 @@
             [mentionCandidates]="mentionCandidates()"
             (mentionActivate)="openMention($event)"
           />
+          <app-chapter-scene-list
+            [scenes]="selectedChapterScenes()"
+            [candidates]="sceneCandidates()"
+            [isBusy]="isSaving()"
+            (createScene)="createSceneForChapter()"
+            (openScene)="openScene($event)"
+            (attachScene)="requestMoveScene($event)"
+            (moveScene)="moveScene($event)"
+          />
         </article>
       }
     } @else if (chapters().length > 0) {
@@ -238,7 +247,7 @@
     [title]="'Supprimer ' + selectedChapter()?.title + ' ?'"
     headingId="delete-title"
   >
-    <p>Le texte du chapitre sera définitivement supprimé.</p>
+    <p>Le chapitre, ses scènes et les notes liées à ces scènes seront définitivement supprimés.</p>
     <div dialog-actions class="dialog-actions">
       <button appButton="secondary" type="button" (click)="cancelDelete()">Annuler</button>
       <button
@@ -248,6 +257,33 @@
         (click)="confirmDeleteChapter()"
       >
         Supprimer définitivement
+      </button>
+    </div>
+  </app-dialog>
+}
+
+@if (pendingSceneMove(); as scene) {
+  <app-dialog
+    kicker="Déplacement de scène"
+    [title]="'Déplacer ' + scene.name + ' ?'"
+    headingId="move-scene-title"
+  >
+    <p>
+      La scène quittera son chapitre actuel et sera ajoutée à la fin de
+      <strong>{{ selectedChapter()?.title }}</strong
+      >.
+    </p>
+    <div dialog-actions class="dialog-actions">
+      <button appButton="secondary" type="button" (click)="pendingSceneMove.set(null)">
+        Annuler
+      </button>
+      <button
+        appButton="primary"
+        type="button"
+        [disabled]="isSaving()"
+        (click)="confirmMoveScene()"
+      >
+        Déplacer la scène
       </button>
     </div>
   </app-dialog>

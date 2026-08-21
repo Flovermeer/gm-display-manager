@@ -18,7 +18,14 @@
         <h1>Scènes</h1>
         <span>{{ scenes().length }}</span>
       </div>
-      <button appButton="primary" appButtonFull type="button" (click)="requestCreateScene()">
+      <button
+        appButton="primary"
+        appButtonFull
+        type="button"
+        [disabled]="chapters().length === 0"
+        [title]="chapters().length === 0 ? 'Crée d’abord un chapitre' : 'Créer une scène'"
+        (click)="requestCreateScene()"
+      >
         + Nouvelle scène
       </button>
     </div>
@@ -42,7 +49,10 @@
             (click)="requestSelectScene(scene)"
           >
             <strong>{{ scene.name }}</strong
-            ><small>{{ scene.summary || locationName(scene.locationId) }}</small>
+            ><small
+              >{{ chapterName(scene.chapterId) }} ·
+              {{ scene.summary || locationName(scene.locationId) }}</small
+            >
           </button>
         }
       }
@@ -72,6 +82,11 @@
     @if (isCreating() || selectedScene()) {
       <div class="entity-workspace__toolbar">
         <div class="entity-workspace__actions">
+          @if (returnChapterId() && !isCreating()) {
+            <button appButton="secondary" type="button" (click)="returnToChapter()">
+              ← Retour au chapitre
+            </button>
+          }
           @if (isEditing()) {
             <button appButton="secondary" type="button" (click)="cancelEditing()">Annuler</button>
             <button
@@ -117,6 +132,27 @@
       />
       @if (isEditing()) {
         <form class="scene-form" [formGroup]="sceneForm" (ngSubmit)="saveScene()">
+          @if (fixedChapterId(); as chapterId) {
+            <div class="scene-form__chapter">
+              <span>Chapitre</span>
+              <strong>{{ chapterName(chapterId) }}</strong>
+            </div>
+          } @else if (isCreating()) {
+            <app-form-field
+              inputId="scene-chapter"
+              label="Chapitre"
+              controlType="select"
+              emptyLabel="Choisir un chapitre"
+              emptyValue=""
+              [options]="chapterOptions()"
+              formControlName="chapterId"
+              [errorMessage]="
+                sceneForm.controls.chapterId.touched && sceneForm.controls.chapterId.invalid
+                  ? 'Le chapitre est obligatoire.'
+                  : null
+              "
+            />
+          }
           <app-form-field
             inputId="scene-name"
             label="Nom"
@@ -173,6 +209,10 @@
       } @else if (selectedScene(); as scene) {
         <article class="scene-sheet">
           <dl class="scene-facts">
+            <div>
+              <dt>Chapitre</dt>
+              <dd>{{ chapterName(scene.chapterId) }}</dd>
+            </div>
             <div>
               <dt>Lieu</dt>
               <dd>{{ locationName(scene.locationId) }}</dd>
@@ -273,7 +313,11 @@
       <app-empty-state
         icon="◈"
         title="Aucune scène sélectionnée"
-        description="Sélectionne une scène dans la liste ou prépare-en une nouvelle."
+        [description]="
+          chapters().length === 0
+            ? 'Crée d’abord un chapitre avant de préparer une scène.'
+            : 'Sélectionne une scène dans la liste ou prépare-en une nouvelle.'
+        "
         headingId="scene-detail-title"
       />
     }

@@ -12,7 +12,7 @@ Dernière consolidation : 20 août 2026
 | 1 — Shell Angular + Tauri   | Terminé                                  | Application standalone zoneless, routes Angular, fenêtre principale maximisée et capabilities Tauri en place.                                                                                                       |
 | 2 — Multi-écran             | Fonctionnel, validation avancée restante | Détection, choix persistant du moniteur et fenêtre joueurs dédiée plein écran validés sur le matériel nominal. Restent les cas de déconnexion, remplacement, coordonnées négatives et facteurs d’échelle variés.    |
 | 3 — Régie verticale         | Terminé                                  | Écran noir, lieux, PNJ et objets peuvent être envoyés au Player Display ; synchronisation `ready` et fallback statique des PNJ en place.                                                                            |
-| 4 — SQLite                  | Terminé pour les tranches livrées        | Dix-neuf migrations couvrent notamment systèmes, univers, campagnes, propriété des ressources, combat, historique récent et tables aléatoires. Repositories Tauri et mémoire isolés derrière des interfaces.          |
+| 4 — SQLite                  | Terminé pour les tranches livrées        | Vingt migrations couvrent notamment systèmes, univers, campagnes, propriété des ressources, combat, historique récent, tables aléatoires et classement des scènes par chapitre. Repositories Tauri et mémoire isolés derrière des interfaces.          |
 | 5 — Gestion de campagne     | Terminé et étendu                        | CRUD campagnes, lieux hiérarchiques, PNJ structurés, PJ orientés MJ et objets narratifs. Navigation campagne persistante et protection des modifications non enregistrées.                                          |
 | 6 — Médias locaux           | Terminé pour images et portraits animés  | Import/copie locale des portraits PNJ/PJ, images de lieux et d’objets, vidéo idle PNJ et nettoyage des médias. Une validation plus large des fichiers cassés reste à inclure au durcissement.                       |
 | 7 — Tiptap et journal       | Terminé pour l’usage actuel              | Chapitres et descriptions riches, notes journalisées éditables, regroupement quotidien, mentions `@` cliquables vers les ressources de campagne et fallback texte si la cible disparaît.                            |
@@ -376,6 +376,8 @@ Modèle minimal :
 type Scene = {
   id: string;
   campaignId: string;
+  chapterId: string;
+  position: number;
   name: string;
   locationId: string | null;
   npcIds: string[];
@@ -385,6 +387,14 @@ type Scene = {
 
 Décisions V1 confirmées :
 
+- chaque scène appartient obligatoirement à un unique chapitre et possède un ordre manuel dans ce
+  chapitre ; aucune scène ne peut être créée sans chapitre disponible ;
+- le détail du chapitre permet de créer une scène, de déplacer une scène existante après
+  confirmation et de réorganiser ses scènes ;
+- le chapitre reste fixe dans la fiche d'une scène existante ; une création lancée depuis un
+  chapitre revient à ce chapitre après l'enregistrement ;
+- supprimer un chapitre supprime en cascade ses scènes et nettoie leurs notes, entrées récentes et
+  éventuel état de scène active ;
 - le lieu est facultatif dans le formulaire, mais la régie encourage son association ;
 - les PNJ, monstres et objets narratifs associés sont triés alphabétiquement ;
 - sélectionner une scène ouvre seulement sa fiche ; une action explicite l'active sur le Player Display ;

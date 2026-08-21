@@ -1,5 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { ActivatedRoute, convertToParamMap, provideRouter } from '@angular/router';
+import { ActivatedRoute, convertToParamMap, provideRouter, Router } from '@angular/router';
 import { BehaviorSubject } from 'rxjs';
 
 import type { Campaign } from '@app/features/campaigns/domain/campaign';
@@ -13,6 +13,11 @@ import { NarrativeItemService } from '@app/features/items/application/narrative-
 import { PlayerCharacterService } from '@app/features/players/application/player-character.service';
 import { RICH_TEXT_SCHEMA_VERSION } from '@app/shared/rich-text-editor/rich-text-document';
 import { ChapterWorkspace } from '@app/features/chapters/pages/chapter-workspace/chapter-workspace';
+import { SceneService } from '@app/features/scenes/application/scene.service';
+import { ActiveSceneService } from '@app/features/scenes/application/active-scene.service';
+import { DisplayGateway } from '@app/features/display/data-access/display.gateway';
+import { PlayerDisplayStore } from '@app/features/display/application/player-display.store';
+import type { Scene } from '@app/features/scenes/domain/scene';
 
 describe('ChapterWorkspace', () => {
   const campaign: Campaign = {
@@ -33,6 +38,14 @@ describe('ChapterWorkspace', () => {
     delete: vi.fn(),
   };
   const emptyResourceService = { list: vi.fn() };
+  const sceneService = {
+    list: vi.fn(),
+    moveToChapter: vi.fn(),
+    move: vi.fn(),
+    delete: vi.fn(),
+  };
+  const activeSceneService = { get: vi.fn(), clear: vi.fn() };
+  const displayStore = { setState: vi.fn() };
   const queryParamMap = new BehaviorSubject(convertToParamMap({}));
 
   beforeEach(async () => {
@@ -45,6 +58,10 @@ describe('ChapterWorkspace', () => {
     chapterService.move.mockResolvedValue(chapter);
     chapterService.delete.mockResolvedValue(undefined);
     emptyResourceService.list.mockResolvedValue([]);
+    sceneService.list.mockResolvedValue([]);
+    sceneService.delete.mockResolvedValue(undefined);
+    activeSceneService.get.mockResolvedValue(null);
+    activeSceneService.clear.mockResolvedValue(undefined);
     queryParamMap.next(convertToParamMap({}));
 
     await TestBed.configureTestingModule({
@@ -57,6 +74,10 @@ describe('ChapterWorkspace', () => {
           useValue: { campaign: () => campaign, load: () => Promise.resolve(campaign) },
         },
         { provide: ChapterService, useValue: chapterService },
+        { provide: SceneService, useValue: sceneService },
+        { provide: ActiveSceneService, useValue: activeSceneService },
+        { provide: DisplayGateway, useValue: { isDesktop: false } },
+        { provide: PlayerDisplayStore, useValue: displayStore },
         { provide: LocationService, useValue: emptyResourceService },
         { provide: NpcService, useValue: emptyResourceService },
         { provide: PlayerCharacterService, useValue: emptyResourceService },
@@ -149,7 +170,80 @@ describe('ChapterWorkspace', () => {
       'Le port',
     );
   });
+
+  it('asks for confirmation before moving an existing scene into the chapter', async () => {
+    const secondChapter = { ...chapter, id: 'second-id', title: 'La jungle', position: 1 };
+    const scene = sceneFixture(secondChapter.id);
+    chapterService.list.mockResolvedValue([chapter, secondChapter]);
+    sceneService.list.mockResolvedValue([scene]);
+    sceneService.moveToChapter.mockResolvedValue({ ...scene, chapterId: chapter.id });
+    const fixture = TestBed.createComponent(ChapterWorkspace);
+    fixture.detectChanges();
+    await renderUntil(fixture, 'La jungle');
+    const element = fixture.nativeElement as HTMLElement;
+
+    element.querySelector<HTMLButtonElement>('.chapter-list-item')?.click();
+    await renderUntil(fixture, scene.name);
+    const select = element.querySelector<HTMLSelectElement>('#chapter-existing-scene');
+    if (!select) throw new Error('Scene selector not found.');
+    select.value = scene.id;
+    select.dispatchEvent(new Event('change'));
+    fixture.detectChanges();
+    findButton(element, 'Rattacher').click();
+    await renderUntil(fixture, `Déplacer ${scene.name}`);
+
+    findButton(element, 'Déplacer la scène').click();
+    await vi.waitFor(() =>
+      expect(sceneService.moveToChapter).toHaveBeenCalledWith(scene, chapter.id),
+    );
+  });
+
+  it('opens scene creation with a fixed chapter and return target', async () => {
+    const router = TestBed.inject(Router);
+    const navigate = vi.spyOn(router, 'navigate').mockResolvedValue(true);
+    const fixture = TestBed.createComponent(ChapterWorkspace);
+    fixture.detectChanges();
+    await renderUntil(fixture, 'Le port');
+    const element = fixture.nativeElement as HTMLElement;
+
+    element.querySelector<HTMLButtonElement>('.chapter-list-item')?.click();
+    await renderUntil(fixture, 'Aucune scène dans ce chapitre');
+    findButton(element, 'Nouvelle scène').click();
+
+    expect(navigate).toHaveBeenCalledWith(['/campaigns', campaign.id, 'scenes'], {
+      queryParams: {
+        create: 'true',
+        chapterId: chapter.id,
+        returnChapterId: chapter.id,
+      },
+    });
+  });
 });
+
+function sceneFixture(chapterId: string): Scene {
+  return {
+    id: 'scene-id',
+    campaignId: 'campaign-id',
+    chapterId,
+    position: 0,
+    name: 'Campement dans la jungle',
+    summary: 'Repos nocturne',
+    locationId: null,
+    npcIds: [],
+    monsterIds: [],
+    itemIds: [],
+    createdAt: '2026-08-13T08:00:00.000Z',
+    updatedAt: '2026-08-13T08:00:00.000Z',
+  };
+}
+
+function findButton(element: HTMLElement, label: string): HTMLButtonElement {
+  const button = [...element.querySelectorAll<HTMLButtonElement>('button')].find((candidate) =>
+    candidate.textContent?.includes(label),
+  );
+  if (!button) throw new Error(`Button not found: ${label}`);
+  return button;
+}
 
 function createChapter(): Chapter {
   return {

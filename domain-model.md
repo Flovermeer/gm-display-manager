@@ -9,7 +9,8 @@ Ce document fixe les décisions de modélisation prises pour le gestionnaire de 
 - Les identifiants sont des UUID générés en TypeScript et stockés en `TEXT` dans SQLite.
 - Un système de jeu contient des univers ; un univers contient les catalogues de ressources
   partagées et les campagnes qui les utilisent.
-- Les chapitres, scènes et entrées de journal appartiennent directement à une campagne.
+- Les chapitres et entrées de journal appartiennent directement à une campagne. Chaque scène
+  appartient obligatoirement à un unique chapitre et, par ce chapitre, à sa campagne.
 - Les PJ, PNJ, lieux, objets narratifs et monstres appartiennent à un univers. Des tables
   d’association portent leur contexte propre à chaque campagne.
 - Les données recherchées, filtrées ou reliées restent dans des colonnes et tables relationnelles.
@@ -202,7 +203,18 @@ ni entrée de Journal, ni commande vers le Player Display.
 
 ## Chapitres et sections
 
-Les chapitres forment une liste ordonnée et réorganisable dans la campagne. Un chapitre contient des `chapter_section` également ordonnées.
+Les chapitres forment une liste ordonnée et réorganisable dans la campagne. Un chapitre contient
+des `chapter_section` également ordonnées et une liste ordonnée de scènes.
+
+Une scène référence obligatoirement son chapitre par `chapter_id` et porte une `position` manuelle
+dans ce chapitre. Il n'existe pas de scène non classée ni de scène liée à plusieurs chapitres. La
+création d'une scène est donc indisponible tant que la campagne ne contient aucun chapitre.
+
+Le chapitre est le point de gestion de ce classement : le MJ peut y créer une scène, y déplacer une
+scène existante après confirmation et modifier l'ordre avec les actions haut/bas. La fiche d'une
+scène existante ne permet pas de changer directement son chapitre. Supprimer un chapitre supprime
+en cascade ses scènes, leurs notes journalisées, leurs entrées récentes et, le cas échéant, la
+référence à la scène active.
 
 Les sections restent sur un seul niveau. Les subdivisions internes utilisent les titres du contenu riche plutôt qu'une hiérarchie SQL de sous-sections.
 

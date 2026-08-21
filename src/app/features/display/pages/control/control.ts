@@ -24,6 +24,7 @@ export class Control implements OnInit, OnDestroy {
   private readonly playerDisplayStore = inject(PlayerDisplayStore);
   private readonly sceneDisplayService = inject(SceneDisplayService);
   private unlistenPlayerDisplayReady?: UnlistenFn;
+  private unlistenPlayerDisplayClosed?: UnlistenFn;
 
   protected readonly isDesktop = this.displayGateway.isDesktop;
   protected readonly campaign = this.campaignContext.campaign;
@@ -48,6 +49,7 @@ export class Control implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.unlistenPlayerDisplayReady?.();
+    this.unlistenPlayerDisplayClosed?.();
   }
 
   protected async refreshMonitors(): Promise<void> {
@@ -65,6 +67,11 @@ export class Control implements OnInit, OnDestroy {
       this.playerDisplayMonitorId.set(
         isPlayerDisplayOpen ? await this.displayGateway.getPlayerDisplayMonitorId() : null,
       );
+      if (isPlayerDisplayOpen) {
+        await this.trackPlayerDisplayClosure();
+      } else {
+        this.stopTrackingPlayerDisplayClosure();
+      }
     });
   }
 
@@ -83,12 +90,14 @@ export class Control implements OnInit, OnDestroy {
       this.isPlayerDisplayOpen.set(true);
       this.playerDisplayMonitorId.set(monitor.id);
       await this.playerDisplayPreference.savePreferredMonitor(monitor);
+      await this.trackPlayerDisplayClosure();
     });
   }
 
   protected async closePlayerDisplay(): Promise<void> {
     await this.runDisplayAction(async () => {
       await this.displayGateway.closePlayerDisplay();
+      this.stopTrackingPlayerDisplayClosure();
       this.isPlayerDisplayOpen.set(false);
       this.playerDisplayMonitorId.set(null);
     });
@@ -177,6 +186,26 @@ export class Control implements OnInit, OnDestroy {
     } catch (error) {
       this.error.set(this.errorMessage(error));
     }
+  }
+
+  private async trackPlayerDisplayClosure(): Promise<void> {
+    this.stopTrackingPlayerDisplayClosure();
+    this.unlistenPlayerDisplayClosed =
+      (await this.displayGateway.listenForPlayerDisplayClosed(() => {
+        this.unlistenPlayerDisplayClosed = undefined;
+        this.isPlayerDisplayOpen.set(false);
+        this.playerDisplayMonitorId.set(null);
+      })) ?? undefined;
+
+    if (!this.unlistenPlayerDisplayClosed) {
+      this.isPlayerDisplayOpen.set(false);
+      this.playerDisplayMonitorId.set(null);
+    }
+  }
+
+  private stopTrackingPlayerDisplayClosure(): void {
+    this.unlistenPlayerDisplayClosed?.();
+    this.unlistenPlayerDisplayClosed = undefined;
   }
 
   private async publishDisplayState(state: PlayerDisplayState): Promise<void> {

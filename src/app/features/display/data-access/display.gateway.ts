@@ -11,7 +11,7 @@
 
 import { Injectable } from '@angular/core';
 import { isTauri } from '@tauri-apps/api/core';
-import { emitTo, listen, type UnlistenFn } from '@tauri-apps/api/event';
+import { emitTo, listen, TauriEvent, type UnlistenFn } from '@tauri-apps/api/event';
 import { WebviewWindow, getCurrentWebviewWindow } from '@tauri-apps/api/webviewWindow';
 import {
   availableMonitors,
@@ -113,6 +113,12 @@ export class DisplayGateway {
   listenForPlayerDisplayReady(callback: () => void): Promise<UnlistenFn> {
     this.assertDesktop();
     return listen<void>(playerDisplayEvents.ready, callback);
+  }
+
+  async listenForPlayerDisplayClosed(callback: () => void): Promise<UnlistenFn | null> {
+    this.assertDesktop();
+    const playerDisplay = await WebviewWindow.getByLabel(PLAYER_DISPLAY_WINDOW_LABEL);
+    return playerDisplay?.once<void>(TauriEvent.WINDOW_DESTROYED, callback) ?? null;
   }
 
   listenForPlayerDisplayState(callback: (state: PlayerDisplayState) => void): Promise<UnlistenFn> {

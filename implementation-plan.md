@@ -6,7 +6,7 @@ Dernière consolidation : 21 août 2026
 
 Version fonctionnelle actuelle : **V1 terminée**
 
-Prochaine version : **V1.1 — Durcissement et livraison Windows**
+Version en cours : **V1.1 — Durcissement et livraison Windows**
 
 ## Journal des versions
 
@@ -20,11 +20,16 @@ La finalisation du périmètre chapitres-scènes impose un chapitre unique à ch
 création, le déplacement confirmé et le réordonnancement depuis le chapitre, supprime les scènes en
 cascade avec leur chapitre et rend les scènes disponibles dans les mentions `@`.
 
-### V1.1 — En préparation
+### V1.1 — En cours
 
 La V1.1 ne cherche pas à élargir le gestionnaire de campagne. Elle doit fiabiliser la V1 pour les
 sessions réelles et produire une version Windows sauvegardable, restaurable et installable. Son
 périmètre correspond au jalon 14. La carte heuristique du jalon 12 reste reportée après la V1.1.
+
+Première tranche livrée côté code : la Régie écoute désormais la destruction native du Player
+Display. Une fermeture directe par Windows remet immédiatement l'interface à l'état fermé et une
+nouvelle ouverture réinstalle le suivi. Le comportement est couvert automatiquement ; sa validation
+dans Tauri avec le second écran physique reste à effectuer.
 
 ## Statut consolidé
 
@@ -44,7 +49,7 @@ périmètre correspond au jalon 14. La carte heuristique du jalon 12 reste repor
 | 11 — Historique récent      | Terminé                                  | Huit pills persistées et cliquables par campagne, dédupliquées par récence et purgées lorsque leur cible disparaît.                                                                                                  |
 | 12 — Carte heuristique      | Reporté après la V1.1                    | Graphe automatique et navigable des chapitres, ressources liées et mentions `@`, sans édition manuelle du graphe.                                                                                                   |
 | 13 — Tables aléatoires      | Terminé                                  | CRUD atomique de tables privées au MJ, plages de 1 à 100 triées automatiquement, validation de couverture continue et tirage uniforme sans historique.                                                              |
-| 14 — Durcissement/livraison | Planifié pour la V1.1                    | Sauvegarde/restauration, tests matériels dégradés, session longue, journal technique, installeur Windows et guide de dépannage constituent le périmètre de la V1.1.                                                 |
+| 14 — Durcissement/livraison | V1.1 en cours                            | La fermeture native du Player Display est synchronisée côté Régie. Sauvegarde/restauration, tests matériels dégradés, session longue, journal technique, installeur Windows et guide de dépannage restent à livrer. |
 
 ### Tranches supplémentaires déjà livrées
 
@@ -567,9 +572,17 @@ Player Display restent hors de cette tranche.
 
 Objectif : rendre l'application fiable pendant une session réelle.
 
+Première tranche livrée :
+
+- écouter la destruction native du Player Display depuis la Régie ;
+- remettre l'état d'ouverture et le moniteur courant à zéro après une fermeture Windows ;
+- permettre la réouverture immédiate sur le moniteur préféré sans recharger la page ;
+- couvrir le cycle fermeture puis réouverture par un test Angular ciblé.
+
 Travail :
 
-- reprise après fermeture ou rechargement du Player Display ;
+- valider manuellement la fermeture et la réouverture du Player Display dans Tauri ;
+- reprendre l'état après un rechargement interne du Player Display ;
 - récupération lorsqu'un moniteur est déconnecté ou remplacé ;
 - journal local minimal avec messages compréhensibles ;
 - sauvegarde et restauration d'une campagne ;

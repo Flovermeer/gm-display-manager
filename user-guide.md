@@ -277,8 +277,8 @@ Ctrl + C
 
 ## 14. Limites actuelles
 
-- l'état de la fenêtre n'est pas encore synchronisé en temps réel si elle est
-  fermée directement par Windows ;
+- la synchronisation après fermeture directe de la fenêtre joueurs est implémentée, mais doit
+  encore être validée sur le second écran physique ;
 - les documents ne sont pas encore proposés dans le panneau MJ ;
 - la reconnexion automatique après le retrait d'un moniteur reste à implémenter ;
 - la validation multi-écran est pour l'instant manuelle et ciblée sur Windows.

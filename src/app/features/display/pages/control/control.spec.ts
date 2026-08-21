@@ -9,6 +9,7 @@ import { DisplayGateway } from '@app/features/display/data-access/display.gatewa
 import type { MonitorDescriptor } from '@app/features/display/domain/display.models';
 import { Control } from '@app/features/display/pages/control/control';
 import { SceneDisplayService } from '@app/features/scenes/application/scene-display.service';
+import { PlayerDisplayMonitorSessionService } from '@app/features/display/application/player-display-monitor-session.service';
 
 describe('Control', () => {
   const monitor: MonitorDescriptor = {
@@ -48,6 +49,7 @@ describe('Control', () => {
     savePreferredMonitor: vi.fn(),
   };
   const sceneDisplayService = { restore: vi.fn() };
+  const playerDisplayMonitorSession = { track: vi.fn(), clear: vi.fn() };
 
   beforeEach(async () => {
     vi.clearAllMocks();
@@ -81,6 +83,10 @@ describe('Control', () => {
         { provide: DisplayGateway, useValue: displayGateway },
         { provide: PlayerDisplayPreferenceService, useValue: preferenceService },
         { provide: SceneDisplayService, useValue: sceneDisplayService },
+        {
+          provide: PlayerDisplayMonitorSessionService,
+          useValue: playerDisplayMonitorSession,
+        },
       ],
     }).compileComponents();
   });
@@ -102,6 +108,7 @@ describe('Control', () => {
       expect(displayGateway.listenForPlayerDisplayClosed).toHaveBeenCalledTimes(2);
     });
     expect(preferenceService.savePreferredMonitor).toHaveBeenCalledWith(monitor);
+    expect(playerDisplayMonitorSession.track).toHaveBeenLastCalledWith(monitor);
   });
 });
 

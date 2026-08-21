@@ -10,6 +10,7 @@ import type { PlayerDisplayState } from '@app/features/display/domain/player-dis
 import { PlayerDisplayStore } from '@app/features/display/application/player-display.store';
 import { SceneDisplayService } from '@app/features/scenes/application/scene-display.service';
 import { ButtonDirective } from '@app/shared/ui/button/button.directive';
+import { PlayerDisplayMonitorSessionService } from '@app/features/display/application/player-display-monitor-session.service';
 
 @Component({
   selector: 'app-control',
@@ -23,6 +24,7 @@ export class Control implements OnInit, OnDestroy {
   private readonly playerDisplayPreference = inject(PlayerDisplayPreferenceService);
   private readonly playerDisplayStore = inject(PlayerDisplayStore);
   private readonly sceneDisplayService = inject(SceneDisplayService);
+  private readonly playerDisplayMonitorSession = inject(PlayerDisplayMonitorSessionService);
   private unlistenPlayerDisplayReady?: UnlistenFn;
   private unlistenPlayerDisplayClosed?: UnlistenFn;
 
@@ -68,8 +70,11 @@ export class Control implements OnInit, OnDestroy {
         isPlayerDisplayOpen ? await this.displayGateway.getPlayerDisplayMonitorId() : null,
       );
       if (isPlayerDisplayOpen) {
+        const playerMonitor = monitors.find(({ id }) => id === this.playerDisplayMonitorId());
+        if (playerMonitor) this.playerDisplayMonitorSession.track(playerMonitor);
         await this.trackPlayerDisplayClosure();
       } else {
+        this.playerDisplayMonitorSession.clear();
         this.stopTrackingPlayerDisplayClosure();
       }
     });
@@ -89,6 +94,7 @@ export class Control implements OnInit, OnDestroy {
       await this.displayGateway.openPlayerDisplay(monitor.id);
       this.isPlayerDisplayOpen.set(true);
       this.playerDisplayMonitorId.set(monitor.id);
+      this.playerDisplayMonitorSession.track(monitor);
       await this.playerDisplayPreference.savePreferredMonitor(monitor);
       await this.trackPlayerDisplayClosure();
     });
@@ -97,6 +103,7 @@ export class Control implements OnInit, OnDestroy {
   protected async closePlayerDisplay(): Promise<void> {
     await this.runDisplayAction(async () => {
       await this.displayGateway.closePlayerDisplay();
+      this.playerDisplayMonitorSession.clear();
       this.stopTrackingPlayerDisplayClosure();
       this.isPlayerDisplayOpen.set(false);
       this.playerDisplayMonitorId.set(null);
@@ -193,6 +200,7 @@ export class Control implements OnInit, OnDestroy {
     this.unlistenPlayerDisplayClosed =
       (await this.displayGateway.listenForPlayerDisplayClosed(() => {
         this.unlistenPlayerDisplayClosed = undefined;
+        this.playerDisplayMonitorSession.clear();
         this.isPlayerDisplayOpen.set(false);
         this.playerDisplayMonitorId.set(null);
       })) ?? undefined;

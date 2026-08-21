@@ -1,0 +1,21 @@
+<aside class="toast-outlet" aria-label="Notifications" aria-live="assertive">
+  @for (message of toast.messages(); track message.id) {
+    <article
+      class="toast"
+      [class.toast--closing]="message.isClosing"
+      [attr.data-tone]="message.tone"
+      role="alert"
+    >
+      <span class="toast__marker" aria-hidden="true">!</span>
+      <p>{{ message.message }}</p>
+      <button
+        type="button"
+        title="Fermer la notification"
+        aria-label="Fermer la notification"
+        (click)="toast.dismiss(message.id)"
+      >
+        &times;
+      </button>
+    </article>
+  }
+</aside>

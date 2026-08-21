@@ -31,13 +31,19 @@ Display. Une fermeture directe par Windows remet immédiatement l'interface à l
 nouvelle ouverture réinstalle le suivi. Le comportement est couvert automatiquement ; sa validation
 dans Tauri avec le second écran physique reste à effectuer.
 
+Deuxième tranche livrée côté code : pendant une campagne, le moniteur réellement utilisé est
+surveillé toutes les deux secondes tant que le Player Display est ouvert. Sa disparition ou une
+correspondance devenue ambiguë ferme la fenêtre sans la déplacer ni la rouvrir automatiquement. Le
+MJ reçoit un toast fermable, affiché huit secondes puis évacué vers la droite. Un changement de
+coordonnées est accepté lorsque le fingerprint du moniteur reste unique.
+
 ## Statut consolidé
 
 | Jalon                       | Statut                                   | État réel                                                                                                                                                                                                           |
 | --------------------------- | ---------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | 0 — Environnement           | Terminé                                  | Node 24 épinglé avec Volta, Angular 22, Rust stable MSVC, Build Tools et WebView2 validés.                                                                                                                          |
 | 1 — Shell Angular + Tauri   | Terminé                                  | Application standalone zoneless, routes Angular, fenêtre principale maximisée et capabilities Tauri en place.                                                                                                       |
-| 2 — Multi-écran             | V1 terminée, durcissement V1.1 prévu     | Détection, choix persistant du moniteur et fenêtre joueurs dédiée plein écran validés sur le matériel nominal. Les cas de déconnexion, remplacement, coordonnées négatives et facteurs d’échelle variés passent en V1.1. |
+| 2 — Multi-écran             | Durcissement V1.1 en cours               | Détection, choix persistant et fenêtre plein écran sont validés. La perte du moniteur ferme désormais le Player Display sans repli et prévient le MJ. Les validations matérielles avancées restent à effectuer.      |
 | 3 — Régie verticale         | Terminé                                  | Écran noir, lieux, PNJ et objets peuvent être envoyés au Player Display ; synchronisation `ready` et fallback statique des PNJ en place.                                                                            |
 | 4 — SQLite                  | Terminé pour les tranches livrées        | Vingt migrations couvrent notamment systèmes, univers, campagnes, propriété des ressources, combat, historique récent, tables aléatoires et classement des scènes par chapitre. Repositories Tauri et mémoire isolés derrière des interfaces.          |
 | 5 — Gestion de campagne     | Terminé et étendu                        | CRUD campagnes, lieux hiérarchiques, PNJ structurés, PJ orientés MJ et objets narratifs. Navigation campagne persistante et protection des modifications non enregistrées.                                          |
@@ -49,7 +55,7 @@ dans Tauri avec le second écran physique reste à effectuer.
 | 11 — Historique récent      | Terminé                                  | Huit pills persistées et cliquables par campagne, dédupliquées par récence et purgées lorsque leur cible disparaît.                                                                                                  |
 | 12 — Carte heuristique      | Reporté après la V1.1                    | Graphe automatique et navigable des chapitres, ressources liées et mentions `@`, sans édition manuelle du graphe.                                                                                                   |
 | 13 — Tables aléatoires      | Terminé                                  | CRUD atomique de tables privées au MJ, plages de 1 à 100 triées automatiquement, validation de couverture continue et tirage uniforme sans historique.                                                              |
-| 14 — Durcissement/livraison | V1.1 en cours                            | La fermeture native du Player Display est synchronisée côté Régie. Sauvegarde/restauration, tests matériels dégradés, session longue, journal technique, installeur Windows et guide de dépannage restent à livrer. |
+| 14 — Durcissement/livraison | V1.1 en cours                            | Fermeture native et perte du moniteur sont gérées côté code sans repli automatique. Sauvegarde/restauration, tests matériels, session longue, journal technique, installeur et guide restent à livrer.               |
 
 ### Tranches supplémentaires déjà livrées
 
@@ -577,13 +583,17 @@ Première tranche livrée :
 - écouter la destruction native du Player Display depuis la Régie ;
 - remettre l'état d'ouverture et le moniteur courant à zéro après une fermeture Windows ;
 - permettre la réouverture immédiate sur le moniteur préféré sans recharger la page ;
-- couvrir le cycle fermeture puis réouverture par un test Angular ciblé.
+- surveiller le moniteur utilisé tant que la fenêtre est ouverte ;
+- fermer sans repli ni réouverture automatique si le moniteur disparaît ou devient ambigu ;
+- afficher au MJ un toast fermable pendant huit secondes, avec une sortie vers la droite ;
+- accepter le changement de coordonnées d'un moniteur reconnu sans ambiguïté ;
+- couvrir fermeture, réouverture, perte et déplacement logique par des tests Angular ciblés.
 
 Travail :
 
 - valider manuellement la fermeture et la réouverture du Player Display dans Tauri ;
 - reprendre l'état après un rechargement interne du Player Display ;
-- récupération lorsqu'un moniteur est déconnecté ou remplacé ;
+- valider manuellement la déconnexion, le remplacement et les moniteurs identiques ;
 - journal local minimal avec messages compréhensibles ;
 - sauvegarde et restauration d'une campagne ;
 - contrôle des erreurs de base et de fichiers ;

@@ -194,6 +194,12 @@ Dans la section **Écran joueurs** :
 Le bouton **Actualiser** relit la configuration des écrans connectés. Utilise-le
 après avoir branché, débranché ou réorganisé un moniteur dans Windows.
 
+Si le moniteur utilisé disparaît pendant une partie, l'application ferme le
+Player Display sous environ deux secondes. Un toast d'alerte reste visible huit
+secondes dans l'interface du MJ ; tu peux aussi le fermer immédiatement avec sa
+croix. L'application ne déplace pas la fenêtre vers l'écran principal et ne
+choisit aucun autre moniteur automatiquement.
+
 Le moniteur utilisé avec succès est mémorisé dans la base SQLite locale. Au
 prochain lancement, il est automatiquement présélectionné s'il peut être reconnu
 sans ambiguïté. Si deux moniteurs identiques partagent la même empreinte,
@@ -251,8 +257,8 @@ réappliquer inutilement le plein écran et de provoquer un flicker.
 Clique sur **Fermer l'écran joueurs** depuis le panneau MJ. La fenêtre dédiée
 est fermée sans fermer l'application principale.
 
-Si la fenêtre a été fermée directement depuis Windows, clique sur **Actualiser**
-pour synchroniser l'état affiché dans le panneau MJ.
+Si la fenêtre est fermée directement depuis Windows, son état est synchronisé
+automatiquement dans le panneau MJ et le bouton d'ouverture redevient disponible.
 
 ## 12. Prévisualisation dans le navigateur
 
@@ -277,10 +283,10 @@ Ctrl + C
 
 ## 14. Limites actuelles
 
-- la synchronisation après fermeture directe de la fenêtre joueurs est implémentée, mais doit
-  encore être validée sur le second écran physique ;
+- la fermeture directe et la perte du moniteur sont gérées côté code, mais doivent encore être
+  validées avec plusieurs configurations d'écrans physiques ;
 - les documents ne sont pas encore proposés dans le panneau MJ ;
-- la reconnexion automatique après le retrait d'un moniteur reste à implémenter ;
+- la reconnexion automatique après le retrait d'un moniteur n'est volontairement pas effectuée ;
 - la validation multi-écran est pour l'instant manuelle et ciblée sur Windows.
 
 ## 15. Dépannage rapide

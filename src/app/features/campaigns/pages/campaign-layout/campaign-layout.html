@@ -9,6 +9,7 @@
   <app-recent-resource-list />
   <router-outlet />
   <app-combat-panel [campaignId]="activeCampaign.id" />
+  <app-toast-outlet />
 } @else if (error(); as errorMessage) {
   <main class="campaign-layout-state">
     <p role="alert">{{ errorMessage }}</p>

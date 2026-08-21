@@ -132,5 +132,11 @@ fn migrations() -> Vec<Migration> {
             sql: include_str!("../migrations/0019_create_random_table.sql"),
             kind: MigrationKind::Up,
         },
+        Migration {
+            version: 20,
+            description: "link_scene_to_chapter",
+            sql: include_str!("../migrations/0020_link_scene_to_chapter.sql"),
+            kind: MigrationKind::Up,
+        },
     ]
 }

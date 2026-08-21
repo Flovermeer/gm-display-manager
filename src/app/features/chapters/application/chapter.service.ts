@@ -25,6 +25,10 @@ export class ChapterService {
     return this.repository.listByCampaign(campaignId);
   }
 
+  findById(campaignId: string, id: string): Promise<Chapter | null> {
+    return this.repository.findById(campaignId, id);
+  }
+
   async create(campaignId: string, input: UpdateChapterInput): Promise<Chapter> {
     const chapters = await this.repository.listByCampaign(campaignId);
     const nextPosition = chapters.reduce(

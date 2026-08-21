@@ -1,6 +1,8 @@
 export type Scene = Readonly<{
   id: string;
   campaignId: string;
+  chapterId: string;
+  position: number;
   name: string;
   summary: string;
   locationId: string | null;
@@ -22,6 +24,8 @@ export type UpdateSceneInput = Readonly<{
 
 export function createScene(
   campaignId: string,
+  chapterId: string,
+  position: number,
   input: UpdateSceneInput,
   createId: () => string = () => crypto.randomUUID(),
   now: () => Date = () => new Date(),
@@ -30,6 +34,8 @@ export function createScene(
   return {
     id: createId(),
     campaignId,
+    chapterId: requiredChapterId(chapterId),
+    position: normalizePosition(position),
     ...normalizeInput(input),
     createdAt: timestamp,
     updatedAt: timestamp,
@@ -42,6 +48,20 @@ export function updateScene(
   now: () => Date = () => new Date(),
 ): Scene {
   return { ...scene, ...normalizeInput(input), updatedAt: now().toISOString() };
+}
+
+export function moveSceneToChapter(
+  scene: Scene,
+  chapterId: string,
+  position: number,
+  now: () => Date = () => new Date(),
+): Scene {
+  return {
+    ...scene,
+    chapterId: requiredChapterId(chapterId),
+    position: normalizePosition(position),
+    updatedAt: now().toISOString(),
+  };
 }
 
 function normalizeInput(input: UpdateSceneInput): UpdateSceneInput {
@@ -60,4 +80,14 @@ function normalizeInput(input: UpdateSceneInput): UpdateSceneInput {
 
 function uniqueIds(ids: readonly string[]): readonly string[] {
   return [...new Set(ids.filter(Boolean))];
+}
+
+function requiredChapterId(value: string): string {
+  const chapterId = value.trim();
+  if (!chapterId) throw new Error('Scene chapter is required.');
+  return chapterId;
+}
+
+function normalizePosition(value: number): number {
+  return Math.max(0, Math.trunc(value));
 }

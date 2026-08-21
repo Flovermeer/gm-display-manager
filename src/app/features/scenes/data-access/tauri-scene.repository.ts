@@ -11,13 +11,18 @@ import { Injectable } from '@angular/core';
 import Database from '@tauri-apps/plugin-sql';
 
 import type { Scene } from '@app/features/scenes/domain/scene';
-import { SceneRepository } from '@app/features/scenes/data-access/scene.repository';
+import {
+  SceneRepository,
+  type SceneOrder,
+} from '@app/features/scenes/data-access/scene.repository';
 
 const DATABASE_URL = 'sqlite:beholders-inn.db';
 
 type SceneRow = Readonly<{
   id: string;
   campaign_id: string;
+  chapter_id: string;
+  position: number;
   name: string;
   summary: string;
   location_id: string | null;
@@ -34,8 +39,23 @@ export class TauriSceneRepository extends SceneRepository {
   override async listByCampaign(campaignId: string): Promise<readonly Scene[]> {
     const database = await this.getDatabase();
     const rows = await database.select<SceneRow[]>(
-      `${SCENE_COLUMNS} FROM scene WHERE campaign_id = $1 ORDER BY name COLLATE NOCASE, id`,
+      `${SCENE_COLUMNS}
+       FROM scene JOIN chapter ON chapter.id = scene.chapter_id
+       WHERE scene.campaign_id = $1
+       ORDER BY chapter.position, scene.position, scene.name COLLATE NOCASE, scene.id`,
       [campaignId],
+    );
+    return this.withRelations(database, rows);
+  }
+
+  override async listByChapter(campaignId: string, chapterId: string): Promise<readonly Scene[]> {
+    const database = await this.getDatabase();
+    const rows = await database.select<SceneRow[]>(
+      `${SCENE_COLUMNS}
+       FROM scene
+       WHERE campaign_id = $1 AND chapter_id = $2
+       ORDER BY position, name COLLATE NOCASE, id`,
+      [campaignId, chapterId],
     );
     return this.withRelations(database, rows);
   }
@@ -53,14 +73,18 @@ export class TauriSceneRepository extends SceneRepository {
   override async save(scene: Scene): Promise<void> {
     const database = await this.getDatabase();
     await database.execute(
-      `INSERT INTO scene (id, campaign_id, name, summary, location_id, created_at, updated_at)
-       VALUES ($1, $2, $3, $4, $5, $6, $7)
+      `INSERT INTO scene (
+         id, campaign_id, chapter_id, position, name, summary, location_id, created_at, updated_at
+       ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
        ON CONFLICT(id) DO UPDATE SET name = excluded.name, summary = excluded.summary,
+         chapter_id = excluded.chapter_id, position = excluded.position,
          location_id = excluded.location_id, updated_at = excluded.updated_at
        WHERE scene.campaign_id = excluded.campaign_id`,
       [
         scene.id,
         scene.campaignId,
+        scene.chapterId,
+        scene.position,
         scene.name,
         scene.summary,
         scene.locationId,
@@ -89,6 +113,39 @@ export class TauriSceneRepository extends SceneRepository {
         itemId,
       ]);
     }
+  }
+
+  override async updateOrder(scenes: readonly SceneOrder[]): Promise<void> {
+    if (scenes.length !== 2) throw new Error('Exactly two scenes are required to swap order.');
+    const [first, second] = scenes;
+    if (
+      !first ||
+      !second ||
+      first.campaignId !== second.campaignId ||
+      first.chapterId !== second.chapterId
+    ) {
+      throw new Error('Scenes must belong to the same chapter.');
+    }
+    await (
+      await this.getDatabase()
+    ).execute(
+      `UPDATE scene
+       SET position = CASE id
+         WHEN $3 THEN $4
+         WHEN $5 THEN $6
+       END,
+       updated_at = $7
+       WHERE campaign_id = $1 AND chapter_id = $2 AND id IN ($3, $5)`,
+      [
+        first.campaignId,
+        first.chapterId,
+        first.id,
+        first.position,
+        second.id,
+        second.position,
+        first.updatedAt,
+      ],
+    );
   }
 
   override async delete(campaignId: string, id: string): Promise<void> {
@@ -126,6 +183,8 @@ export class TauriSceneRepository extends SceneRepository {
     return rows.map((row) => ({
       id: row.id,
       campaignId: row.campaign_id,
+      chapterId: row.chapter_id,
+      position: row.position,
       name: row.name,
       summary: row.summary,
       locationId: row.location_id,
@@ -152,4 +211,6 @@ export class TauriSceneRepository extends SceneRepository {
   }
 }
 
-const SCENE_COLUMNS = 'SELECT id, campaign_id, name, summary, location_id, created_at, updated_at';
+const SCENE_COLUMNS = `SELECT scene.id, scene.campaign_id, scene.chapter_id, scene.position,
+                              scene.name, scene.summary, scene.location_id,
+                              scene.created_at, scene.updated_at`;

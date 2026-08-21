@@ -1,4 +1,4 @@
-import { createScene, updateScene } from '@app/features/scenes/domain/scene';
+import { createScene, moveSceneToChapter, updateScene } from '@app/features/scenes/domain/scene';
 
 describe('Scene', () => {
   const now = () => new Date('2026-08-13T12:00:00.000Z');
@@ -7,6 +7,8 @@ describe('Scene', () => {
     expect(
       createScene(
         'campaign-id',
+        'chapter-id',
+        2,
         {
           name: '  Arrivée au port  ',
           summary: '  Première rencontre  ',
@@ -21,6 +23,8 @@ describe('Scene', () => {
     ).toEqual({
       id: 'scene-id',
       campaignId: 'campaign-id',
+      chapterId: 'chapter-id',
+      position: 2,
       name: 'Arrivée au port',
       summary: 'Première rencontre',
       locationId: null,
@@ -35,6 +39,8 @@ describe('Scene', () => {
   it('updates the editable fields and rejects an empty name', () => {
     const scene = createScene(
       'campaign-id',
+      'chapter-id',
+      0,
       { name: 'Port', summary: '', locationId: null, npcIds: [], monsterIds: [], itemIds: [] },
       () => 'scene-id',
       now,
@@ -67,5 +73,24 @@ describe('Scene', () => {
         itemIds: [],
       }),
     ).toThrow('Scene name is required.');
+  });
+
+  it('moves a scene to an ordered position in another chapter', () => {
+    const scene = createScene(
+      'campaign-id',
+      'chapter-1',
+      0,
+      { name: 'Port', summary: '', locationId: null, npcIds: [], monsterIds: [], itemIds: [] },
+      () => 'scene-id',
+      now,
+    );
+
+    expect(
+      moveSceneToChapter(scene, 'chapter-2', 3, () => new Date('2026-08-13T13:00:00.000Z')),
+    ).toMatchObject({
+      chapterId: 'chapter-2',
+      position: 3,
+      updatedAt: '2026-08-13T13:00:00.000Z',
+    });
   });
 });

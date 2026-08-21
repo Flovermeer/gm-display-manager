@@ -84,6 +84,8 @@ function sceneFixture(overrides: Partial<Scene> = {}): Scene {
   return {
     id: 'scene-id',
     campaignId: 'campaign-id',
+    chapterId: 'chapter-id',
+    position: 0,
     name: 'Audience',
     summary: '',
     locationId: null,

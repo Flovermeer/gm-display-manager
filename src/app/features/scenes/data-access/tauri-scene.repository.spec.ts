@@ -37,11 +37,26 @@ describe('TauriSceneRepository', () => {
       ['scene-id', 'item-id'],
     );
   });
+
+  it('swaps two positions only inside their chapter', async () => {
+    const repository = new TauriSceneRepository();
+    await repository.updateOrder([
+      { ...scene, position: 1 },
+      { ...scene, id: 'second-scene', position: 0 },
+    ]);
+
+    expect(database.execute).toHaveBeenCalledWith(
+      expect.stringContaining('WHERE campaign_id = $1 AND chapter_id = $2'),
+      expect.arrayContaining(['campaign-id', 'chapter-id', 'scene-id', 'second-scene']),
+    );
+  });
 });
 
 const scene: Scene = {
   id: 'scene-id',
   campaignId: 'campaign-id',
+  chapterId: 'chapter-id',
+  position: 0,
   name: 'Campement',
   summary: 'Repos nocturne',
   locationId: 'location-id',
@@ -55,6 +70,8 @@ const scene: Scene = {
 const sceneRow = {
   id: 'scene-id',
   campaign_id: 'campaign-id',
+  chapter_id: 'chapter-id',
+  position: 0,
   name: 'Campement',
   summary: 'Repos nocturne',
   location_id: 'location-id',

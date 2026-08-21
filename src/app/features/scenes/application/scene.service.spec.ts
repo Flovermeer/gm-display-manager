@@ -15,14 +15,20 @@ import { SceneRepository } from '@app/features/scenes/data-access/scene.reposito
 import { SceneService } from '@app/features/scenes/application/scene.service';
 import { MonsterRepository } from '@app/features/bestiary/data-access/monster.repository';
 import { InMemoryMonsterRepository } from '@app/features/bestiary/data-access/in-memory-monster.repository';
+import { ChapterService } from '@app/features/chapters/application/chapter.service';
+import { ChapterRepository } from '@app/features/chapters/data-access/chapter.repository';
+import { InMemoryChapterRepository } from '@app/features/chapters/data-access/in-memory-chapter.repository';
 
 describe('SceneService', () => {
   let service: SceneService;
+  let chapterService: ChapterService;
 
   beforeEach(() => {
     TestBed.configureTestingModule({
       providers: [
         SceneService,
+        ChapterService,
+        { provide: ChapterRepository, useClass: InMemoryChapterRepository },
         { provide: SceneRepository, useClass: InMemorySceneRepository },
         { provide: MonsterRepository, useClass: InMemoryMonsterRepository },
         { provide: LocationRepository, useClass: InMemoryLocationRepository },
@@ -33,10 +39,16 @@ describe('SceneService', () => {
       ],
     });
     service = TestBed.inject(SceneService);
+    chapterService = TestBed.inject(ChapterService);
   });
 
   it('creates and deletes an empty scene', async () => {
-    const scene = await service.create('campaign-id', {
+    const chapter = await chapterService.create('campaign-id', {
+      title: 'Port Nyanzaru',
+      summary: '',
+      content: { schemaVersion: 1, content: { type: 'doc' } },
+    });
+    const scene = await service.create('campaign-id', chapter.id, {
       name: 'Campement',
       summary: '',
       locationId: null,
@@ -50,8 +62,13 @@ describe('SceneService', () => {
   });
 
   it('rejects references from outside the campaign', async () => {
+    const chapter = await chapterService.create('campaign-id', {
+      title: 'Port Nyanzaru',
+      summary: '',
+      content: { schemaVersion: 1, content: { type: 'doc' } },
+    });
     await expect(
-      service.create('campaign-id', {
+      service.create('campaign-id', chapter.id, {
         name: 'Campement',
         summary: '',
         locationId: 'foreign-location',
@@ -60,5 +77,42 @@ describe('SceneService', () => {
         itemIds: [],
       }),
     ).rejects.toThrow("Le lieu de la scène n'appartient pas à cette campagne.");
+  });
+
+  it('orders scenes inside a chapter and appends a moved scene', async () => {
+    const firstChapter = await chapterService.create('campaign-id', {
+      title: 'Port Nyanzaru',
+      summary: '',
+      content: { schemaVersion: 1, content: { type: 'doc' } },
+    });
+    const secondChapter = await chapterService.create('campaign-id', {
+      title: 'La jungle',
+      summary: '',
+      content: { schemaVersion: 1, content: { type: 'doc' } },
+    });
+    const first = await service.create('campaign-id', firstChapter.id, {
+      name: 'Débarquement',
+      summary: '',
+      locationId: null,
+      npcIds: [],
+      monsterIds: [],
+      itemIds: [],
+    });
+    const second = await service.create('campaign-id', firstChapter.id, {
+      name: 'Audience',
+      summary: '',
+      locationId: null,
+      npcIds: [],
+      monsterIds: [],
+      itemIds: [],
+    });
+
+    await service.move(second, -1);
+    expect(
+      (await service.listByChapter('campaign-id', firstChapter.id)).map(({ id }) => id),
+    ).toEqual([second.id, first.id]);
+
+    const moved = await service.moveToChapter(first, secondChapter.id);
+    expect(moved).toMatchObject({ chapterId: secondChapter.id, position: 0 });
   });
 });

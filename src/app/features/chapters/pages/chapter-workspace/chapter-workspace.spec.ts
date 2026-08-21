@@ -1,4 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { By } from '@angular/platform-browser';
 import { ActivatedRoute, convertToParamMap, provideRouter, Router } from '@angular/router';
 import { BehaviorSubject } from 'rxjs';
 
@@ -18,6 +19,7 @@ import { ActiveSceneService } from '@app/features/scenes/application/active-scen
 import { DisplayGateway } from '@app/features/display/data-access/display.gateway';
 import { PlayerDisplayStore } from '@app/features/display/application/player-display.store';
 import type { Scene } from '@app/features/scenes/domain/scene';
+import { RichTextEditor } from '@app/shared/rich-text-editor/rich-text-editor';
 
 describe('ChapterWorkspace', () => {
   const campaign: Campaign = {
@@ -216,6 +218,35 @@ describe('ChapterWorkspace', () => {
         chapterId: chapter.id,
         returnChapterId: chapter.id,
       },
+    });
+  });
+
+  it('offers scene mentions in chapter content and opens the referenced scene', async () => {
+    const scene = sceneFixture(chapter.id);
+    sceneService.list.mockResolvedValue([scene]);
+    const router = TestBed.inject(Router);
+    const navigate = vi.spyOn(router, 'navigate').mockResolvedValue(true);
+    const fixture = TestBed.createComponent(ChapterWorkspace);
+    fixture.detectChanges();
+    await renderUntil(fixture, 'Le port');
+
+    (fixture.nativeElement as HTMLElement)
+      .querySelector<HTMLButtonElement>('.chapter-list-item')
+      ?.click();
+    await renderUntil(fixture, 'Bienvenue à Chult');
+
+    const editor = fixture.debugElement.query(By.directive(RichTextEditor))
+      .componentInstance as RichTextEditor;
+    const mention = {
+      resourceType: 'scene' as const,
+      resourceId: scene.id,
+      label: scene.name,
+    };
+    expect(editor.mentionCandidates()).toContainEqual(mention);
+
+    editor.mentionActivate.emit(mention);
+    expect(navigate).toHaveBeenCalledWith(['/campaigns', campaign.id, 'scenes'], {
+      queryParams: { resourceId: scene.id },
     });
   });
 });

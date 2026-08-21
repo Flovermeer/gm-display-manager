@@ -381,6 +381,11 @@ export class ChapterWorkspace implements OnInit, PendingChangesAware {
           resourceId: location.id,
           label: location.name,
         })),
+        ...scenes.map((scene) => ({
+          resourceType: 'scene' as const,
+          resourceId: scene.id,
+          label: scene.name,
+        })),
       ]);
       await this.openRequestedChapter(this.route.snapshot.queryParamMap.get('resourceId'));
     } catch (error) {

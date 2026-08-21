@@ -1,8 +1,30 @@
-# Plan d'implémentation
+# Journal et plan d'implémentation
 
 Date de cadrage : 12 août 2026
 
-Dernière consolidation : 20 août 2026
+Dernière consolidation : 21 août 2026
+
+Version fonctionnelle actuelle : **V1 terminée**
+
+Prochaine version : **V1.1 — Durcissement et livraison Windows**
+
+## Journal des versions
+
+### V1 — Terminée le 21 août 2026
+
+La V1 fournit le parcours jouable complet retenu pour le premier usage en partie : gestion locale
+des campagnes et ressources, Player Display, chapitres et scènes, Journal riche, bestiaire, combat
+léger, historique récent et tables aléatoires.
+
+La finalisation du périmètre chapitres-scènes impose un chapitre unique à chaque scène, permet la
+création, le déplacement confirmé et le réordonnancement depuis le chapitre, supprime les scènes en
+cascade avec leur chapitre et rend les scènes disponibles dans les mentions `@`.
+
+### V1.1 — En préparation
+
+La V1.1 ne cherche pas à élargir le gestionnaire de campagne. Elle doit fiabiliser la V1 pour les
+sessions réelles et produire une version Windows sauvegardable, restaurable et installable. Son
+périmètre correspond au jalon 14. La carte heuristique du jalon 12 reste reportée après la V1.1.
 
 ## Statut consolidé
 
@@ -10,19 +32,19 @@ Dernière consolidation : 20 août 2026
 | --------------------------- | ---------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | 0 — Environnement           | Terminé                                  | Node 24 épinglé avec Volta, Angular 22, Rust stable MSVC, Build Tools et WebView2 validés.                                                                                                                          |
 | 1 — Shell Angular + Tauri   | Terminé                                  | Application standalone zoneless, routes Angular, fenêtre principale maximisée et capabilities Tauri en place.                                                                                                       |
-| 2 — Multi-écran             | Fonctionnel, validation avancée restante | Détection, choix persistant du moniteur et fenêtre joueurs dédiée plein écran validés sur le matériel nominal. Restent les cas de déconnexion, remplacement, coordonnées négatives et facteurs d’échelle variés.    |
+| 2 — Multi-écran             | V1 terminée, durcissement V1.1 prévu     | Détection, choix persistant du moniteur et fenêtre joueurs dédiée plein écran validés sur le matériel nominal. Les cas de déconnexion, remplacement, coordonnées négatives et facteurs d’échelle variés passent en V1.1. |
 | 3 — Régie verticale         | Terminé                                  | Écran noir, lieux, PNJ et objets peuvent être envoyés au Player Display ; synchronisation `ready` et fallback statique des PNJ en place.                                                                            |
 | 4 — SQLite                  | Terminé pour les tranches livrées        | Vingt migrations couvrent notamment systèmes, univers, campagnes, propriété des ressources, combat, historique récent, tables aléatoires et classement des scènes par chapitre. Repositories Tauri et mémoire isolés derrière des interfaces.          |
 | 5 — Gestion de campagne     | Terminé et étendu                        | CRUD campagnes, lieux hiérarchiques, PNJ structurés, PJ orientés MJ et objets narratifs. Navigation campagne persistante et protection des modifications non enregistrées.                                          |
-| 6 — Médias locaux           | Terminé pour images et portraits animés  | Import/copie locale des portraits PNJ/PJ, images de lieux et d’objets, vidéo idle PNJ et nettoyage des médias. Une validation plus large des fichiers cassés reste à inclure au durcissement.                       |
+| 6 — Médias locaux           | V1 terminée, durcissement V1.1 prévu     | Import/copie locale des portraits PNJ/PJ, images de lieux et d’objets, vidéo idle PNJ et nettoyage des médias. La récupération face aux fichiers cassés passe en V1.1.                                               |
 | 7 — Tiptap et journal       | Terminé pour l’usage actuel              | Chapitres et descriptions riches, notes journalisées éditables, regroupement quotidien, mentions `@` cliquables vers les ressources de campagne et fallback texte si la cible disparaît.                            |
-| 8 — Scènes                  | Terminé                                  | Composition facultative lieu + PNJ + monstres + objets, activation/désactivation et retour à l’écran par défaut sont livrés.                                                                                        |
+| 8 — Scènes                  | V1 terminée                              | Composition facultative avec lieu + PNJ + monstres + objets, activation du Player Display, appartenance obligatoire à un chapitre, ordre manuel, gestion depuis le chapitre et mentions `@` sont livrés.            |
 | 9 — Bestiaire               | Terminé et catalogue global finalisé     | Les catalogues canoniques PNJ, PJ, lieux, objets et monstres disposent d’éditeurs détaillés par univers. Le bestiaire conserve sa sélection par campagne, sa fiche D&D complète, ses scènes, notes et mentions `@`. |
 | 10 — Combat léger           | Terminé                                  | Un combat actif persistant par campagne, panneau MJ superposé, ajout PJ/PNJ/monstres, initiative manuelle triée et suivi rapide des PV.                                                                               |
 | 11 — Historique récent      | Terminé                                  | Huit pills persistées et cliquables par campagne, dédupliquées par récence et purgées lorsque leur cible disparaît.                                                                                                  |
-| 12 — Carte heuristique      | Reporté, hors priorité jouable           | Graphe automatique et navigable des chapitres, ressources liées et mentions `@`, sans édition manuelle du graphe. Le jalon sera repris après les priorités nécessaires au jeu.                                      |
+| 12 — Carte heuristique      | Reporté après la V1.1                    | Graphe automatique et navigable des chapitres, ressources liées et mentions `@`, sans édition manuelle du graphe.                                                                                                   |
 | 13 — Tables aléatoires      | Terminé                                  | CRUD atomique de tables privées au MJ, plages de 1 à 100 triées automatiquement, validation de couverture continue et tirage uniforme sans historique.                                                              |
-| 14 — Durcissement/livraison | Non commencé                             | Sauvegarde/restauration, tests matériels dégradés, session longue, journal technique, installeur Windows et guide de dépannage restent à faire.                                                                     |
+| 14 — Durcissement/livraison | Planifié pour la V1.1                    | Sauvegarde/restauration, tests matériels dégradés, session longue, journal technique, installeur Windows et guide de dépannage constituent le périmètre de la V1.1.                                                 |
 
 ### Tranches supplémentaires déjà livrées
 
@@ -46,16 +68,18 @@ Dernière consolidation : 20 août 2026
 - historique des huit dernières ressources consultées, persistant par campagne et accessible sous la navigation.
 - tables aléatoires privées au MJ avec brouillons incomplets, plages continues et tirage local.
 
-### Prochaine priorité recommandée
+### Prochaine version
 
-Le prochain ordre de livraison retenu est :
+La V1 est terminée. L'ordre de livraison de la V1.1 est :
 
-1. **Jalon 14 — Durcissement et livraison Windows** ;
-2. **Jalon 12 — Carte heuristique**, reporté sans échéance après les priorités nécessaires au jeu.
+1. récupération fiable du Player Display et des changements de moniteur ;
+2. sauvegarde et restauration d'une campagne ;
+3. gestion des erreurs, journal technique et contrôle des médias ;
+4. validations matérielles et session longue ;
+5. paquet Windows et documentation de livraison.
 
-Le jalon 13 est livré. Les tables restent volontairement un outil privé et autonome : elles ne
-créent pas de note de Journal, n'alimentent pas les ressources récentes et n'envoient rien au
-Player Display.
+Le jalon 12 — carte heuristique — reste explicitement reporté après la V1.1. Les extensions du
+combat, des tables et des fonds animés configurables restent également hors de cette version.
 
 ## 1. Résultat recherché
 
@@ -539,7 +563,7 @@ Livré :
 Les appels imbriqués, l'historique des tirages, les liens vers les ressources, le Journal et le
 Player Display restent hors de cette tranche.
 
-### Jalon 14 — Durcissement et livraison Windows
+### Jalon 14 — V1.1, durcissement et livraison Windows
 
 Objectif : rendre l'application fiable pendant une session réelle.
 
@@ -639,9 +663,9 @@ Jalons 7 à 8   -> gestion de campagne et scènes narratives
 Jalon 9        -> bestiaire réutilisable
 Jalon 10       -> suivi de combat léger
 Jalon 11       -> historique récent des ressources
-Jalon 12       -> carte heuristique automatique, reportée
-Jalon 13       -> tables aléatoires
-Jalon 14       -> version Windows distribuable
+Jalon 12       -> carte heuristique automatique, reportée après la V1.1
+Jalon 13       -> tables aléatoires, fin de la V1 fonctionnelle
+Jalon 14       -> V1.1, durcissement et version Windows distribuable
 ```
 
 On ne passe pas de la preuve de concept au gestionnaire de campagne tant que le flux `clic MJ -> écran joueurs` n'a pas été validé sur deux moniteurs physiques.

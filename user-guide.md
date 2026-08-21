@@ -279,8 +279,6 @@ Ctrl + C
 
 - l'état de la fenêtre n'est pas encore synchronisé en temps réel si elle est
   fermée directement par Windows ;
-- les contenus sont encore des médias de démonstration et ne proviennent pas
-  d'une campagne persistée ;
 - les documents ne sont pas encore proposés dans le panneau MJ ;
 - la reconnexion automatique après le retrait d'un moniteur reste à implémenter ;
 - la validation multi-écran est pour l'instant manuelle et ciblée sur Windows.

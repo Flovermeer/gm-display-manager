@@ -10,8 +10,9 @@ import { FormField } from '@app/shared/ui/form-field/form-field';
 import { RuleCatalogSettings } from '@app/features/game-systems/ui/rule-catalog-settings/rule-catalog-settings';
 import { UniverseResourceCatalog } from '@app/features/game-systems/ui/universe-resource-catalog/universe-resource-catalog';
 import type { PendingChangesAware } from '@app/core/navigation/pending-changes.guard';
+import { BackupSettings } from '@app/features/backups/ui/backup-settings/backup-settings';
 
-type ConfigurationSection = 'systems' | 'resources' | 'rules';
+type ConfigurationSection = 'systems' | 'resources' | 'rules' | 'backups';
 
 type PurgeTarget =
   | Readonly<{ kind: 'system'; item: GameSystem }>
@@ -27,6 +28,7 @@ type PurgeTarget =
     FormField,
     RuleCatalogSettings,
     UniverseResourceCatalog,
+    BackupSettings,
   ],
   templateUrl: './global-configuration.html',
   styleUrl: './global-configuration.scss',

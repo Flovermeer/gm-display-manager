@@ -1,0 +1,97 @@
+<div class="backup-settings">
+  <div class="backup-settings__heading">
+    <p class="configuration-workspace__kicker">Données locales</p>
+    <h2 id="backups-title">Sauvegarde et restauration</h2>
+    <p>
+      L’archive contient la base SQLite, toutes les campagnes et tous les médias partagés des
+      univers.
+    </p>
+  </div>
+
+  <section class="backup-settings__action" aria-labelledby="create-backup-title">
+    <div>
+      <h3 id="create-backup-title">Créer une sauvegarde complète</h3>
+      <p>Enregistre une archive ZIP portable à l’emplacement de ton choix.</p>
+    </div>
+    <button
+      appButton="primary"
+      type="button"
+      [disabled]="!isAvailable || operation()?.outcome === 'running'"
+      (click)="createBackup()"
+    >
+      Créer la sauvegarde
+    </button>
+  </section>
+
+  <section class="backup-settings__action" aria-labelledby="restore-backup-title">
+    <div>
+      <h3 id="restore-backup-title">Restaurer une sauvegarde</h3>
+      <p>Remplace toutes les données locales, puis redémarre automatiquement l’application.</p>
+    </div>
+    <button
+      appButton="danger"
+      type="button"
+      [disabled]="!isAvailable || operation()?.outcome === 'running'"
+      (click)="selectRestoreArchive()"
+    >
+      Choisir une sauvegarde
+    </button>
+  </section>
+
+  @if (!isAvailable) {
+    <p class="backup-settings__notice">
+      Ces opérations sont disponibles dans l’application desktop installée.
+    </p>
+  }
+</div>
+
+@if (restoreCandidate(); as candidate) {
+  <app-dialog
+    kicker="Restauration complète"
+    title="Remplacer toutes les données locales ?"
+    headingId="confirm-restore-title"
+  >
+    <p>
+      Sauvegarde créée le {{ formatBackupDate(candidate.manifest.createdAtUnixMs) }} avec la version
+      {{ candidate.manifest.appVersion }}.
+    </p>
+    <p>
+      Les campagnes, univers et médias actuels seront remplacés. L’application redémarrera sans
+      intervention supplémentaire.
+    </p>
+    <div dialog-actions class="backup-settings__dialog-actions">
+      <button appButton="secondary" type="button" (click)="cancelRestore()">Annuler</button>
+      <button appButton="danger" type="button" (click)="confirmRestore()">
+        Restaurer et redémarrer
+      </button>
+    </div>
+  </app-dialog>
+}
+
+@if (operation(); as currentOperation) {
+  <app-dialog
+    kicker="Données locales"
+    [title]="operationTitle(currentOperation)"
+    headingId="backup-progress-title"
+  >
+    <div class="backup-progress" [attr.aria-busy]="currentOperation.outcome === 'running'">
+      @if (currentOperation.progress === null) {
+        <progress aria-label="Opération en cours"></progress>
+      } @else {
+        <progress
+          max="100"
+          [value]="currentOperation.progress"
+          aria-label="Progression de l’opération"
+        ></progress>
+      }
+      <p [class.backup-progress__error]="currentOperation.outcome === 'error'">
+        {{ currentOperation.message }}
+      </p>
+    </div>
+    @if (currentOperation.outcome !== 'running') {
+      <div dialog-actions class="backup-settings__dialog-actions">
+        <button appButton="secondary" type="button" (click)="closeOperation()">Fermer</button>
+      </div>
+    }
+  </app-dialog>
+}

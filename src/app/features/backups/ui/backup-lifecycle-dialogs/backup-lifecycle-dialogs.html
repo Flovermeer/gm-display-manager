@@ -1,0 +1,80 @@
+@if (backup.recovery(); as recovery) {
+  <app-dialog
+    kicker="Récupération"
+    title="La base locale ne peut pas être ouverte"
+    headingId="database-recovery-title"
+  >
+    <p>{{ recovery.reason }}</p>
+    @if (recovery.candidate; as candidate) {
+      <p>
+        Une sauvegarde valide du {{ formatBackupDate(candidate.manifest.createdAtUnixMs) }} est
+        disponible. Elle remplacera les données locales après un redémarrage automatique.
+      </p>
+    } @else {
+      <p>Aucune sauvegarde automatique valide n’a été trouvée.</p>
+    }
+
+    @if (recovery.isRestoring) {
+      <div class="backup-lifecycle__progress" aria-busy="true">
+        <progress aria-label="Restauration en cours"></progress>
+        <p>Préparation de la restauration et du redémarrage…</p>
+      </div>
+    } @else if (recovery.error; as error) {
+      <p class="backup-lifecycle__error" role="alert">{{ error }}</p>
+    }
+    <ng-container dialog-actions>
+      @if (!recovery.isRestoring) {
+        <div class="backup-lifecycle__actions">
+          <button appButton="secondary" type="button" (click)="backup.quitWithoutBackup()">
+            Fermer l’application
+          </button>
+          <button
+            appButton="secondary"
+            type="button"
+            [disabled]="recovery.isSelecting"
+            (click)="backup.chooseRecoveryArchive()"
+          >
+            {{ recovery.isSelecting ? 'Validation…' : 'Choisir une autre sauvegarde' }}
+          </button>
+          @if (recovery.candidate) {
+            <button appButton="primary" type="button" (click)="backup.restoreRecoveryCandidate()">
+              Restaurer et redémarrer
+            </button>
+          }
+        </div>
+      }
+    </ng-container>
+  </app-dialog>
+} @else if (backup.closePrompt(); as closePrompt) {
+  <app-dialog
+    kicker="Fermeture"
+    title="Créer une sauvegarde avant de quitter ?"
+    headingId="close-backup-title"
+  >
+    <p>
+      Les données sont déjà enregistrées dans SQLite, mais les dernières modifications ne figurent
+      pas encore dans une archive de récupération.
+    </p>
+    @if (closePrompt.isSaving) {
+      <div class="backup-lifecycle__progress" aria-busy="true">
+        <progress aria-label="Sauvegarde en cours"></progress>
+        <p>Création de la sauvegarde automatique…</p>
+      </div>
+    } @else if (closePrompt.error; as error) {
+      <p class="backup-lifecycle__error" role="alert">{{ error }}</p>
+    }
+    <ng-container dialog-actions>
+      @if (!closePrompt.isSaving) {
+        <div class="backup-lifecycle__actions">
+          <button appButton="secondary" type="button" (click)="backup.cancelClose()">Annuler</button>
+          <button appButton="secondary-danger" type="button" (click)="backup.quitWithoutBackup()">
+            Quitter sans sauvegarde
+          </button>
+          <button appButton="primary" type="button" (click)="backup.saveAndClose()">
+            Sauvegarder et quitter
+          </button>
+        </div>
+      }
+    </ng-container>
+  </app-dialog>
+}

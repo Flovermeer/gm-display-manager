@@ -1,4 +1,9 @@
-import { ApplicationConfig, provideBrowserGlobalErrorListeners } from '@angular/core';
+import {
+  ApplicationConfig,
+  inject,
+  provideAppInitializer,
+  provideBrowserGlobalErrorListeners,
+} from '@angular/core';
 import { provideRouter, withInMemoryScrolling } from '@angular/router';
 import { isTauri } from '@tauri-apps/api/core';
 
@@ -75,11 +80,31 @@ import { TauriRecentResourceRepository } from '@app/features/recent-resources/da
 import { RandomTableRepository } from '@app/features/random-tables/data-access/random-table.repository';
 import { InMemoryRandomTableRepository } from '@app/features/random-tables/data-access/in-memory-random-table.repository';
 import { TauriRandomTableRepository } from '@app/features/random-tables/data-access/tauri-random-table.repository';
+import { ApplicationBackupService } from '@app/features/backups/application/application-backup.service';
+import { ApplicationBackupGateway } from '@app/features/backups/data-access/application-backup.gateway';
+import { BrowserApplicationBackupGateway } from '@app/features/backups/data-access/browser-application-backup.gateway';
+import { TauriApplicationBackupGateway } from '@app/features/backups/data-access/tauri-application-backup.gateway';
+import { ApplicationWindowGateway } from '@app/features/backups/data-access/application-window.gateway';
+import { BrowserApplicationWindowGateway } from '@app/features/backups/data-access/browser-application-window.gateway';
+import { TauriApplicationWindowGateway } from '@app/features/backups/data-access/tauri-application-window.gateway';
 
 export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
     provideRouter(routes, withInMemoryScrolling({ anchorScrolling: 'enabled' })),
+    provideAppInitializer(() => inject(ApplicationBackupService).initialize()),
+    {
+      provide: ApplicationBackupGateway,
+      useFactory: () =>
+        isTauri()
+          ? new TauriApplicationBackupGateway()
+          : new BrowserApplicationBackupGateway(),
+    },
+    {
+      provide: ApplicationWindowGateway,
+      useFactory: () =>
+        isTauri() ? new TauriApplicationWindowGateway() : new BrowserApplicationWindowGateway(),
+    },
     {
       provide: AppSettingRepository,
       useFactory: () =>

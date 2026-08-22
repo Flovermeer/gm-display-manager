@@ -35,15 +35,30 @@
       >
         Référentiels de règles
       </button>
+      <button
+        class="configuration-menu__item"
+        [class.configuration-menu__item--active]="section() === 'backups'"
+        type="button"
+        (click)="openSection('backups')"
+      >
+        Sauvegarde et restauration
+      </button>
     </nav>
 
-    <section class="configuration-workspace" aria-labelledby="systems-title">
+    <section
+      class="configuration-workspace"
+      [attr.aria-labelledby]="
+        section() === 'systems' ? 'systems-title' : section() === 'backups' ? 'backups-title' : null
+      "
+    >
       @if (section() === 'resources' && selectedUniverse(); as universe) {
         <app-universe-resource-catalog [universe]="universe" />
       } @else if (section() === 'rules' && selectedSystem(); as system) {
         @if (selectedUniverse(); as universe) {
           <app-rule-catalog-settings [system]="system" [universe]="universe" />
         }
+      } @else if (section() === 'backups') {
+        <app-backup-settings />
       } @else {
         <div class="configuration-workspace__heading">
           <p class="configuration-workspace__kicker">Catalogue global</p>

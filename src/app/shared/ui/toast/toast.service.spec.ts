@@ -30,4 +30,16 @@ describe('ToastService', () => {
     vi.advanceTimersByTime(240);
     expect(service.messages()).toEqual([]);
   });
+
+  it('publishes a success notification with the same lifecycle', () => {
+    const service = TestBed.inject(ToastService);
+
+    service.success('Restauration terminée.');
+
+    expect(service.messages()[0]).toMatchObject({
+      message: 'Restauration terminée.',
+      tone: 'success',
+      isClosing: false,
+    });
+  });
 });

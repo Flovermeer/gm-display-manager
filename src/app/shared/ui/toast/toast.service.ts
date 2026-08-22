@@ -13,7 +13,7 @@ import { Injectable, signal } from '@angular/core';
 export type ToastMessage = Readonly<{
   id: string;
   message: string;
-  tone: 'warning';
+  tone: 'success' | 'warning';
   isClosing: boolean;
 }>;
 
@@ -29,10 +29,22 @@ export class ToastService {
   readonly messages = this.messagesSignal.asReadonly();
 
   warning(message: string, duration = DEFAULT_DURATION): string {
+    return this.publish(message, 'warning', duration);
+  }
+
+  success(message: string, duration = DEFAULT_DURATION): string {
+    return this.publish(message, 'success', duration);
+  }
+
+  private publish(
+    message: string,
+    tone: ToastMessage['tone'],
+    duration: number,
+  ): string {
     const id = crypto.randomUUID();
     this.messagesSignal.update((messages) => [
       ...messages,
-      { id, message, tone: 'warning', isClosing: false },
+      { id, message, tone, isClosing: false },
     ]);
     this.dismissTimers.set(
       id,

@@ -6,7 +6,7 @@
       [attr.data-tone]="message.tone"
       role="alert"
     >
-      <span class="toast__marker" aria-hidden="true">!</span>
+      <span class="toast__marker" aria-hidden="true">{{ message.tone === 'success' ? '✓' : '!' }}</span>
       <p>{{ message.message }}</p>
       <button
         type="button"

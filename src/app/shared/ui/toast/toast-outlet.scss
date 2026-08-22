@@ -42,6 +42,14 @@
   place-items: center;
 }
 
+.toast[data-tone='success'] {
+  border-color: #63906a;
+}
+
+.toast[data-tone='success'] .toast__marker {
+  background: #94c49b;
+}
+
 .toast p {
   margin: 0;
   line-height: 1.4;

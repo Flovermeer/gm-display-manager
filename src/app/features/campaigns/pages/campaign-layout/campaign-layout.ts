@@ -8,11 +8,10 @@ import { CombatPanel } from '@app/features/combat/ui/combat-panel/combat-panel';
 import { RecentResourceStore } from '@app/features/recent-resources/application/recent-resource.store';
 import { RecentResourceList } from '@app/features/recent-resources/ui/recent-resource-list/recent-resource-list';
 import { PlayerDisplayMonitorSessionService } from '@app/features/display/application/player-display-monitor-session.service';
-import { ToastOutlet } from '@app/shared/ui/toast/toast-outlet';
 
 @Component({
   selector: 'app-campaign-layout',
-  imports: [CampaignNavigation, CombatPanel, RecentResourceList, RouterOutlet, ToastOutlet],
+  imports: [CampaignNavigation, CombatPanel, RecentResourceList, RouterOutlet],
   providers: [
     CampaignContext,
     CombatStore,

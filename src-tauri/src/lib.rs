@@ -1,5 +1,7 @@
 use tauri_plugin_sql::{Migration, MigrationKind};
 
+mod backup;
+
 const DATABASE_URL: &str = "sqlite:beholders-inn.db";
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -12,6 +14,22 @@ pub fn run() {
                 .add_migrations(DATABASE_URL, migrations())
                 .build(),
         )
+        .setup(|app| {
+            let app_data = tauri::Manager::path(app).app_data_dir()?;
+            backup::apply_pending_restore(&app_data);
+            Ok(())
+        })
+        .invoke_handler(tauri::generate_handler![
+            backup::create_backup,
+            backup::create_automatic_backup,
+            backup::cleanup_backup_snapshot,
+            backup::backup_status,
+            backup::latest_automatic_backup,
+            backup::inspect_backup,
+            backup::prepare_restore,
+            backup::take_restore_result,
+            backup::exit_application,
+        ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

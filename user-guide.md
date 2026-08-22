@@ -136,7 +136,42 @@ Les statuts, propriétaires, noms de joueurs, PV courants et notes de campagne n
 figurent pas dans ces éditeurs : ils restent propres à chaque campagne. Quitter
 une fiche modifiée déclenche une confirmation avant d'abandonner le brouillon.
 
-## 4. Suivre un combat
+## 4. Sauvegarder et restaurer l’application
+
+Depuis l’accueil, ouvre **Configuration**, puis **Sauvegarde et restauration**. Ces opérations sont
+disponibles uniquement dans l’application desktop Tauri.
+
+**Créer la sauvegarde** ouvre le sélecteur Windows. Choisis un dossier et un nom de fichier :
+l’application crée une archive ZIP portable contenant la base SQLite, toutes les campagnes, tous les
+univers et leurs médias. Une petite fenêtre suit la copie cohérente de la base puis l’archivage. Ne
+ferme pas l’application avant le message de réussite.
+
+En parallèle, l’application conserve jusqu’à dix sauvegardes automatiques dans son dossier de
+données. Toutes les trente minutes, elle compare l’état de SQLite et des médias à la dernière archive
+complète et n’en crée une nouvelle que si quelque chose a changé.
+
+À la fermeture normale de la fenêtre principale, une confirmation apparaît uniquement lorsque les
+dernières modifications ne figurent dans aucune archive. **Sauvegarder et quitter** crée une archive
+automatique avant de fermer. **Quitter sans sauvegarde** ne perd pas le travail courant, déjà écrit
+dans SQLite, mais quitte sans nouveau point de récupération. Un arrêt forcé ou un plantage ne peut
+pas afficher cette confirmation.
+
+**Choisir une sauvegarde** valide d’abord l’archive. Après confirmation, toutes les données locales
+actuelles seront remplacées. La préparation, le redémarrage de l’application et le remplacement sont
+automatiques ; un toast affiché après le redémarrage confirme la réussite. Si le remplacement des
+fichiers échoue, l’application tente de remettre les données précédentes en place et le signale au
+MJ.
+
+Crée une sauvegarde récente avant toute restauration. Conserve les archives hors du dossier de
+données interne de l’application : les sauvegardes automatiques protègent contre une base corrompue,
+mais pas contre la perte complète de ce dossier ou du disque.
+
+Au lancement, l’application contrôle l’intégrité de SQLite. Si la base ne peut pas être ouverte, une
+fenêtre de récupération propose la sauvegarde automatique valide la plus récente. Tu peux aussi
+choisir une autre archive. Rien n’est restauré sans confirmation : après validation, l’application
+prépare les fichiers, redémarre et applique la restauration avant de rouvrir SQLite.
+
+## 5. Suivre un combat
 
 Le bouton **Combat** de la barre supérieure ouvre un panneau privé au MJ au-dessus de la page
 courante. Le panneau peut être replié puis rouvert sans perdre la rencontre.
@@ -156,7 +191,7 @@ courante. Le panneau peut être replié puis rouvert sans perdre la rencontre.
 Le combat est enregistré dans SQLite et survit à un redémarrage de l'application. Les PV des PJ
 restent synchronisés avec leur fiche de campagne. Le combat n'est jamais envoyé au Player Display.
 
-## 5. Revenir aux ressources récentes
+## 6. Revenir aux ressources récentes
 
 Lorsqu'une fiche PJ, PNJ, monstre, lieu, chapitre, objet ou scène est affichée, elle rejoint la rangée
 **Récents** sous la navigation de campagne. Chaque pill indique son type et son nom ; clique dessus
@@ -166,7 +201,7 @@ La liste conserve automatiquement les huit dernières ressources, sans doublon, 
 la plus ancienne. Elle est propre à chaque campagne, enregistrée dans SQLite et masquée lorsqu'elle
 est vide. Une ressource supprimée ou retirée de la campagne disparaît également de cette liste.
 
-## 6. Utiliser les tables aléatoires
+## 7. Utiliser les tables aléatoires
 
 Ouvre **Tables** dans la navigation de la campagne. Une table possède un nom obligatoire, une
 description facultative et autant de résultats textuels que nécessaire.
@@ -182,7 +217,7 @@ l'écran joueurs.
 
 La suppression d'une table demande confirmation et supprime définitivement toutes ses entrées.
 
-## 7. Choisir l'écran des joueurs
+## 8. Choisir l'écran des joueurs
 
 Dans la section **Écran joueurs** :
 
@@ -205,7 +240,7 @@ prochain lancement, il est automatiquement présélectionné s'il peut être rec
 sans ambiguïté. Si deux moniteurs identiques partagent la même empreinte,
 l'application demande une nouvelle sélection au lieu de choisir arbitrairement.
 
-## 8. Ouvrir l'écran joueurs
+## 9. Ouvrir l'écran joueurs
 
 Après avoir sélectionné un moniteur, clique sur **Ouvrir l'écran joueurs**.
 
@@ -218,7 +253,7 @@ L'application crée une seconde fenêtre Tauri qui :
 
 La fenêtre principale reste ouverte sur le panneau du maître de jeu.
 
-## 9. Piloter le contenu affiché
+## 10. Piloter le contenu affiché
 
 La section **Contenu affiché** fournit actuellement trois actions de
 démonstration :
@@ -233,7 +268,7 @@ démonstration sont inclus dans le projet et fonctionnent hors ligne.
 Tu peux choisir un contenu avant d'ouvrir la fenêtre joueurs : l'état complet
 sera envoyé automatiquement lorsque cette fenêtre annoncera qu'elle est prête.
 
-## 10. Déplacer l'écran joueurs
+## 11. Déplacer l'écran joueurs
 
 Lorsque la fenêtre joueurs existe déjà, le bouton devient **Déplacer l'écran
 joueurs**.
@@ -252,7 +287,7 @@ Lorsque le moniteur sélectionné héberge déjà la fenêtre joueurs, le bouton
 indique **Déjà affiché sur cet écran** et reste désactivé. Cela évite de
 réappliquer inutilement le plein écran et de provoquer un flicker.
 
-## 11. Fermer l'écran joueurs
+## 12. Fermer l'écran joueurs
 
 Clique sur **Fermer l'écran joueurs** depuis le panneau MJ. La fenêtre dédiée
 est fermée sans fermer l'application principale.
@@ -260,7 +295,7 @@ est fermée sans fermer l'application principale.
 Si la fenêtre est fermée directement depuis Windows, son état est synchronisé
 automatiquement dans le panneau MJ et le bouton d'ouverture redevient disponible.
 
-## 12. Prévisualisation dans le navigateur
+## 13. Prévisualisation dans le navigateur
 
 Angular peut être lancé sans Tauri :
 
@@ -273,7 +308,7 @@ Les actions de contenu modifient tout de même l'état de prévisualisation loca
 Le lien de prévisualisation ouvre la route `/player-display` dans la même page et
 affiche un bouton **Retour au panneau MJ**.
 
-## 13. Arrêter l'application de développement
+## 14. Arrêter l'application de développement
 
 Ferme les fenêtres puis, dans le terminal qui exécute Tauri, utilise :
 
@@ -281,15 +316,17 @@ Ferme les fenêtres puis, dans le terminal qui exécute Tauri, utilise :
 Ctrl + C
 ```
 
-## 14. Limites actuelles
+## 15. Limites actuelles
 
 - la fermeture directe et la perte du moniteur sont gérées côté code, mais doivent encore être
   validées avec plusieurs configurations d'écrans physiques ;
 - les documents ne sont pas encore proposés dans le panneau MJ ;
 - la reconnexion automatique après le retrait d'un moniteur n'est volontairement pas effectuée ;
 - la validation multi-écran est pour l'instant manuelle et ciblée sur Windows.
+- le cycle complet de sauvegarde et restauration doit encore être validé dans l’exécutable Tauri
+  avec une archive réelle.
 
-## 15. Dépannage rapide
+## 16. Dépannage rapide
 
 ### Aucun moniteur détecté
 

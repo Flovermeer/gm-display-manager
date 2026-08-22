@@ -11,12 +11,12 @@ gestion de la battlemap, de la grille et du fog of war.
 - Tauri 2 ;
 - SQLite, Dialog et Filesystem via les plugins officiels Tauri ;
 - Node.js 24.15.0 épinglé localement avec Volta ;
-- Rust stable avec la toolchain Windows MSVC.
+- Rust 1.88 minimum avec la toolchain Windows MSVC.
 
 ## Prérequis Windows
 
 - Node.js 24.15.0 disponible via Volta ;
-- Rust et Cargo avec la cible `x86_64-pc-windows-msvc` ;
+- Rust 1.88 ou plus récent et Cargo avec la cible `x86_64-pc-windows-msvc` ;
 - Microsoft Visual C++ Build Tools ;
 - Microsoft Edge WebView2 Runtime.
 
@@ -71,6 +71,7 @@ Le premier lancement télécharge et compile les crates Rust déclarées dans
 ```powershell
 npm.cmd run build
 npm.cmd run test -- --watch=false
+cargo test --manifest-path src-tauri/Cargo.toml
 ```
 
 Le comportement multi-écran devra être validé manuellement sur plusieurs

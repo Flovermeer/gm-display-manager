@@ -37,6 +37,16 @@ correspondance devenue ambiguë ferme la fenêtre sans la déplacer ni la rouvri
 MJ reçoit un toast fermable, affiché huit secondes puis évacué vers la droite. Un changement de
 coordonnées est accepté lorsque le fingerprint du moniteur reste unique.
 
+Troisième tranche livrée côté code : la Configuration crée une archive ZIP portable de l’ensemble
+des données locales. Un snapshot SQLite cohérent est produit avant d’archiver la base, les campagnes
+et les univers. L’application conserve aussi dix archives automatiques tournantes et vérifie toutes
+les trente minutes si les données ont changé. Une fermeture normale propose de sauvegarder lorsque
+l’état courant n’est pas couvert. Au démarrage, un contrôle SQLite propose la dernière archive valide
+si la base est illisible, sans restauration silencieuse. La restauration redémarre automatiquement,
+remplace les données avant leur ouverture et journalise assez d’état pour reprendre une installation
+ou un retour arrière interrompu. Le flux natif complet reste à valider manuellement avec une archive
+réelle.
+
 ## Statut consolidé
 
 | Jalon                       | Statut                                   | État réel                                                                                                                                                                                                           |
@@ -55,7 +65,7 @@ coordonnées est accepté lorsque le fingerprint du moniteur reste unique.
 | 11 — Historique récent      | Terminé                                  | Huit pills persistées et cliquables par campagne, dédupliquées par récence et purgées lorsque leur cible disparaît.                                                                                                  |
 | 12 — Carte heuristique      | Reporté après la V1.1                    | Graphe automatique et navigable des chapitres, ressources liées et mentions `@`, sans édition manuelle du graphe.                                                                                                   |
 | 13 — Tables aléatoires      | Terminé                                  | CRUD atomique de tables privées au MJ, plages de 1 à 100 triées automatiquement, validation de couverture continue et tirage uniforme sans historique.                                                              |
-| 14 — Durcissement/livraison | V1.1 en cours                            | Fermeture native et perte du moniteur sont gérées côté code sans repli automatique. Sauvegarde/restauration, tests matériels, session longue, journal technique, installeur et guide restent à livrer.               |
+| 14 — Durcissement/livraison | V1.1 en cours                            | Fermeture native, perte du moniteur, archives manuelles/automatiques et récupération SQLite sont gérées côté code. Les validations natives et matérielles, la session longue, le journal technique et l’installeur restent à livrer. |
 
 ### Tranches supplémentaires déjà livrées
 
@@ -84,7 +94,7 @@ coordonnées est accepté lorsque le fingerprint du moniteur reste unique.
 La V1 est terminée. L'ordre de livraison de la V1.1 est :
 
 1. récupération fiable du Player Display et des changements de moniteur ;
-2. sauvegarde et restauration d'une campagne ;
+2. sauvegarde et restauration complètes de l’application ;
 3. gestion des erreurs, journal technique et contrôle des médias ;
 4. validations matérielles et session longue ;
 5. paquet Windows et documentation de livraison.
@@ -468,7 +478,7 @@ Principes retenus :
 - permettre de relier les monstres aux chapitres et notes avec le même contrat de mentions `@` ;
 - préparer explicitement l’ajout d’un ou plusieurs exemplaires d’un monstre au suivi de combat.
 
-Première tranche livrée :
+Tranches livrées côté code :
 
 - `monster` contient la fiche canonique de l’univers et son illustration ;
 - `campaign_monster` sélectionne explicitement les monstres utilisés par une campagne ;
@@ -588,6 +598,17 @@ Première tranche livrée :
 - afficher au MJ un toast fermable pendant huit secondes, avec une sortie vers la droite ;
 - accepter le changement de coordonnées d'un moniteur reconnu sans ambiguïté ;
 - couvrir fermeture, réouverture, perte et déplacement logique par des tests Angular ciblés.
+- créer une archive ZIP portable contenant le snapshot SQLite, `campaigns/` et `universes/` ;
+- valider les chemins et le format avant d’extraire une restauration dans une zone temporaire ;
+- redémarrer automatiquement et remplacer les données avant leur ouverture par SQLite ;
+- restaurer les données précédentes si le remplacement échoue et notifier le MJ au lancement ;
+- suivre sauvegarde et restauration dans une modale de progression non fermable pendant l’opération.
+- conserver dix archives automatiques et en créer au plus une toutes les trente minutes si les
+  données ont changé ;
+- proposer à la fermeture de couvrir les changements postérieurs à la dernière archive ;
+- contrôler SQLite au démarrage et proposer une archive valide sans jamais la restaurer
+  silencieusement ;
+- reprendre ou annuler sans mélange une restauration interrompue pendant le remplacement.
 
 Travail :
 
@@ -595,7 +616,8 @@ Travail :
 - reprendre l'état après un rechargement interne du Player Display ;
 - valider manuellement la déconnexion, le remplacement et les moniteurs identiques ;
 - journal local minimal avec messages compréhensibles ;
-- sauvegarde et restauration d'une campagne ;
+- valider dans Tauri un aller-retour complet de sauvegarde/restauration sur un dossier de données
+  propre ;
 - contrôle des erreurs de base et de fichiers ;
 - tests avec plusieurs facteurs d'échelle et dispositions Windows ;
 - test d'une session simulée de plusieurs heures avec changements répétés ;

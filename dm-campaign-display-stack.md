@@ -316,6 +316,27 @@ campaigns/
     └── audio/
 ```
 
+### Sauvegarde locale
+
+La sauvegarde V1.1 porte sur l’ensemble de l’application, pas sur une campagne isolée. Une archive
+ZIP portable contient un snapshot cohérent de SQLite ainsi que les répertoires `campaigns/` et
+`universes/` du dossier de données Tauri.
+
+La restauration est préparée dans une zone temporaire, puis appliquée automatiquement après un
+redémarrage et avant toute ouverture de SQLite. Le remplacement conserve une copie de repli et un
+journal de phase le temps de l’opération afin de reprendre ou d’annuler proprement après une
+interruption.
+
+En complément des archives manuelles externes, dix archives automatiques tournantes restent dans le
+dossier de données. Une empreinte stable de la base, de son WAL et des médias évite les copies
+inutiles. Le contrôle est effectué toutes les trente minutes et lors d’une demande de fermeture. La
+base SQLite active reste toujours l’unique source de vérité : aucune fusion avec les snapshots n’est
+tentée.
+
+Au démarrage, `PRAGMA quick_check` valide la base active. Un échec ouvre un flux de récupération qui
+propose la dernière archive automatique valide ou une archive choisie par le MJ. La restauration
+exige toujours une confirmation et un redémarrage.
+
 ---
 
 # 7. Affichage multi-écrans

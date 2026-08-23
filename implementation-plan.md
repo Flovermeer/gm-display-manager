@@ -639,7 +639,9 @@ Validation manuelle du 23 août 2026 :
 - création d'une archive réelle, restauration, redémarrage automatique et retour à l'état sauvegardé
   validés sur le dossier de données courant ;
 - ouverture du dossier des journaux et contrôle des médias validés dans l'application native ;
-- remplacement d'un média au même chemin validé après correction de la permission `fs:allow-stat`.
+- remplacement d'un média au même chemin validé après correction de la permission `fs:allow-stat` ;
+- absence réelle d'un média détectée après déplacement contrôlé, puis retour à un diagnostic sain
+  après remise en place du fichier validé.
 
 Restent à valider : deux moniteurs matériellement identiques, restauration depuis un dossier de
 données vierge, rotation réelle des journaux, session longue et paquet Windows sur une autre machine.
@@ -649,7 +651,6 @@ Travail restant :
 - valider le remplacement entre deux moniteurs matériellement identiques ;
 - valider dans Tauri la restauration d'une archive depuis un dossier de données propre ;
 - valider la rotation effective du journal technique ;
-- valider le diagnostic après suppression contrôlée d'un média ;
 - test d'une session simulée de plusieurs heures avec changements répétés ;
 - création d'un paquet Windows installable ;
 - rédaction d'un guide d'installation, de sauvegarde et de dépannage.

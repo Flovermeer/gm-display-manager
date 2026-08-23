@@ -1,0 +1,7 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "player-display-log",
+  "description": "Allows the Player Display to report unexpected rendering errors.",
+  "windows": ["player-display"],
+  "permissions": ["log:default"]
+}

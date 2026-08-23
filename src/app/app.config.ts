@@ -1,5 +1,6 @@
 import {
   ApplicationConfig,
+  ErrorHandler,
   inject,
   provideAppInitializer,
   provideBrowserGlobalErrorListeners,
@@ -87,12 +88,36 @@ import { TauriApplicationBackupGateway } from '@app/features/backups/data-access
 import { ApplicationWindowGateway } from '@app/features/backups/data-access/application-window.gateway';
 import { BrowserApplicationWindowGateway } from '@app/features/backups/data-access/browser-application-window.gateway';
 import { TauriApplicationWindowGateway } from '@app/features/backups/data-access/tauri-application-window.gateway';
+import { ApplicationDiagnosticsService } from '@app/features/diagnostics/application/application-diagnostics.service';
+import { GlobalErrorHandler } from '@app/features/diagnostics/application/global-error-handler';
+import { BrowserMediaDiagnosticGateway } from '@app/features/diagnostics/data-access/browser-media-diagnostic.gateway';
+import { BrowserTechnicalLogGateway } from '@app/features/diagnostics/data-access/browser-technical-log.gateway';
+import { MediaDiagnosticGateway } from '@app/features/diagnostics/data-access/media-diagnostic.gateway';
+import { TauriMediaDiagnosticGateway } from '@app/features/diagnostics/data-access/tauri-media-diagnostic.gateway';
+import { TauriTechnicalLogGateway } from '@app/features/diagnostics/data-access/tauri-technical-log.gateway';
+import { TechnicalLogGateway } from '@app/features/diagnostics/data-access/technical-log.gateway';
 
 export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
     provideRouter(routes, withInMemoryScrolling({ anchorScrolling: 'enabled' })),
-    provideAppInitializer(() => inject(ApplicationBackupService).initialize()),
+    provideAppInitializer(async () => {
+      const backup = inject(ApplicationBackupService);
+      const diagnostics = inject(ApplicationDiagnosticsService);
+      await backup.initialize();
+      if (!backup.recovery()) await diagnostics.initialize();
+    }),
+    { provide: ErrorHandler, useClass: GlobalErrorHandler },
+    {
+      provide: TechnicalLogGateway,
+      useFactory: () =>
+        isTauri() ? new TauriTechnicalLogGateway() : new BrowserTechnicalLogGateway(),
+    },
+    {
+      provide: MediaDiagnosticGateway,
+      useFactory: () =>
+        isTauri() ? new TauriMediaDiagnosticGateway() : new BrowserMediaDiagnosticGateway(),
+    },
     {
       provide: ApplicationBackupGateway,
       useFactory: () =>

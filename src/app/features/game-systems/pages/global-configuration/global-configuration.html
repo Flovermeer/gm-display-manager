@@ -43,12 +43,26 @@
       >
         Sauvegarde et restauration
       </button>
+      <button
+        class="configuration-menu__item"
+        [class.configuration-menu__item--active]="section() === 'diagnostics'"
+        type="button"
+        (click)="openSection('diagnostics')"
+      >
+        Diagnostic technique
+      </button>
     </nav>
 
     <section
       class="configuration-workspace"
       [attr.aria-labelledby]="
-        section() === 'systems' ? 'systems-title' : section() === 'backups' ? 'backups-title' : null
+        section() === 'systems'
+          ? 'systems-title'
+          : section() === 'backups'
+            ? 'backups-title'
+            : section() === 'diagnostics'
+              ? 'diagnostics-title'
+              : null
       "
     >
       @if (section() === 'resources' && selectedUniverse(); as universe) {
@@ -59,6 +73,8 @@
         }
       } @else if (section() === 'backups') {
         <app-backup-settings />
+      } @else if (section() === 'diagnostics') {
+        <app-diagnostic-settings />
       } @else {
         <div class="configuration-workspace__heading">
           <p class="configuration-workspace__kicker">Catalogue global</p>

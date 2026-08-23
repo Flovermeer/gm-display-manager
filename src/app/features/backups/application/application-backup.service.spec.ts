@@ -4,8 +4,10 @@ import { ApplicationBackupService } from '@app/features/backups/application/appl
 import { ApplicationBackupGateway } from '@app/features/backups/data-access/application-backup.gateway';
 import { ApplicationWindowGateway } from '@app/features/backups/data-access/application-window.gateway';
 import { ToastService } from '@app/shared/ui/toast/toast.service';
+import { TechnicalLogService } from '@app/features/diagnostics/application/technical-log.service';
 
 describe('ApplicationBackupService', () => {
+  const log = { reportError: vi.fn() };
   const gateway = {
     isAvailable: true,
     selectBackupDestination: vi.fn(),
@@ -49,6 +51,7 @@ describe('ApplicationBackupService', () => {
         { provide: ApplicationBackupGateway, useValue: gateway },
         { provide: ApplicationWindowGateway, useValue: applicationWindow },
         { provide: ToastService, useValue: toast },
+        { provide: TechnicalLogService, useValue: log },
       ],
     });
   });
@@ -104,6 +107,17 @@ describe('ApplicationBackupService', () => {
     expect(applicationWindow.listenForCloseRequest).not.toHaveBeenCalled();
   });
 
+  it('logs a failed manual backup before returning the error to the view', async () => {
+    const error = new Error('archive denied');
+    gateway.createBackup.mockRejectedValue(error);
+
+    await expect(
+      TestBed.inject(ApplicationBackupService).createBackup('D:\\backup.zip', () => undefined),
+    ).rejects.toBe(error);
+
+    expect(log.reportError).toHaveBeenCalledWith('backup.manual', error);
+  });
+
   it('closes directly when the current data is already backed up', async () => {
     const service = TestBed.inject(ApplicationBackupService);
     await service.initialize();
@@ -146,9 +160,7 @@ describe('ApplicationBackupService', () => {
 
     closeCallback?.();
     await vi.waitFor(() =>
-      expect(service.closePrompt()?.error).toBe(
-        'Impossible de fermer l’application : exit denied',
-      ),
+      expect(service.closePrompt()?.error).toBe('Impossible de fermer l’application : exit denied'),
     );
 
     expect(applicationWindow.listenForCloseRequest).toHaveBeenCalledTimes(2);

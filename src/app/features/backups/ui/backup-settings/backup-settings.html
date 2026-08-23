@@ -1,5 +1,5 @@
-<div class="backup-settings">
-  <div class="backup-settings__heading">
+<div class="backup-settings settings-panel">
+  <div class="backup-settings__heading settings-panel__heading">
     <p class="configuration-workspace__kicker">Données locales</p>
     <h2 id="backups-title">Sauvegarde et restauration</h2>
     <p>
@@ -8,7 +8,10 @@
     </p>
   </div>
 
-  <section class="backup-settings__action" aria-labelledby="create-backup-title">
+  <section
+    class="backup-settings__action settings-panel__action"
+    aria-labelledby="create-backup-title"
+  >
     <div>
       <h3 id="create-backup-title">Créer une sauvegarde complète</h3>
       <p>Enregistre une archive ZIP portable à l’emplacement de ton choix.</p>
@@ -23,7 +26,10 @@
     </button>
   </section>
 
-  <section class="backup-settings__action" aria-labelledby="restore-backup-title">
+  <section
+    class="backup-settings__action settings-panel__action"
+    aria-labelledby="restore-backup-title"
+  >
     <div>
       <h3 id="restore-backup-title">Restaurer une sauvegarde</h3>
       <p>Remplace toutes les données locales, puis redémarre automatiquement l’application.</p>
@@ -39,7 +45,7 @@
   </section>
 
   @if (!isAvailable) {
-    <p class="backup-settings__notice">
+    <p class="backup-settings__notice settings-panel__notice">
       Ces opérations sont disponibles dans l’application desktop installée.
     </p>
   }

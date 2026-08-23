@@ -1,0 +1,93 @@
+<div class="diagnostic-settings settings-panel">
+  <div class="settings-panel__heading">
+    <p class="configuration-workspace__kicker">Maintenance locale</p>
+    <h2 id="diagnostics-title">Diagnostic technique</h2>
+    <p>Contrôle les journaux de l’application et l’état des médias référencés.</p>
+  </div>
+
+  <section class="settings-panel__action" aria-labelledby="logs-title">
+    <div>
+      <h3 id="logs-title">Journaux techniques</h3>
+      <p>Les fichiers sont conservés sept jours dans le dossier local de l’application.</p>
+    </div>
+    <button
+      appButton="secondary"
+      type="button"
+      [disabled]="!isAvailable"
+      (click)="openLogDirectory()"
+    >
+      Ouvrir le dossier
+    </button>
+  </section>
+
+  @if (logError(); as message) {
+    <p class="diagnostic-settings__error" role="alert">{{ message }}</p>
+  }
+
+  <section class="settings-panel__action" aria-labelledby="media-check-title">
+    <div>
+      <h3 id="media-check-title">Contrôle des médias</h3>
+      <p>Vérifie la présence et l’accessibilité des images et vidéos sans les charger.</p>
+    </div>
+    <button
+      appButton="primary"
+      type="button"
+      [disabled]="!isAvailable || media().isChecking || !!media().replacingPath"
+      (click)="checkMedia()"
+    >
+      {{ media().isChecking ? 'Vérification…' : 'Vérifier maintenant' }}
+    </button>
+  </section>
+
+  @if (!isAvailable) {
+    <p class="settings-panel__notice">
+      Le journal local et le contrôle des médias sont disponibles dans l’application desktop.
+    </p>
+  } @else if (media().error; as message) {
+    <p class="diagnostic-settings__error" role="alert">{{ message }}</p>
+  }
+
+  @if (media().result; as result) {
+    <div class="diagnostic-settings__summary" aria-live="polite">
+      <strong>
+        @if (result.issues.length === 0) {
+          Aucun média défaillant
+        } @else {
+          {{ result.issues.length }} média(s) à corriger
+        }
+      </strong>
+      <span>
+        {{ result.checkedCount }} référence(s) vérifiée(s) le {{ formatDate(result.checkedAt) }}.
+      </span>
+    </div>
+
+    @if (result.issues.length > 0) {
+      <ul class="diagnostic-settings__issues" aria-label="Médias à corriger">
+        @for (issue of result.issues; track issue.kind + issue.resourceId + issue.relativePath) {
+          <li class="diagnostic-settings__issue">
+            <div>
+              <span class="diagnostic-settings__kind">{{ mediaLabel(issue.kind) }}</span>
+              <strong>{{ issue.resourceName }}</strong>
+              <small>
+                {{ issue.reason === 'missing' ? 'Fichier absent' : 'Fichier inaccessible' }} ·
+                {{ issue.relativePath }}
+              </small>
+            </div>
+            <button
+              appButton="secondary"
+              type="button"
+              [disabled]="!!media().replacingPath"
+              (click)="replaceMedia(issue)"
+            >
+              {{
+                media().replacingPath === issue.relativePath
+                  ? 'Remplacement…'
+                  : 'Remplacer le fichier'
+              }}
+            </button>
+          </li>
+        }
+      </ul>
+    }
+  }
+</div>

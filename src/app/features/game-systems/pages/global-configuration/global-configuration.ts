@@ -11,8 +11,9 @@ import { RuleCatalogSettings } from '@app/features/game-systems/ui/rule-catalog-
 import { UniverseResourceCatalog } from '@app/features/game-systems/ui/universe-resource-catalog/universe-resource-catalog';
 import type { PendingChangesAware } from '@app/core/navigation/pending-changes.guard';
 import { BackupSettings } from '@app/features/backups/ui/backup-settings/backup-settings';
+import { DiagnosticSettings } from '@app/features/diagnostics/ui/diagnostic-settings/diagnostic-settings';
 
-type ConfigurationSection = 'systems' | 'resources' | 'rules' | 'backups';
+type ConfigurationSection = 'systems' | 'resources' | 'rules' | 'backups' | 'diagnostics';
 
 type PurgeTarget =
   | Readonly<{ kind: 'system'; item: GameSystem }>
@@ -29,6 +30,7 @@ type PurgeTarget =
     RuleCatalogSettings,
     UniverseResourceCatalog,
     BackupSettings,
+    DiagnosticSettings,
   ],
   templateUrl: './global-configuration.html',
   styleUrl: './global-configuration.scss',

@@ -1,12 +1,21 @@
 use tauri_plugin_sql::{Migration, MigrationKind};
 
 mod backup;
+mod diagnostics;
 
 const DATABASE_URL: &str = "sqlite:beholders-inn.db";
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
+        .plugin(
+            tauri_plugin_log::Builder::new()
+                .max_file_size(5_000_000)
+                .rotation_strategy(tauri_plugin_log::RotationStrategy::KeepAll)
+                .timezone_strategy(tauri_plugin_log::TimezoneStrategy::UseLocal)
+                .level(tauri_plugin_log::log::LevelFilter::Info)
+                .build(),
+        )
         .plugin(tauri_plugin_fs::init())
         .plugin(tauri_plugin_dialog::init())
         .plugin(
@@ -17,6 +26,9 @@ pub fn run() {
         .setup(|app| {
             let app_data = tauri::Manager::path(app).app_data_dir()?;
             backup::apply_pending_restore(&app_data);
+            if let Err(error) = diagnostics::cleanup_expired_logs(app.handle()) {
+                tauri_plugin_log::log::warn!("Unable to clean expired technical logs: {error}");
+            }
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
@@ -29,6 +41,7 @@ pub fn run() {
             backup::prepare_restore,
             backup::take_restore_result,
             backup::exit_application,
+            diagnostics::open_log_directory,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

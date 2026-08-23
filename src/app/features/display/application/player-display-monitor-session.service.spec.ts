@@ -4,6 +4,7 @@ import { PlayerDisplayMonitorSessionService } from '@app/features/display/applic
 import { DisplayGateway } from '@app/features/display/data-access/display.gateway';
 import type { MonitorDescriptor } from '@app/features/display/domain/display.models';
 import { ToastService } from '@app/shared/ui/toast/toast.service';
+import { TechnicalLogService } from '@app/features/diagnostics/application/technical-log.service';
 
 describe('PlayerDisplayMonitorSessionService', () => {
   const monitor: MonitorDescriptor = {
@@ -25,6 +26,7 @@ describe('PlayerDisplayMonitorSessionService', () => {
     closePlayerDisplay: vi.fn(),
   };
   const toast = { warning: vi.fn() };
+  const log = { reportError: vi.fn() };
 
   beforeEach(() => {
     vi.useFakeTimers();
@@ -38,6 +40,7 @@ describe('PlayerDisplayMonitorSessionService', () => {
         PlayerDisplayMonitorSessionService,
         { provide: DisplayGateway, useValue: gateway },
         { provide: ToastService, useValue: toast },
+        { provide: TechnicalLogService, useValue: log },
       ],
     });
   });

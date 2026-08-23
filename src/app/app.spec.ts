@@ -4,6 +4,7 @@ import { ApplicationBackupGateway } from '@app/features/backups/data-access/appl
 import { ApplicationWindowGateway } from '@app/features/backups/data-access/application-window.gateway';
 import { BrowserApplicationBackupGateway } from '@app/features/backups/data-access/browser-application-backup.gateway';
 import { BrowserApplicationWindowGateway } from '@app/features/backups/data-access/browser-application-window.gateway';
+import { TechnicalLogService } from '@app/features/diagnostics/application/technical-log.service';
 
 describe('App', () => {
   beforeEach(async () => {
@@ -12,6 +13,7 @@ describe('App', () => {
       providers: [
         { provide: ApplicationBackupGateway, useClass: BrowserApplicationBackupGateway },
         { provide: ApplicationWindowGateway, useClass: BrowserApplicationWindowGateway },
+        { provide: TechnicalLogService, useValue: { reportError: vi.fn() } },
       ],
     }).compileComponents();
   });

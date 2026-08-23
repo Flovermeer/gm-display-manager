@@ -14,6 +14,7 @@ import { inject, Injectable, OnDestroy } from '@angular/core';
 import { DisplayGateway } from '@app/features/display/data-access/display.gateway';
 import type { MonitorDescriptor } from '@app/features/display/domain/display.models';
 import { ToastService } from '@app/shared/ui/toast/toast.service';
+import { TechnicalLogService } from '@app/features/diagnostics/application/technical-log.service';
 
 const MONITOR_CHECK_INTERVAL = 2_000;
 
@@ -21,6 +22,7 @@ const MONITOR_CHECK_INTERVAL = 2_000;
 export class PlayerDisplayMonitorSessionService implements OnDestroy {
   private readonly displayGateway = inject(DisplayGateway);
   private readonly toast = inject(ToastService);
+  private readonly log = inject(TechnicalLogService);
   private monitoredDisplay: MonitorDescriptor | null = null;
   private intervalId: number | undefined;
   private isChecking = false;
@@ -63,7 +65,7 @@ export class PlayerDisplayMonitorSessionService implements OnDestroy {
       const monitor = monitors.find(({ id }) => id === monitorId);
       if (monitor) this.track(monitor);
     } catch (error) {
-      console.error('Unable to initialize Player Display monitor tracking.', error);
+      this.log.reportError('display.monitor-initialization', error);
     }
   }
 
@@ -109,7 +111,7 @@ export class PlayerDisplayMonitorSessionService implements OnDestroy {
       if (currentMonitor && currentMonitor.id !== expected.id)
         this.monitoredDisplay = currentMonitor;
     } catch (error) {
-      console.error('Unable to verify the Player Display monitor.', error);
+      this.log.reportError('display.monitor-check', error);
     } finally {
       this.isChecking = false;
     }
@@ -120,7 +122,7 @@ export class PlayerDisplayMonitorSessionService implements OnDestroy {
       try {
         await this.displayGateway.closePlayerDisplay();
       } catch (error) {
-        console.error('Unable to close the Player Display after monitor loss.', error);
+        this.log.reportError('display.monitor-close', error);
       }
     }
     this.clear();

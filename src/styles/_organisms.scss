@@ -101,3 +101,55 @@
     transition: none;
   }
 }
+
+.settings-panel {
+  display: grid;
+  gap: 1rem;
+}
+
+.settings-panel__heading {
+  margin-bottom: 1rem;
+}
+
+.settings-panel__heading h2,
+.settings-panel__heading p,
+.settings-panel__action h3,
+.settings-panel__action p {
+  margin-top: 0;
+}
+
+.settings-panel__heading p:last-child,
+.settings-panel__action p,
+.settings-panel__notice {
+  color: #746b61;
+  line-height: 1.55;
+}
+
+.settings-panel__action {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 1.5rem;
+  padding: 1.25rem 0;
+  border-top: 1px solid #c9c0b3;
+}
+
+.settings-panel__action h3 {
+  margin-bottom: 0.35rem;
+  font-size: 1rem;
+}
+
+.settings-panel__action p,
+.settings-panel__notice {
+  margin-bottom: 0;
+}
+
+@media (max-width: 42rem) {
+  .settings-panel__action {
+    grid-template-columns: 1fr;
+  }
+
+  .settings-panel__action button {
+    justify-self: start;
+  }
+}

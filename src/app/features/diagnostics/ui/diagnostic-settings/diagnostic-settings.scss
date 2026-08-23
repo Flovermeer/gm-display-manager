@@ -1,0 +1,68 @@
+:host {
+  display: block;
+}
+
+.diagnostic-settings__summary {
+  display: grid;
+  gap: 0.25rem;
+  padding: 1rem;
+  border: 1px solid #c9c0b3;
+  border-radius: 0.5rem;
+  background: #fff;
+}
+
+.diagnostic-settings__summary span,
+.diagnostic-settings__issue small {
+  color: #746b61;
+}
+
+.diagnostic-settings__issues {
+  display: grid;
+  gap: 0.65rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.diagnostic-settings__issue {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  border: 1px solid #c9c0b3;
+  border-radius: 0.5rem;
+  background: #fff;
+}
+
+.diagnostic-settings__issue div {
+  display: grid;
+  min-width: 0;
+  gap: 0.2rem;
+}
+
+.diagnostic-settings__issue small {
+  overflow-wrap: anywhere;
+}
+
+.diagnostic-settings__kind {
+  color: #76538d;
+  font-size: 0.72rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.diagnostic-settings__error {
+  margin: 0;
+  color: #a32638;
+}
+
+@media (max-width: 42rem) {
+  .diagnostic-settings__issue {
+    grid-template-columns: 1fr;
+  }
+
+  .diagnostic-settings__issue button {
+    justify-self: start;
+  }
+}

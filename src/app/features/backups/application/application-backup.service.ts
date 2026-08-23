@@ -22,6 +22,7 @@ import type {
   RestoreProgressStage,
 } from '@app/features/backups/domain/backup.models';
 import { ToastService } from '@app/shared/ui/toast/toast.service';
+import { TechnicalLogService } from '@app/features/diagnostics/application/technical-log.service';
 
 const AUTOMATIC_BACKUP_INTERVAL = 30 * 60 * 1_000;
 
@@ -43,6 +44,7 @@ export class ApplicationBackupService {
   private readonly gateway = inject(ApplicationBackupGateway);
   private readonly applicationWindow = inject(ApplicationWindowGateway);
   private readonly toast = inject(ToastService);
+  private readonly log = inject(TechnicalLogService);
   private closeUnlisten: UnlistenFn | null = null;
   private automaticBackupTimer: number | null = null;
   private automaticBackupPromise: Promise<void> | null = null;
@@ -60,7 +62,11 @@ export class ApplicationBackupService {
     try {
       await this.gateway.checkDatabase();
     } catch (error) {
-      const candidate = await this.gateway.latestAutomaticBackup().catch(() => null);
+      this.log.reportError('backup.database-check', error);
+      const candidate = await this.gateway.latestAutomaticBackup().catch((candidateError) => {
+        this.log.reportError('backup.latest-automatic', candidateError);
+        return null;
+      });
       this.recovery.set({
         reason: this.errorMessage(error),
         candidate,
@@ -88,7 +94,10 @@ export class ApplicationBackupService {
   ): Promise<BackupManifest> {
     const operation = this.afterAutomaticBackup(() =>
       this.gateway.createBackup(destinationPath, reportProgress),
-    );
+    ).catch((error) => {
+      this.log.reportError('backup.manual', error);
+      throw error;
+    });
     this.manualBackupPromise = operation;
     void operation.then(
       () => this.clearManualBackup(operation),
@@ -98,14 +107,20 @@ export class ApplicationBackupService {
   }
 
   inspectBackup(archivePath: string): Promise<BackupManifest> {
-    return this.gateway.inspectBackup(archivePath);
+    return this.gateway.inspectBackup(archivePath).catch((error) => {
+      this.log.reportError('backup.inspect', error);
+      throw error;
+    });
   }
 
   prepareRestore(
     archivePath: string,
     reportProgress: (stage: RestoreProgressStage) => void,
   ): Promise<void> {
-    return this.prepareRestoreAndRestart(archivePath, reportProgress);
+    return this.prepareRestoreAndRestart(archivePath, reportProgress).catch((error) => {
+      this.log.reportError('backup.restore', error);
+      throw error;
+    });
   }
 
   async chooseRecoveryArchive(): Promise<void> {
@@ -123,6 +138,7 @@ export class ApplicationBackupService {
         error: null,
       });
     } catch (error) {
+      this.log.reportError('backup.recovery-selection', error);
       this.recovery.set({
         ...recovery,
         isSelecting: false,
@@ -141,6 +157,7 @@ export class ApplicationBackupService {
     try {
       await this.prepareRestoreAndRestart(recovery.candidate.archivePath, () => {});
     } catch (error) {
+      this.log.reportError('backup.recovery-restore', error);
       this.recovery.set({
         ...recovery,
         isRestoring: false,
@@ -161,6 +178,7 @@ export class ApplicationBackupService {
       await this.runAutomaticBackup(true);
       await this.closeApplication();
     } catch (error) {
+      this.log.reportError('backup.close-save', error);
       this.closePrompt.set({ isSaving: false, error: this.errorMessage(error) });
     }
   }
@@ -169,6 +187,7 @@ export class ApplicationBackupService {
     try {
       await this.closeApplication();
     } catch (error) {
+      this.log.reportError('backup.close-without-save', error);
       const message = this.errorMessage(error);
       const recovery = this.recovery();
       if (recovery) this.recovery.set({ ...recovery, error: message });
@@ -182,7 +201,8 @@ export class ApplicationBackupService {
       if (!result) return;
       if (result.success) this.toast.success(result.message);
       else this.toast.warning(result.message);
-    } catch {
+    } catch (error) {
+      this.log.reportError('backup.restore-result', error);
       this.toast.warning(
         'Le résultat de la restauration n’a pas pu être lu. Vérifie les données avant de jouer.',
       );
@@ -208,6 +228,7 @@ export class ApplicationBackupService {
       try {
         status = await this.gateway.getBackupStatus();
       } catch (error) {
+        this.log.reportError('backup.close-status', error);
         this.closePrompt.set({
           isSaving: false,
           error: `Impossible de vérifier la dernière sauvegarde : ${this.errorMessage(error)}`,
@@ -218,6 +239,7 @@ export class ApplicationBackupService {
         try {
           await this.closeApplication();
         } catch (error) {
+          this.log.reportError('backup.close', error);
           this.closePrompt.set({
             isSaving: false,
             error: `Impossible de fermer l’application : ${this.errorMessage(error)}`,
@@ -242,6 +264,7 @@ export class ApplicationBackupService {
     this.automaticBackupPromise = operation;
     void operation
       .catch((error) => {
+        this.log.reportError('backup.automatic', error);
         if (!required) {
           this.toast.warning(`Sauvegarde automatique impossible : ${this.errorMessage(error)}`);
         }

@@ -31,11 +31,20 @@
     {
       "identifier": "fs:scope",
       "allow": [
-        { "path": "$APPDATA/campaigns/*" },
-        { "path": "$APPDATA/campaigns/**/*" },
-        { "path": "$APPDATA/universes/*" },
-        { "path": "$APPDATA/universes/**/*" }
+        {
+          "path": "$APPDATA/campaigns/*"
+        },
+        {
+          "path": "$APPDATA/campaigns/**/*"
+        },
+        {
+          "path": "$APPDATA/universes/*"
+        },
+        {
+          "path": "$APPDATA/universes/**/*"
+        }
       ]
-    }
+    },
+    "log:default"
   ]
 }

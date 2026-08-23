@@ -23,5 +23,6 @@ serde_json = "1"
 tauri = { version = "2.11.3", features = ["protocol-asset"] }
 tauri-plugin-dialog = "2"
 tauri-plugin-fs = "2"
+tauri-plugin-log = "2"
 tauri-plugin-sql = { version = "2", features = ["sqlite"] }
 zip = { version = "=8.6.0", default-features = false, features = ["deflate-flate2-zlib-rs"] }

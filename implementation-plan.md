@@ -44,8 +44,8 @@ les trente minutes si les données ont changé. Une fermeture normale propose de
 l’état courant n’est pas couvert. Au démarrage, un contrôle SQLite propose la dernière archive valide
 si la base est illisible, sans restauration silencieuse. La restauration redémarre automatiquement,
 remplace les données avant leur ouverture et journalise assez d’état pour reprendre une installation
-ou un retour arrière interrompu. Un aller-retour natif avec une archive réelle est validé ; le test
-depuis un dossier de données vierge reste à effectuer avant livraison.
+ou un retour arrière interrompu. Les allers-retours natifs avec une archive réelle sont validés sur
+le dossier courant puis depuis un dossier de données vierge.
 
 Quatrième tranche livrée côté code : les erreurs Angular inattendues sont captées globalement,
 présentées au MJ avec un message neutre et consignées dans un journal technique local. Les chemins
@@ -75,7 +75,7 @@ la permission Tauri de lire les métadonnées afin d'éviter les faux positifs �
 | 11 — Historique récent      | Terminé                              | Huit pills persistées et cliquables par campagne, dédupliquées par récence et purgées lorsque leur cible disparaît.                                                                                                                           |
 | 12 — Carte heuristique      | Reporté après la V1.1                | Graphe automatique et navigable des chapitres, ressources liées et mentions `@`, sans édition manuelle du graphe.                                                                                                                             |
 | 13 — Tables aléatoires      | Terminé                              | CRUD atomique de tables privées au MJ, plages de 1 à 100 triées automatiquement, validation de couverture continue et tirage uniforme sans historique.                                                                                        |
-| 14 — Durcissement/livraison | V1.1 en cours                        | Les flux natifs principaux sont validés sur la machine cible actuelle. Restent notamment la restauration depuis un dossier propre, les moniteurs identiques, la session longue, l'installeur et sa validation sur une autre machine.          |
+| 14 — Durcissement/livraison | V1.1 en cours                        | Les flux natifs principaux sont validés sur la machine cible actuelle, y compris une restauration depuis des données vierges. Restent notamment les moniteurs identiques, la session longue, l'installeur et sa validation sur une autre machine. |
 
 ### Tranches supplémentaires déjà livrées
 
@@ -638,18 +638,19 @@ Validation manuelle du 23 août 2026 :
   écrans ;
 - création d'une archive réelle, restauration, redémarrage automatique et retour à l'état sauvegardé
   validés sur le dossier de données courant ;
+- restauration de la même archive depuis un dossier de données vierge, recréation de la base et des
+  médias, redémarrage et diagnostic final sans erreur validés ;
 - ouverture du dossier des journaux et contrôle des médias validés dans l'application native ;
 - remplacement d'un média au même chemin validé après correction de la permission `fs:allow-stat` ;
 - absence réelle d'un média détectée après déplacement contrôlé, puis retour à un diagnostic sain
   après remise en place du fichier validé.
 
-Restent à valider : deux moniteurs matériellement identiques, restauration depuis un dossier de
-données vierge, rotation réelle des journaux, session longue et paquet Windows sur une autre machine.
+Restent à valider : deux moniteurs matériellement identiques, rotation réelle des journaux, session
+longue et paquet Windows sur une autre machine.
 
 Travail restant :
 
 - valider le remplacement entre deux moniteurs matériellement identiques ;
-- valider dans Tauri la restauration d'une archive depuis un dossier de données propre ;
 - valider la rotation effective du journal technique ;
 - test d'une session simulée de plusieurs heures avec changements répétés ;
 - création d'un paquet Windows installable ;

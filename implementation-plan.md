@@ -2,7 +2,7 @@
 
 Date de cadrage : 12 août 2026
 
-Dernière consolidation : 21 août 2026
+Dernière consolidation : 23 août 2026
 
 Version fonctionnelle actuelle : **V1 terminée**
 
@@ -47,25 +47,33 @@ remplace les données avant leur ouverture et journalise assez d’état pour re
 ou un retour arrière interrompu. Le flux natif complet reste à valider manuellement avec une archive
 réelle.
 
+Quatrième tranche livrée côté code : les erreurs Angular inattendues sont captées globalement,
+présentées au MJ avec un message neutre et consignées dans un journal technique local. Les chemins
+absolus sont masqués, les fichiers tournent à 5 Mo et sont supprimés après sept jours. La
+Configuration ouvre directement leur dossier. Un contrôle léger vérifie au démarrage puis à la
+demande toutes les images et vidéos référencées par SQLite, y compris les personnalisations de
+campagne. Les fichiers absents ou inaccessibles sont listés par ressource et peuvent être remplacés
+au même chemin, sans suppression automatique de la référence.
+
 ## Statut consolidé
 
-| Jalon                       | Statut                                   | État réel                                                                                                                                                                                                           |
-| --------------------------- | ---------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 0 — Environnement           | Terminé                                  | Node 24 épinglé avec Volta, Angular 22, Rust stable MSVC, Build Tools et WebView2 validés.                                                                                                                          |
-| 1 — Shell Angular + Tauri   | Terminé                                  | Application standalone zoneless, routes Angular, fenêtre principale maximisée et capabilities Tauri en place.                                                                                                       |
-| 2 — Multi-écran             | Durcissement V1.1 en cours               | Détection, choix persistant et fenêtre plein écran sont validés. La perte du moniteur ferme désormais le Player Display sans repli et prévient le MJ. Les validations matérielles avancées restent à effectuer.      |
-| 3 — Régie verticale         | Terminé                                  | Écran noir, lieux, PNJ et objets peuvent être envoyés au Player Display ; synchronisation `ready` et fallback statique des PNJ en place.                                                                            |
-| 4 — SQLite                  | Terminé pour les tranches livrées        | Vingt migrations couvrent notamment systèmes, univers, campagnes, propriété des ressources, combat, historique récent, tables aléatoires et classement des scènes par chapitre. Repositories Tauri et mémoire isolés derrière des interfaces.          |
-| 5 — Gestion de campagne     | Terminé et étendu                        | CRUD campagnes, lieux hiérarchiques, PNJ structurés, PJ orientés MJ et objets narratifs. Navigation campagne persistante et protection des modifications non enregistrées.                                          |
-| 6 — Médias locaux           | V1 terminée, durcissement V1.1 prévu     | Import/copie locale des portraits PNJ/PJ, images de lieux et d’objets, vidéo idle PNJ et nettoyage des médias. La récupération face aux fichiers cassés passe en V1.1.                                               |
-| 7 — Tiptap et journal       | Terminé pour l’usage actuel              | Chapitres et descriptions riches, notes journalisées éditables, regroupement quotidien, mentions `@` cliquables vers les ressources de campagne et fallback texte si la cible disparaît.                            |
-| 8 — Scènes                  | V1 terminée                              | Composition facultative avec lieu + PNJ + monstres + objets, activation du Player Display, appartenance obligatoire à un chapitre, ordre manuel, gestion depuis le chapitre et mentions `@` sont livrés.            |
-| 9 — Bestiaire               | Terminé et catalogue global finalisé     | Les catalogues canoniques PNJ, PJ, lieux, objets et monstres disposent d’éditeurs détaillés par univers. Le bestiaire conserve sa sélection par campagne, sa fiche D&D complète, ses scènes, notes et mentions `@`. |
-| 10 — Combat léger           | Terminé                                  | Un combat actif persistant par campagne, panneau MJ superposé, ajout PJ/PNJ/monstres, initiative manuelle triée et suivi rapide des PV.                                                                               |
-| 11 — Historique récent      | Terminé                                  | Huit pills persistées et cliquables par campagne, dédupliquées par récence et purgées lorsque leur cible disparaît.                                                                                                  |
-| 12 — Carte heuristique      | Reporté après la V1.1                    | Graphe automatique et navigable des chapitres, ressources liées et mentions `@`, sans édition manuelle du graphe.                                                                                                   |
-| 13 — Tables aléatoires      | Terminé                                  | CRUD atomique de tables privées au MJ, plages de 1 à 100 triées automatiquement, validation de couverture continue et tirage uniforme sans historique.                                                              |
-| 14 — Durcissement/livraison | V1.1 en cours                            | Fermeture native, perte du moniteur, archives manuelles/automatiques et récupération SQLite sont gérées côté code. Les validations natives et matérielles, la session longue, le journal technique et l’installeur restent à livrer. |
+| Jalon                       | Statut                               | État réel                                                                                                                                                                                                                                          |
+| --------------------------- | ------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 0 — Environnement           | Terminé                              | Node 24 épinglé avec Volta, Angular 22, Rust stable MSVC, Build Tools et WebView2 validés.                                                                                                                                                         |
+| 1 — Shell Angular + Tauri   | Terminé                              | Application standalone zoneless, routes Angular, fenêtre principale maximisée et capabilities Tauri en place.                                                                                                                                      |
+| 2 — Multi-écran             | Durcissement V1.1 en cours           | Détection, choix persistant et fenêtre plein écran sont validés. La perte du moniteur ferme désormais le Player Display sans repli et prévient le MJ. Les validations matérielles avancées restent à effectuer.                                    |
+| 3 — Régie verticale         | Terminé                              | Écran noir, lieux, PNJ et objets peuvent être envoyés au Player Display ; synchronisation `ready` et fallback statique des PNJ en place.                                                                                                           |
+| 4 — SQLite                  | Terminé pour les tranches livrées    | Vingt migrations couvrent notamment systèmes, univers, campagnes, propriété des ressources, combat, historique récent, tables aléatoires et classement des scènes par chapitre. Repositories Tauri et mémoire isolés derrière des interfaces.      |
+| 5 — Gestion de campagne     | Terminé et étendu                    | CRUD campagnes, lieux hiérarchiques, PNJ structurés, PJ orientés MJ et objets narratifs. Navigation campagne persistante et protection des modifications non enregistrées.                                                                         |
+| 6 — Médias locaux           | Durcissement V1.1 livré côté code    | Import/copie locale des portraits PNJ/PJ, images de lieux, objets et monstres, vidéo idle PNJ et nettoyage des médias. Le diagnostic retrouve les références absentes ou inaccessibles et permet leur remplacement.                                |
+| 7 — Tiptap et journal       | Terminé pour l’usage actuel          | Chapitres et descriptions riches, notes journalisées éditables, regroupement quotidien, mentions `@` cliquables vers les ressources de campagne et fallback texte si la cible disparaît.                                                           |
+| 8 — Scènes                  | V1 terminée                          | Composition facultative avec lieu + PNJ + monstres + objets, activation du Player Display, appartenance obligatoire à un chapitre, ordre manuel, gestion depuis le chapitre et mentions `@` sont livrés.                                           |
+| 9 — Bestiaire               | Terminé et catalogue global finalisé | Les catalogues canoniques PNJ, PJ, lieux, objets et monstres disposent d’éditeurs détaillés par univers. Le bestiaire conserve sa sélection par campagne, sa fiche D&D complète, ses scènes, notes et mentions `@`.                                |
+| 10 — Combat léger           | Terminé                              | Un combat actif persistant par campagne, panneau MJ superposé, ajout PJ/PNJ/monstres, initiative manuelle triée et suivi rapide des PV.                                                                                                            |
+| 11 — Historique récent      | Terminé                              | Huit pills persistées et cliquables par campagne, dédupliquées par récence et purgées lorsque leur cible disparaît.                                                                                                                                |
+| 12 — Carte heuristique      | Reporté après la V1.1                | Graphe automatique et navigable des chapitres, ressources liées et mentions `@`, sans édition manuelle du graphe.                                                                                                                                  |
+| 13 — Tables aléatoires      | Terminé                              | CRUD atomique de tables privées au MJ, plages de 1 à 100 triées automatiquement, validation de couverture continue et tirage uniforme sans historique.                                                                                             |
+| 14 — Durcissement/livraison | V1.1 en cours                        | Fermeture native, perte du moniteur, sauvegarde/récupération, journal technique, capture globale des erreurs et diagnostic média sont gérés côté code. Les validations natives et matérielles, la session longue et l’installeur restent à livrer. |
 
 ### Tranches supplémentaires déjà livrées
 
@@ -609,16 +617,22 @@ Première tranche livrée :
 - contrôler SQLite au démarrage et proposer une archive valide sans jamais la restaurer
   silencieusement ;
 - reprendre ou annuler sans mélange une restauration interrompue pendant le remplacement.
+- conserver les journaux techniques sept jours avec rotation à 5 Mo et chemins absolus masqués ;
+- capter les erreurs Angular inattendues et journaliser aussi les échecs natifs de sauvegarde et
+  de surveillance du Player Display ;
+- vérifier sans décodage tous les médias référencés au démarrage et depuis Configuration ;
+- lister les fichiers absents ou inaccessibles par ressource et les remplacer sans changer leur
+  référence SQLite.
 
 Travail :
 
 - valider manuellement la fermeture et la réouverture du Player Display dans Tauri ;
 - reprendre l'état après un rechargement interne du Player Display ;
 - valider manuellement la déconnexion, le remplacement et les moniteurs identiques ;
-- journal local minimal avec messages compréhensibles ;
 - valider dans Tauri un aller-retour complet de sauvegarde/restauration sur un dossier de données
   propre ;
-- contrôle des erreurs de base et de fichiers ;
+- valider dans Tauri la création, la rotation et l’ouverture du journal technique ;
+- valider le diagnostic et le remplacement d’un média réellement supprimé ;
 - tests avec plusieurs facteurs d'échelle et dispositions Windows ;
 - test d'une session simulée de plusieurs heures avec changements répétés ;
 - création d'un paquet Windows installable ;
@@ -662,6 +676,7 @@ Critères de validation :
 | Desktop                   | Tauri 2 et API JavaScript               |             1 | Retenue                                |
 | Persistance               | Plugin SQL Tauri, fonctionnalité SQLite |             4 | Retenue                                |
 | Sélection/copie de médias | Plugins Dialog et Filesystem Tauri      |             6 | À confirmer selon le workflow d'import |
+| Journal technique         | Plugin Log Tauri                        |          14.3 | Retenue                                |
 | Notes riches              | Tiptap core, ProseMirror et StarterKit  |             7 | Retenue avec prototype Angular         |
 | Transitions complexes     | GSAP                                    |  Après le MVP | Ne pas installer tant que CSS suffit   |
 

@@ -337,6 +337,23 @@ Au démarrage, `PRAGMA quick_check` valide la base active. Un échec ouvre un fl
 propose la dernière archive automatique valide ou une archive choisie par le MJ. La restauration
 exige toujours une confirmation et un redémarrage.
 
+### Diagnostic local
+
+Le plugin Log officiel de Tauri écrit les événements techniques Angular et Rust dans le dossier de
+journaux recommandé par le système. Les fichiers tournent lorsqu’ils atteignent 5 Mo et sont
+supprimés après sept jours. La Configuration permet d’ouvrir leur dossier, sans afficher leur
+contenu dans l’application. Les entrées ne sérialisent pas les notes ou fiches métier et masquent
+les chemins absolus transmis par une erreur.
+
+Un `ErrorHandler` Angular capture uniquement les erreurs inattendues au dernier niveau. Les erreurs
+métier attendues restent présentées dans leur vue ; les échecs natifs importants, notamment la
+sauvegarde et la surveillance du Player Display, sont aussi journalisés explicitement.
+
+Le diagnostic média interroge SQLite puis contrôle les fichiers avec leurs métadonnées, sans
+décoder les images ou vidéos. Il couvre les ressources canoniques et les personnalisations de
+campagne. Un fichier absent ou inaccessible reste référencé et apparaît dans Configuration avec
+une action de remplacement au même format et au même chemin interne.
+
 ---
 
 # 7. Affichage multi-écrans

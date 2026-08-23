@@ -10,6 +10,7 @@ import type { MonitorDescriptor } from '@app/features/display/domain/display.mod
 import { Control } from '@app/features/display/pages/control/control';
 import { SceneDisplayService } from '@app/features/scenes/application/scene-display.service';
 import { PlayerDisplayMonitorSessionService } from '@app/features/display/application/player-display-monitor-session.service';
+import { TechnicalLogService } from '@app/features/diagnostics/application/technical-log.service';
 
 describe('Control', () => {
   const monitor: MonitorDescriptor = {
@@ -50,6 +51,7 @@ describe('Control', () => {
   };
   const sceneDisplayService = { restore: vi.fn() };
   const playerDisplayMonitorSession = { track: vi.fn(), clear: vi.fn() };
+  const log = { reportError: vi.fn() };
 
   beforeEach(async () => {
     vi.clearAllMocks();
@@ -87,6 +89,7 @@ describe('Control', () => {
           provide: PlayerDisplayMonitorSessionService,
           useValue: playerDisplayMonitorSession,
         },
+        { provide: TechnicalLogService, useValue: log },
       ],
     }).compileComponents();
   });
@@ -109,6 +112,24 @@ describe('Control', () => {
     });
     expect(preferenceService.savePreferredMonitor).toHaveBeenCalledWith(monitor);
     expect(playerDisplayMonitorSession.track).toHaveBeenLastCalledWith(monitor);
+  });
+
+  it('refreshes a relocated monitor before reopening the player display', async () => {
+    const fixture = TestBed.createComponent(Control);
+    fixture.detectChanges();
+    await renderUntil(fixture, 'Déjà affiché sur cet écran');
+    notifyPlayerDisplayClosed?.();
+    fixture.detectChanges();
+
+    const relocated = { ...monitor, id: 'monitor-fingerprint|-1920,0', x: -1920 };
+    displayGateway.listMonitors.mockResolvedValue([relocated]);
+    findButton(fixture, "Ouvrir l'écran joueurs").click();
+
+    await vi.waitFor(() =>
+      expect(displayGateway.openPlayerDisplay).toHaveBeenCalledWith(relocated.id),
+    );
+    expect(preferenceService.savePreferredMonitor).toHaveBeenCalledWith(relocated);
+    expect(playerDisplayMonitorSession.track).toHaveBeenLastCalledWith(relocated);
   });
 });
 

@@ -11,6 +11,7 @@ import { PlayerDisplayStore } from '@app/features/display/application/player-dis
 import { SceneDisplayService } from '@app/features/scenes/application/scene-display.service';
 import { ButtonDirective } from '@app/shared/ui/button/button.directive';
 import { PlayerDisplayMonitorSessionService } from '@app/features/display/application/player-display-monitor-session.service';
+import { TechnicalLogService } from '@app/features/diagnostics/application/technical-log.service';
 
 @Component({
   selector: 'app-control',
@@ -25,6 +26,7 @@ export class Control implements OnInit, OnDestroy {
   private readonly playerDisplayStore = inject(PlayerDisplayStore);
   private readonly sceneDisplayService = inject(SceneDisplayService);
   private readonly playerDisplayMonitorSession = inject(PlayerDisplayMonitorSessionService);
+  private readonly log = inject(TechnicalLogService);
   private unlistenPlayerDisplayReady?: UnlistenFn;
   private unlistenPlayerDisplayClosed?: UnlistenFn;
 
@@ -85,12 +87,13 @@ export class Control implements OnInit, OnDestroy {
   }
 
   protected async openPlayerDisplay(): Promise<void> {
-    const monitor = this.selectedMonitor();
-    if (!monitor) {
-      return;
-    }
-
     await this.runDisplayAction(async () => {
+      const monitor = await this.refreshSelectedMonitor();
+      if (!monitor) {
+        throw new Error(
+          'Le moniteur sélectionné n’est plus identifiable. Sélectionne à nouveau un écran.',
+        );
+      }
       await this.displayGateway.openPlayerDisplay(monitor.id);
       this.isPlayerDisplayOpen.set(true);
       this.playerDisplayMonitorId.set(monitor.id);
@@ -162,6 +165,7 @@ export class Control implements OnInit, OnDestroy {
     try {
       await action();
     } catch (error) {
+      this.log.reportError('display.action', error);
       this.error.set(this.errorMessage(error));
     } finally {
       this.isLoading.set(false);
@@ -176,6 +180,7 @@ export class Control implements OnInit, OnDestroy {
         },
       );
     } catch (error) {
+      this.log.reportError('display.ready-listener', error);
       this.error.set(this.errorMessage(error));
     }
 
@@ -191,8 +196,25 @@ export class Control implements OnInit, OnDestroy {
         await this.initializeDesktop();
       }
     } catch (error) {
+      this.log.reportError('display.initialization', error);
       this.error.set(this.errorMessage(error));
     }
+  }
+
+  private async refreshSelectedMonitor(): Promise<MonitorDescriptor | null> {
+    const previous = this.selectedMonitor();
+    const monitors = await this.displayGateway.listMonitors();
+    const exact = previous ? monitors.find(({ id }) => id === previous.id) : undefined;
+    const fingerprintMatches = previous
+      ? monitors.filter(({ fingerprint }) => fingerprint === previous.fingerprint)
+      : [];
+    const relocated = fingerprintMatches.length === 1 ? fingerprintMatches[0] : undefined;
+    const monitor =
+      exact ?? relocated ?? (await this.playerDisplayPreference.findPreferredMonitor(monitors));
+
+    this.monitors.set(monitors);
+    this.selectedMonitorId.set(monitor?.id ?? '');
+    return monitor;
   }
 
   private async trackPlayerDisplayClosure(): Promise<void> {

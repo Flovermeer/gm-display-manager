@@ -11,7 +11,7 @@ vi.mock('@tauri-apps/api/path', () => ({ appDataDir: vi.fn(), join: vi.fn() }));
 vi.mock('@tauri-apps/api/window', () => ({ getCurrentWindow: vi.fn() }));
 vi.mock('@tauri-apps/plugin-dialog', () => ({ open: vi.fn() }));
 vi.mock('@tauri-apps/plugin-fs', () => ({
-  BaseDirectory: { AppData: 22 },
+  BaseDirectory: { AppData: 14 },
   copyFile: vi.fn(),
   exists: vi.fn(),
   mkdir: vi.fn(),
@@ -59,13 +59,20 @@ describe('TauriMediaDiagnosticGateway', () => {
     expect(stat).not.toHaveBeenCalled();
   });
 
+  it('reports an existing regular file as healthy', async () => {
+    await expect(new TauriMediaDiagnosticGateway().inspectFile(reference)).resolves.toBe(
+      'healthy',
+    );
+    expect(stat).toHaveBeenCalledWith(reference.relativePath, { baseDir: 14 });
+  });
+
   it('copies a same-format replacement to the existing internal path', async () => {
     vi.mocked(open).mockResolvedValue('C:\\Pictures\\syndra.webp');
 
     await expect(new TauriMediaDiagnosticGateway().replaceFile(reference)).resolves.toBe(true);
 
     expect(mkdir).toHaveBeenCalledWith('universes/universe-id/media/npc-portraits', {
-      baseDir: 22,
+      baseDir: 14,
       recursive: true,
     });
     expect(copyFile).toHaveBeenCalledWith(

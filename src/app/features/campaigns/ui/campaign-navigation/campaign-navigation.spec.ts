@@ -35,7 +35,6 @@ describe('CampaignNavigation', () => {
       'Journal',
       'Tables',
       '⚙ Configuration',
-      'Accueil',
     ]);
     expect([...element.querySelectorAll('[aria-disabled="true"]')]).toHaveLength(0);
     expect(

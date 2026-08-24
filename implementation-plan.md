@@ -80,7 +80,7 @@ coordonnées et huit sauvegardes sans fermeture ni erreur.
 | 11 — Historique récent      | Terminé                              | Huit pills persistées et cliquables par campagne, dédupliquées par récence et purgées lorsque leur cible disparaît.                                                                                                                                                       |
 | 12 — Carte heuristique      | Reporté après la V1.1                | Graphe automatique et navigable des chapitres, ressources liées et mentions `@`, sans édition manuelle du graphe.                                                                                                                                                         |
 | 13 — Tables aléatoires      | Terminé                              | CRUD atomique de tables privées au MJ, plages de 1 à 100 triées automatiquement, validation de couverture continue et tirage uniforme sans historique.                                                                                                                    |
-| 14 — Durcissement/livraison | V1.1 en cours                        | Les flux natifs principaux, la restauration depuis des données vierges, quatre heures de session accélérée et la génération de l'installeur NSIS sont validés. Restent les moniteurs identiques, la rotation réelle des journaux et l'installation sur une autre machine. |
+| 14 — Durcissement/livraison | V1.1 en cours                        | Les flux natifs principaux, la restauration depuis des données vierges, quatre heures de session accélérée, la rotation réelle des journaux et la génération de l'installeur NSIS sont validés. Restent les moniteurs identiques et l'installation sur une autre machine. |
 
 ### Tranches supplémentaires déjà livrées
 
@@ -631,7 +631,7 @@ Première tranche livrée :
 - lister les fichiers absents ou inaccessibles par ressource et les remplacer sans changer leur
   référence SQLite.
 
-Validation manuelle du 23 août 2026 :
+Validations manuelles des 23 et 24 août 2026 :
 
 - ouverture plein écran sur le moniteur narratif, fermeture Windows et réouverture avec le dernier
   visuel validées ;
@@ -651,16 +651,17 @@ Validation manuelle du 23 août 2026 :
   après remise en place du fichier validé ;
 - quatre heures virtuelles avec 7 200 contrôles du moniteur déplacé et huit sauvegardes automatiques
   validées sans fermeture, toast ni erreur technique.
+- rotation réelle validée après dépassement contrôlé de 5 000 000 octets : archivage du journal
+  existant et création d'un nouveau journal actif, puis retrait des données artificielles ;
 - génération de l'installeur NSIS validée le 24 août 2026 par GitHub Actions après les tests Angular
   et la compilation Rust release ; l'artefact est conservé quatorze jours.
 
-Restent à valider : deux moniteurs matériellement identiques, rotation réelle des journaux et
-installation du paquet Windows sur une autre machine.
+Restent à valider : deux moniteurs matériellement identiques et installation du paquet Windows sur
+une autre machine.
 
 Travail restant :
 
 - valider le remplacement entre deux moniteurs matériellement identiques ;
-- valider la rotation effective du journal technique ;
 - installer et exécuter le paquet NSIS sur une machine Windows cible ;
 - rédaction d'un guide d'installation, de sauvegarde et de dépannage.
 

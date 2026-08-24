@@ -77,6 +77,20 @@ cargo test --manifest-path src-tauri/Cargo.toml
 Le comportement multi-écran devra être validé manuellement sur plusieurs
 moniteurs physiques à partir du jalon 2.
 
+## Installateur Windows
+
+Le workflow `Windows installer` est déclenché manuellement. Depuis la racine du projet, avec GitHub
+CLI authentifié :
+
+```powershell
+gh workflow run windows-installer.yml -R Flovermeer/gm-display-manager --ref main
+```
+
+Le workflow exécute les tests Angular, compile l'application en mode release, génère l'installateur
+NSIS puis publie l'artefact `beholders-inn-windows-installer` dans la page GitHub Actions de
+l'exécution. L'artefact est conservé quatorze jours. Un simple `git push` ne déclenche pas ce
+workflow.
+
 ## Documentation
 
 - [`user-guide.md`](./user-guide.md) : lancement et utilisation de la preuve de concept ;

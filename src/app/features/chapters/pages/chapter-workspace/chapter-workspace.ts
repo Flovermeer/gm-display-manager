@@ -138,7 +138,9 @@ export class ChapterWorkspace implements OnInit, PendingChangesAware {
   });
   protected readonly campaignMap = computed(() => {
     const campaign = this.campaign();
-    return campaign ? buildCampaignMap(campaign, this.chapters(), this.scenes()) : null;
+    return campaign
+      ? buildCampaignMap(campaign, this.chapters(), this.scenes(), this.mentionCandidates())
+      : null;
   });
 
   ngOnInit(): void {

@@ -17,7 +17,10 @@ import { PlayerCharacterService } from '@app/features/players/application/player
 import { NarrativeItemService } from '@app/features/items/application/narrative-item.service';
 import { SceneService } from '@app/features/scenes/application/scene.service';
 import { MonsterService } from '@app/features/bestiary/application/monster.service';
-import type { ResourceMentionCandidate } from '@app/shared/rich-text-editor/resource-mention';
+import {
+  resourceRouteSegment,
+  type ResourceMentionCandidate,
+} from '@app/shared/rich-text-editor/resource-mention';
 
 @Injectable({ providedIn: 'root' })
 export class ResourceMentionNavigationService {
@@ -73,17 +76,11 @@ export class ResourceMentionNavigationService {
   }
 
   open(campaignId: string, mention: ResourceMentionCandidate): Promise<boolean> {
-    const segment = {
-      npc: 'npcs',
-      location: 'locations',
-      'player-character': 'player-characters',
-      item: 'items',
-      scene: 'scenes',
-      monster: 'bestiary',
-    }[mention.resourceType];
-    if (!segment) return Promise.resolve(false);
-    return this.router.navigate(['/campaigns', campaignId, segment], {
-      queryParams: { resourceId: mention.resourceId },
-    });
+    return this.router.navigate(
+      ['/campaigns', campaignId, resourceRouteSegment(mention.resourceType)],
+      {
+        queryParams: { resourceId: mention.resourceId },
+      },
+    );
   }
 }

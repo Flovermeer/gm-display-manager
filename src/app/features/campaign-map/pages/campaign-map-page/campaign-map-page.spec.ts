@@ -43,7 +43,7 @@ const map: CampaignMap = {
   campaignId: campaign.id,
   campaignName: campaign.name,
   sceneCount: 0,
-  chapters: [{ id: 'chapter-id', title: 'Le port', summary: '', scenes: [] }],
+  chapters: [{ id: 'chapter-id', title: 'Le port', summary: '', mentions: [], scenes: [] }],
 };
 
 async function renderUntil(

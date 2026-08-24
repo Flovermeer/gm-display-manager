@@ -1,7 +1,14 @@
 import { Component, input } from '@angular/core';
 import { RouterLink } from '@angular/router';
 
-import type { CampaignMap } from '@app/features/campaign-map/domain/campaign-map';
+import type {
+  CampaignMap,
+  CampaignMapResource,
+} from '@app/features/campaign-map/domain/campaign-map';
+import {
+  resourceRouteSegment,
+  resourceTypeLabel,
+} from '@app/shared/rich-text-editor/resource-mention';
 
 export type CampaignMapVariant = 'full' | 'compact';
 
@@ -14,4 +21,12 @@ export type CampaignMapVariant = 'full' | 'compact';
 export class CampaignMapTree {
   readonly map = input.required<CampaignMap>();
   readonly variant = input<CampaignMapVariant>('full');
+
+  protected resourceSegment(resource: CampaignMapResource): string {
+    return resourceRouteSegment(resource.resourceType);
+  }
+
+  protected resourceTypeLabel(resource: CampaignMapResource): string {
+    return resourceTypeLabel(resource.resourceType);
+  }
 }

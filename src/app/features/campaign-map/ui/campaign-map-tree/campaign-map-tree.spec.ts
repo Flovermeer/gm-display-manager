@@ -23,13 +23,25 @@ describe('CampaignMapTree', () => {
       [...element.querySelectorAll<HTMLAnchorElement>('a')].map(({ textContent }) =>
         textContent?.trim(),
       ),
-    ).toEqual(['Chapitre 1Le portArrivée à Chult', 'Scène 1La tavernePremière rencontre']);
+    ).toEqual([
+      'Chapitre 1Le portArrivée à Chult',
+      'PNJSyndra Silvane',
+      'Scène 1La tavernePremière rencontre',
+      'LieuPort Nyanzaru',
+    ]);
     expect(
       element.querySelector<HTMLAnchorElement>('.campaign-map__node--chapter')?.href,
     ).toContain('/campaigns/campaign-id/chapters?resourceId=chapter-id');
     expect(element.querySelector<HTMLAnchorElement>('.campaign-map__node--scene')?.href).toContain(
       '/campaigns/campaign-id/scenes?resourceId=scene-id',
     );
+    expect(
+      element.querySelector<HTMLAnchorElement>('.campaign-map__node--resource')?.href,
+    ).toContain('/campaigns/campaign-id/npcs?resourceId=npc-id');
+    expect(element.querySelector('.campaign-map__node--missing')?.textContent).toContain(
+      'Ancien objet',
+    );
+    expect(element.querySelector('.campaign-map__node--missing')?.closest('a')).toBeNull();
   });
 
   it('uses a bounded viewport for the compact variant', async () => {
@@ -57,11 +69,33 @@ const map: CampaignMap = {
       id: 'chapter-id',
       title: 'Le port',
       summary: 'Arrivée à Chult',
+      mentions: [
+        {
+          resourceType: 'npc',
+          resourceId: 'npc-id',
+          label: 'Syndra Silvane',
+          available: true,
+        },
+        {
+          resourceType: 'item',
+          resourceId: 'missing-item',
+          label: 'Ancien objet',
+          available: false,
+        },
+      ],
       scenes: [
         {
           id: 'scene-id',
           name: 'La taverne',
           summary: 'Première rencontre',
+          resources: [
+            {
+              resourceType: 'location',
+              resourceId: 'location-id',
+              label: 'Port Nyanzaru',
+              available: true,
+            },
+          ],
         },
       ],
     },

@@ -13,17 +13,20 @@ import type { Campaign } from '@app/features/campaigns/domain/campaign';
 import { ChapterService } from '@app/features/chapters/application/chapter.service';
 import { SceneService } from '@app/features/scenes/application/scene.service';
 import { buildCampaignMap, type CampaignMap } from '@app/features/campaign-map/domain/campaign-map';
+import { ResourceMentionNavigationService } from '@app/shared/rich-text-editor/resource-mention-navigation.service';
 
 @Injectable({ providedIn: 'root' })
 export class CampaignMapService {
   private readonly chapterService = inject(ChapterService);
   private readonly sceneService = inject(SceneService);
+  private readonly mentionNavigation = inject(ResourceMentionNavigationService);
 
   async load(campaign: Campaign): Promise<CampaignMap> {
-    const [chapters, scenes] = await Promise.all([
+    const [chapters, scenes, availableResources] = await Promise.all([
       this.chapterService.list(campaign.id),
       this.sceneService.list(campaign.id),
+      this.mentionNavigation.listCandidates(campaign.id),
     ]);
-    return buildCampaignMap(campaign, chapters, scenes);
+    return buildCampaignMap(campaign, chapters, scenes, availableResources);
   }
 }

@@ -4,16 +4,19 @@ import type { Campaign } from '@app/features/campaigns/domain/campaign';
 import { ChapterService } from '@app/features/chapters/application/chapter.service';
 import { SceneService } from '@app/features/scenes/application/scene.service';
 import { CampaignMapService } from '@app/features/campaign-map/application/campaign-map.service';
+import { ResourceMentionNavigationService } from '@app/shared/rich-text-editor/resource-mention-navigation.service';
 
 describe('CampaignMapService', () => {
   it('loads the existing campaign structure without a dedicated repository', async () => {
     const chapterService = { list: vi.fn().mockResolvedValue([]) };
     const sceneService = { list: vi.fn().mockResolvedValue([]) };
+    const mentionNavigation = { listCandidates: vi.fn().mockResolvedValue([]) };
     TestBed.configureTestingModule({
       providers: [
         CampaignMapService,
         { provide: ChapterService, useValue: chapterService },
         { provide: SceneService, useValue: sceneService },
+        { provide: ResourceMentionNavigationService, useValue: mentionNavigation },
       ],
     });
 
@@ -21,6 +24,7 @@ describe('CampaignMapService', () => {
 
     expect(chapterService.list).toHaveBeenCalledWith(campaign.id);
     expect(sceneService.list).toHaveBeenCalledWith(campaign.id);
+    expect(mentionNavigation.listCandidates).toHaveBeenCalledWith(campaign.id);
     expect(map).toEqual({
       campaignId: campaign.id,
       campaignName: campaign.name,

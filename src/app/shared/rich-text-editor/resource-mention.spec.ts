@@ -1,6 +1,10 @@
 import type { JSONContent } from '@tiptap/core';
 
-import { extractResourceMentions } from '@app/shared/rich-text-editor/resource-mention';
+import {
+  extractResourceMentions,
+  resourceRouteSegment,
+  resourceTypeLabel,
+} from '@app/shared/rich-text-editor/resource-mention';
 
 describe('resource mentions', () => {
   it('extracts unique valid relations while keeping their labels', () => {
@@ -38,5 +42,12 @@ describe('resource mentions', () => {
       { resourceType: 'location', resourceId: 'port-id', label: 'Port Nyanzaru' },
       { resourceType: 'monster', resourceId: 'atropal-id', label: 'Atropal' },
     ]);
+  });
+
+  it('centralizes resource labels and route segments', () => {
+    expect(resourceTypeLabel('player-character')).toBe('PJ');
+    expect(resourceTypeLabel('monster')).toBe('Monstre');
+    expect(resourceRouteSegment('scene')).toBe('scenes');
+    expect(resourceRouteSegment('monster')).toBe('bestiary');
   });
 });

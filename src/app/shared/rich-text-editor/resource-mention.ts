@@ -23,6 +23,24 @@ export type ResourceMentionMatch = Readonly<{
   query: string;
 }>;
 
+const RESOURCE_TYPE_LABELS: Readonly<Record<ResourceType, string>> = {
+  'player-character': 'PJ',
+  npc: 'PNJ',
+  monster: 'Monstre',
+  location: 'Lieu',
+  item: 'Objet',
+  scene: 'Scène',
+};
+
+const RESOURCE_ROUTE_SEGMENTS: Readonly<Record<ResourceType, string>> = {
+  'player-character': 'player-characters',
+  npc: 'npcs',
+  monster: 'bestiary',
+  location: 'locations',
+  item: 'items',
+  scene: 'scenes',
+};
+
 type ResourceMentionExtensionOptions = Readonly<{
   isAvailable: (resourceType: ResourceType, resourceId: string) => boolean;
 }>;
@@ -119,6 +137,14 @@ export function extractResourceMentions(content: JSONContent): readonly Resource
     mentions.set(`${resourceType}:${resourceId}`, { resourceType, resourceId, label });
   });
   return [...mentions.values()];
+}
+
+export function resourceTypeLabel(resourceType: ResourceType): string {
+  return RESOURCE_TYPE_LABELS[resourceType];
+}
+
+export function resourceRouteSegment(resourceType: ResourceType): string {
+  return RESOURCE_ROUTE_SEGMENTS[resourceType];
 }
 
 function publishMentionMatch(

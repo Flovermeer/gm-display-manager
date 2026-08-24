@@ -22,6 +22,7 @@ import {
 import {
   createResourceMentionExtension,
   createResourceMentionTrigger,
+  resourceTypeLabel,
   type ResourceMentionCandidate,
   type ResourceMentionMatch,
 } from '@app/shared/rich-text-editor/resource-mention';
@@ -196,15 +197,7 @@ export class RichTextEditor implements AfterViewInit, OnDestroy {
   }
 
   protected resourceTypeLabel(candidate: ResourceMentionCandidate): string {
-    const labels = {
-      'player-character': 'PJ',
-      npc: 'PNJ',
-      monster: 'Monstre',
-      location: 'Lieu',
-      item: 'Objet',
-      scene: 'Scène',
-    } as const;
-    return labels[candidate.resourceType];
+    return resourceTypeLabel(candidate.resourceType);
   }
 
   private activateMention(target: EventTarget | null): boolean {

@@ -24,23 +24,91 @@
               <small>{{ chapter.summary || 'Sans résumé' }}</small>
             </a>
 
-            <ol class="campaign-map__scenes" [attr.aria-label]="'Scènes de ' + chapter.title">
-              @for (scene of chapter.scenes; track scene.id; let sceneIndex = $index) {
-                <li>
-                  <a
-                    class="campaign-map__node campaign-map__node--scene"
-                    [routerLink]="['/campaigns', map().campaignId, 'scenes']"
-                    [queryParams]="{ resourceId: scene.id }"
-                  >
-                    <span>Scène {{ sceneIndex + 1 }}</span>
-                    <strong>{{ scene.name }}</strong>
-                    <small>{{ scene.summary || 'Sans résumé' }}</small>
-                  </a>
-                </li>
-              } @empty {
-                <li class="campaign-map__empty-branch">Aucune scène</li>
+            <div class="campaign-map__chapter-relations">
+              @if (chapter.mentions.length > 0) {
+                <section
+                  class="campaign-map__relation-group"
+                  [attr.aria-label]="'Mentions de ' + chapter.title"
+                >
+                  <p>Mentions du chapitre</p>
+                  <ul class="campaign-map__resources campaign-map__resources--chapter">
+                    @for (
+                      resource of chapter.mentions;
+                      track resource.resourceType + resource.resourceId
+                    ) {
+                      <li>
+                        @if (resource.available) {
+                          <a
+                            class="campaign-map__node campaign-map__node--resource"
+                            [routerLink]="[
+                              '/campaigns',
+                              map().campaignId,
+                              resourceSegment(resource),
+                            ]"
+                            [queryParams]="{ resourceId: resource.resourceId }"
+                          >
+                            <span>{{ resourceTypeLabel(resource) }}</span>
+                            <strong>{{ resource.label }}</strong>
+                          </a>
+                        } @else {
+                          <span
+                            class="campaign-map__node campaign-map__node--resource campaign-map__node--missing"
+                          >
+                            <span>{{ resourceTypeLabel(resource) }} supprimé</span>
+                            <strong>{{ resource.label }}</strong>
+                          </span>
+                        }
+                      </li>
+                    }
+                  </ul>
+                </section>
               }
-            </ol>
+
+              <ol class="campaign-map__scenes" [attr.aria-label]="'Scènes de ' + chapter.title">
+                @for (scene of chapter.scenes; track scene.id; let sceneIndex = $index) {
+                  <li class="campaign-map__scene-branch">
+                    <a
+                      class="campaign-map__node campaign-map__node--scene"
+                      [routerLink]="['/campaigns', map().campaignId, 'scenes']"
+                      [queryParams]="{ resourceId: scene.id }"
+                    >
+                      <span>Scène {{ sceneIndex + 1 }}</span>
+                      <strong>{{ scene.name }}</strong>
+                      <small>{{ scene.summary || 'Sans résumé' }}</small>
+                    </a>
+
+                    @if (scene.resources.length > 0) {
+                      <ul
+                        class="campaign-map__resources campaign-map__resources--scene"
+                        [attr.aria-label]="'Ressources de ' + scene.name"
+                      >
+                        @for (
+                          resource of scene.resources;
+                          track resource.resourceType + resource.resourceId
+                        ) {
+                          <li>
+                            <a
+                              class="campaign-map__node campaign-map__node--resource"
+                              [routerLink]="[
+                                '/campaigns',
+                                map().campaignId,
+                                resourceSegment(resource),
+                              ]"
+                              [queryParams]="{ resourceId: resource.resourceId }"
+                            >
+                              <span>{{ resourceTypeLabel(resource) }}</span>
+                              <strong>{{ resource.label }}</strong>
+                            </a>
+                          </li>
+                        }
+                      </ul>
+                    }
+                  </li>
+                } @empty {
+                  <li class="campaign-map__empty-branch">Aucune scène</li>
+                }
+              </ol>
+            </div>
           </li>
         }
       </ol>

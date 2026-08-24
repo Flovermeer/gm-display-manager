@@ -68,6 +68,7 @@
 
   <section
     class="detail-panel entity-workspace__detail"
+    [class.detail-panel--overview]="!isCreating() && !selectedChapter()"
     aria-labelledby="chapter-detail-title"
     appRecentResourceTracker
     recentResourceType="chapter"
@@ -213,7 +214,7 @@
           </div>
           <a [routerLink]="['/campaigns', map.campaignId, 'map']">Ouvrir la carte complète</a>
         </header>
-        <app-campaign-map-tree [map]="map" variant="compact" />
+        <app-campaign-map-tree class="chapter-map-preview__tree" [map]="map" variant="compact" />
       </section>
     }
   </section>

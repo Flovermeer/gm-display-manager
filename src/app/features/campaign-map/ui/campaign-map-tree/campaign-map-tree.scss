@@ -207,7 +207,8 @@
 }
 
 .campaign-map--compact {
-  max-height: 19rem;
+  height: var(--campaign-map-compact-height, auto);
+  max-height: var(--campaign-map-compact-max-height, 19rem);
   border-block: 1px solid #d2cbc0;
   background: #f3efe8;
 }

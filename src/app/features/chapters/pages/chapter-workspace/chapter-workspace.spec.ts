@@ -177,6 +177,7 @@ describe('ChapterWorkspace', () => {
     fixture.detectChanges();
 
     expect(element.querySelector('.chapter-overview')).toBeTruthy();
+    expect(element.querySelector('.detail-panel--overview')).toBeTruthy();
     expect(element.querySelector('.chapter-sheet')).toBeNull();
     expect(element.querySelector('.chapter-map-preview')?.textContent).toContain('Le port');
     expect(navigate).toHaveBeenCalledWith(['/campaigns', campaign.id, 'chapters'], {

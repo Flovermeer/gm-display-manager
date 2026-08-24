@@ -2,11 +2,13 @@
 
 Date de cadrage : 12 août 2026
 
-Dernière consolidation : 23 août 2026
+Dernière consolidation : 24 août 2026
 
 Version fonctionnelle actuelle : **V1 terminée**
 
 Version en cours : **V1.1 — Durcissement et livraison Windows**
+
+Développement suivant : **Jalon 12 — Carte heuristique incrémentale**
 
 ## Journal des versions
 
@@ -24,7 +26,8 @@ cascade avec leur chapitre et rend les scènes disponibles dans les mentions `@`
 
 La V1.1 ne cherche pas à élargir le gestionnaire de campagne. Elle doit fiabiliser la V1 pour les
 sessions réelles et produire une version Windows sauvegardable, restaurable et installable. Son
-périmètre correspond au jalon 14. La carte heuristique du jalon 12 reste reportée après la V1.1.
+périmètre correspond au jalon 14. Les validations sur une autre machine et sur deux moniteurs
+identiques restent ouvertes sans bloquer le démarrage incrémental du jalon 12.
 
 Première tranche livrée : la Régie écoute désormais la destruction native du Player Display. Une
 fermeture directe par Windows remet immédiatement l'interface à l'état fermé et une nouvelle
@@ -78,7 +81,7 @@ coordonnées et huit sauvegardes sans fermeture ni erreur.
 | 9 — Bestiaire               | Terminé et catalogue global finalisé | Les catalogues canoniques PNJ, PJ, lieux, objets et monstres disposent d’éditeurs détaillés par univers. Le bestiaire conserve sa sélection par campagne, sa fiche D&D complète, ses scènes, notes et mentions `@`.                                                       |
 | 10 — Combat léger           | Terminé                              | Un combat actif persistant par campagne, panneau MJ superposé, ajout PJ/PNJ/monstres, initiative manuelle triée et suivi rapide des PV.                                                                                                                                   |
 | 11 — Historique récent      | Terminé                              | Huit pills persistées et cliquables par campagne, dédupliquées par récence et purgées lorsque leur cible disparaît.                                                                                                                                                       |
-| 12 — Carte heuristique      | Reporté après la V1.1                | Graphe automatique et navigable des chapitres, ressources liées et mentions `@`, sans édition manuelle du graphe.                                                                                                                                                         |
+| 12 — Carte heuristique      | Première tranche livrée              | Page Carte et aperçu compact dans Chapitres, dérivés automatiquement de la campagne, de l'ordre des chapitres et de leurs scènes. Les ressources liées et mentions `@` viendront par incréments.                                                                          |
 | 13 — Tables aléatoires      | Terminé                              | CRUD atomique de tables privées au MJ, plages de 1 à 100 triées automatiquement, validation de couverture continue et tirage uniforme sans historique.                                                                                                                    |
 | 14 — Durcissement/livraison | V1.1 en cours                        | Les flux natifs principaux, la restauration depuis des données vierges, quatre heures de session accélérée, la rotation réelle des journaux et la génération de l'installeur NSIS sont validés. Restent les moniteurs identiques et l'installation sur une autre machine. |
 
@@ -114,8 +117,9 @@ La V1 est terminée. L'ordre de livraison de la V1.1 est :
 4. validations matérielles et session longue ;
 5. paquet Windows et documentation de livraison.
 
-Le jalon 12 — carte heuristique — reste explicitement reporté après la V1.1. Les extensions du
-combat, des tables et des fonds animés configurables restent également hors de cette version.
+Le jalon 12 — carte heuristique — a démarré par une tranche chapitres-scènes pendant que les deux
+validations matérielles de la V1.1 restent ouvertes. Les extensions du combat, des tables et des
+fonds animés configurables restent hors de cette version.
 
 ## 1. Résultat recherché
 
@@ -580,6 +584,22 @@ Objectif : fournir une vue navigable de la structure d’une campagne sans entre
 
 La carte est générée depuis l’arborescence des chapitres, leurs relations explicites et les mentions `@`. Les nœuds ouvrent les ressources correspondantes. Une cible supprimée reste lisible sous forme de texte et ne casse pas le graphe.
 
+Première tranche livrée :
+
+- modèle de lecture dérivé des campagnes, chapitres et scènes existants, sans repository ni
+  migration supplémentaire ;
+- page **Carte** dédiée dans la navigation de campagne ;
+- aperçu compact et défilable dans **Chapitres**, avec accès à la page complète ;
+- campagne racine non cliquable, chapitres et scènes cliquables vers leur fiche ;
+- ordre des chapitres et des scènes conservé, données étrangères ou orphelines ignorées ;
+- rendu responsive et tests ciblés du modèle, du service, des liens et des deux points d'entrée.
+
+Incréments suivants :
+
+- ajouter les lieux, PNJ, monstres et objets explicitement associés aux scènes ;
+- extraire les mentions `@` des contenus riches et les représenter comme relations ;
+- conserver les cibles supprimées sous forme de libellés non cliquables.
+
 ### Jalon 13 — Tables aléatoires
 
 Objectif : permettre au MJ de préparer et utiliser des tables aléatoires propres à une campagne.
@@ -751,7 +771,7 @@ Jalons 7 à 8   -> gestion de campagne et scènes narratives
 Jalon 9        -> bestiaire réutilisable
 Jalon 10       -> suivi de combat léger
 Jalon 11       -> historique récent des ressources
-Jalon 12       -> carte heuristique automatique, reportée après la V1.1
+Jalon 12       -> carte heuristique automatique, première tranche en cours
 Jalon 13       -> tables aléatoires, fin de la V1 fonctionnelle
 Jalon 14       -> V1.1, durcissement et version Windows distribuable
 ```

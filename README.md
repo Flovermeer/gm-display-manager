@@ -52,6 +52,7 @@ Routes actuelles :
   suivi persistant de leurs points de vie ;
 - `http://localhost:4300/campaigns/:campaignId/chapters` : chapitres, sections et classement des
   scènes ;
+- `http://localhost:4300/campaigns/:campaignId/map` : carte automatique des chapitres et scènes ;
 - `http://localhost:4300/campaigns/:campaignId/scenes` : préparation et activation des scènes ;
 - `http://localhost:4300/campaigns/:campaignId/tables` : préparation et tirage privé des tables
   aléatoires de la campagne ;

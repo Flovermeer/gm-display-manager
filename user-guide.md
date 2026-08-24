@@ -238,7 +238,23 @@ l'écran joueurs.
 
 La suppression d'une table demande confirmation et supprime définitivement toutes ses entrées.
 
-## 8. Choisir l'écran des joueurs
+## 8. Naviguer dans la carte de campagne
+
+Ouvre **Carte** dans la navigation de la campagne pour afficher sa structure automatique. Le nœud
+racine représente la campagne et ne déclenche aucune navigation. Les chapitres apparaissent dans
+leur ordre actuel et leurs scènes sont classées sous chacun d'eux.
+
+Clique sur un chapitre ou une scène pour ouvrir directement sa fiche. La carte ne possède pas de
+mode d'édition : toute modification effectuée dans **Chapitres** ou **Scènes** est reflétée au prochain
+chargement, sans entretenir une seconde organisation manuelle.
+
+La page **Chapitres** affiche aussi une version compacte de la même carte dans une zone défilable.
+Utilise **Ouvrir la carte complète** pour rejoindre la vue dédiée.
+
+Cette première version couvre les chapitres et les scènes. Les ressources composant les scènes et
+les mentions `@` seront ajoutées par incréments.
+
+## 9. Choisir l'écran des joueurs
 
 Dans la section **Écran joueurs** :
 
@@ -261,7 +277,7 @@ prochain lancement, il est automatiquement présélectionné s'il peut être rec
 sans ambiguïté. Si deux moniteurs identiques partagent la même empreinte,
 l'application demande une nouvelle sélection au lieu de choisir arbitrairement.
 
-## 9. Ouvrir l'écran joueurs
+## 10. Ouvrir l'écran joueurs
 
 Après avoir sélectionné un moniteur, clique sur **Ouvrir l'écran joueurs**.
 
@@ -274,7 +290,7 @@ L'application crée une seconde fenêtre Tauri qui :
 
 La fenêtre principale reste ouverte sur le panneau du maître de jeu.
 
-## 10. Piloter le contenu affiché
+## 11. Piloter le contenu affiché
 
 La section **Contenu affiché** fournit actuellement trois actions de
 démonstration :
@@ -289,7 +305,7 @@ démonstration sont inclus dans le projet et fonctionnent hors ligne.
 Tu peux choisir un contenu avant d'ouvrir la fenêtre joueurs : l'état complet
 sera envoyé automatiquement lorsque cette fenêtre annoncera qu'elle est prête.
 
-## 11. Déplacer l'écran joueurs
+## 12. Déplacer l'écran joueurs
 
 Lorsque la fenêtre joueurs existe déjà, le bouton devient **Déplacer l'écran
 joueurs**.
@@ -308,7 +324,7 @@ Lorsque le moniteur sélectionné héberge déjà la fenêtre joueurs, le bouton
 indique **Déjà affiché sur cet écran** et reste désactivé. Cela évite de
 réappliquer inutilement le plein écran et de provoquer un flicker.
 
-## 12. Fermer l'écran joueurs
+## 13. Fermer l'écran joueurs
 
 Clique sur **Fermer l'écran joueurs** depuis le panneau MJ. La fenêtre dédiée
 est fermée sans fermer l'application principale.
@@ -316,7 +332,7 @@ est fermée sans fermer l'application principale.
 Si la fenêtre est fermée directement depuis Windows, son état est synchronisé
 automatiquement dans le panneau MJ et le bouton d'ouverture redevient disponible.
 
-## 13. Prévisualisation dans le navigateur
+## 14. Prévisualisation dans le navigateur
 
 Angular peut être lancé sans Tauri :
 
@@ -329,7 +345,7 @@ Les actions de contenu modifient tout de même l'état de prévisualisation loca
 Le lien de prévisualisation ouvre la route `/player-display` dans la même page et
 affiche un bouton **Retour au panneau MJ**.
 
-## 14. Arrêter l'application de développement
+## 15. Arrêter l'application de développement
 
 Ferme les fenêtres puis, dans le terminal qui exécute Tauri, utilise :
 
@@ -337,7 +353,7 @@ Ferme les fenêtres puis, dans le terminal qui exécute Tauri, utilise :
 Ctrl + C
 ```
 
-## 15. Limites actuelles
+## 16. Limites actuelles
 
 - le remplacement entre deux moniteurs matériellement identiques reste à valider physiquement ;
 - les documents ne sont pas encore proposés dans le panneau MJ ;
@@ -345,7 +361,7 @@ Ctrl + C
 - la validation multi-écran est manuelle et ciblée sur Windows ;
 - l'installateur NSIS doit encore être exécuté sur une autre machine Windows et n'est pas signé.
 
-## 16. Dépannage rapide
+## 17. Dépannage rapide
 
 ### Aucun moniteur détecté
 

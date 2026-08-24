@@ -53,6 +53,14 @@ export const routes: Routes = [
         title: "Beholder's Inn — Chapitres",
       },
       {
+        path: 'map',
+        loadComponent: () =>
+          import('@app/features/campaign-map/pages/campaign-map-page/campaign-map-page').then(
+            ({ CampaignMapPage }) => CampaignMapPage,
+          ),
+        title: "Beholder's Inn — Carte de campagne",
+      },
+      {
         path: 'locations',
         loadComponent: () =>
           import('@app/features/locations/pages/location-workspace/location-workspace').then(

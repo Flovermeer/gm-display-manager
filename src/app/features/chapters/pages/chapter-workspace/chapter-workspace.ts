@@ -1,7 +1,7 @@
 import { Component, computed, DestroyRef, inject, OnInit, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import type { JSONContent } from '@tiptap/core';
 
 import { CampaignContext } from '@app/features/campaigns/application/campaign-context';
@@ -36,6 +36,8 @@ import {
   ChapterSceneList,
   type ChapterSceneCandidate,
 } from '@app/features/chapters/ui/chapter-scene-list/chapter-scene-list';
+import { buildCampaignMap } from '@app/features/campaign-map/domain/campaign-map';
+import { CampaignMapTree } from '@app/features/campaign-map/ui/campaign-map-tree/campaign-map-tree';
 
 type PendingDecisionResolver = (canLeave: boolean) => void;
 
@@ -43,6 +45,7 @@ type PendingDecisionResolver = (canLeave: boolean) => void;
   selector: 'app-chapter-workspace',
   imports: [
     ReactiveFormsModule,
+    RouterLink,
     RichTextEditor,
     ButtonDirective,
     Dialog,
@@ -51,6 +54,7 @@ type PendingDecisionResolver = (canLeave: boolean) => void;
     FormField,
     RecentResourceTrackerDirective,
     ChapterSceneList,
+    CampaignMapTree,
   ],
   templateUrl: './chapter-workspace.html',
   styleUrl: './chapter-workspace.scss',
@@ -131,6 +135,10 @@ export class ChapterWorkspace implements OnInit, PendingChangesAware {
           this.chapters().find((chapter) => chapter.id === scene.chapterId)?.title ??
           'Chapitre inconnu',
       }));
+  });
+  protected readonly campaignMap = computed(() => {
+    const campaign = this.campaign();
+    return campaign ? buildCampaignMap(campaign, this.chapters(), this.scenes()) : null;
   });
 
   ngOnInit(): void {

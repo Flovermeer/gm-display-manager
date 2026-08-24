@@ -105,9 +105,12 @@ describe('ChapterWorkspace', () => {
 
     const element = fixture.nativeElement as HTMLElement;
     expect(element.querySelector('.chapter-overview')).toBeTruthy();
-    expect(element.querySelector('.chapter-tree')?.textContent).toContain('Arrivée à Chult');
+    expect(element.querySelector('.chapter-map-preview')?.textContent).toContain('Le port');
+    expect(
+      element.querySelector<HTMLAnchorElement>('.chapter-map-preview > header a')?.href,
+    ).toContain('/campaigns/campaign-id/map');
 
-    element.querySelector<HTMLButtonElement>('.chapter-tree button')?.click();
+    element.querySelector<HTMLButtonElement>('.chapter-list-item')?.click();
     await renderUntil(fixture, 'Bienvenue à Chult');
 
     expect(element.querySelector('h2')?.textContent).toContain('Le port');
@@ -185,7 +188,10 @@ describe('ChapterWorkspace', () => {
     const element = fixture.nativeElement as HTMLElement;
 
     element.querySelector<HTMLButtonElement>('.chapter-list-item')?.click();
-    await renderUntil(fixture, scene.name);
+    await vi.waitFor(() => {
+      fixture.detectChanges();
+      expect(element.querySelector('#chapter-existing-scene')).toBeTruthy();
+    });
     const select = element.querySelector<HTMLSelectElement>('#chapter-existing-scene');
     if (!select) throw new Error('Scene selector not found.');
     select.value = scene.id;

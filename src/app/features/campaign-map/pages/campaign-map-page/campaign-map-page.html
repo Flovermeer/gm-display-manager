@@ -1,0 +1,19 @@
+<main class="campaign-map-page" aria-labelledby="campaign-map-title">
+  <header class="campaign-map-page__heading">
+    <div>
+      <p>Structure automatique</p>
+      <h1 id="campaign-map-title">Carte de campagne</h1>
+    </div>
+    @if (map(); as campaignMap) {
+      <p>{{ campaignMap.chapters.length }} chapitre(s) · {{ campaignMap.sceneCount }} scène(s)</p>
+    }
+  </header>
+
+  @if (error(); as message) {
+    <p class="campaign-map-page__error" role="alert">{{ message }}</p>
+  } @else if (isLoading()) {
+    <p class="campaign-map-page__status" aria-live="polite">Construction de la carte…</p>
+  } @else if (map(); as campaignMap) {
+    <app-campaign-map-tree [map]="campaignMap" />
+  }
+</main>

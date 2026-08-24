@@ -139,99 +139,46 @@
   color: #71685e;
 }
 
-.chapter-tree {
-  margin: 0;
-  padding: 0;
-  list-style: none;
+.chapter-map-preview {
+  margin-top: 2.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid #c9c0b3;
 }
 
-.chapter-tree li {
-  position: relative;
-  padding: 0 0 1rem 2.8rem;
-}
-
-.chapter-tree li::before {
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  left: 1.15rem;
-  width: 2px;
-  background: #cbbbd4;
-  content: '';
-}
-
-.chapter-tree li:last-child::before {
-  bottom: calc(100% - 1.15rem);
-}
-
-.chapter-tree button {
-  position: relative;
-  display: grid;
-  align-items: center;
-  width: 100%;
-  padding: 1rem 1.15rem;
-  border: 1px solid #cfc6bb;
-  border-radius: 0.65rem;
-  color: #302b26;
-  background: #faf8f4;
-  text-align: left;
-  cursor: pointer;
-  grid-template-columns: auto minmax(0, 1fr) auto;
+.chapter-map-preview > header {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  margin-bottom: 1rem;
   gap: 1rem;
-  transition:
-    border-color 140ms ease,
-    transform 140ms ease,
-    box-shadow 140ms ease;
 }
 
-.chapter-tree button:hover {
-  border-color: #87669b;
-  box-shadow: 0 0.5rem 1.2rem rgb(58 40 66 / 12%);
-  transform: translateX(0.2rem);
+.chapter-map-preview h3,
+.chapter-map-preview p {
+  margin: 0;
 }
 
-.chapter-tree button:focus-visible {
+.chapter-map-preview h3 {
+  color: #302b26;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 1.25rem;
+  font-weight: 500;
+}
+
+.chapter-map-preview a {
+  color: #68457f;
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+
+.chapter-map-preview a:focus-visible {
   outline: 2px solid #76538d;
-  outline-offset: 2px;
+  outline-offset: 3px;
 }
 
-.tree-index {
-  display: grid;
-  width: 2.3rem;
-  height: 2.3rem;
-  border-radius: 50%;
-  color: #fff;
-  background: #76538d;
-  font-family: Georgia, 'Times New Roman', serif;
-  font-size: 1.05rem;
-  place-items: center;
-}
-
-.tree-content {
-  display: grid;
-  min-width: 0;
-  gap: 0.3rem;
-}
-
-.tree-content strong {
-  font-family: Georgia, 'Times New Roman', serif;
-  font-size: 1.2rem;
-}
-
-.tree-content small {
-  overflow: hidden;
-  color: #746b60;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.tree-arrow {
-  color: #76538d;
-  font-size: 1.35rem;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .chapter-tree button {
-    transition: none;
+@media (max-width: 42rem) {
+  .chapter-map-preview > header {
+    align-items: start;
+    flex-direction: column;
   }
 }

@@ -1,0 +1,51 @@
+<section
+  class="campaign-map"
+  [class.campaign-map--compact]="variant() === 'compact'"
+  [attr.aria-label]="'Carte de ' + map().campaignName"
+>
+  <div class="campaign-map__canvas">
+    <header class="campaign-map__root">
+      <span>Campagne</span>
+      <strong>{{ map().campaignName }}</strong>
+      <small> {{ map().chapters.length }} chapitre(s) · {{ map().sceneCount }} scène(s) </small>
+    </header>
+
+    @if (map().chapters.length > 0) {
+      <ol class="campaign-map__chapters">
+        @for (chapter of map().chapters; track chapter.id; let chapterIndex = $index) {
+          <li class="campaign-map__branch">
+            <a
+              class="campaign-map__node campaign-map__node--chapter"
+              [routerLink]="['/campaigns', map().campaignId, 'chapters']"
+              [queryParams]="{ resourceId: chapter.id }"
+            >
+              <span>Chapitre {{ chapterIndex + 1 }}</span>
+              <strong>{{ chapter.title }}</strong>
+              <small>{{ chapter.summary || 'Sans résumé' }}</small>
+            </a>
+
+            <ol class="campaign-map__scenes" [attr.aria-label]="'Scènes de ' + chapter.title">
+              @for (scene of chapter.scenes; track scene.id; let sceneIndex = $index) {
+                <li>
+                  <a
+                    class="campaign-map__node campaign-map__node--scene"
+                    [routerLink]="['/campaigns', map().campaignId, 'scenes']"
+                    [queryParams]="{ resourceId: scene.id }"
+                  >
+                    <span>Scène {{ sceneIndex + 1 }}</span>
+                    <strong>{{ scene.name }}</strong>
+                    <small>{{ scene.summary || 'Sans résumé' }}</small>
+                  </a>
+                </li>
+              } @empty {
+                <li class="campaign-map__empty-branch">Aucune scène</li>
+              }
+            </ol>
+          </li>
+        }
+      </ol>
+    } @else {
+      <p class="campaign-map__empty">La carte apparaîtra dès que la campagne aura un chapitre.</p>
+    }
+  </div>
+</section>

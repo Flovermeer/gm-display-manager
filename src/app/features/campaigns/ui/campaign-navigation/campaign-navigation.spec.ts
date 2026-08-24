@@ -26,6 +26,7 @@ describe('CampaignNavigation', () => {
       'Régie',
       'Scènes',
       'Chapitres',
+      'Carte',
       'Lieux',
       'PNJ',
       'Bestiaire',

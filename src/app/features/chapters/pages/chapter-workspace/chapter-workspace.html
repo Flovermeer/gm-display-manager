@@ -191,23 +191,6 @@
           </h2>
           <p>Sélectionne une étape pour ouvrir directement son contenu.</p>
         </header>
-
-        <ol class="chapter-tree">
-          @for (chapter of chapters(); track chapter.id; let index = $index) {
-            <li>
-              <button type="button" (click)="requestSelectChapter(chapter)">
-                <span class="tree-index">{{ index + 1 }}</span>
-                <span class="tree-content">
-                  <strong>{{ chapter.title }}</strong>
-                  @if (chapter.summary) {
-                    <small>{{ chapter.summary }}</small>
-                  }
-                </span>
-                <span class="tree-arrow" aria-hidden="true">→</span>
-              </button>
-            </li>
-          }
-        </ol>
       </section>
     } @else {
       <app-empty-state
@@ -216,6 +199,19 @@
         description="Sélectionne un chapitre dans la liste ou commence une nouvelle note."
         headingId="chapter-detail-title"
       />
+    }
+
+    @if (!isEditing() && campaignMap(); as map) {
+      <section class="chapter-map-preview" aria-labelledby="chapter-map-preview-title">
+        <header>
+          <div>
+            <p class="section-kicker entity-workspace__kicker">Carte automatique</p>
+            <h3 id="chapter-map-preview-title">Structure de la campagne</h3>
+          </div>
+          <a [routerLink]="['/campaigns', map.campaignId, 'map']">Ouvrir la carte complète</a>
+        </header>
+        <app-campaign-map-tree [map]="map" variant="compact" />
+      </section>
     }
   </section>
 </main>

@@ -82,6 +82,9 @@
       <div class="detail-toolbar entity-workspace__toolbar">
         <div class="detail-actions entity-workspace__actions">
           @if (!isEditing()) {
+            <button appButton="secondary" type="button" (click)="requestOverview()">
+              Vue d'ensemble
+            </button>
             <div class="order-actions" aria-label="Ordre du chapitre">
               <button
                 appButton="secondary"

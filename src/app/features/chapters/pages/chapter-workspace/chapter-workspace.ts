@@ -165,6 +165,16 @@ export class ChapterWorkspace implements OnInit, PendingChangesAware {
     if (await this.confirmPendingChanges()) this.openReadOnly(chapter);
   }
 
+  protected requestOverview(): void {
+    const campaign = this.campaign();
+    if (campaign) {
+      void this.router.navigate(['/campaigns', campaign.id, 'chapters'], { replaceUrl: true });
+    }
+    this.selectedChapter.set(null);
+    this.isCreating.set(false);
+    this.isEditing.set(false);
+  }
+
   protected async requestCreateChapter(): Promise<void> {
     if (!(await this.confirmPendingChanges())) return;
     const input = emptyChapterInput();

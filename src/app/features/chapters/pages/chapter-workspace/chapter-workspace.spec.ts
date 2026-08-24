@@ -163,6 +163,27 @@ describe('ChapterWorkspace', () => {
     await vi.waitFor(() => expect(chapterService.move).toHaveBeenCalledWith(chapter, 1));
   });
 
+  it('returns from a selected chapter to the general chapter overview', async () => {
+    const router = TestBed.inject(Router);
+    const navigate = vi.spyOn(router, 'navigate').mockResolvedValue(true);
+    const fixture = TestBed.createComponent(ChapterWorkspace);
+    fixture.detectChanges();
+    await renderUntil(fixture, 'Le port');
+    const element = fixture.nativeElement as HTMLElement;
+
+    element.querySelector<HTMLButtonElement>('.chapter-list-item')?.click();
+    await renderUntil(fixture, 'Bienvenue à Chult');
+    findButton(element, "Vue d'ensemble").click();
+    fixture.detectChanges();
+
+    expect(element.querySelector('.chapter-overview')).toBeTruthy();
+    expect(element.querySelector('.chapter-sheet')).toBeNull();
+    expect(element.querySelector('.chapter-map-preview')?.textContent).toContain('Le port');
+    expect(navigate).toHaveBeenCalledWith(['/campaigns', campaign.id, 'chapters'], {
+      replaceUrl: true,
+    });
+  });
+
   it('opens a chapter requested through the recent-resource query parameter', async () => {
     const fixture = TestBed.createComponent(ChapterWorkspace);
     fixture.detectChanges();

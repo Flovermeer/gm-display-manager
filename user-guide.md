@@ -242,17 +242,19 @@ La suppression d'une table demande confirmation et supprime définitivement tout
 
 Ouvre **Carte** dans la navigation de la campagne pour afficher sa structure automatique. Le nœud
 racine représente la campagne et ne déclenche aucune navigation. Les chapitres apparaissent dans
-leur ordre actuel et leurs scènes sont classées sous chacun d'eux.
+leur ordre actuel et leurs scènes sont classées sous chacun d'eux. Les lieux, PNJ, monstres et
+objets composant une scène apparaissent dans une branche supplémentaire sous celle-ci.
 
-Clique sur un chapitre ou une scène pour ouvrir directement sa fiche. La carte ne possède pas de
-mode d'édition : toute modification effectuée dans **Chapitres** ou **Scènes** est reflétée au prochain
-chargement, sans entretenir une seconde organisation manuelle.
+Les mentions `@` du contenu d'un chapitre forment une branche directement rattachée à ce chapitre.
+Une mention dont la cible a été supprimée conserve son ancien libellé mais n'est plus cliquable.
 
-La page **Chapitres** affiche aussi une version compacte de la même carte dans une zone défilable.
-Utilise **Ouvrir la carte complète** pour rejoindre la vue dédiée.
+Clique sur un chapitre, une scène ou une ressource résolue pour ouvrir directement sa fiche. La
+carte ne possède pas de mode d'édition : toute modification effectuée dans **Chapitres** ou
+**Scènes** est reflétée au prochain chargement, sans entretenir une seconde organisation manuelle.
 
-Cette première version couvre les chapitres et les scènes. Les ressources composant les scènes et
-les mentions `@` seront ajoutées par incréments.
+La page **Chapitres** affiche aussi une version compacte de la même carte. Elle utilise toute la
+hauteur disponible et devient défilable seulement lorsque son contenu dépasse. Utilise **Ouvrir la
+carte complète** pour rejoindre la vue dédiée.
 
 ## 9. Choisir l'écran des joueurs
 

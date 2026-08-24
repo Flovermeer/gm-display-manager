@@ -655,6 +655,8 @@ Validations manuelles des 23 et 24 août 2026 :
   existant et création d'un nouveau journal actif, puis retrait des données artificielles ;
 - génération de l'installeur NSIS validée le 24 août 2026 par GitHub Actions après les tests Angular
   et la compilation Rust release ; l'artefact est conservé quatorze jours.
+- guide d'installation, de sauvegarde et de dépannage actualisé pour la version distribuée, y
+  compris les limites de l'installateur non signé.
 
 Restent à valider : deux moniteurs matériellement identiques et installation du paquet Windows sur
 une autre machine.
@@ -663,7 +665,6 @@ Travail restant :
 
 - valider le remplacement entre deux moniteurs matériellement identiques ;
 - installer et exécuter le paquet NSIS sur une machine Windows cible ;
-- rédaction d'un guide d'installation, de sauvegarde et de dépannage.
 
 Critères de validation :
 

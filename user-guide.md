@@ -3,7 +3,28 @@
 Ce guide décrit l'application locale Angular + Tauri, ses catalogues d'univers,
 ses campagnes et sa régie narrative multi-écran.
 
-## 1. Lancer l'application
+## 1. Installer et lancer l'application
+
+### Version Windows distribuée
+
+Depuis une exécution réussie du workflow **Windows installer** dans GitHub Actions :
+
+1. télécharge l'artefact `beholders-inn-windows-installer` ;
+2. extrais l'archive ZIP dans un dossier local ;
+3. lance l'unique installateur `.exe` extrait ;
+4. termine l'installation puis ouvre **Beholders Inn** depuis le raccourci Windows.
+
+Le nom technique de l'installateur et du raccourci omet l'apostrophe. L'application ouverte conserve
+le nom visible **Beholder's Inn**.
+
+L'installateur V1.1 n'est pas encore signé. Vérifie toujours qu'il provient bien du workflow du
+dépôt avant de l'exécuter. Microsoft Defender SmartScreen peut afficher un avertissement de
+réputation. Si **Smart App Control** bloque le fichier, n'abaisse pas la protection de la machine
+pour ce seul test : la distribution devra être signée ou validée sur une machine de test compatible.
+Microsoft documente ce comportement dans
+[Application Control for Windows](https://learn.microsoft.com/windows/security/application-security/application-control/app-control-for-business/appcontrol).
+
+### Version de développement
 
 Depuis la racine du projet :
 
@@ -318,13 +339,11 @@ Ctrl + C
 
 ## 15. Limites actuelles
 
-- la fermeture directe et la perte du moniteur sont gérées côté code, mais doivent encore être
-  validées avec plusieurs configurations d'écrans physiques ;
+- le remplacement entre deux moniteurs matériellement identiques reste à valider physiquement ;
 - les documents ne sont pas encore proposés dans le panneau MJ ;
 - la reconnexion automatique après le retrait d'un moniteur n'est volontairement pas effectuée ;
-- la validation multi-écran est pour l'instant manuelle et ciblée sur Windows.
-- le cycle complet de sauvegarde et restauration doit encore être validé dans l’exécutable Tauri
-  avec une archive réelle.
+- la validation multi-écran est manuelle et ciblée sur Windows ;
+- l'installateur NSIS doit encore être exécuté sur une autre machine Windows et n'est pas signé.
 
 ## 16. Dépannage rapide
 
@@ -334,7 +353,10 @@ Vérifie les paramètres d'affichage Windows, puis clique sur **Actualiser**.
 
 ### La fenêtre ne s'ouvre pas
 
-Redémarre complètement le processus Tauri pour recharger les capabilities :
+Dans la version installée, quitte complètement l'application puis relance **Beholders Inn** depuis
+le raccourci Windows.
+
+En développement, redémarre complètement le processus Tauri pour recharger les capabilities :
 
 ```powershell
 npm.cmd run tauri dev
@@ -342,6 +364,29 @@ npm.cmd run tauri dev
 
 Si une erreur apparaît dans l'interface ou dans le terminal, conserve son texte
 exact pour le diagnostic.
+
+### Consulter les journaux techniques
+
+Depuis l'accueil, ouvre **Configuration**, puis **Diagnostic technique** et utilise **Ouvrir le
+dossier**. Les journaux tournent automatiquement à 5 Mo et les fichiers âgés de plus de sept jours
+sont supprimés au lancement. Transmets le fichier le plus récent avec l'heure et l'action qui a
+provoqué le problème.
+
+### Un média ne s'affiche plus
+
+Dans **Configuration**, ouvre **Diagnostic technique** puis clique sur **Vérifier maintenant**. La
+liste indique la ressource et le média absent ou inaccessible. **Remplacer le fichier** copie un
+nouveau média au même emplacement interne sans modifier les relations de la campagne.
+
+Après une restauration, exécute ce contrôle avant une partie afin de confirmer que les médias de
+l'archive sont accessibles.
+
+### Une sauvegarde ou une restauration échoue
+
+Ne modifie pas manuellement la base SQLite ni le contenu de l'archive ZIP. Conserve l'archive qui a
+échoué, ouvre le dossier des journaux techniques et note le message affiché par l'application. Une
+restauration ne doit jamais être relancée pendant qu'une première opération ou un redémarrage est
+encore en cours.
 
 ### La fenêtre s'ouvre sur le mauvais écran
 

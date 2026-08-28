@@ -81,7 +81,7 @@ coordonnées et huit sauvegardes sans fermeture ni erreur.
 | 9 — Bestiaire               | Terminé et catalogue global finalisé | Les catalogues canoniques PNJ, PJ, lieux, objets et monstres disposent d’éditeurs détaillés par univers. Le bestiaire conserve sa sélection par campagne, sa fiche D&D complète, ses scènes, notes et mentions `@`.                                                       |
 | 10 — Combat léger           | Terminé                              | Un combat actif persistant par campagne, panneau MJ superposé, ajout PJ/PNJ/monstres, initiative manuelle triée et suivi rapide des PV.                                                                                                                                   |
 | 11 — Historique récent      | Terminé                              | Huit pills persistées et cliquables par campagne, dédupliquées par récence et purgées lorsque leur cible disparaît.                                                                                                                                                       |
-| 12 — Carte heuristique      | Terminé                              | Page Carte et aperçu compact dans Chapitres, dérivés automatiquement des chapitres, scènes, ressources liées et mentions `@`, avec navigation et fallback des cibles supprimées.                                                                                          |
+| 12 — Carte heuristique      | Terminé                              | Graphe interactif progressif dans Carte et Chapitres, dérivé des chapitres, scènes, ressources liées et mentions `@`, avec navigation et fallback des cibles supprimées.                                                                                                |
 | 13 — Tables aléatoires      | Terminé                              | CRUD atomique de tables privées au MJ, plages de 1 à 100 triées automatiquement, validation de couverture continue et tirage uniforme sans historique.                                                                                                                    |
 | 14 — Durcissement/livraison | V1.1 en cours                        | Les flux natifs principaux, la restauration depuis des données vierges, quatre heures de session accélérée, la rotation réelle des journaux et la génération de l'installeur NSIS sont validés. Restent les moniteurs identiques et l'installation sur une autre machine. |
 
@@ -589,14 +589,22 @@ Livré :
 - modèle de lecture dérivé des campagnes, chapitres et scènes existants, sans repository ni
   migration supplémentaire ;
 - page **Carte** dédiée dans la navigation de campagne ;
-- aperçu compact et défilable dans **Chapitres**, avec accès à la page complète ;
-- campagne racine non cliquable, chapitres et scènes cliquables vers leur fiche ;
+- aperçu compact dans **Chapitres**, avec accès à la page complète ;
+- graphe à placement automatique par forces, avec déplacement des nœuds, panoramique, zoom et
+  ajustement à la zone visible ;
+- affichage initial limité à la campagne et aux chapitres, puis ouverture ou fermeture progressive
+  des scènes et ressources par simple clic ;
+- plusieurs branches de chapitres ouvertes simultanément, sans superposition volontaire des nœuds ;
+- campagne racine non navigable et double-clic sur un chapitre, une scène ou une ressource pour
+  ouvrir sa fiche ;
 - ordre des chapitres et des scènes conservé, données étrangères ou orphelines ignorées ;
 - lieux, PNJ, monstres et objets explicitement associés affichés sous leur scène et navigables ;
 - mentions `@` du contenu riche affichées comme branche directe de leur chapitre ;
 - mentions dédupliquées, navigables lorsqu'elles sont résolues et conservées sous forme de libellés
   non cliquables lorsque leur cible a été supprimée ;
-- rendu responsive et tests ciblés du modèle, du service, des liens et des deux points d'entrée.
+- remise à zéro des branches ouvertes au prochain chargement de la carte ;
+- rendu responsive et tests ciblés de la projection visible, du service, des interactions et des
+  deux points d'entrée.
 
 ### Jalon 13 — Tables aléatoires
 

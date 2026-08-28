@@ -3,117 +3,37 @@
   [class.campaign-map--compact]="variant() === 'compact'"
   [attr.aria-label]="'Carte de ' + map().campaignName"
 >
-  <div class="campaign-map__canvas">
-    <header class="campaign-map__root">
-      <span>Campagne</span>
-      <strong>{{ map().campaignName }}</strong>
-      <small> {{ map().chapters.length }} chapitre(s) · {{ map().sceneCount }} scène(s) </small>
-    </header>
+  <header class="campaign-map__toolbar">
+    <ul class="campaign-map__legend" aria-label="Légende de la carte">
+      <li><span class="campaign-map__swatch campaign-map__swatch--campaign"></span>Campagne</li>
+      <li><span class="campaign-map__swatch campaign-map__swatch--chapter"></span>Chapitre</li>
+      <li><span class="campaign-map__swatch campaign-map__swatch--scene"></span>Scène</li>
+      <li><span class="campaign-map__swatch campaign-map__swatch--resource"></span>Ressource</li>
+    </ul>
 
-    @if (map().chapters.length > 0) {
-      <ol class="campaign-map__chapters">
-        @for (chapter of map().chapters; track chapter.id; let chapterIndex = $index) {
-          <li class="campaign-map__branch">
-            <a
-              class="campaign-map__node campaign-map__node--chapter"
-              [routerLink]="['/campaigns', map().campaignId, 'chapters']"
-              [queryParams]="{ resourceId: chapter.id }"
-            >
-              <span>Chapitre {{ chapterIndex + 1 }}</span>
-              <strong>{{ chapter.title }}</strong>
-              <small>{{ chapter.summary || 'Sans résumé' }}</small>
-            </a>
+    <div class="campaign-map__controls" role="group" aria-label="Contrôles de la carte">
+      <button type="button" title="Dézoomer" aria-label="Dézoomer" (click)="zoomOut()">−</button>
+      <button type="button" title="Zoomer" aria-label="Zoomer" (click)="zoomIn()">+</button>
+      <button
+        type="button"
+        title="Recentrer la carte"
+        aria-label="Recentrer la carte"
+        (click)="fitGraph()"
+      >
+        ⛶
+      </button>
+      <button type="button" title="Tout replier" aria-label="Tout replier" (click)="collapseAll()">
+        ↺
+      </button>
+    </div>
+  </header>
 
-            <div class="campaign-map__chapter-relations">
-              @if (chapter.mentions.length > 0) {
-                <section
-                  class="campaign-map__relation-group"
-                  [attr.aria-label]="'Mentions de ' + chapter.title"
-                >
-                  <p>Mentions du chapitre</p>
-                  <ul class="campaign-map__resources campaign-map__resources--chapter">
-                    @for (
-                      resource of chapter.mentions;
-                      track resource.resourceType + resource.resourceId
-                    ) {
-                      <li>
-                        @if (resource.available) {
-                          <a
-                            class="campaign-map__node campaign-map__node--resource"
-                            [routerLink]="[
-                              '/campaigns',
-                              map().campaignId,
-                              resourceSegment(resource),
-                            ]"
-                            [queryParams]="{ resourceId: resource.resourceId }"
-                          >
-                            <span>{{ resourceTypeLabel(resource) }}</span>
-                            <strong>{{ resource.label }}</strong>
-                          </a>
-                        } @else {
-                          <span
-                            class="campaign-map__node campaign-map__node--resource campaign-map__node--missing"
-                          >
-                            <span>{{ resourceTypeLabel(resource) }} supprimé</span>
-                            <strong>{{ resource.label }}</strong>
-                          </span>
-                        }
-                      </li>
-                    }
-                  </ul>
-                </section>
-              }
-
-              <ol class="campaign-map__scenes" [attr.aria-label]="'Scènes de ' + chapter.title">
-                @for (scene of chapter.scenes; track scene.id; let sceneIndex = $index) {
-                  <li class="campaign-map__scene-branch">
-                    <a
-                      class="campaign-map__node campaign-map__node--scene"
-                      [routerLink]="['/campaigns', map().campaignId, 'scenes']"
-                      [queryParams]="{ resourceId: scene.id }"
-                    >
-                      <span>Scène {{ sceneIndex + 1 }}</span>
-                      <strong>{{ scene.name }}</strong>
-                      <small>{{ scene.summary || 'Sans résumé' }}</small>
-                    </a>
-
-                    @if (scene.resources.length > 0) {
-                      <ul
-                        class="campaign-map__resources campaign-map__resources--scene"
-                        [attr.aria-label]="'Ressources de ' + scene.name"
-                      >
-                        @for (
-                          resource of scene.resources;
-                          track resource.resourceType + resource.resourceId
-                        ) {
-                          <li>
-                            <a
-                              class="campaign-map__node campaign-map__node--resource"
-                              [routerLink]="[
-                                '/campaigns',
-                                map().campaignId,
-                                resourceSegment(resource),
-                              ]"
-                              [queryParams]="{ resourceId: resource.resourceId }"
-                            >
-                              <span>{{ resourceTypeLabel(resource) }}</span>
-                              <strong>{{ resource.label }}</strong>
-                            </a>
-                          </li>
-                        }
-                      </ul>
-                    }
-                  </li>
-                } @empty {
-                  <li class="campaign-map__empty-branch">Aucune scène</li>
-                }
-              </ol>
-            </div>
-          </li>
-        }
-      </ol>
-    } @else {
-      <p class="campaign-map__empty">La carte apparaîtra dès que la campagne aura un chapitre.</p>
-    }
-  </div>
+  <div
+    #graphHost
+    class="campaign-map__graph"
+    role="application"
+    tabindex="0"
+    [attr.aria-label]="'Graphe interactif de ' + map().campaignName"
+  ></div>
+  <p class="campaign-map__status" aria-live="polite">{{ visibleNodeCount() }} nœuds visibles</p>
 </section>

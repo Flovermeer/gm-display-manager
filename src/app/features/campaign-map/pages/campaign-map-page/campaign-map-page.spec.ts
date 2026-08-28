@@ -6,6 +6,8 @@ import { CampaignContext } from '@app/features/campaigns/application/campaign-co
 import type { CampaignMap } from '@app/features/campaign-map/domain/campaign-map';
 import { CampaignMapService } from '@app/features/campaign-map/application/campaign-map.service';
 import { CampaignMapPage } from '@app/features/campaign-map/pages/campaign-map-page/campaign-map-page';
+import { createHeadlessCytoscape } from '@app/features/campaign-map/testing/headless-cytoscape';
+import { CAMPAIGN_MAP_CYTOSCAPE_FACTORY } from '@app/features/campaign-map/ui/campaign-map-tree/campaign-map-tree';
 
 describe('CampaignMapPage', () => {
   it('loads and renders the automatic campaign structure', async () => {
@@ -16,12 +18,13 @@ describe('CampaignMapPage', () => {
         provideRouter([]),
         { provide: CampaignContext, useValue: { load: () => Promise.resolve(campaign) } },
         { provide: CampaignMapService, useValue: service },
+        { provide: CAMPAIGN_MAP_CYTOSCAPE_FACTORY, useValue: createHeadlessCytoscape },
       ],
     }).compileComponents();
     const fixture = TestBed.createComponent(CampaignMapPage);
     fixture.detectChanges();
 
-    await renderUntil(fixture, 'Le port');
+    await renderUntil(fixture, '2 nœuds visibles');
 
     expect(service.load).toHaveBeenCalledWith(campaign);
     expect((fixture.nativeElement as HTMLElement).textContent).toContain(

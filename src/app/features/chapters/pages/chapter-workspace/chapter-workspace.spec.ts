@@ -18,6 +18,8 @@ import { SceneService } from '@app/features/scenes/application/scene.service';
 import { ActiveSceneService } from '@app/features/scenes/application/active-scene.service';
 import { DisplayGateway } from '@app/features/display/data-access/display.gateway';
 import { PlayerDisplayStore } from '@app/features/display/application/player-display.store';
+import { createHeadlessCytoscape } from '@app/features/campaign-map/testing/headless-cytoscape';
+import { CAMPAIGN_MAP_CYTOSCAPE_FACTORY } from '@app/features/campaign-map/ui/campaign-map-tree/campaign-map-tree';
 import type { Scene } from '@app/features/scenes/domain/scene';
 import { RichTextEditor } from '@app/shared/rich-text-editor/rich-text-editor';
 
@@ -80,6 +82,7 @@ describe('ChapterWorkspace', () => {
         { provide: ActiveSceneService, useValue: activeSceneService },
         { provide: DisplayGateway, useValue: { isDesktop: false } },
         { provide: PlayerDisplayStore, useValue: displayStore },
+        { provide: CAMPAIGN_MAP_CYTOSCAPE_FACTORY, useValue: createHeadlessCytoscape },
         { provide: LocationService, useValue: emptyResourceService },
         { provide: NpcService, useValue: emptyResourceService },
         { provide: PlayerCharacterService, useValue: emptyResourceService },
@@ -105,7 +108,7 @@ describe('ChapterWorkspace', () => {
 
     const element = fixture.nativeElement as HTMLElement;
     expect(element.querySelector('.chapter-overview')).toBeTruthy();
-    expect(element.querySelector('.chapter-map-preview')?.textContent).toContain('Le port');
+    expect(element.querySelector('.chapter-map-preview .campaign-map__graph')).toBeTruthy();
     expect(
       element.querySelector<HTMLAnchorElement>('.chapter-map-preview > header a')?.href,
     ).toContain('/campaigns/campaign-id/map');
@@ -179,7 +182,7 @@ describe('ChapterWorkspace', () => {
     expect(element.querySelector('.chapter-overview')).toBeTruthy();
     expect(element.querySelector('.detail-panel--overview')).toBeTruthy();
     expect(element.querySelector('.chapter-sheet')).toBeNull();
-    expect(element.querySelector('.chapter-map-preview')?.textContent).toContain('Le port');
+    expect(element.querySelector('.chapter-map-preview .campaign-map__graph')).toBeTruthy();
     expect(navigate).toHaveBeenCalledWith(['/campaigns', campaign.id, 'chapters'], {
       replaceUrl: true,
     });

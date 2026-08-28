@@ -240,21 +240,27 @@ La suppression d'une table demande confirmation et supprime définitivement tout
 
 ## 8. Naviguer dans la carte de campagne
 
-Ouvre **Carte** dans la navigation de la campagne pour afficher sa structure automatique. Le nœud
-racine représente la campagne et ne déclenche aucune navigation. Les chapitres apparaissent dans
-leur ordre actuel et leurs scènes sont classées sous chacun d'eux. Les lieux, PNJ, monstres et
-objets composant une scène apparaissent dans une branche supplémentaire sous celle-ci.
+Ouvre **Carte** dans la navigation de la campagne pour afficher son graphe automatique. Au départ,
+le nœud racine de la campagne et les chapitres sont seuls visibles. Un simple clic sur un chapitre
+affiche ou masque ses scènes et ses mentions `@`. Un simple clic sur une scène affiche ou masque
+les lieux, PNJ, monstres et objets qui la composent. Plusieurs chapitres peuvent rester ouverts en
+même temps.
 
-Les mentions `@` du contenu d'un chapitre forment une branche directement rattachée à ce chapitre.
-Une mention dont la cible a été supprimée conserve son ancien libellé mais n'est plus cliquable.
+Le placement des nœuds s'adapte automatiquement pour limiter les superpositions. Fais glisser un
+nœud pour ajuster sa position, fais glisser le fond pour déplacer la carte et utilise la molette ou
+les contrôles pour zoomer. Les boutons permettent aussi de recentrer le graphe ou de refermer toutes
+les branches.
 
-Clique sur un chapitre, une scène ou une ressource résolue pour ouvrir directement sa fiche. La
-carte ne possède pas de mode d'édition : toute modification effectuée dans **Chapitres** ou
+Double-clique sur un chapitre, une scène ou une ressource résolue pour ouvrir sa fiche. Le nœud de
+la campagne ne déclenche aucune navigation. Une mention dont la cible a été supprimée conserve son
+ancien libellé mais n'est plus navigable.
+
+La carte ne possède pas de mode d'édition : toute modification effectuée dans **Chapitres** ou
 **Scènes** est reflétée au prochain chargement, sans entretenir une seconde organisation manuelle.
+Les branches ouvertes ne sont pas mémorisées entre deux chargements.
 
-La page **Chapitres** affiche aussi une version compacte de la même carte. Elle utilise toute la
-hauteur disponible et devient défilable seulement lorsque son contenu dépasse. Utilise **Ouvrir la
-carte complète** pour rejoindre la vue dédiée.
+La page **Chapitres** affiche aussi une version compacte du même graphe. Utilise **Ouvrir la carte
+complète** pour rejoindre la vue dédiée.
 
 ## 9. Choisir l'écran des joueurs
 

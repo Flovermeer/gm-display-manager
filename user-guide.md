@@ -21,7 +21,7 @@ La procédure destinée à la personne qui construit et publie l'installateur se
 Le nom technique de l'installateur et du raccourci omet l'apostrophe. L'application ouverte conserve
 le nom visible **Beholder's Inn**.
 
-L'installateur 1.1.0 n'est pas encore signé. Vérifie toujours qu'il provient bien du workflow du
+L'installateur 1.1.1 n'est pas encore signé. Vérifie toujours qu'il provient bien du workflow du
 dépôt avant de l'exécuter. Microsoft Defender SmartScreen peut afficher un avertissement de
 réputation. Si **Smart App Control** bloque le fichier, n'abaisse pas la protection de la machine
 pour ce seul test : la distribution devra être signée ou validée sur une machine de test compatible.

@@ -93,10 +93,11 @@ CLI authentifié :
 gh workflow run windows-installer.yml -R Flovermeer/gm-display-manager --ref main
 ```
 
-Le workflow exécute les tests Angular, compile l'application en mode release, génère l'installateur
-NSIS puis publie l'artefact `beholders-inn-windows-installer` dans la page GitHub Actions de
-l'exécution. L'artefact est conservé quatorze jours. Un simple `git push` ne déclenche pas ce
-workflow.
+Le workflow exécute les tests Angular, compile l'application en mode release et génère
+l'installateur NSIS. Il conserve un artefact `beholders-inn-windows-installer` pendant quatorze
+jours et publie aussi l'installateur dans une GitHub Release durable. Le dépôt étant privé, ces
+téléchargements restent accessibles uniquement aux comptes GitHub autorisés. Un simple `git push`
+ne déclenche pas ce workflow.
 
 La procédure complète de versionnement, construction, installation, validation et publication est
 documentée dans [`WINDOWS_RELEASE.md`](./WINDOWS_RELEASE.md).

@@ -1,7 +1,7 @@
 # Construire et livrer la version Windows
 
 Ce guide décrit comment transformer Beholder's Inn en application Windows installable. Le format
-de distribution retenu pour la version 1.1.0 est un installateur NSIS généré par Tauri.
+de distribution retenu pour la version 1.1.1 est un installateur NSIS généré par Tauri.
 
 ## Choisir le bon mode d'exécution
 
@@ -39,7 +39,7 @@ Avant de construire une version distribuable, vérifier que la même version est
 - `src-tauri/Cargo.toml` et `src-tauri/Cargo.lock` ;
 - `src-tauri/tauri.conf.json`.
 
-Pour la livraison actuelle, cette version est `1.1.0`.
+Pour la livraison actuelle, cette version est `1.1.1`.
 
 ## Construire localement
 
@@ -66,9 +66,9 @@ Le premier est l'exécutable release brut. Le fichier du dossier `bundle/nsis/` 
 
 ## Construire avec GitHub Actions
 
-Le workflow `Windows installer` est la méthode recommandée pour obtenir l'artefact à tester puis à
-publier. Il travaille dans un environnement Windows propre, réinstalle les dépendances verrouillées,
-exécute les tests Angular et construit l'installateur NSIS.
+Le workflow `Windows installer` est la méthode recommandée pour obtenir l'artefact à tester et
+publier la version privée. Il travaille dans un environnement Windows propre, réinstalle les
+dépendances verrouillées, exécute les tests Angular et construit l'installateur NSIS.
 
 Avec GitHub CLI authentifié :
 
@@ -77,17 +77,24 @@ gh workflow run windows-installer.yml -R Flovermeer/gm-display-manager --ref mai
 ```
 
 Le workflow doit être déclenché explicitement : un simple `git push` ne le lance pas. Après son
-succès, télécharger l'artefact `beholders-inn-windows-installer` depuis la page GitHub Actions de
-l'exécution. L'artefact est une archive ZIP conservée quatorze jours ; ce n'est pas encore une
-GitHub Release permanente.
+succès, l'installateur est disponible à deux endroits :
+
+- l'artefact ZIP `beholders-inn-windows-installer` de la page GitHub Actions, conservé quatorze
+  jours ;
+- la GitHub Release `v<version>`, conservée durablement dans le dépôt privé.
+
+La publication échoue si une Release porte déjà cette version. Il faut incrémenter les cinq numéros
+de version avant de relancer le workflow.
 
 ## Installer l'application
 
 1. Fermer toute instance lancée avec `npm.cmd run tauri dev`.
 2. Si les données locales ont de la valeur, créer une sauvegarde depuis la Configuration de
    l'application avant de poursuivre.
-3. Télécharger puis extraire l'artefact `beholders-inn-windows-installer`.
-4. Exécuter l'unique installateur `.exe` extrait.
+3. Télécharger l'installateur `.exe` depuis la dernière Release privée, ou extraire l'artefact
+   `beholders-inn-windows-installer` du workflow correspondant.
+4. Exécuter l'installateur `.exe`. Pour une mise à jour, le lancer par-dessus l'installation
+   existante sans désinstaller l'application.
 5. Terminer l'installation puis ouvrir **Beholders Inn** depuis Windows.
 
 Une fois installée, l'application n'a pas besoin de Node.js, npm, Rust ou du serveur Angular. Elle
@@ -95,7 +102,7 @@ continue toutefois de dépendre du runtime WebView2 fourni ou maintenu par Windo
 
 ## Installateur non signé
 
-L'installateur 1.1.0 n'est pas signé. Microsoft Defender SmartScreen peut donc afficher un
+L'installateur 1.1.1 n'est pas signé. Microsoft Defender SmartScreen peut donc afficher un
 avertissement de réputation. Avant de poursuivre, vérifier que le fichier provient bien du workflow
 du dépôt et que son exécution s'est terminée avec succès.
 
@@ -119,18 +126,32 @@ Après l'installation, vérifier au minimum :
 
 Les tests impliquant plusieurs moniteurs physiques restent des validations manuelles.
 
-## Publier une GitHub Release
+## Distribution privée et mises à jour
 
-Cette étape intervient uniquement après validation de l'installateur sur la machine cible et après
-accord explicite pour publier la version.
+La décision actuelle est de conserver le code et les installateurs privés. Une GitHub Release créée
+dans ce dépôt hérite de sa visibilité : seuls les comptes GitHub autorisés peuvent la consulter et
+télécharger l'installateur. Ne pas copier l'installateur vers un dépôt public ni vers un hébergement
+accessible anonymement.
 
-Le principe est :
+La mise à jour reste volontairement manuelle : télécharger la nouvelle Release en étant connecté à
+GitHub, fermer Beholder's Inn, puis exécuter le nouvel installateur par-dessus la version existante.
+Les données applicatives restent séparées des fichiers installés dans le dossier de données Tauri.
+Créer néanmoins une sauvegarde depuis l'application avant chaque mise à jour.
 
-```powershell
-git tag v1.1.0
-git push origin v1.1.0
-gh release create v1.1.0 <chemin-vers-installateur.exe> --title v1.1.0 --generate-notes
-```
+## Évolution possible vers un updater automatique
 
-La Release doit préciser que l'installateur Windows n'est pas signé. Le tag doit désigner exactement
-le commit ayant produit l'artefact validé.
+Si l'application est un jour distribuée publiquement, le chemin prévu est le plugin officiel Tauri
+Updater avec des artefacts signés et un manifeste `latest.json`. Cette évolution nécessitera :
+
+- une source de téléchargement accessible par les installations sans secret embarqué ;
+- `@tauri-apps/plugin-updater` et `tauri-plugin-updater` ;
+- `bundle.createUpdaterArtifacts` dans la configuration Tauri ;
+- la clé publique et l'endpoint de mise à jour dans `tauri.conf.json` ;
+- la clé privée et sa phrase secrète dans les secrets du workflow de publication ;
+- un dialogue explicite dans l'application et une sauvegarde automatique avant installation.
+
+Une paire de clés préparatoire existe localement sous
+`%USERPROFILE%\.tauri\beholders-inn.key` et `.pub`. La clé privée ne doit jamais être ajoutée au
+dépôt. Tant qu'aucune version avec updater n'a été distribuée, cette paire peut être remplacée. Dès
+la première publication compatible, elle devra être sauvegardée durablement : sa perte empêcherait
+de signer les mises à jour destinées aux installations existantes.

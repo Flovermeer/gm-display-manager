@@ -14,10 +14,14 @@ Depuis une exécution réussie du workflow **Windows installer** dans GitHub Act
 3. lance l'unique installateur `.exe` extrait ;
 4. termine l'installation puis ouvre **Beholders Inn** depuis le raccourci Windows.
 
+Une fois installée, l'application fonctionne sans serveur `localhost`, sans Node.js et sans Rust.
+La procédure destinée à la personne qui construit et publie l'installateur se trouve dans
+[`WINDOWS_RELEASE.md`](./WINDOWS_RELEASE.md).
+
 Le nom technique de l'installateur et du raccourci omet l'apostrophe. L'application ouverte conserve
 le nom visible **Beholder's Inn**.
 
-L'installateur V1.1 n'est pas encore signé. Vérifie toujours qu'il provient bien du workflow du
+L'installateur 1.1.0 n'est pas encore signé. Vérifie toujours qu'il provient bien du workflow du
 dépôt avant de l'exécuter. Microsoft Defender SmartScreen peut afficher un avertissement de
 réputation. Si **Smart App Control** bloque le fichier, n'abaisse pas la protection de la machine
 pour ce seul test : la distribution devra être signée ou validée sur une machine de test compatible.

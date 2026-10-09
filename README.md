@@ -80,6 +80,12 @@ moniteurs physiques à partir du jalon 2.
 
 ## Installateur Windows
 
+Pour produire localement l'installateur NSIS de la version courante :
+
+```powershell
+npm.cmd run tauri -- build --bundles nsis
+```
+
 Le workflow `Windows installer` est déclenché manuellement. Depuis la racine du projet, avec GitHub
 CLI authentifié :
 
@@ -92,9 +98,13 @@ NSIS puis publie l'artefact `beholders-inn-windows-installer` dans la page GitHu
 l'exécution. L'artefact est conservé quatorze jours. Un simple `git push` ne déclenche pas ce
 workflow.
 
+La procédure complète de versionnement, construction, installation, validation et publication est
+documentée dans [`WINDOWS_RELEASE.md`](./WINDOWS_RELEASE.md).
+
 ## Documentation
 
 - [`user-guide.md`](./user-guide.md) : installation, sauvegarde, dépannage et utilisation ;
+- [`WINDOWS_RELEASE.md`](./WINDOWS_RELEASE.md) : construction et livraison de l'installateur Windows ;
 - [`dm-display-manager-specs.md`](./dm-display-manager-specs.md) : vision produit ;
 - [`dm-campaign-display-stack.md`](./dm-campaign-display-stack.md) : architecture cible ;
 - [`implementation-plan.md`](./implementation-plan.md) : jalons et critères de validation ;

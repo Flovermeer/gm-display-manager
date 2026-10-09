@@ -34,31 +34,9 @@
   gap: 0.7rem;
 }
 
-.brand-mark {
-  position: relative;
-  display: grid;
+.brand-logo {
   width: 2.15rem;
-  aspect-ratio: 1;
-  place-items: center;
-  border-radius: 50%;
-  background: #71509a;
-}
-
-.brand-mark::before {
-  width: 1.3rem;
-  height: 0.85rem;
-  border-radius: 70% 30% 70% 30% / 65% 35% 65% 35%;
-  background: #f3e9e0;
-  content: '';
-  transform: rotate(45deg);
-}
-
-.brand-mark span {
-  position: absolute;
-  width: 0.18rem;
-  height: 0.75rem;
-  border-radius: 50%;
-  background: #c9313d;
+  filter: drop-shadow(0 0.3rem 0.45rem rgb(0 0 0 / 35%));
 }
 
 .brand-name {

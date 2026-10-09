@@ -30,32 +30,9 @@
   text-decoration: none;
 }
 
-.beholder-mark {
-  display: grid;
+.brand-logo {
   width: 6.5rem;
-  aspect-ratio: 1;
-  place-items: center;
-  border-radius: 50%;
-  background: #71509a;
-  box-shadow: 0 1rem 3rem rgb(0 0 0 / 25%);
-}
-
-.eye {
-  display: grid;
-  width: 4rem;
-  height: 2.7rem;
-  place-items: center;
-  border-radius: 70% 30% 70% 30% / 65% 35% 65% 35%;
-  background: #f3e9e0;
-  transform: rotate(45deg);
-}
-
-.pupil {
-  width: 0.55rem;
-  height: 2.3rem;
-  border-radius: 50%;
-  background: #c9313d;
-  transform: rotate(-45deg);
+  filter: drop-shadow(0 1rem 1.5rem rgb(0 0 0 / 35%));
 }
 
 .brand-kicker,
@@ -346,7 +323,7 @@ button:focus-visible {
     position: static;
   }
 
-  .beholder-mark {
+  .brand-logo {
     width: 4.5rem;
   }
 

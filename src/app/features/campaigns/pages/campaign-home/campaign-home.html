@@ -1,8 +1,11 @@
 <main class="campaign-home">
   <header class="brand" aria-labelledby="application-name">
-    <div class="beholder-mark" aria-hidden="true">
-      <span class="eye"><span class="pupil"></span></span>
-    </div>
+    <img
+      class="app-logo brand-logo"
+      src="/brand/beholders-inn-logo.png"
+      alt=""
+      aria-hidden="true"
+    />
     <div>
       <p class="brand-kicker">Campaign & Display Manager</p>
       <h1 id="application-name">Beholder's Inn</h1>
@@ -186,15 +189,22 @@
   >
     <p>Vérifie les choix définitifs de cette campagne :</p>
     <dl class="creation-summary">
-      <div><dt>Nom</dt><dd>{{ campaign.name }}</dd></div>
-      <div><dt>Système</dt><dd>{{ campaign.systemName }}</dd></div>
-      <div><dt>Univers</dt><dd>{{ campaign.universeName }}</dd></div>
+      <div>
+        <dt>Nom</dt>
+        <dd>{{ campaign.name }}</dd>
+      </div>
+      <div>
+        <dt>Système</dt>
+        <dd>{{ campaign.systemName }}</dd>
+      </div>
+      <div>
+        <dt>Univers</dt>
+        <dd>{{ campaign.universeName }}</dd>
+      </div>
     </dl>
     <p>Le système et l’univers ne pourront plus être modifiés après la création.</p>
     <div dialog-actions class="dialog-actions">
-      <button appButton="secondary" type="button" (click)="cancelCreateCampaign()">
-        Corriger
-      </button>
+      <button appButton="secondary" type="button" (click)="cancelCreateCampaign()">Corriger</button>
       <button
         appButton="primary"
         type="button"

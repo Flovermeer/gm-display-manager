@@ -113,22 +113,6 @@
   z-index: 1;
 }
 
-.scene-display__location-name {
-  position: absolute;
-  right: 0;
-  bottom: 0;
-  left: 0;
-  margin: 0;
-  padding: 3rem 2rem clamp(1.5rem, 4vh, 3rem);
-  color: #f5ead7;
-  background: linear-gradient(transparent, rgb(0 0 0 / 72%));
-  font:
-    500 clamp(2.5rem, 7vw, 6.5rem) Georgia,
-    serif;
-  text-align: center;
-  text-shadow: 0 0.2rem 1rem #000;
-}
-
 .item-display img {
   width: 100%;
   height: 100%;
@@ -159,23 +143,35 @@
   object-fit: cover;
 }
 
-figcaption,
-.npc-display h1 {
+.player-display__label {
   position: absolute;
-  right: 0;
-  bottom: clamp(2rem, 7vh, 5rem);
-  left: 0;
+  right: clamp(1.5rem, 4vw, 4rem);
+  bottom: clamp(1.5rem, 5vh, 3.5rem);
   z-index: 3;
+  width: max-content;
+  max-width: min(75vw, 46rem);
   margin: 0;
-  padding: 3rem 2rem 0;
+  padding: 0.8rem 1.25rem 0.9rem;
+  overflow-wrap: anywhere;
+  border: 1px solid rgb(190 165 119 / 42%);
+  border-radius: 0.35rem;
   color: #f5ead7;
-  background: linear-gradient(transparent, rgb(0 0 0 / 72%));
+  background: rgb(17 15 13 / 82%);
+  box-shadow: 0 0.85rem 2.25rem rgb(0 0 0 / 58%);
   font-family: Georgia, 'Times New Roman', serif;
-  font-size: clamp(2.5rem, 7vw, 6.5rem);
+  font-size: 2rem;
   font-weight: 500;
-  letter-spacing: 0.02em;
-  text-align: center;
-  text-shadow: 0 0.2rem 1rem #000;
+  letter-spacing: 0;
+  line-height: 1.15;
+  text-align: left;
+  text-shadow: 0 0.15rem 0.65rem #000;
+  animation: label-enter-right 480ms cubic-bezier(0.22, 1, 0.36, 1) 100ms both;
+  backdrop-filter: blur(0.25rem);
+}
+
+.player-display--hidden .player-display__label,
+.scene-display__foreground--hidden .player-display__label {
+  animation: none;
 }
 
 .npc-display {
@@ -217,17 +213,34 @@ figcaption,
   background: transparent;
 }
 
-.npc-display h1 {
-  bottom: 0;
-  padding-bottom: clamp(1.5rem, 4vh, 3rem);
-}
-
 @keyframes reveal {
   from {
     opacity: 0;
   }
   to {
     opacity: 1;
+  }
+}
+
+@keyframes label-enter-right {
+  from {
+    opacity: 0;
+    transform: translateX(calc(100% + 5rem));
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@media (max-width: 48rem) {
+  .player-display__label {
+    right: 1rem;
+    bottom: 1rem;
+    max-width: calc(100vw - 2rem);
+    padding: 0.65rem 0.9rem 0.7rem;
+    font-size: 1.5rem;
   }
 }
 
@@ -244,6 +257,10 @@ figcaption,
     animation: none;
   }
   .item-display {
+    animation: none;
+  }
+
+  .player-display__label {
     animation: none;
   }
 }

@@ -99,8 +99,13 @@ La page **PNJ** propose une liste filtrable à gauche et la fiche sélectionnée
 droite. La flèche replie ou affiche le panneau latéral.
 
 Une fiche est toujours ouverte en lecture seule. Utilise **Modifier** pour
-changer son nom, son statut, son rôle ou ses notes, puis **Enregistrer**. La
+changer son nom, son statut, son rôle, sa race, sa classe ou son occupation, puis **Enregistrer**. La
 suppression demande une confirmation séparée.
+
+Les listes **Race** et **Classe** sont communes aux PJ et aux PNJ de l'univers. Configure-les depuis
+**Configuration → Référentiels de règles**. L'occupation reste un texte libre propre à chaque PNJ.
+Dans la description officielle et les blocs de capacités/actions, saisis `@` pour créer un lien vers
+un PJ, un PNJ, un monstre, un lieu, un objet ou une scène de la campagne.
 
 En mode édition, clique sur le cadre carré du portrait pour choisir une image
 PNG, JPG, JPEG ou WebP. L'original reste intact : une copie est enregistrée dans
@@ -154,6 +159,8 @@ cet univers.
   l'univers.
 - Pour les objets, les types et raretés sont administrés au-dessus du catalogue.
   Une valeur utilisée par une fiche ne peut pas être supprimée.
+- Les races et classes sont administrées dans **Référentiels de règles**, puis utilisées comme
+  sélecteurs par les fiches canoniques PJ et PNJ.
 - **Corbeille** empêche les nouveaux imports dans les campagnes sans casser les
   campagnes qui utilisent déjà la fiche. **Restaurer** la rend de nouveau disponible.
 

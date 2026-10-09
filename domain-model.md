@@ -72,10 +72,15 @@ jeu. Les données fréquemment affichées et mises à jour restent relationnelle
 - le futur tracker de combat réutilisera ces mêmes valeurs pour les PJ et ne créera pas une copie
   concurrente de leur état.
 
-Le JSON de fiche D&D 5e version 2 contient uniquement les informations utiles au MJ : espèce,
+Le JSON de fiche D&D 5e contient uniquement les informations utiles au MJ : race,
 classe, niveau, classe d'armure, vitesse, perceptions passives, sens, langues, conditions,
 épuisement et notes privées. Les caractéristiques, compétences, sorts, attaques et l'inventaire
 générique détaillés restent hors périmètre initial.
+
+La race et la classe référencent des valeurs configurées au niveau de l'univers dans
+`game_rule_option`. Le JSON conserve à la fois l'identifiant de l'option et son libellé afin que la
+fiche reste lisible si le référentiel évolue. L'ancien champ libre `species` reste accepté à la
+lecture et est converti en race.
 
 Les sens, langues et conditions sont stockés comme des tableaux de libellés libres. L'interface les
 édite sous forme de tags supprimables et convertit à la lecture les anciennes valeurs texte de la
@@ -92,6 +97,14 @@ Plusieurs personnages, y compris de même nom, peuvent appartenir à la même ca
 `npc` contient la fiche canonique d’univers : nom, médias, description officielle et fiche système
 JSON versionnée. `campaign_npc` contient le statut et le rôle/résumé propres à la campagne. Les
 notes du MJ restent des entrées de journal liées à la campagne et au PNJ.
+
+Un PNJ narratif partage les référentiels de race et de classe avec les PJ et possède en plus une
+occupation en texte libre. Les anciens champs de type et sous-espèce de créature sont encore lus
+pour assurer la compatibilité des fiches existantes, mais ne sont plus proposés dans l'interface
+PNJ. Les monstres conservent leurs référentiels de type et sous-espèce.
+
+La description officielle et les blocs riches (capacités, actions, actions bonus, réactions et
+actions légendaires) acceptent les mentions `@` vers les autres ressources de la campagne.
 
 Chaque PNJ peut référencer un `portrait_path` statique et un
 `idle_video_path` facultatif, tous deux relatifs au dossier interne de la

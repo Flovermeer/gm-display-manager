@@ -259,13 +259,21 @@
                 [options]="statusFieldOptions"
               />
               <app-form-field
-                inputId="character-species"
-                label="Espèce"
-                formControlName="species"
+                inputId="character-race"
+                label="Race"
+                controlType="select"
+                [options]="raceOptions()"
+                emptyLabel="Non renseignée"
+                emptyValue=""
+                formControlName="race"
               />
               <app-form-field
                 inputId="character-class"
                 label="Classe"
+                controlType="select"
+                [options]="classOptions()"
+                emptyLabel="Non renseignée"
+                emptyValue=""
                 formControlName="className"
               />
               <app-form-field
@@ -478,8 +486,8 @@
               <dd>{{ statusLabel(character.status) }}</dd>
             </div>
             <div>
-              <dt>Espèce</dt>
-              <dd>{{ valueOrDash(character.sheet.species) }}</dd>
+              <dt>Race</dt>
+              <dd>{{ valueOrDash(character.sheet.race) }}</dd>
             </div>
             <div>
               <dt>Sens</dt>

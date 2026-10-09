@@ -1,5 +1,6 @@
 import { provideRouter } from '@angular/router';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { By } from '@angular/platform-browser';
 import { ActivatedRoute } from '@angular/router';
 
 import type { Campaign } from '@app/features/campaigns/domain/campaign';
@@ -12,6 +13,7 @@ import { createEmptyNpcSheet, type Npc } from '@app/features/npcs/domain/npc';
 import { NpcService } from '@app/features/npcs/application/npc.service';
 import { JournalEntryService } from '@app/features/journal/application/journal-entry.service';
 import { createEmptyRichTextDocument } from '@app/shared/rich-text-editor/rich-text-document';
+import { RichTextEditor } from '@app/shared/rich-text-editor/rich-text-editor';
 import { ResourceMentionNavigationService } from '@app/shared/rich-text-editor/resource-mention-navigation.service';
 import { NpcWorkspace } from '@app/features/npcs/pages/npc-workspace/npc-workspace';
 
@@ -108,6 +110,15 @@ describe('NpcWorkspace', () => {
     isPlayerDisplayOpen: vi.fn(),
     sendPlayerDisplayState: vi.fn(),
   };
+  const mention = {
+    resourceType: 'location' as const,
+    resourceId: 'location-id',
+    label: 'Auberge du Beholder',
+  };
+  const mentionNavigation = {
+    listCandidates: vi.fn(),
+    open: vi.fn(),
+  };
 
   beforeEach(async () => {
     vi.clearAllMocks();
@@ -127,6 +138,8 @@ describe('NpcWorkspace', () => {
     idleVideoGateway.discard.mockResolvedValue(undefined);
     displayGateway.isPlayerDisplayOpen.mockResolvedValue(true);
     displayGateway.sendPlayerDisplayState.mockResolvedValue(undefined);
+    mentionNavigation.listCandidates.mockResolvedValue([mention]);
+    mentionNavigation.open.mockResolvedValue(undefined);
 
     await TestBed.configureTestingModule({
       imports: [NpcWorkspace],
@@ -141,7 +154,7 @@ describe('NpcWorkspace', () => {
         { provide: JournalEntryService, useValue: journalEntryService },
         {
           provide: ResourceMentionNavigationService,
-          useValue: { listCandidates: () => Promise.resolve([]), open: vi.fn() },
+          useValue: mentionNavigation,
         },
         { provide: NpcPortraitGateway, useValue: portraitGateway },
         { provide: NpcIdleVideoGateway, useValue: idleVideoGateway },
@@ -331,6 +344,33 @@ describe('NpcWorkspace', () => {
         portraitPath: '/demo/innkeeper.svg',
       });
     });
+  });
+
+  it('provides resource mentions to every rendered rich NPC field', async () => {
+    const fixture = TestBed.createComponent(NpcWorkspace);
+    fixture.detectChanges();
+    await renderUntil(fixture, 'Syndra Silvane');
+    const element = fixture.nativeElement as HTMLElement;
+
+    element.querySelector<HTMLButtonElement>('.npc-list-item')?.click();
+    await renderUntil(fixture, 'Description canonique.');
+    let editors = fixture.debugElement.queryAll(By.directive(RichTextEditor));
+    expect(editors.length).toBeGreaterThanOrEqual(2);
+    expect(
+      editors.every(({ componentInstance }) =>
+        (componentInstance as RichTextEditor).mentionCandidates().includes(mention),
+      ),
+    ).toBe(true);
+
+    element.querySelector<HTMLButtonElement>('.detail-actions .ui-button--primary')?.click();
+    fixture.detectChanges();
+    editors = fixture.debugElement.queryAll(By.directive(RichTextEditor));
+    expect(editors.length).toBeGreaterThanOrEqual(2);
+    expect(
+      editors.every(({ componentInstance }) =>
+        (componentInstance as RichTextEditor).mentionCandidates().includes(mention),
+      ),
+    ).toBe(true);
   });
 });
 

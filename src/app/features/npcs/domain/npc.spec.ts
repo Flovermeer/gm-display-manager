@@ -2,6 +2,7 @@ import {
   createEmptyNpcSheet,
   createNpc,
   NPC_SHEET_SCHEMA_VERSION,
+  normalizeNpcSheet,
   updateNpc,
   type NpcFactoryDependencies,
 } from '@app/features/npcs/domain/npc';
@@ -71,5 +72,20 @@ describe('Npc', () => {
     expect(() => createNpc({ campaignId: 'campaign-id', name: '  ' }, dependencies)).toThrow(
       'NPC name is required.',
     );
+  });
+
+  it('keeps legacy creature identity as the race when reading an older NPC sheet', () => {
+    expect(
+      normalizeNpcSheet({
+        creatureType: 'Humanoïde',
+        creatureSubspecies: 'Elfe',
+      }),
+    ).toMatchObject({
+      raceOptionId: null,
+      race: 'Elfe',
+      classOptionId: null,
+      className: '',
+      occupation: '',
+    });
   });
 });

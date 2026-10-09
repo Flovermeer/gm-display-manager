@@ -1,9 +1,12 @@
 export const PLAYER_CHARACTER_STATUSES = ['active', 'dead', 'retired', 'missing'] as const;
+export const PLAYER_CHARACTER_SHEET_SCHEMA_VERSION = 3 as const;
 
 export type PlayerCharacterStatus = (typeof PLAYER_CHARACTER_STATUSES)[number];
 
 export type PlayerCharacterSheet = Readonly<{
-  species: string;
+  raceOptionId: string | null;
+  race: string;
+  classOptionId: string | null;
   className: string;
   level: number | null;
   armorClass: number | null;
@@ -55,7 +58,9 @@ const defaultDependencies: PlayerCharacterFactoryDependencies = {
 };
 
 export const EMPTY_PLAYER_CHARACTER_SHEET: PlayerCharacterSheet = {
-  species: '',
+  raceOptionId: null,
+  race: '',
+  classOptionId: null,
   className: '',
   level: null,
   armorClass: null,
@@ -84,7 +89,7 @@ export function createPlayerCharacter(
     provenance: 'campaign',
     ...normalized,
     portraitPath: input.portraitPath ?? null,
-    sheetSchemaVersion: 2,
+    sheetSchemaVersion: PLAYER_CHARACTER_SHEET_SCHEMA_VERSION,
     createdAt: now,
     updatedAt: now,
   };
@@ -99,7 +104,7 @@ export function updatePlayerCharacter(
     ...character,
     ...normalizeInput(input),
     portraitPath: input.portraitPath ?? character.portraitPath,
-    sheetSchemaVersion: 2,
+    sheetSchemaVersion: PLAYER_CHARACTER_SHEET_SCHEMA_VERSION,
     updatedAt: now().toISOString(),
   };
 }
@@ -115,7 +120,7 @@ export function updatePlayerCharacterHitPoints(
   return {
     ...character,
     currentHitPoints: normalizedCurrent,
-    sheetSchemaVersion: 2,
+    sheetSchemaVersion: PLAYER_CHARACTER_SHEET_SCHEMA_VERSION,
     updatedAt: now().toISOString(),
   };
 }
@@ -134,7 +139,7 @@ export function updatePlayerCharacterHitPointPool(
     ...character,
     currentHitPoints: normalizedCurrent,
     maxHitPoints: normalizedMaximum,
-    sheetSchemaVersion: 2,
+    sheetSchemaVersion: PLAYER_CHARACTER_SHEET_SCHEMA_VERSION,
     updatedAt: now().toISOString(),
   };
 }
@@ -151,7 +156,9 @@ function normalizeInput(input: UpdatePlayerCharacterInput): UpdatePlayerCharacte
     currentHitPoints,
     maxHitPoints,
     sheet: {
-      species: input.sheet.species.trim(),
+      raceOptionId: nullableText(input.sheet.raceOptionId),
+      race: input.sheet.race.trim(),
+      classOptionId: nullableText(input.sheet.classOptionId),
       className: input.sheet.className.trim(),
       level: nullableIntegerInRange(input.sheet.level, 1, 20, 'Level'),
       armorClass: nullableNonNegativeInteger(input.sheet.armorClass, 'Armor class'),
@@ -178,6 +185,11 @@ function requiredText(value: string, label: string): string {
   const normalized = value.trim();
   if (!normalized) throw new Error(`${label} is required.`);
   return normalized;
+}
+
+function nullableText(value: string | null): string | null {
+  const normalized = value?.trim() ?? '';
+  return normalized || null;
 }
 
 function nullableNonNegativeInteger(value: number | null, label: string): number | null {

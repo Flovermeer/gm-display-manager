@@ -4,6 +4,8 @@ export const GAME_RULE_CATEGORIES = [
   'creature_type',
   'creature_subspecies',
   'language',
+  'race',
+  'class',
 ] as const;
 
 export type GameRuleCategory = (typeof GAME_RULE_CATEGORIES)[number];
@@ -23,7 +25,10 @@ export type GameRuleOption = Readonly<{
 export function createUniverseRuleOption(
   gameSystemId: string,
   universeId: string,
-  category: Extract<GameRuleCategory, 'creature_type' | 'creature_subspecies' | 'language'>,
+  category: Extract<
+    GameRuleCategory,
+    'creature_type' | 'creature_subspecies' | 'language' | 'race' | 'class'
+  >,
   label: string,
   parentOptionId: string | null = null,
   createId: () => string = () => crypto.randomUUID(),

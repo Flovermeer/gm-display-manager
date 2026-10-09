@@ -27,7 +27,9 @@
       />
       <app-rich-text-editor
         [value]="feature.description"
+        [mentionCandidates]="mentionCandidates()"
         (valueChange)="updateDescription(feature.id, $event)"
+        (mentionActivate)="mentionActivate.emit($event)"
       />
     </article>
   } @empty {

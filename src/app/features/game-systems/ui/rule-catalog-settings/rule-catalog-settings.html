@@ -3,8 +3,8 @@
     <p class="configuration-workspace__kicker">Règles de {{ system().name }}</p>
     <h2>Référentiels de {{ universe().name }}</h2>
     <p>
-      Les valeurs du système sont protégées. L’univers peut enrichir les types, les sous-espèces et
-      les langues.
+      Les valeurs du système sont protégées. L’univers peut enrichir les types, les sous-espèces,
+      les langues, les races et les classes.
     </p>
   </header>
 
@@ -114,6 +114,54 @@
           <span class="rule-pill">
             {{ option.label }} <small>{{ origin(option) }}</small>
           </span>
+        }
+      </div>
+    </section>
+
+    <section class="rule-section">
+      <h3>Races</h3>
+      <div class="inline-create">
+        <app-form-field inputId="new-race" label="Nouvelle race" [formControl]="newRace" />
+        <button
+          appButton="primary"
+          type="button"
+          [disabled]="newRace.invalid || isSaving()"
+          (click)="addRace()"
+        >
+          Ajouter
+        </button>
+      </div>
+      <div class="rule-list">
+        @for (option of races(); track option.id) {
+          <span class="rule-pill">
+            {{ option.label }} <small>{{ origin(option) }}</small>
+          </span>
+        } @empty {
+          <span class="rule-empty">Aucune race configurée.</span>
+        }
+      </div>
+    </section>
+
+    <section class="rule-section">
+      <h3>Classes</h3>
+      <div class="inline-create">
+        <app-form-field inputId="new-class" label="Nouvelle classe" [formControl]="newClass" />
+        <button
+          appButton="primary"
+          type="button"
+          [disabled]="newClass.invalid || isSaving()"
+          (click)="addClass()"
+        >
+          Ajouter
+        </button>
+      </div>
+      <div class="rule-list">
+        @for (option of classes(); track option.id) {
+          <span class="rule-pill">
+            {{ option.label }} <small>{{ origin(option) }}</small>
+          </span>
+        } @empty {
+          <span class="rule-empty">Aucune classe configurée.</span>
         }
       </div>
     </section>

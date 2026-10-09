@@ -169,5 +169,11 @@ fn migrations() -> Vec<Migration> {
             sql: include_str!("../migrations/0020_link_scene_to_chapter.sql"),
             kind: MigrationKind::Up,
         },
+        Migration {
+            version: 21,
+            description: "add_character_rule_catalogs",
+            sql: include_str!("../migrations/0021_add_character_rule_catalogs.sql"),
+            kind: MigrationKind::Up,
+        },
     ]
 }

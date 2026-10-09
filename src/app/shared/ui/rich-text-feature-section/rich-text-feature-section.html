@@ -5,7 +5,12 @@
       @if (feature.name) {
         <h5>{{ feature.name }}</h5>
       }
-      <app-rich-text-editor [value]="feature.description" [editable]="false" />
+      <app-rich-text-editor
+        [value]="feature.description"
+        [editable]="false"
+        [mentionCandidates]="mentionCandidates()"
+        (mentionActivate)="mentionActivate.emit($event)"
+      />
     </article>
   }
 </section>

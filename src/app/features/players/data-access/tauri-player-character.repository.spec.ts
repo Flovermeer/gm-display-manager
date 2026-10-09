@@ -43,7 +43,7 @@ describe('TauriPlayerCharacterRepository', () => {
         24,
         'campaigns/campaign-id/media/player-character-portraits/nyssa.webp',
         JSON.stringify(character.sheet),
-        2,
+        3,
         '2026-08-12T18:30:00.000Z',
         '2026-08-12T18:30:00.000Z',
       ],
@@ -61,6 +61,27 @@ describe('TauriPlayerCharacterRepository', () => {
         '2026-08-12T18:30:00.000Z',
       ],
     );
+  });
+
+  it('maps the legacy species field to race', async () => {
+    database.select.mockResolvedValue([
+      {
+        ...characterRow,
+        sheet_json: JSON.stringify({ species: 'Elfe', className: 'Rôdeuse' }),
+      },
+    ]);
+    const repository = new TauriPlayerCharacterRepository();
+
+    await expect(repository.listByCampaign('campaign-id')).resolves.toEqual([
+      expect.objectContaining({
+        sheet: expect.objectContaining({
+          raceOptionId: null,
+          race: 'Elfe',
+          classOptionId: null,
+          className: 'Rôdeuse',
+        }),
+      }),
+    ]);
   });
 });
 
@@ -82,7 +103,7 @@ const character: PlayerCharacter = {
     languages: ['Commun'],
     conditions: ['Empoisonné'],
   },
-  sheetSchemaVersion: 2,
+  sheetSchemaVersion: 3,
   createdAt: '2026-08-12T18:30:00.000Z',
   updatedAt: '2026-08-12T18:30:00.000Z',
 };

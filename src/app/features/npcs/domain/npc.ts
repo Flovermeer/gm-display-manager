@@ -5,7 +5,7 @@ import {
 import type { ResourceProvenance } from '@app/shared/domain/resource-provenance';
 
 export const NPC_STATUSES = ['active', 'dead', 'retired', 'missing'] as const;
-export const NPC_SHEET_SCHEMA_VERSION = 4 as const;
+export const NPC_SHEET_SCHEMA_VERSION = 5 as const;
 
 export type NpcStatus = (typeof NPC_STATUSES)[number];
 
@@ -31,6 +31,11 @@ export type NpcSheet = Readonly<{
   creatureType: string;
   creatureSubspeciesOptionId: string | null;
   creatureSubspecies: string;
+  raceOptionId: string | null;
+  race: string;
+  classOptionId: string | null;
+  className: string;
+  occupation: string;
   alignmentOptionId: string | null;
   alignment: string;
   armorClass: number | null;
@@ -111,6 +116,11 @@ export function createEmptyNpcSheet(): NpcSheet {
     creatureType: '',
     creatureSubspeciesOptionId: null,
     creatureSubspecies: '',
+    raceOptionId: null,
+    race: '',
+    classOptionId: null,
+    className: '',
+    occupation: '',
     alignmentOptionId: null,
     alignment: '',
     armorClass: null,
@@ -190,6 +200,7 @@ export function updateNpc(
 export function normalizeNpcSheet(value: unknown): NpcSheet {
   const source = isRecord(value) ? value : {};
   const abilities = isRecord(source['abilities']) ? source['abilities'] : source;
+  const legacyRace = text(source['creatureSubspecies']) || text(source['creatureType']);
 
   return {
     sizeOptionId: nullableText(source['sizeOptionId']),
@@ -198,6 +209,11 @@ export function normalizeNpcSheet(value: unknown): NpcSheet {
     creatureType: text(source['creatureType']),
     creatureSubspeciesOptionId: nullableText(source['creatureSubspeciesOptionId']),
     creatureSubspecies: text(source['creatureSubspecies']),
+    raceOptionId: nullableText(source['raceOptionId']),
+    race: text(source['race']) || legacyRace,
+    classOptionId: nullableText(source['classOptionId']),
+    className: text(source['className']),
+    occupation: text(source['occupation']),
     alignmentOptionId: nullableText(source['alignmentOptionId']),
     alignment: text(source['alignment']),
     armorClass: nullableNonNegativeInteger(source['armorClass'], 'Armor class'),

@@ -415,6 +415,12 @@ function mapPlayerCharacter(row: PlayerDetailRow): UniversePlayerCharacterDetail
     sheet: {
       ...EMPTY_PLAYER_CHARACTER_SHEET,
       ...parsed,
+      race:
+        typeof parsed.race === 'string'
+          ? parsed.race
+          : typeof (parsed as Record<string, unknown>)['species'] === 'string'
+            ? String((parsed as Record<string, unknown>)['species'])
+            : '',
       senses: arrayOfStrings(parsed.senses),
       languages: arrayOfStrings(parsed.languages),
       conditions: arrayOfStrings(parsed.conditions),
@@ -482,7 +488,8 @@ const DESCRIPTORS: Readonly<
     associationTable: 'campaign_npc',
     associationResourceColumn: 'npc_id',
     associationCampaignColumn: 'campaign_id',
-    summaryExpression: "COALESCE(json_extract(resource.sheet_json, '$.creatureType'), '')",
+    summaryExpression:
+      "TRIM(COALESCE(json_extract(resource.sheet_json, '$.race'), json_extract(resource.sheet_json, '$.creatureSubspecies'), json_extract(resource.sheet_json, '$.creatureType'), '') || ' ' || COALESCE(json_extract(resource.sheet_json, '$.className'), '') || ' ' || COALESCE(json_extract(resource.sheet_json, '$.occupation'), ''))",
   },
   'player-character': {
     table: 'player_character',
@@ -490,7 +497,7 @@ const DESCRIPTORS: Readonly<
     associationResourceColumn: 'player_character_id',
     associationCampaignColumn: 'campaign_id',
     summaryExpression:
-      "TRIM(COALESCE(json_extract(resource.sheet_json, '$.species'), '') || ' ' || COALESCE(json_extract(resource.sheet_json, '$.className'), ''))",
+      "TRIM(COALESCE(json_extract(resource.sheet_json, '$.race'), json_extract(resource.sheet_json, '$.species'), '') || ' ' || COALESCE(json_extract(resource.sheet_json, '$.className'), ''))",
   },
   location: {
     table: 'location',

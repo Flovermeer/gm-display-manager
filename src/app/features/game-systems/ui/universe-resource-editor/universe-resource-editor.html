@@ -34,25 +34,51 @@
                 emptyValue=""
                 formControlName="size"
               />
-              <app-form-field
-                inputId="canonical-creature-type"
-                label="Type"
-                controlType="select"
-                [options]="typeOptions()"
-                emptyLabel="Non renseigné"
-                emptyValue=""
-                formControlName="creatureType"
-                (valueChange)="typeChanged()"
-              />
-              <app-form-field
-                inputId="canonical-creature-subspecies"
-                label="Sous-espèce"
-                controlType="select"
-                [options]="subspeciesOptions()"
-                emptyLabel="Aucune"
-                emptyValue=""
-                formControlName="creatureSubspecies"
-              />
+              @if (type() === 'monster') {
+                <app-form-field
+                  inputId="canonical-creature-type"
+                  label="Type"
+                  controlType="select"
+                  [options]="typeOptions()"
+                  emptyLabel="Non renseigné"
+                  emptyValue=""
+                  formControlName="creatureType"
+                  (valueChange)="typeChanged()"
+                />
+                <app-form-field
+                  inputId="canonical-creature-subspecies"
+                  label="Sous-espèce"
+                  controlType="select"
+                  [options]="subspeciesOptions()"
+                  emptyLabel="Aucune"
+                  emptyValue=""
+                  formControlName="creatureSubspecies"
+                />
+              } @else {
+                <app-form-field
+                  inputId="canonical-npc-race"
+                  label="Race"
+                  controlType="select"
+                  [options]="raceOptions()"
+                  emptyLabel="Non renseignée"
+                  emptyValue=""
+                  formControlName="race"
+                />
+                <app-form-field
+                  inputId="canonical-npc-class"
+                  label="Classe"
+                  controlType="select"
+                  [options]="classOptions()"
+                  emptyLabel="Non renseignée"
+                  emptyValue=""
+                  formControlName="className"
+                />
+                <app-form-field
+                  inputId="canonical-npc-occupation"
+                  label="Occupation"
+                  formControlName="occupation"
+                />
+              }
               <app-form-field
                 inputId="canonical-creature-alignment"
                 label="Alignement"
@@ -263,13 +289,21 @@
             />
             <div class="canonical-form__grid canonical-form__grid--four">
               <app-form-field
-                inputId="canonical-player-species"
-                label="Espèce"
-                formControlName="species"
+                inputId="canonical-player-race"
+                label="Race"
+                controlType="select"
+                [options]="raceOptions()"
+                emptyLabel="Non renseignée"
+                emptyValue=""
+                formControlName="race"
               />
               <app-form-field
                 inputId="canonical-player-class"
                 label="Classe"
+                controlType="select"
+                [options]="classOptions()"
+                emptyLabel="Non renseignée"
+                emptyValue=""
                 formControlName="className"
               />
               <app-form-field

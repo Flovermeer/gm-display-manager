@@ -82,8 +82,12 @@ function summary(resource: UniverseResourceDetail): UniverseResourceSummary {
       resource.type === 'location' || resource.type === 'item'
         ? resource.summary
         : resource.type === 'player-character'
-          ? [resource.sheet.species, resource.sheet.className].filter(Boolean).join(' ')
-          : resource.sheet.creatureType,
+          ? [resource.sheet.race, resource.sheet.className].filter(Boolean).join(' ')
+          : resource.type === 'npc'
+            ? [resource.sheet.race, resource.sheet.className, resource.sheet.occupation]
+                .filter(Boolean)
+                .join(' · ')
+            : resource.sheet.creatureType,
     campaignCount: 0,
     deletedAt: resource.deletedAt,
   };

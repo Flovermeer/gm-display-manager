@@ -18,7 +18,7 @@ import {
 
 type ExtensibleCategory = Extract<
   GameRuleCategory,
-  'creature_type' | 'creature_subspecies' | 'language'
+  'creature_type' | 'creature_subspecies' | 'language' | 'race' | 'class'
 >;
 
 @Injectable({ providedIn: 'root' })

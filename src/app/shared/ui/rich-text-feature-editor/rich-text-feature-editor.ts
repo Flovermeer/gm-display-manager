@@ -5,6 +5,7 @@ import {
   type RichTextDocument,
 } from '@app/shared/rich-text-editor/rich-text-document';
 import { RichTextEditor } from '@app/shared/rich-text-editor/rich-text-editor';
+import type { ResourceMentionCandidate } from '@app/shared/rich-text-editor/resource-mention';
 import { ButtonDirective } from '@app/shared/ui/button/button.directive';
 import { FormField } from '@app/shared/ui/form-field/form-field';
 
@@ -26,7 +27,9 @@ export class RichTextFeatureEditor {
   readonly title = input.required<string>();
   readonly singularLabel = input.required<string>();
   readonly features = input<readonly RichTextFeature[]>([]);
+  readonly mentionCandidates = input<readonly ResourceMentionCandidate[]>([]);
   readonly featuresChange = output<readonly RichTextFeature[]>();
+  readonly mentionActivate = output<ResourceMentionCandidate>();
 
   protected add(): void {
     this.featuresChange.emit([

@@ -2,8 +2,13 @@ import { Component, computed, effect, inject, input, output, signal } from '@ang
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 
 import { MonsterImageGateway } from '@app/features/bestiary/data-access/monster-image.gateway';
+import { CharacterRuleCatalogService } from '@app/features/game-systems/application/character-rule-catalog.service';
 import { CreatureRuleCatalogService } from '@app/features/game-systems/application/creature-rule-catalog.service';
 import { UniverseResourceService } from '@app/features/game-systems/application/universe-resource.service';
+import {
+  EMPTY_CHARACTER_RULE_CATALOG,
+  type CharacterRuleCatalog,
+} from '@app/features/game-systems/domain/character-rule-catalog';
 import {
   EMPTY_CREATURE_RULE_CATALOG,
   optionIdFor,
@@ -76,6 +81,7 @@ type PendingDecisionResolver = (canLeave: boolean) => void;
 export class UniverseResourceEditor {
   private readonly service = inject(UniverseResourceService);
   private readonly creatureRules = inject(CreatureRuleCatalogService);
+  private readonly characterRules = inject(CharacterRuleCatalogService);
   private readonly itemConfiguration = inject(ItemConfigurationService);
   private readonly npcPortraits = inject(NpcPortraitGateway);
   private readonly npcVideos = inject(NpcIdleVideoGateway);
@@ -107,6 +113,9 @@ export class UniverseResourceEditor {
   protected readonly featureSections = CREATURE_FEATURE_SECTIONS;
   protected readonly featureDrafts = signal<CreatureFeatureDrafts>(emptyCreatureFeatureDrafts());
   protected readonly ruleCatalog = signal<CreatureRuleCatalog>(EMPTY_CREATURE_RULE_CATALOG);
+  protected readonly characterRuleCatalog = signal<CharacterRuleCatalog>(
+    EMPTY_CHARACTER_RULE_CATALOG,
+  );
   protected readonly itemTypes = signal<readonly ItemConfigurationOption[]>([]);
   protected readonly itemRarities = signal<readonly ItemConfigurationOption[]>([]);
   protected readonly locationSummaries = signal<readonly UniverseResourceSummary[]>([]);
@@ -119,6 +128,18 @@ export class UniverseResourceEditor {
   protected readonly typeOptions = computed(() => formOptions(this.ruleCatalog().creatureTypes));
   protected readonly alignmentOptions = computed(() => formOptions(this.ruleCatalog().alignments));
   protected readonly languageOptions = computed(() => formOptions(this.ruleCatalog().languages));
+  protected readonly raceOptions = computed(() => {
+    const detail = this.detail();
+    const legacyLabel =
+      detail?.type === 'npc' || detail?.type === 'player-character' ? detail.sheet.race : '';
+    return formOptions(this.characterRuleCatalog().races, legacyLabel);
+  });
+  protected readonly classOptions = computed(() => {
+    const detail = this.detail();
+    const legacyLabel =
+      detail?.type === 'npc' || detail?.type === 'player-character' ? detail.sheet.className : '';
+    return formOptions(this.characterRuleCatalog().classes, legacyLabel);
+  });
   protected readonly itemTypeOptions = computed(() => configurationOptions(this.itemTypes()));
   protected readonly itemRarityOptions = computed(() => configurationOptions(this.itemRarities()));
   protected readonly locationOptions = computed(() =>
@@ -132,6 +153,9 @@ export class UniverseResourceEditor {
     size: new FormControl('', { nonNullable: true }),
     creatureType: new FormControl('', { nonNullable: true }),
     creatureSubspecies: new FormControl('', { nonNullable: true }),
+    race: new FormControl('', { nonNullable: true }),
+    className: new FormControl('', { nonNullable: true }),
+    occupation: new FormControl('', { nonNullable: true }),
     alignment: new FormControl('', { nonNullable: true }),
     armorClass: new FormControl<number | null>(null, [Validators.min(0)]),
     armorClassDetails: new FormControl('', { nonNullable: true }),
@@ -159,7 +183,7 @@ export class UniverseResourceEditor {
   protected readonly playerForm = new FormGroup({
     name: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
     maxHitPoints: new FormControl<number | null>(null, [Validators.min(0)]),
-    species: new FormControl('', { nonNullable: true }),
+    race: new FormControl('', { nonNullable: true }),
     className: new FormControl('', { nonNullable: true }),
     level: new FormControl<number | null>(null, [Validators.min(1), Validators.max(20)]),
     armorClass: new FormControl<number | null>(null, [Validators.min(0)]),
@@ -355,6 +379,13 @@ export class UniverseResourceEditor {
             .then((catalog) => this.ruleCatalog.set(catalog)),
         );
       }
+      if (type === 'npc' || type === 'player-character') {
+        supportingLoads.push(
+          this.characterRules
+            .loadForUniverse(universeId)
+            .then((catalog) => this.characterRuleCatalog.set(catalog)),
+        );
+      }
       if (type === 'location') {
         supportingLoads.push(
           this.service
@@ -441,6 +472,13 @@ export class UniverseResourceEditor {
         sheet.creatureSubspecies,
         this.ruleCatalog().subspecies,
       ),
+      race:
+        optionIdFor(sheet.raceOptionId, sheet.race, this.characterRuleCatalog().races) ||
+        sheet.race,
+      className:
+        optionIdFor(sheet.classOptionId, sheet.className, this.characterRuleCatalog().classes) ||
+        sheet.className,
+      occupation: sheet.occupation,
       alignment: optionIdFor(
         sheet.alignmentOptionId,
         sheet.alignment,
@@ -477,8 +515,18 @@ export class UniverseResourceEditor {
     this.playerForm.reset({
       name: detail.name,
       maxHitPoints: detail.maxHitPoints,
-      species: detail.sheet.species,
-      className: detail.sheet.className,
+      race:
+        optionIdFor(
+          detail.sheet.raceOptionId,
+          detail.sheet.race,
+          this.characterRuleCatalog().races,
+        ) || detail.sheet.race,
+      className:
+        optionIdFor(
+          detail.sheet.classOptionId,
+          detail.sheet.className,
+          this.characterRuleCatalog().classes,
+        ) || detail.sheet.className,
       level: detail.sheet.level,
       armorClass: detail.sheet.armorClass,
       speed: detail.sheet.speed,
@@ -502,14 +550,14 @@ export class UniverseResourceEditor {
           name: this.creatureForm.controls.name.value,
           portraitPath: primaryMediaPath ?? detail.portraitPath,
           idleVideoPath: this.draftIdleVideoPath() ?? detail.idleVideoPath,
-          sheet: this.buildCreatureSheet(detail.sheet),
+          sheet: this.buildCreatureSheet(detail.sheet, true),
         };
       case 'monster':
         return {
           ...detail,
           name: this.creatureForm.controls.name.value,
           imagePath: primaryMediaPath ?? detail.imagePath,
-          sheet: this.buildCreatureSheet(detail.sheet),
+          sheet: this.buildCreatureSheet(detail.sheet, false),
         };
       case 'player-character':
         return this.buildPlayer(detail, primaryMediaPath);
@@ -540,20 +588,37 @@ export class UniverseResourceEditor {
     }
   }
 
-  private buildCreatureSheet(previous: NpcSheet): NpcSheet {
+  private buildCreatureSheet(previous: NpcSheet, isNpc: boolean): NpcSheet {
     const value = this.creatureForm.getRawValue();
     return {
       ...previous,
       sizeOptionId: value.size || null,
       size: optionLabel(value.size, this.ruleCatalog().sizes, previous.size),
-      creatureTypeOptionId: value.creatureType || null,
+      creatureTypeOptionId: isNpc ? previous.creatureTypeOptionId : value.creatureType || null,
       creatureType: optionLabel(
-        value.creatureType,
+        isNpc ? '' : value.creatureType,
         this.ruleCatalog().creatureTypes,
         previous.creatureType,
       ),
-      creatureSubspeciesOptionId: value.creatureSubspecies || null,
-      creatureSubspecies: optionLabel(value.creatureSubspecies, this.ruleCatalog().subspecies, ''),
+      creatureSubspeciesOptionId: isNpc
+        ? previous.creatureSubspeciesOptionId
+        : value.creatureSubspecies || null,
+      creatureSubspecies: isNpc
+        ? previous.creatureSubspecies
+        : optionLabel(value.creatureSubspecies, this.ruleCatalog().subspecies, ''),
+      raceOptionId: isNpc
+        ? optionId(value.race, this.characterRuleCatalog().races)
+        : previous.raceOptionId,
+      race: isNpc
+        ? optionLabel(value.race, this.characterRuleCatalog().races, value.race)
+        : previous.race,
+      classOptionId: isNpc
+        ? optionId(value.className, this.characterRuleCatalog().classes)
+        : previous.classOptionId,
+      className: isNpc
+        ? optionLabel(value.className, this.characterRuleCatalog().classes, value.className)
+        : previous.className,
+      occupation: isNpc ? value.occupation : previous.occupation,
       alignmentOptionId: value.alignment || null,
       alignment: optionLabel(value.alignment, this.ruleCatalog().alignments, previous.alignment),
       armorClass: value.armorClass,
@@ -591,8 +656,10 @@ export class UniverseResourceEditor {
   ): UniversePlayerCharacterDetail {
     const value = this.playerForm.getRawValue();
     const sheet: PlayerCharacterSheet = {
-      species: value.species,
-      className: value.className,
+      raceOptionId: optionId(value.race, this.characterRuleCatalog().races),
+      race: optionLabel(value.race, this.characterRuleCatalog().races, value.race),
+      classOptionId: optionId(value.className, this.characterRuleCatalog().classes),
+      className: optionLabel(value.className, this.characterRuleCatalog().classes, value.className),
       level: value.level,
       armorClass: value.armorClass,
       speed: value.speed,
@@ -708,9 +775,24 @@ export class UniverseResourceEditor {
 }
 
 function formOptions(
-  options: readonly { id: string; label: string }[],
+  options: readonly { id: string; label: string; code: string }[],
+  legacyLabel = '',
 ): readonly FormFieldOption[] {
-  return options.map(({ id, label }) => ({ value: id, label }));
+  const normalized = legacyLabel.trim().toLocaleLowerCase('fr');
+  const mapped = options.some(
+    ({ label, code }) =>
+      label.toLocaleLowerCase('fr') === normalized || code.toLocaleLowerCase('fr') === normalized,
+  );
+  return [
+    ...options.map(({ id, label }) => ({ value: id, label })),
+    ...(legacyLabel && !mapped
+      ? [{ value: legacyLabel, label: `${legacyLabel} (ancienne valeur)` }]
+      : []),
+  ];
+}
+
+function optionId(value: string, options: readonly { id: string }[]): string | null {
+  return options.some(({ id }) => id === value) ? value : null;
 }
 
 function configurationOptions(

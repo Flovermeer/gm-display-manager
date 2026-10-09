@@ -35,7 +35,7 @@ describe('PlayerCharacterWorkspace', () => {
     portraitPath: null,
     sheet: {
       ...EMPTY_PLAYER_CHARACTER_SHEET,
-      species: 'Elfe',
+      race: 'Elfe',
       className: 'Rôdeuse',
       level: 3,
       armorClass: 15,

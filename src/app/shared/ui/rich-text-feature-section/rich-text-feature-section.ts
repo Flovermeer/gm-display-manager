@@ -1,6 +1,7 @@
-import { ChangeDetectionStrategy, Component, input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
 
 import { RichTextEditor } from '@app/shared/rich-text-editor/rich-text-editor';
+import type { ResourceMentionCandidate } from '@app/shared/rich-text-editor/resource-mention';
 import type { RichTextFeature } from '@app/shared/ui/rich-text-feature-editor/rich-text-feature-editor';
 
 @Component({
@@ -13,4 +14,6 @@ import type { RichTextFeature } from '@app/shared/ui/rich-text-feature-editor/ri
 export class RichTextFeatureSection {
   readonly title = input.required<string>();
   readonly features = input.required<readonly RichTextFeature[]>();
+  readonly mentionCandidates = input<readonly ResourceMentionCandidate[]>([]);
+  readonly mentionActivate = output<ResourceMentionCandidate>();
 }

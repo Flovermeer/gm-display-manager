@@ -1,5 +1,6 @@
 import {
   EMPTY_PLAYER_CHARACTER_SHEET,
+  PLAYER_CHARACTER_SHEET_SCHEMA_VERSION,
   createPlayerCharacter,
   updatePlayerCharacter,
   updatePlayerCharacterHitPoints,
@@ -45,7 +46,7 @@ describe('PlayerCharacter', () => {
         languages: ['Commun', 'Elfique'],
         privateNotes: 'Porte la clé.',
       },
-      sheetSchemaVersion: 2,
+      sheetSchemaVersion: PLAYER_CHARACTER_SHEET_SCHEMA_VERSION,
     });
   });
 

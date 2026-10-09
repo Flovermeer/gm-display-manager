@@ -15,6 +15,12 @@ import { CampaignContext } from '@app/features/campaigns/application/campaign-co
 import { CombatStore } from '@app/features/combat/application/combat.store';
 import { playerCharacterCombatantSource } from '@app/features/combat/domain/combatant-source';
 import type { PendingChangesAware } from '@app/core/navigation/pending-changes.guard';
+import { CharacterRuleCatalogService } from '@app/features/game-systems/application/character-rule-catalog.service';
+import {
+  EMPTY_CHARACTER_RULE_CATALOG,
+  type CharacterRuleCatalog,
+} from '@app/features/game-systems/domain/character-rule-catalog';
+import { optionIdFor, optionLabel } from '@app/features/game-systems/domain/creature-rule-catalog';
 import { PlayerCharacterPortraitGateway } from '@app/features/players/data-access/player-character-portrait.gateway';
 import {
   EMPTY_PLAYER_CHARACTER_SHEET,
@@ -57,6 +63,7 @@ export class PlayerCharacterWorkspace implements OnInit, PendingChangesAware {
   private readonly route = inject(ActivatedRoute);
   private readonly destroyRef = inject(DestroyRef);
   private readonly characterService = inject(PlayerCharacterService);
+  private readonly characterRules = inject(CharacterRuleCatalogService);
   private readonly portraitGateway = inject(PlayerCharacterPortraitGateway);
   private readonly combat = inject(CombatStore, { optional: true });
   private readonly recentResources = inject(RecentResourceStore, { optional: true });
@@ -85,6 +92,13 @@ export class PlayerCharacterWorkspace implements OnInit, PendingChangesAware {
   protected readonly showValidationErrors = signal(false);
   protected readonly error = signal<string | null>(null);
   protected readonly focusedJournalEntryId = signal<string | null>(null);
+  protected readonly ruleCatalog = signal<CharacterRuleCatalog>(EMPTY_CHARACTER_RULE_CATALOG);
+  protected readonly raceOptions = computed(() =>
+    this.formOptions(this.ruleCatalog().races, this.selectedCharacter()?.sheet.race),
+  );
+  protected readonly classOptions = computed(() =>
+    this.formOptions(this.ruleCatalog().classes, this.selectedCharacter()?.sheet.className),
+  );
   protected readonly statuses = PLAYER_CHARACTER_STATUSES;
   protected readonly statusFieldOptions: readonly FormFieldOption[] = PLAYER_CHARACTER_STATUSES.map(
     (status) => ({ value: status, label: this.statusLabel(status) }),
@@ -96,12 +110,9 @@ export class PlayerCharacterWorkspace implements OnInit, PendingChangesAware {
     const term = this.searchTerm().trim().toLocaleLowerCase('fr');
     if (!term) return this.characters();
     return this.characters().filter((character) =>
-      [
-        character.name,
-        character.playerName,
-        character.sheet.className,
-        character.sheet.species,
-      ].some((value) => value.toLocaleLowerCase('fr').includes(term)),
+      [character.name, character.playerName, character.sheet.className, character.sheet.race].some(
+        (value) => value.toLocaleLowerCase('fr').includes(term),
+      ),
     );
   });
 
@@ -112,7 +123,7 @@ export class PlayerCharacterWorkspace implements OnInit, PendingChangesAware {
       status: new FormControl<PlayerCharacterStatus>('active', { nonNullable: true }),
       currentHitPoints: new FormControl<number | null>(null, [Validators.min(0), integerValidator]),
       maxHitPoints: new FormControl<number | null>(null, [Validators.min(0), integerValidator]),
-      species: new FormControl('', { nonNullable: true }),
+      race: new FormControl('', { nonNullable: true }),
       className: new FormControl('', { nonNullable: true }),
       level: new FormControl<number | null>(null, [
         Validators.min(1),
@@ -431,7 +442,7 @@ export class PlayerCharacterWorkspace implements OnInit, PendingChangesAware {
       status: 'Statut',
       currentHitPoints: 'PV actuels',
       maxHitPoints: 'PV maximum',
-      species: 'Espèce',
+      race: 'Race',
       className: 'Classe',
       level: 'Niveau (1 à 20)',
       armorClass: "Classe d'armure",
@@ -464,6 +475,7 @@ export class PlayerCharacterWorkspace implements OnInit, PendingChangesAware {
   private async initialize(): Promise<void> {
     try {
       if (!(await this.campaignContext.load())) return;
+      await this.loadRuleCatalog();
       await this.reloadCharacters();
       await this.openRequestedCharacter(
         this.route.snapshot.queryParamMap?.get('resourceId'),
@@ -512,6 +524,15 @@ export class PlayerCharacterWorkspace implements OnInit, PendingChangesAware {
       currentHitPoints: character.currentHitPoints,
       maxHitPoints: character.maxHitPoints,
       ...character.sheet,
+      race:
+        optionIdFor(character.sheet.raceOptionId, character.sheet.race, this.ruleCatalog().races) ||
+        character.sheet.race,
+      className:
+        optionIdFor(
+          character.sheet.classOptionId,
+          character.sheet.className,
+          this.ruleCatalog().classes,
+        ) || character.sheet.className,
       privateNotes: '',
     });
     this.characterForm.markAsPristine();
@@ -540,8 +561,10 @@ export class PlayerCharacterWorkspace implements OnInit, PendingChangesAware {
       currentHitPoints: value.currentHitPoints,
       maxHitPoints: value.maxHitPoints,
       sheet: {
-        species: value.species,
-        className: value.className,
+        raceOptionId: this.optionId(value.race, this.ruleCatalog().races),
+        race: optionLabel(value.race, this.ruleCatalog().races, value.race),
+        classOptionId: this.optionId(value.className, this.ruleCatalog().classes),
+        className: optionLabel(value.className, this.ruleCatalog().classes, value.className),
         level: value.level,
         armorClass: value.armorClass,
         speed: value.speed,
@@ -572,6 +595,33 @@ export class PlayerCharacterWorkspace implements OnInit, PendingChangesAware {
     } finally {
       this.isSaving.set(false);
     }
+  }
+
+  private async loadRuleCatalog(): Promise<void> {
+    const campaign = this.campaign();
+    if (!campaign) return;
+    this.ruleCatalog.set(await this.characterRules.loadForUniverse(campaign.universeId));
+  }
+
+  private formOptions(
+    options: readonly { id: string; label: string; code: string }[],
+    legacyLabel = '',
+  ): readonly FormFieldOption[] {
+    const normalized = legacyLabel.trim().toLocaleLowerCase('fr');
+    const mapped = options.some(
+      ({ label, code }) =>
+        label.toLocaleLowerCase('fr') === normalized || code.toLocaleLowerCase('fr') === normalized,
+    );
+    return [
+      ...options.map(({ id, label }) => ({ value: id, label })),
+      ...(legacyLabel && !mapped
+        ? [{ value: legacyLabel, label: `${legacyLabel} (ancienne valeur)` }]
+        : []),
+    ];
+  }
+
+  private optionId(value: string, options: readonly { id: string }[]): string | null {
+    return options.some(({ id }) => id === value) ? value : null;
   }
 
   private async abandonChanges(): Promise<void> {

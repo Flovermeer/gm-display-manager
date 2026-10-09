@@ -281,23 +281,28 @@
                 formControlName="size"
               />
               <app-form-field
-                inputId="npc-creature-type"
-                label="Type"
+                inputId="npc-race"
+                label="Race"
                 controlType="select"
-                [options]="typeOptions()"
-                emptyLabel="Non renseigné"
+                [options]="raceOptions()"
+                emptyLabel="Non renseignée"
                 emptyValue=""
-                formControlName="creatureType"
-                (valueChange)="typeChanged()"
+                formControlName="race"
               />
               <app-form-field
-                inputId="npc-subspecies"
-                label="Sous-espèce"
+                inputId="npc-class"
+                label="Classe"
                 controlType="select"
-                [options]="subspeciesOptions()"
-                emptyLabel="Aucune"
+                [options]="classOptions()"
+                emptyLabel="Non renseignée"
                 emptyValue=""
-                formControlName="creatureSubspecies"
+                formControlName="className"
+              />
+              <app-form-field
+                inputId="npc-occupation"
+                label="Occupation"
+                formControlName="occupation"
+                placeholder="Aubergiste, archiviste…"
               />
               <app-form-field
                 inputId="npc-alignment"
@@ -484,7 +489,9 @@
               [title]="section.label"
               [singularLabel]="section.singularLabel"
               [features]="featureDrafts()[section.key]"
+              [mentionCandidates]="mentionCandidates()"
               (featuresChange)="updateFeatureSection(section.key, $event)"
+              (mentionActivate)="openMention($event)"
             />
           }
 
@@ -495,7 +502,9 @@
             </div>
             <app-rich-text-editor
               [value]="officialDescriptionDraft()"
+              [mentionCandidates]="mentionCandidates()"
               (valueChange)="updateOfficialDescription($event)"
+              (mentionActivate)="openMention($event)"
             />
           </section>
         </form>
@@ -508,6 +517,12 @@
             </header>
 
             <dl class="combat-stat-lines">
+              @if (npc.sheet.occupation) {
+                <div>
+                  <dt>Occupation</dt>
+                  <dd>{{ npc.sheet.occupation }}</dd>
+                </div>
+              }
               <div>
                 <dt>Classe d'armure</dt>
                 <dd>{{ armorClassLabel(npc.sheet) }}</dd>
@@ -606,6 +621,8 @@
                 <app-rich-text-feature-section
                   [title]="section.label"
                   [features]="npc.sheet[section.key]"
+                  [mentionCandidates]="mentionCandidates()"
+                  (mentionActivate)="openMention($event)"
                 />
               }
             }
@@ -613,7 +630,12 @@
 
           <section class="official-description-readonly" aria-labelledby="npc-description-title">
             <h3 id="npc-description-title">Description officielle</h3>
-            <app-rich-text-editor [value]="npc.sheet.officialDescription" [editable]="false" />
+            <app-rich-text-editor
+              [value]="npc.sheet.officialDescription"
+              [editable]="false"
+              [mentionCandidates]="mentionCandidates()"
+              (mentionActivate)="openMention($event)"
+            />
           </section>
 
           @if (campaign(); as activeCampaign) {
@@ -671,26 +693,40 @@
       }
     </div>
     <div dialog-actions class="dialog-actions">
-      <button appButton="secondary" type="button" (click)="showCatalogDialog.set(false)">Fermer</button>
+      <button appButton="secondary" type="button" (click)="showCatalogDialog.set(false)">
+        Fermer
+      </button>
     </div>
   </app-dialog>
 }
 
 @if (showPromotionDialog() && selectedNpc(); as npc) {
-  <app-dialog kicker="Catalogue de l’univers" [title]="'Enregistrer ' + npc.name + ' ?'" headingId="npc-promotion-title">
+  <app-dialog
+    kicker="Catalogue de l’univers"
+    [title]="'Enregistrer ' + npc.name + ' ?'"
+    headingId="npc-promotion-title"
+  >
     <p>La fiche actuelle deviendra la référence canonique et restera liée à cette campagne.</p>
     <div dialog-actions class="dialog-actions">
-      <button appButton="secondary" type="button" (click)="showPromotionDialog.set(false)">Annuler</button>
+      <button appButton="secondary" type="button" (click)="showPromotionDialog.set(false)">
+        Annuler
+      </button>
       <button appButton="primary" type="button" (click)="confirmPromotion()">Confirmer</button>
     </div>
   </app-dialog>
 }
 
 @if (showResetDialog() && selectedNpc(); as npc) {
-  <app-dialog kicker="Version de campagne" [title]="'Réinitialiser ' + npc.name + ' ?'" headingId="npc-reset-title">
+  <app-dialog
+    kicker="Version de campagne"
+    [title]="'Réinitialiser ' + npc.name + ' ?'"
+    headingId="npc-reset-title"
+  >
     <p>La personnalisation locale sera remplacée par la dernière fiche de l’univers.</p>
     <div dialog-actions class="dialog-actions">
-      <button appButton="secondary" type="button" (click)="showResetDialog.set(false)">Annuler</button>
+      <button appButton="secondary" type="button" (click)="showResetDialog.set(false)">
+        Annuler
+      </button>
       <button appButton="danger" type="button" (click)="confirmReset()">Réinitialiser</button>
     </div>
   </app-dialog>

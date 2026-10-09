@@ -309,6 +309,14 @@ function parseSheet(value: string): PlayerCharacterSheet {
   return {
     ...EMPTY_PLAYER_CHARACTER_SHEET,
     ...sheet,
+    raceOptionId: typeof sheet['raceOptionId'] === 'string' ? sheet['raceOptionId'] : null,
+    race:
+      typeof sheet['race'] === 'string'
+        ? sheet['race']
+        : typeof sheet['species'] === 'string'
+          ? sheet['species']
+          : '',
+    classOptionId: typeof sheet['classOptionId'] === 'string' ? sheet['classOptionId'] : null,
     senses: parseTags(sheet['senses']),
     languages: parseTags(sheet['languages']),
     conditions: parseTags(sheet['conditions']),

@@ -100,7 +100,10 @@ import { TechnicalLogGateway } from '@app/features/diagnostics/data-access/techn
 export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
-    provideRouter(routes, withInMemoryScrolling({ anchorScrolling: 'enabled' })),
+    provideRouter(
+      routes,
+      withInMemoryScrolling({ anchorScrolling: 'enabled', scrollPositionRestoration: 'enabled' }),
+    ),
     provideAppInitializer(async () => {
       const backup = inject(ApplicationBackupService);
       const diagnostics = inject(ApplicationDiagnosticsService);

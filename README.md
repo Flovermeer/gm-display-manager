@@ -104,6 +104,29 @@ jours et publie aussi l'installateur dans une GitHub Release durable. Le dépôt
 téléchargements restent accessibles uniquement aux comptes GitHub autorisés. Un simple `git push`
 ne déclenche pas ce workflow.
 
+### Publier soi-même une nouvelle version
+
+1. Choisir un nouveau numéro de version qui n'existe pas encore dans les Releases GitHub.
+2. Reporter exactement ce numéro dans `package.json`, `package-lock.json`, `src-tauri/Cargo.toml`,
+   `src-tauri/Cargo.lock` et `src-tauri/tauri.conf.json`.
+3. Committer puis pousser les changements sur `main`.
+4. Ouvrir [Actions → Windows installer](https://github.com/Flovermeer/gm-display-manager/actions/workflows/windows-installer.yml),
+   cliquer sur **Run workflow**, sélectionner `main`, puis confirmer avec **Run workflow**.
+5. Attendre que toutes les étapes soient vertes. Télécharger ensuite le `.exe` depuis la nouvelle
+   [Release GitHub](https://github.com/Flovermeer/gm-display-manager/releases) ou télécharger
+   l'artefact `beholders-inn-windows-installer` depuis le résumé du workflow.
+
+La même opération peut être lancée en ligne de commande après authentification avec `gh auth login` :
+
+```powershell
+gh workflow run windows-installer.yml -R Flovermeer/gm-display-manager --ref main
+gh run watch -R Flovermeer/gm-display-manager
+```
+
+La publication échoue si la Release `v<version>` existe déjà. Dans ce cas, incrémenter à nouveau les
+cinq fichiers de version, commit, push, puis relancer le workflow. Ne pas créer le tag manuellement :
+le workflow crée lui-même la Release et son tag après la construction réussie de l'installateur.
+
 La procédure complète de versionnement, construction, installation, validation et publication est
 documentée dans [`WINDOWS_RELEASE.md`](./WINDOWS_RELEASE.md).
 

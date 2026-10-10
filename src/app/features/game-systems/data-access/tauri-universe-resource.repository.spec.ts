@@ -151,4 +151,31 @@ describe('TauriUniverseResourceRepository', () => {
     );
     expect(database.execute.mock.calls[0]?.[0]).not.toContain('campaign_monster');
   });
+
+  it('promotes a location image to the first gallery position', async () => {
+    const repository = new TauriUniverseResourceRepository();
+    const imagePath = 'universes/forgotten-realms/media/locations/port.webp';
+
+    await repository.save({
+      id: 'location-id',
+      universeId: 'forgotten-realms',
+      type: 'location',
+      name: 'Port Nyanzaru',
+      parentLocationId: null,
+      summary: 'Cité portuaire',
+      imagePath,
+      deletedAt: null,
+      createdAt: '2026-08-20T00:00:00.000Z',
+      updatedAt: '2026-08-20T01:00:00.000Z',
+    });
+
+    expect(database.execute).toHaveBeenCalledWith(
+      expect.stringContaining('UPDATE location_image SET position=position+1'),
+      ['location-id', imagePath],
+    );
+    expect(database.execute).toHaveBeenCalledWith(
+      expect.stringContaining('INSERT INTO location_image'),
+      ['location-id', imagePath, '2026-08-20T01:00:00.000Z'],
+    );
+  });
 });

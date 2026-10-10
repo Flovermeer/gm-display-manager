@@ -73,7 +73,7 @@ coordonnées et huit sauvegardes sans fermeture ni erreur.
 | 1 — Shell Angular + Tauri   | Terminé                              | Application standalone zoneless, routes Angular, fenêtre principale maximisée et capabilities Tauri en place.                                                                                                                                                                     |
 | 2 — Multi-écran             | Validé sur le matériel courant       | Détection, plein écran, fermeture, réouverture, perte, reconnexion, changement de coordonnées et facteurs d'échelle distincts sont validés avec deux écrans. Une paire de moniteurs identiques reste à tester.                                                                    |
 | 3 — Régie verticale         | Terminé                              | Écran noir, lieux, PNJ et objets peuvent être envoyés au Player Display ; synchronisation `ready` et fallback statique des PNJ en place.                                                                                                                                          |
-| 4 — SQLite                  | Terminé pour les tranches livrées    | Vingt-trois migrations couvrent notamment systèmes, univers, campagnes, propriété des ressources, référentiels de personnages, combat, historique récent, tables aléatoires et classement des scènes par chapitre. Repositories Tauri et mémoire isolés derrière des interfaces. |
+| 4 — SQLite                  | Terminé pour les tranches livrées    | Vingt-quatre migrations couvrent notamment systèmes, univers, campagnes, propriété des ressources, référentiels de personnages, combat, historique récent, galerie des lieux, tables aléatoires et classement des scènes par chapitre. Repositories Tauri et mémoire isolés derrière des interfaces. |
 | 5 — Gestion de campagne     | Terminé et étendu                    | CRUD campagnes, lieux hiérarchiques, PNJ structurés, PJ orientés MJ et objets narratifs. Navigation campagne persistante et protection des modifications non enregistrées.                                                                                                        |
 | 6 — Médias locaux           | Durcissement V1.1 validé dans Tauri  | Import/copie locale des portraits PNJ/PJ, images de lieux, objets et monstres, vidéo idle PNJ et nettoyage des médias. Le diagnostic natif et le remplacement au même chemin sont validés sans faux positif.                                                                      |
 | 7 — Tiptap et journal       | Terminé pour l’usage actuel          | Chapitres et descriptions riches, notes journalisées éditables, regroupement quotidien, mentions `@` cliquables vers les ressources de campagne et fallback texte si la cible disparaît.                                                                                          |
@@ -360,6 +360,8 @@ Travail :
 - permettre de replier les branches de lieux, mémoriser cet état par campagne et ignorer les replis
   pendant une recherche ;
 - fournir aux lieux une description riche propre à chaque campagne, avec mentions `@` ;
+- fournir aux lieux une galerie d'images commune à l'univers, navigable et agrandissable, dont
+  l'image courante peut être envoyée au Player Display ;
 - demander confirmation avant une suppression destructive ;
 - utiliser des formulaires Angular typés avec validations simples ;
 - fournir une navigation campagne -> lieux/PNJ -> fiche ;

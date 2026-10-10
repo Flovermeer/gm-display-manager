@@ -40,7 +40,7 @@ describe('SceneDisplayService', () => {
     const location = await locationService.create(
       'campaign-id',
       { name: 'Villa', summary: '', notes: '', parentLocationId: null },
-      'campaigns/campaign-id/media/locations/villa.webp',
+      ['campaigns/campaign-id/media/locations/villa.webp'],
     );
     imageGateway.resolveUrl.mockResolvedValue('asset://villa.webp');
     const scene = sceneFixture({ locationId: location.id });

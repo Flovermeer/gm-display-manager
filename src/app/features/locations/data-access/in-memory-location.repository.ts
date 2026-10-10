@@ -19,6 +19,7 @@ export class InMemoryLocationRepository extends LocationRepository {
   private readonly campaignIds = new Map<string, Set<string>>();
   private readonly overrides = new Map<string, Location>();
   private readonly descriptions = new Map<string, RichTextDocument>();
+  private readonly galleries = new Map<string, readonly string[]>();
 
   override listByCampaign(campaignId: string): Promise<readonly Location[]> {
     const ids = this.campaignIds.get(campaignId) ?? new Set<string>();
@@ -65,6 +66,7 @@ export class InMemoryLocationRepository extends LocationRepository {
         provenance: 'override',
       });
     }
+    this.galleries.set(location.id, location.imagePaths);
     this.descriptions.set(this.key(location.campaignId, location.id), location.description);
     this.associate(location.campaignId, location.id);
   }
@@ -73,6 +75,7 @@ export class InMemoryLocationRepository extends LocationRepository {
     const location = this.locations.get(id);
     if (location?.provenance === 'campaign' && location.campaignId === campaignId) {
       this.locations.delete(id);
+      this.galleries.delete(id);
       for (const child of this.locations.values()) {
         if (
           child.parentLocationId === id &&
@@ -149,9 +152,12 @@ export class InMemoryLocationRepository extends LocationRepository {
   private effective(location: Location, campaignId: string): Location {
     const key = this.key(campaignId, location.id);
     const effective = this.overrides.get(key) ?? { ...location, campaignId };
+    const imagePaths = this.galleries.get(location.id) ?? location.imagePaths;
     return {
       ...effective,
       description: this.descriptions.get(key) ?? createEmptyRichTextDocument(),
+      imagePaths,
+      imagePath: imagePaths[0] ?? null,
     };
   }
 

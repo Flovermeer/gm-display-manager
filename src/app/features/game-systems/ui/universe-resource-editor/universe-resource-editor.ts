@@ -277,8 +277,15 @@ export class UniverseResourceEditor {
     const detail = this.detail();
     if (!detail) return;
     try {
-      const path = await this.primaryGateway(detail.type).chooseAndImport(detail.universeId);
+      const selection = await this.primaryGateway(detail.type).chooseAndImport(detail.universeId);
+      if (!selection) return;
+      const path = typeof selection === 'string' ? selection : (selection[0] ?? null);
       if (!path) return;
+      if (typeof selection !== 'string') {
+        for (const unusedPath of selection.slice(1)) {
+          await this.locationImages.discard(unusedPath);
+        }
+      }
       const previousDraft = this.draftPrimaryMediaPath();
       this.draftPrimaryMediaPath.set(path);
       this.primaryMediaUrl.set(await this.primaryGateway(detail.type).resolveUrl(path));
@@ -728,7 +735,7 @@ export class UniverseResourceEditor {
   ): Promise<void> {
     const previousPrimary = primaryPath(previous);
     const savedPrimary = primaryPath(saved);
-    if (previousPrimary && savedPrimary !== previousPrimary) {
+    if (previous.type !== 'location' && previousPrimary && savedPrimary !== previousPrimary) {
       await this.discardSafely(this.primaryGateway(previous.type), previousPrimary);
     }
     if (

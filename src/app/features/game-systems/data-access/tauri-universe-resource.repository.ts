@@ -309,6 +309,19 @@ export class TauriUniverseResourceRepository extends UniverseResourceRepository 
     if (rowsAffected === 0) {
       throw new Error("Cette ressource canonique n'existe plus dans l'univers.");
     }
+    if (resource.type === 'location' && resource.imagePath) {
+      await database.execute(
+        `UPDATE location_image SET position=position+1
+         WHERE location_id=$1 AND image_path<>$2`,
+        [resource.id, resource.imagePath],
+      );
+      await database.execute(
+        `INSERT INTO location_image(location_id, image_path, position, created_at)
+         VALUES ($1,$2,0,$3)
+         ON CONFLICT(location_id, image_path) DO UPDATE SET position=0`,
+        [resource.id, resource.imagePath, resource.updatedAt],
+      );
+    }
   }
 
   override trash(universeId: string, type: UniverseResourceType, id: string): Promise<void> {

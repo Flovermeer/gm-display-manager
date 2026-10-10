@@ -99,8 +99,9 @@ const MEDIA_REFERENCES_QUERY = `
   SELECT 'player-character-portrait', id, name, portrait_path
   FROM player_character WHERE portrait_path IS NOT NULL AND trim(portrait_path) <> ''
   UNION ALL
-  SELECT 'location-image', id, name, image_path
-  FROM location WHERE image_path IS NOT NULL AND trim(image_path) <> ''
+  SELECT 'location-image', location.id, location.name, location_image.image_path
+  FROM location
+  JOIN location_image ON location_image.location_id = location.id
   UNION ALL
   SELECT 'item-image', id, name, image_path
   FROM narrative_item WHERE image_path IS NOT NULL AND trim(image_path) <> ''

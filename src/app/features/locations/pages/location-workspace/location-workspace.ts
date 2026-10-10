@@ -1,4 +1,13 @@
-import { Component, computed, DestroyRef, inject, OnInit, signal, viewChild } from '@angular/core';
+import {
+  Component,
+  computed,
+  DestroyRef,
+  HostListener,
+  inject,
+  OnInit,
+  signal,
+  viewChild,
+} from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute } from '@angular/router';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
@@ -77,8 +86,10 @@ export class LocationWorkspace implements OnInit, PendingChangesAware {
     this.parentOptions().map((entry) => ({ value: entry.location.id, label: entry.path })),
   );
   protected readonly selectedLocation = signal<Location | null>(null);
-  protected readonly imageUrl = signal<string>(DEMO_LOCATION_IMAGE_URL);
-  protected readonly draftImagePath = signal<string | null>(null);
+  protected readonly galleryImagePaths = signal<readonly string[]>([]);
+  protected readonly galleryImageUrls = signal<readonly string[]>([]);
+  protected readonly importedDraftImagePaths = signal<readonly string[]>([]);
+  protected readonly selectedImageIndex = signal(0);
   protected readonly searchTerm = signal('');
   protected readonly collapsedLocationIds = signal<ReadonlySet<string>>(new Set());
   protected readonly isSidebarCollapsed = signal(false);
@@ -94,14 +105,23 @@ export class LocationWorkspace implements OnInit, PendingChangesAware {
   protected readonly showCatalogDialog = signal(false);
   protected readonly showPromotionDialog = signal(false);
   protected readonly showResetDialog = signal(false);
+  protected readonly showImageDeleteDialog = signal(false);
+  protected readonly showImageViewer = signal(false);
   protected readonly error = signal<string | null>(null);
   protected readonly focusedJournalEntryId = signal<string | null>(null);
   protected readonly mentionCandidates = signal<readonly ResourceMentionCandidate[]>([]);
   protected readonly descriptionDraft = signal<RichTextDocument>(createEmptyRichTextDocument());
-  protected readonly effectiveImagePath = computed(
-    () => this.draftImagePath() ?? this.selectedLocation()?.imagePath ?? null,
+  protected readonly currentImagePath = computed(
+    () => this.galleryImagePaths()[this.selectedImageIndex()] ?? null,
   );
-  protected readonly isUsingDemoImage = computed(() => this.effectiveImagePath() === null);
+  protected readonly imageUrl = computed(
+    () => this.galleryImageUrls()[this.selectedImageIndex()] ?? DEMO_LOCATION_IMAGE_URL,
+  );
+  protected readonly isUsingDemoImage = computed(() => this.currentImagePath() === null);
+  protected readonly hasPreviousImage = computed(() => this.selectedImageIndex() > 0);
+  protected readonly hasNextImage = computed(
+    () => this.selectedImageIndex() < this.galleryImagePaths().length - 1,
+  );
   protected readonly isSelectedLocationDisplayed = computed(() => {
     const location = this.selectedLocation();
     const state = this.playerDisplayStore.state();
@@ -141,6 +161,11 @@ export class LocationWorkspace implements OnInit, PendingChangesAware {
     summary: new FormControl('', { nonNullable: true }),
     notes: new FormControl('', { nonNullable: true }),
   });
+
+  @HostListener('document:keydown.escape')
+  protected closeImageViewerOnEscape(): void {
+    if (this.showImageViewer()) this.showImageViewer.set(false);
+  }
 
   ngOnInit(): void {
     this.route.queryParamMap
@@ -201,8 +226,7 @@ export class LocationWorkspace implements OnInit, PendingChangesAware {
     }
 
     this.selectedLocation.set(null);
-    this.imageUrl.set(DEMO_LOCATION_IMAGE_URL);
-    this.draftImagePath.set(null);
+    this.resetGallery();
     this.isCreating.set(true);
     this.isEditing.set(true);
     this.descriptionDraft.set(createEmptyRichTextDocument());
@@ -284,7 +308,19 @@ export class LocationWorkspace implements OnInit, PendingChangesAware {
     if (campaign) void this.mentionNavigation.open(campaign.id, mention);
   }
 
-  protected async chooseImage(): Promise<void> {
+  protected selectPreviousImage(): void {
+    if (this.hasPreviousImage()) this.selectedImageIndex.update((index) => index - 1);
+  }
+
+  protected selectNextImage(): void {
+    if (this.hasNextImage()) this.selectedImageIndex.update((index) => index + 1);
+  }
+
+  protected openImageViewer(): void {
+    if (!this.isUsingDemoImage()) this.showImageViewer.set(true);
+  }
+
+  protected async chooseImages(): Promise<void> {
     const campaign = this.campaign();
     if (!campaign || this.isImportingImage()) {
       return;
@@ -294,23 +330,65 @@ export class LocationWorkspace implements OnInit, PendingChangesAware {
     this.error.set(null);
 
     try {
-      const importedPath = await this.locationImageGateway.chooseAndImport(campaign.universeId);
-      if (!importedPath) {
+      const importedPaths = await this.locationImageGateway.chooseAndImport(campaign.universeId);
+      if (importedPaths.length === 0) {
         return;
       }
-
-      const previousDraft = this.draftImagePath();
-      this.draftImagePath.set(importedPath);
-      this.imageUrl.set(await this.locationImageGateway.resolveUrl(importedPath));
+      const importedUrls = await Promise.all(
+        importedPaths.map((path) => this.locationImageGateway.resolveUrl(path)),
+      );
+      const firstImportedIndex = this.galleryImagePaths().length;
+      this.galleryImagePaths.update((paths) => [...paths, ...importedPaths]);
+      this.galleryImageUrls.update((urls) => [...urls, ...importedUrls]);
+      this.importedDraftImagePaths.update((paths) => [...paths, ...importedPaths]);
+      this.selectedImageIndex.set(firstImportedIndex);
       this.locationForm.markAsDirty();
-
-      if (previousDraft) {
-        await this.locationImageGateway.discard(previousDraft);
-      }
     } catch (error) {
       this.error.set(this.errorMessage(error));
     } finally {
       this.isImportingImage.set(false);
+    }
+  }
+
+  protected requestDeleteCurrentImage(): void {
+    if (this.currentImagePath()) this.showImageDeleteDialog.set(true);
+  }
+
+  protected async confirmDeleteCurrentImage(): Promise<void> {
+    const index = this.selectedImageIndex();
+    const path = this.currentImagePath();
+    const url = this.imageUrl();
+    if (!path) return;
+
+    const state = this.playerDisplayStore.state();
+    if (
+      state.mode === 'location' &&
+      state.locationId === this.selectedLocation()?.id &&
+      state.imagePath === url
+    ) {
+      this.playerDisplayStore.showNeutral();
+      if (this.isPlayerDisplayOpen()) {
+        try {
+          await this.displayGateway.sendPlayerDisplayState({ mode: 'neutral' });
+        } catch (error) {
+          this.error.set(this.errorMessage(error));
+          return;
+        }
+      }
+    }
+
+    this.galleryImagePaths.update((paths) => paths.filter((_, candidate) => candidate !== index));
+    this.galleryImageUrls.update((urls) => urls.filter((_, candidate) => candidate !== index));
+    this.selectedImageIndex.set(Math.max(0, Math.min(index, this.galleryImagePaths().length - 1)));
+    this.showImageDeleteDialog.set(false);
+    this.showImageViewer.set(false);
+    this.locationForm.markAsDirty();
+
+    if (this.importedDraftImagePaths().includes(path)) {
+      this.importedDraftImagePaths.update((paths) =>
+        paths.filter((candidate) => candidate !== path),
+      );
+      await this.discardImageSafely(path);
     }
   }
 
@@ -330,32 +408,27 @@ export class LocationWorkspace implements OnInit, PendingChangesAware {
 
     try {
       const selectedLocation = this.selectedLocation();
-      const previousImagePath = selectedLocation?.imagePath ?? null;
-      const imagePath = this.effectiveImagePath();
+      const previousImagePaths = selectedLocation?.imagePaths ?? [];
+      const currentImagePath = this.currentImagePath();
+      const imagePaths = this.galleryImagePaths();
       const savedLocation = this.isCreating()
-        ? await this.locationService.create(campaign.id, this.locationInput(), imagePath)
+        ? await this.locationService.create(campaign.id, this.locationInput(), imagePaths)
         : selectedLocation
-          ? await this.locationService.update(
-              selectedLocation,
-              this.locationInput(),
-              imagePath,
-            )
+          ? await this.locationService.update(selectedLocation, this.locationInput(), imagePaths)
           : null;
 
       if (!savedLocation) {
         return false;
       }
 
-      this.draftImagePath.set(null);
+      this.importedDraftImagePaths.set([]);
+      await this.refreshPublishedLocation(savedLocation, currentImagePath);
       await this.reloadLocations();
       this.openReadOnly(savedLocation);
-      await this.refreshPublishedLocation(savedLocation);
-      if (
-        selectedLocation?.provenance === 'campaign' &&
-        previousImagePath &&
-        previousImagePath !== savedLocation.imagePath
-      ) {
-        await this.discardImageSafely(previousImagePath);
+      for (const removedPath of previousImagePaths.filter(
+        (path) => !savedLocation.imagePaths.includes(path),
+      )) {
+        await this.discardImageSafely(removedPath);
       }
       return true;
     } catch (error) {
@@ -393,9 +466,7 @@ export class LocationWorkspace implements OnInit, PendingChangesAware {
         mode: 'location' as const,
         locationId: location.id,
         name: location.name,
-        imagePath: location.imagePath
-          ? await this.locationImageGateway.resolveUrl(location.imagePath)
-          : DEMO_LOCATION_IMAGE_URL,
+        imagePath: this.imageUrl(),
       };
       this.playerDisplayStore.setState(state);
       await this.displayGateway.sendPlayerDisplayState(state);
@@ -439,12 +510,12 @@ export class LocationWorkspace implements OnInit, PendingChangesAware {
 
       await this.locationService.delete(location);
       await this.recentResources?.remove('location', location.id);
-      if (location.provenance === 'campaign' && location.imagePath) {
-        await this.discardImageSafely(location.imagePath);
+      if (location.provenance === 'campaign') {
+        for (const imagePath of location.imagePaths) await this.discardImageSafely(imagePath);
       }
       await this.reloadLocations();
       this.selectedLocation.set(null);
-      this.imageUrl.set(DEMO_LOCATION_IMAGE_URL);
+      this.resetGallery();
       this.showDeleteDialog.set(false);
     } catch (error) {
       this.error.set(this.errorMessage(error));
@@ -527,9 +598,9 @@ export class LocationWorkspace implements OnInit, PendingChangesAware {
     this.selectedLocation.set(refreshedLocation);
     this.isCreating.set(false);
     this.isEditing.set(false);
-    this.draftImagePath.set(null);
+    this.importedDraftImagePaths.set([]);
     this.populateForm(refreshedLocation);
-    void this.loadImagePreview(refreshedLocation.imagePath);
+    void this.loadGalleryPreview(refreshedLocation.imagePaths);
   }
 
   private populateForm(location: Location): void {
@@ -548,42 +619,41 @@ export class LocationWorkspace implements OnInit, PendingChangesAware {
   }
 
   private async abandonChanges(): Promise<void> {
-    const draftImagePath = this.draftImagePath();
-    this.draftImagePath.set(null);
-    if (draftImagePath) {
-      await this.discardImageSafely(draftImagePath);
-    }
+    const importedPaths = this.importedDraftImagePaths();
+    this.importedDraftImagePaths.set([]);
+    for (const path of importedPaths) await this.discardImageSafely(path);
 
     const selectedLocation = this.selectedLocation();
     this.isEditing.set(false);
     this.isCreating.set(false);
     if (selectedLocation) {
       this.populateForm(selectedLocation);
-      await this.loadImagePreview(selectedLocation.imagePath);
+      await this.loadGalleryPreview(selectedLocation.imagePaths);
     } else {
       this.locationForm.reset({ name: '', parentLocationId: null, summary: '', notes: '' });
       this.descriptionDraft.set(createEmptyRichTextDocument());
-      this.imageUrl.set(DEMO_LOCATION_IMAGE_URL);
+      this.resetGallery();
     }
   }
 
-  private async loadImagePreview(relativePath: string | null): Promise<void> {
-    this.imageUrl.set(DEMO_LOCATION_IMAGE_URL);
-    if (!relativePath) {
-      return;
-    }
-
+  private async loadGalleryPreview(relativePaths: readonly string[]): Promise<void> {
+    this.galleryImagePaths.set(relativePaths);
+    this.galleryImageUrls.set([]);
+    this.selectedImageIndex.set(0);
     try {
-      const url = await this.locationImageGateway.resolveUrl(relativePath);
-      if (this.effectiveImagePath() === relativePath) {
-        this.imageUrl.set(url);
-      }
+      const urls = await Promise.all(
+        relativePaths.map((path) => this.locationImageGateway.resolveUrl(path)),
+      );
+      if (this.galleryImagePaths() === relativePaths) this.galleryImageUrls.set(urls);
     } catch (error) {
       this.error.set(this.errorMessage(error));
     }
   }
 
-  private async refreshPublishedLocation(location: Location): Promise<void> {
+  private async refreshPublishedLocation(
+    location: Location,
+    selectedImagePath: string | null,
+  ): Promise<void> {
     const currentState = this.playerDisplayStore.state();
     if (currentState.mode !== 'location' || currentState.locationId !== location.id) {
       return;
@@ -592,14 +662,23 @@ export class LocationWorkspace implements OnInit, PendingChangesAware {
     const state = {
       ...currentState,
       name: location.name,
-      imagePath: location.imagePath
-        ? await this.locationImageGateway.resolveUrl(location.imagePath)
+      imagePath: selectedImagePath
+        ? await this.locationImageGateway.resolveUrl(selectedImagePath)
         : DEMO_LOCATION_IMAGE_URL,
     };
     this.playerDisplayStore.setState(state);
     if (this.isPlayerDisplayOpen()) {
       await this.displayGateway.sendPlayerDisplayState(state);
     }
+  }
+
+  private resetGallery(): void {
+    this.galleryImagePaths.set([]);
+    this.galleryImageUrls.set([]);
+    this.importedDraftImagePaths.set([]);
+    this.selectedImageIndex.set(0);
+    this.showImageViewer.set(false);
+    this.showImageDeleteDialog.set(false);
   }
 
   private async discardImageSafely(relativePath: string): Promise<void> {

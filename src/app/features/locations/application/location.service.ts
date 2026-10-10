@@ -12,6 +12,7 @@ import { inject, Injectable } from '@angular/core';
 import {
   createLocation,
   updateLocation,
+  updateLocationImages,
   type Location,
   type UpdateLocationInput,
 } from '@app/features/locations/domain/location';
@@ -32,10 +33,10 @@ export class LocationService {
   async create(
     campaignId: string,
     input: UpdateLocationInput,
-    imagePath: string | null = null,
+    imagePaths: readonly string[] = [],
   ): Promise<Location> {
     await this.assertValidParent(campaignId, null, input.parentLocationId);
-    const location = createLocation({ campaignId, ...input, imagePath });
+    const location = createLocation({ campaignId, ...input, imagePaths });
     await this.repository.save(location);
     return location;
   }
@@ -43,10 +44,10 @@ export class LocationService {
   async update(
     location: Location,
     input: UpdateLocationInput,
-    imagePath: string | null = location.imagePath,
+    imagePaths: readonly string[] = location.imagePaths,
   ): Promise<Location> {
     await this.assertValidParent(location.campaignId, location.id, input.parentLocationId);
-    const updatedLocation = { ...updateLocation(location, input), imagePath };
+    const updatedLocation = updateLocationImages(updateLocation(location, input), imagePaths);
     await this.repository.save(updatedLocation);
     return updatedLocation;
   }

@@ -187,5 +187,11 @@ fn migrations() -> Vec<Migration> {
             sql: include_str!("../migrations/0023_limit_recent_resources_to_five.sql"),
             kind: MigrationKind::Up,
         },
+        Migration {
+            version: 24,
+            description: "create_location_gallery",
+            sql: include_str!("../migrations/0024_create_location_gallery.sql"),
+            kind: MigrationKind::Up,
+        },
     ]
 }

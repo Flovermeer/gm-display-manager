@@ -48,30 +48,32 @@ describe('TauriLocationRepository', () => {
 
     await repository.save(location);
 
-    expect(database.execute).toHaveBeenNthCalledWith(
-      1,
-      expect.stringContaining('ON CONFLICT(id)'),
+    expect(database.execute).toHaveBeenCalledWith(expect.stringContaining('ON CONFLICT(id)'), [
+      'location-id',
+      'campaign-id',
+      'parent-id',
+      "Beholder's Inn",
+      'Auberge de Port Nyanzaru',
+      'campaigns/campaign-id/media/locations/inn.webp',
+      '2026-08-12T18:30:00.000Z',
+      '2026-08-12T18:30:00.000Z',
+    ]);
+    expect(database.execute).toHaveBeenCalledWith(expect.stringContaining('campaign_location'), [
+      'campaign-id',
+      'location-id',
+      '2026-08-12T18:30:00.000Z',
+      JSON.stringify(createEmptyRichTextDocument()),
+    ]);
+    expect(database.execute).toHaveBeenCalledWith(
+      expect.stringContaining('INSERT INTO location_image'),
       [
         'location-id',
-        'campaign-id',
-        'parent-id',
-        "Beholder's Inn",
-        'Auberge de Port Nyanzaru',
         'campaigns/campaign-id/media/locations/inn.webp',
-        '2026-08-12T18:30:00.000Z',
+        0,
         '2026-08-12T18:30:00.000Z',
       ],
     );
-    expect(database.execute).toHaveBeenNthCalledWith(
-      2,
-      expect.stringContaining('campaign_location'),
-      [
-        'campaign-id',
-        'location-id',
-        '2026-08-12T18:30:00.000Z',
-        JSON.stringify(createEmptyRichTextDocument()),
-      ],
-    );
+    expect(database.execute).toHaveBeenCalledWith('COMMIT');
   });
 });
 
@@ -84,6 +86,7 @@ const location: Location = {
   summary: 'Auberge de Port Nyanzaru',
   description: createEmptyRichTextDocument(),
   notes: 'Repère animé.',
+  imagePaths: ['campaigns/campaign-id/media/locations/inn.webp'],
   imagePath: 'campaigns/campaign-id/media/locations/inn.webp',
   createdAt: '2026-08-12T18:30:00.000Z',
   updatedAt: '2026-08-12T18:30:00.000Z',
@@ -98,6 +101,7 @@ const locationRow = {
   description_json: JSON.stringify(createEmptyRichTextDocument()),
   notes: 'Repère animé.',
   image_path: 'campaigns/campaign-id/media/locations/inn.webp',
+  image_paths_json: '["campaigns/campaign-id/media/locations/inn.webp"]',
   created_at: '2026-08-12T18:30:00.000Z',
   updated_at: '2026-08-12T18:30:00.000Z',
   source_campaign_id: 'campaign-id',

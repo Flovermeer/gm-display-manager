@@ -31,6 +31,7 @@ describe('Location', () => {
       summary: 'Grande cité portuaire',
       description: createEmptyRichTextDocument(),
       notes: 'Point de départ.',
+      imagePaths: [],
       imagePath: null,
       createdAt: '2026-08-12T18:30:00.000Z',
       updatedAt: '2026-08-12T18:30:00.000Z',
@@ -40,6 +41,7 @@ describe('Location', () => {
   it('updates editable fields and preserves the illustration', () => {
     const location = {
       ...createLocation({ campaignId: 'campaign-id', name: 'Port' }, dependencies),
+      imagePaths: ['campaigns/campaign-id/media/locations/port.webp'],
       imagePath: 'campaigns/campaign-id/media/locations/port.webp',
     };
 
@@ -77,5 +79,19 @@ describe('Location', () => {
         notes: '',
       }),
     ).toThrow('A location cannot be its own parent.');
+  });
+
+  it('normalizes and deduplicates gallery images', () => {
+    const location = createLocation(
+      {
+        campaignId: 'campaign-id',
+        name: 'Chult',
+        imagePaths: [' map.webp ', 'view.webp', 'map.webp'],
+      },
+      dependencies,
+    );
+
+    expect(location.imagePaths).toEqual(['map.webp', 'view.webp']);
+    expect(location.imagePath).toBe('map.webp');
   });
 });

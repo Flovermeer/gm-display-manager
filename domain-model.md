@@ -123,10 +123,13 @@ Chult
 ```
 
 La hiérarchie reste facultative : un lieu peut être créé directement à la racine d'un univers.
-Un lieu contient également un résumé et un `image_path` relatif vers son illustration dans le
-dossier interne de la campagne. L'illustration est utilisée dans la fiche MJ et sur le Player
-Display ; le visuel de démonstration de l'auberge sert de fallback tant qu'aucune image n'est
-enregistrée.
+Un lieu contient également un résumé et une galerie `location_image` ordonnée, dont les chemins
+relatifs pointent vers le dossier interne de l'univers. Cette galerie est canonique et donc commune
+à toutes les campagnes utilisant le lieu. `location.image_path` conserve le chemin de la première
+image pour la compatibilité avec les autres projections. L'image courante est choisie uniquement
+dans l'interface, sans être persistée : la fiche revient à la première image à chaque ouverture.
+L'image courante est utilisée dans la fiche MJ et sur le Player Display ; le visuel de démonstration
+de l'auberge sert de fallback tant qu'aucune image n'est enregistrée.
 
 `campaign_location.description_json` conserve une description riche propre à l'utilisation du lieu
 dans une campagne. Cette description n'est pas propagée au catalogue d'univers et deux campagnes
@@ -191,7 +194,7 @@ son retrait explicite ou jusqu'à la fin du combat.
 
 ## Historique récent
 
-`recent_resource` conserve au maximum huit ressources consultées par campagne. Une entrée associe
+`recent_resource` conserve au maximum cinq ressources consultées par campagne. Une entrée associe
 le type de ressource, son identifiant, son nom d'affichage courant et un ordre de consultation
 monotone. La clé composée `(campaign_id, resource_type, resource_id)` garantit qu'une ressource
 revisitée est remontée en tête sans être dupliquée.

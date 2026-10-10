@@ -92,13 +92,17 @@ le même éditeur riche que les PNJ, accepte les mentions `@` et reste propre à
 Elle n'est pas recopiée dans les autres campagnes qui utilisent le même lieu. Les observations de
 session restent dans le Journal.
 
-La fiche accepte une illustration PNG, JPG, JPEG ou WebP, copiée dans le dossier interne de la
-campagne. Comme pour les PNJ, un brouillon importé est supprimé si tu annules la modification.
+La fiche accepte plusieurs images PNG, JPG, JPEG ou WebP en une seule sélection. Elles sont copiées
+dans le dossier interne de l'univers et forment une galerie commune à toutes ses campagnes. Les
+flèches changent l'image courante ; clique sur la miniature pour l'ouvrir en grand. Un brouillon
+importé est supprimé si tu annules la modification. La suppression d'une image demande une
+confirmation et la retire de la galerie commune.
 
-En lecture seule, **Afficher aux joueurs** envoie l'illustration au Player
-Display. L'image de démonstration de l'auberge, marquée **Démo**, est utilisée si
-aucune illustration n'est encore enregistrée. Supprimer un lieu replace ses
-enfants à la racine de la campagne au lieu de les supprimer.
+En lecture seule, **Afficher aux joueurs** envoie l'image actuellement sélectionnée au Player
+Display. Supprimer cette image pendant qu'elle y est affichée remet immédiatement l'écran joueurs
+sur le fond neutre. À chaque ouverture de la fiche, la sélection revient à la première image. Le
+visuel de démonstration de l'auberge, marqué **Démo**, est utilisé si aucune image n'est enregistrée.
+Supprimer un lieu replace ses enfants à la racine de la campagne au lieu de les supprimer.
 
 ### Gérer les PNJ
 

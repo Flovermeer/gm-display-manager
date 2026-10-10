@@ -31,10 +31,11 @@ describe('LocationService', () => {
     const updated = await service.update(
       port,
       { ...locationInput('Port Nyanzaru'), parentLocationId: chult.id, notes: 'Port marchand' },
-      'campaigns/campaign-id/media/locations/port.webp',
+      ['campaigns/campaign-id/media/locations/port.webp'],
     );
 
     expect(updated.imagePath).toContain('/media/locations/');
+    expect(updated.imagePaths).toEqual(['campaigns/campaign-id/media/locations/port.webp']);
     await service.delete(chult);
     await expect(service.list('campaign-id')).resolves.toMatchObject([
       { id: port.id, parentLocationId: null },
@@ -122,6 +123,23 @@ describe('LocationService', () => {
       expect.objectContaining({ description: createEmptyRichTextDocument() }),
     );
     expect(campaignTwoLocation.description).not.toEqual(campaignOneDescription);
+  });
+
+  it('shares the canonical image gallery between campaigns', async () => {
+    const canonical = await service.create('campaign-one', locationInput('Chult'));
+    await service.promote(canonical);
+    await service.attach('campaign-two', canonical.id);
+    const campaignOneLocation = (await service.list('campaign-one'))[0];
+    const imagePaths = [
+      'universes/forgotten-realms/media/locations/chult.webp',
+      'universes/forgotten-realms/media/locations/chult-map.webp',
+    ];
+
+    await service.update(campaignOneLocation, locationInput('Chult'), imagePaths);
+
+    await expect(service.list('campaign-two')).resolves.toContainEqual(
+      expect.objectContaining({ imagePaths, imagePath: imagePaths[0] }),
+    );
   });
 });
 

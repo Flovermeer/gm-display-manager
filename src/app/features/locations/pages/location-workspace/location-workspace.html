@@ -172,24 +172,70 @@
           headingId="location-detail-title"
         />
 
-        <div class="location-image-frame" [class.editable]="isEditing()">
-          <img
-            [src]="imageUrl()"
-            [alt]="selectedLocation()?.name || 'Illustration de démonstration du nouveau lieu'"
-          />
-          @if (isUsingDemoImage()) {
-            <span class="portrait-demo-label">Démo</span>
+        <div class="location-gallery">
+          <div class="location-gallery__carousel">
+            <button
+              class="location-gallery__arrow"
+              type="button"
+              aria-label="Image précédente"
+              [disabled]="!hasPreviousImage()"
+              (click)="selectPreviousImage()"
+            >
+              ‹
+            </button>
+            <button
+              class="location-image-frame"
+              type="button"
+              [class.location-image-frame--interactive]="!isUsingDemoImage()"
+              [disabled]="isUsingDemoImage()"
+              [attr.aria-label]="isUsingDemoImage() ? null : 'Ouvrir l’image en grand'"
+              (click)="openImageViewer()"
+            >
+              <img
+                [src]="imageUrl()"
+                [alt]="selectedLocation()?.name || 'Illustration de démonstration du nouveau lieu'"
+              />
+              @if (isUsingDemoImage()) {
+                <span class="portrait-demo-label">Démo</span>
+              }
+            </button>
+            <button
+              class="location-gallery__arrow"
+              type="button"
+              aria-label="Image suivante"
+              [disabled]="!hasNextImage()"
+              (click)="selectNextImage()"
+            >
+              ›
+            </button>
+          </div>
+
+          @if (galleryImagePaths().length > 0) {
+            <span class="location-gallery__counter">
+              {{ selectedImageIndex() + 1 }} / {{ galleryImagePaths().length }}
+            </span>
           }
 
           @if (isEditing()) {
-            <button
-              class="image-action"
-              type="button"
-              [disabled]="isImportingImage()"
-              (click)="chooseImage()"
-            >
-              {{ isImportingImage() ? 'Import…' : effectiveImagePath() ? 'Remplacer' : 'Choisir' }}
-            </button>
+            <div class="location-gallery__actions">
+              <button
+                appButton="secondary"
+                type="button"
+                [disabled]="isImportingImage()"
+                (click)="chooseImages()"
+              >
+                {{ isImportingImage() ? 'Import…' : 'Ajouter des images' }}
+              </button>
+              @if (!isUsingDemoImage()) {
+                <button
+                  appButton="secondary-danger"
+                  type="button"
+                  (click)="requestDeleteCurrentImage()"
+                >
+                  Supprimer l’image
+                </button>
+              }
+            </div>
           }
         </div>
       </header>
@@ -286,6 +332,49 @@
     }
   </section>
 </main>
+
+@if (showImageViewer() && !isUsingDemoImage()) {
+  <div class="media-viewer" role="presentation" (click)="showImageViewer.set(false)">
+    <section
+      class="media-viewer__dialog"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Image du lieu en grand"
+      (click)="$event.stopPropagation()"
+    >
+      <button
+        class="media-viewer__close"
+        type="button"
+        aria-label="Fermer l’image"
+        (click)="showImageViewer.set(false)"
+      >
+        ×
+      </button>
+      <button
+        class="media-viewer__arrow media-viewer__arrow--previous"
+        type="button"
+        aria-label="Image précédente"
+        [disabled]="!hasPreviousImage()"
+        (click)="selectPreviousImage()"
+      >
+        ‹
+      </button>
+      <img [src]="imageUrl()" [alt]="selectedLocation()?.name || 'Image du lieu'" />
+      <button
+        class="media-viewer__arrow media-viewer__arrow--next"
+        type="button"
+        aria-label="Image suivante"
+        [disabled]="!hasNextImage()"
+        (click)="selectNextImage()"
+      >
+        ›
+      </button>
+      <span class="media-viewer__counter">
+        {{ selectedImageIndex() + 1 }} / {{ galleryImagePaths().length }}
+      </span>
+    </section>
+  </div>
+}
 
 @if (showPendingChangesDialog()) {
   <app-dialog
@@ -407,6 +496,24 @@
         (click)="confirmDeleteLocation()"
       >
         {{ selectedLocation()?.provenance === 'campaign' ? 'Mettre à la corbeille' : 'Retirer' }}
+      </button>
+    </div>
+  </app-dialog>
+}
+
+@if (showImageDeleteDialog()) {
+  <app-dialog
+    kicker="Galerie du lieu"
+    title="Supprimer cette image ?"
+    headingId="image-delete-title"
+  >
+    <p>L’image sera retirée de la galerie commune à toutes les campagnes.</p>
+    <div dialog-actions class="dialog-actions">
+      <button appButton="secondary" type="button" (click)="showImageDeleteDialog.set(false)">
+        Annuler
+      </button>
+      <button appButton="danger" type="button" (click)="confirmDeleteCurrentImage()">
+        Supprimer l’image
       </button>
     </div>
   </app-dialog>

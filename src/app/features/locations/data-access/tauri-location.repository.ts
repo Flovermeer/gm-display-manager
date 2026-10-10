@@ -29,6 +29,7 @@ type LocationRow = Readonly<{
   description_json: string;
   notes: string;
   image_path: string | null;
+  image_paths_json: string;
   created_at: string;
   updated_at: string;
   source_campaign_id: string | null;
@@ -61,6 +62,7 @@ export class TauriLocationRepository extends LocationRepository {
               location.name, location.summary,
               '${EMPTY_DESCRIPTION_JSON}' AS description_json,
               '' AS notes, location.image_path,
+              ${LOCATION_IMAGES_JSON} AS image_paths_json,
               location.created_at, location.updated_at, location.source_campaign_id,
               NULL AS override_snapshot
        FROM campaign JOIN location ON location.universe_id=campaign.universe_id
@@ -93,18 +95,25 @@ export class TauriLocationRepository extends LocationRepository {
 
   override async save(location: Location): Promise<void> {
     const database = await this.database();
-    if (location.provenance !== 'campaign') {
-      await database.execute(
-        `INSERT INTO campaign_resource_override(
+    await database.execute('BEGIN IMMEDIATE');
+    try {
+      if (location.provenance !== 'campaign') {
+        await database.execute(
+          `INSERT INTO campaign_resource_override(
            campaign_id, resource_type, resource_id, snapshot_json, created_at, updated_at
          ) VALUES ($1,'location',$2,$3,$4,$4)
          ON CONFLICT(campaign_id, resource_type, resource_id) DO UPDATE SET
            snapshot_json=excluded.snapshot_json, updated_at=excluded.updated_at`,
-        [location.campaignId, location.id, JSON.stringify(snapshot(location)), location.updatedAt],
-      );
-    } else {
-      await database.execute(
-        `INSERT INTO location(
+          [
+            location.campaignId,
+            location.id,
+            JSON.stringify(snapshot(location)),
+            location.updatedAt,
+          ],
+        );
+      } else {
+        await database.execute(
+          `INSERT INTO location(
            id, universe_id, parent_location_id, name, summary, image_path,
            created_at, updated_at, source_campaign_id
          ) VALUES ($1,(SELECT universe_id FROM campaign WHERE id=$2),$3,$4,$5,$6,$7,$8,$2)
@@ -114,19 +123,25 @@ export class TauriLocationRepository extends LocationRepository {
            image_path=excluded.image_path, updated_at=excluded.updated_at
          WHERE location.universe_id=excluded.universe_id
            AND location.source_campaign_id=excluded.source_campaign_id`,
-        [
-          location.id,
-          location.campaignId,
-          location.parentLocationId,
-          location.name,
-          location.summary,
-          location.imagePath,
-          location.createdAt,
-          location.updatedAt,
-        ],
-      );
+          [
+            location.id,
+            location.campaignId,
+            location.parentLocationId,
+            location.name,
+            location.summary,
+            location.imagePath,
+            location.createdAt,
+            location.updatedAt,
+          ],
+        );
+      }
+      await this.saveAssociation(location, database);
+      await this.replaceImages(location, database);
+      await database.execute('COMMIT');
+    } catch (error) {
+      await database.execute('ROLLBACK').catch(() => undefined);
+      throw error;
     }
-    await this.saveAssociation(location);
   }
 
   override async delete(campaignId: string, id: string): Promise<void> {
@@ -227,21 +242,29 @@ export class TauriLocationRepository extends LocationRepository {
     );
   }
 
-  private async saveAssociation(location: Location): Promise<void> {
-    await (
-      await this.database()
-    ).execute(
+  private async saveAssociation(location: Location, database: Database): Promise<void> {
+    await database.execute(
       `INSERT INTO campaign_location(campaign_id, location_id, created_at, description_json)
        VALUES ($1,$2,$3,$4)
        ON CONFLICT(campaign_id, location_id) DO UPDATE SET
          description_json=excluded.description_json`,
-      [
-        location.campaignId,
-        location.id,
-        location.createdAt,
-        JSON.stringify(location.description),
-      ],
+      [location.campaignId, location.id, location.createdAt, JSON.stringify(location.description)],
     );
+  }
+
+  private async replaceImages(location: Location, database: Database): Promise<void> {
+    await database.execute('DELETE FROM location_image WHERE location_id=$1', [location.id]);
+    for (const [position, imagePath] of location.imagePaths.entries()) {
+      await database.execute(
+        `INSERT INTO location_image(location_id, image_path, position, created_at)
+         VALUES ($1,$2,$3,$4)`,
+        [location.id, imagePath, position, location.updatedAt],
+      );
+    }
+    await database.execute('UPDATE location SET image_path=$2 WHERE id=$1', [
+      location.id,
+      location.imagePath,
+    ]);
   }
 
   private async select(query: string, values: readonly unknown[]): Promise<readonly Location[]> {
@@ -258,16 +281,28 @@ export class TauriLocationRepository extends LocationRepository {
   }
 }
 
+const LOCATION_IMAGES_JSON = `COALESCE((
+  SELECT json_group_array(ordered_image.image_path)
+  FROM (
+    SELECT location_image.image_path
+    FROM location_image
+    WHERE location_image.location_id=location.id
+    ORDER BY location_image.position, location_image.rowid
+  ) AS ordered_image
+), '[]')`;
+
 const LOCATION_COLUMNS = `SELECT location.id, campaign_location.campaign_id,
   location.parent_location_id, location.name, location.summary,
   campaign_location.description_json, '' AS notes,
-  location.image_path, location.created_at, location.updated_at,
+  location.image_path, ${LOCATION_IMAGES_JSON} AS image_paths_json,
+  location.created_at, location.updated_at,
   location.source_campaign_id, resource_override.snapshot_json AS override_snapshot`;
 
 function mapLocationRow(row: LocationRow): Location {
   const override = row.override_snapshot
     ? (JSON.parse(row.override_snapshot) as ReturnType<typeof snapshot>)
     : null;
+  const imagePaths = parseImagePaths(row.image_paths_json, row.image_path);
   return {
     id: row.id,
     campaignId: row.campaign_id,
@@ -277,10 +312,24 @@ function mapLocationRow(row: LocationRow): Location {
     summary: override?.summary ?? row.summary,
     description: parseDescription(row.description_json),
     notes: row.notes,
-    imagePath: override?.imagePath ?? row.image_path,
+    imagePaths,
+    imagePath: imagePaths[0] ?? null,
     createdAt: row.created_at,
     updatedAt: override?.updatedAt ?? row.updated_at,
   };
+}
+
+function parseImagePaths(value: string, fallback: string | null): readonly string[] {
+  try {
+    const parsed: unknown = JSON.parse(value);
+    if (Array.isArray(parsed)) {
+      const paths = parsed.filter((path): path is string => typeof path === 'string' && !!path);
+      if (paths.length > 0) return [...new Set(paths)];
+    }
+  } catch {
+    // Le chemin historique reste disponible si la galerie ne peut pas être lue.
+  }
+  return fallback ? [fallback] : [];
 }
 
 const EMPTY_DESCRIPTION_JSON = JSON.stringify(createEmptyRichTextDocument()).replaceAll("'", "''");

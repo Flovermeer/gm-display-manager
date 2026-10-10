@@ -31,9 +31,10 @@ describe('TauriLocationImageGateway', () => {
     vi.mocked(open).mockResolvedValue('C:\\Pictures\\port.webp');
     const gateway = new TauriLocationImageGateway();
 
-    await expect(gateway.chooseAndImport('universe-id')).resolves.toBe(
+    await expect(gateway.chooseAndImport('universe-id')).resolves.toEqual([
       'universes/universe-id/media/locations/00000000-0000-4000-8000-000000000000.webp',
-    );
+    ]);
+    expect(open).toHaveBeenCalledWith(expect.objectContaining({ multiple: true }));
     expect(mkdir).toHaveBeenCalledWith('universes/universe-id/media/locations', {
       baseDir: 14,
       recursive: true,
@@ -47,10 +48,23 @@ describe('TauriLocationImageGateway', () => {
   it('does nothing when the image dialog is cancelled', async () => {
     vi.mocked(open).mockResolvedValue(null);
 
-    await expect(
-      new TauriLocationImageGateway().chooseAndImport('campaign-id'),
-    ).resolves.toBeNull();
+    await expect(new TauriLocationImageGateway().chooseAndImport('campaign-id')).resolves.toEqual(
+      [],
+    );
     expect(copyFile).not.toHaveBeenCalled();
+  });
+
+  it('imports every selected image in order', async () => {
+    vi.mocked(open).mockResolvedValue(['C:\\Pictures\\port.webp', 'C:\\Pictures\\map.png']);
+    vi.spyOn(crypto, 'randomUUID')
+      .mockReturnValueOnce('00000000-0000-4000-8000-000000000001')
+      .mockReturnValueOnce('00000000-0000-4000-8000-000000000002');
+
+    await expect(new TauriLocationImageGateway().chooseAndImport('universe-id')).resolves.toEqual([
+      'universes/universe-id/media/locations/00000000-0000-4000-8000-000000000001.webp',
+      'universes/universe-id/media/locations/00000000-0000-4000-8000-000000000002.png',
+    ]);
+    expect(copyFile).toHaveBeenCalledTimes(2);
   });
 
   it('resolves and deletes only internal location image paths', async () => {

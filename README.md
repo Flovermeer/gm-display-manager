@@ -46,7 +46,8 @@ Routes actuelles :
 
 - `http://localhost:4300/campaigns` : accueil et création des campagnes ;
 - `http://localhost:4300/campaigns/:campaignId` : panneau du maître de jeu pour une campagne ;
-- `http://localhost:4300/campaigns/:campaignId/locations` : gestion hiérarchique des lieux ;
+- `http://localhost:4300/campaigns/:campaignId/locations` : gestion hiérarchique des lieux et de
+  leur galerie d'images commune à l'univers ;
 - `http://localhost:4300/campaigns/:campaignId/npcs` : gestion des PNJ de la campagne ;
 - `http://localhost:4300/campaigns/:campaignId/player-characters` : fiches PJ utiles au MJ et
   suivi persistant de leurs points de vie ;

@@ -13,6 +13,7 @@ export type Location = Readonly<{
   summary: string;
   description: RichTextDocument;
   notes: string;
+  imagePaths: readonly string[];
   imagePath: string | null;
   createdAt: string;
   updatedAt: string;
@@ -25,6 +26,7 @@ export type CreateLocationInput = Readonly<{
   summary?: string;
   description?: RichTextDocument;
   notes?: string;
+  imagePaths?: readonly string[];
   imagePath?: string | null;
 }>;
 
@@ -51,6 +53,9 @@ export function createLocation(
   dependencies: LocationFactoryDependencies = defaultDependencies,
 ): Location {
   const now = dependencies.now().toISOString();
+  const imagePaths = normalizeImagePaths(
+    input.imagePaths ?? (input.imagePath ? [input.imagePath] : []),
+  );
 
   return {
     id: dependencies.createId(),
@@ -61,9 +66,19 @@ export function createLocation(
     summary: input.summary?.trim() ?? '',
     description: input.description ?? createEmptyRichTextDocument(),
     notes: input.notes?.trim() ?? '',
-    imagePath: input.imagePath ?? null,
+    imagePaths,
+    imagePath: imagePaths[0] ?? null,
     createdAt: now,
     updatedAt: now,
+  };
+}
+
+export function updateLocationImages(location: Location, imagePaths: readonly string[]): Location {
+  const normalizedPaths = normalizeImagePaths(imagePaths);
+  return {
+    ...location,
+    imagePaths: normalizedPaths,
+    imagePath: normalizedPaths[0] ?? null,
   };
 }
 
@@ -94,4 +109,8 @@ function requiredName(value: string): string {
   }
 
   return name;
+}
+
+function normalizeImagePaths(imagePaths: readonly string[]): readonly string[] {
+  return [...new Set(imagePaths.map((path) => path.trim()).filter(Boolean))];
 }

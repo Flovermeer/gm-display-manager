@@ -18,26 +18,34 @@ const SUPPORTED_EXTENSIONS = ['png', 'jpg', 'jpeg', 'webp'] as const;
 const MEDIA_ROOT = 'universes';
 
 export class TauriLocationImageGateway extends LocationImageGateway {
-  override async chooseAndImport(universeId: string): Promise<string | null> {
+  override async chooseAndImport(universeId: string): Promise<readonly string[]> {
     assertSafePathSegment(universeId);
     const selectedPath = await open({
-      multiple: false,
+      multiple: true,
       directory: false,
       filters: [{ name: 'Images', extensions: [...SUPPORTED_EXTENSIONS] }],
     });
 
     if (!selectedPath) {
-      return null;
+      return [];
     }
 
-    const extension = fileExtension(selectedPath);
     const relativeDirectory = `${MEDIA_ROOT}/${universeId}/media/locations`;
-    const relativePath = `${relativeDirectory}/${crypto.randomUUID()}.${extension}`;
-    const destinationPath = await this.absolutePath(relativePath);
-
     await mkdir(relativeDirectory, { baseDir: BaseDirectory.AppData, recursive: true });
-    await copyFile(selectedPath, destinationPath);
-    return relativePath;
+    const selectedPaths = Array.isArray(selectedPath) ? selectedPath : [selectedPath];
+    const importedPaths: string[] = [];
+    try {
+      for (const sourcePath of selectedPaths) {
+        const extension = fileExtension(sourcePath);
+        const relativePath = `${relativeDirectory}/${crypto.randomUUID()}.${extension}`;
+        await copyFile(sourcePath, await this.absolutePath(relativePath));
+        importedPaths.push(relativePath);
+      }
+      return importedPaths;
+    } catch (error) {
+      await Promise.allSettled(importedPaths.map((path) => this.discard(path)));
+      throw error;
+    }
   }
 
   override async resolveUrl(relativePath: string): Promise<string> {

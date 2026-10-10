@@ -73,7 +73,7 @@ describe('LocationWorkspace', () => {
     locationService.delete.mockResolvedValue(undefined);
     journalEntryService.listForTarget.mockResolvedValue([]);
     journalEntryService.listGlobal.mockResolvedValue([]);
-    imageGateway.chooseAndImport.mockResolvedValue(null);
+    imageGateway.chooseAndImport.mockResolvedValue([]);
     imageGateway.resolveUrl.mockResolvedValue('asset://location');
     imageGateway.discard.mockResolvedValue(undefined);
     displayGateway.isPlayerDisplayOpen.mockResolvedValue(true);
@@ -122,9 +122,11 @@ describe('LocationWorkspace', () => {
       'Chult',
       'Port Nyanzaru',
     ]);
-    expect(items[1].closest<HTMLElement>('.location-list-row')?.style.getPropertyValue('--location-depth')).toBe(
-      '1',
-    );
+    expect(
+      items[1]
+        .closest<HTMLElement>('.location-list-row')
+        ?.style.getPropertyValue('--location-depth'),
+    ).toBe('1');
   });
 
   it('collapses a location branch without selecting the parent and persists it', async () => {
@@ -201,9 +203,9 @@ describe('LocationWorkspace', () => {
   });
 
   it('previews an imported illustration while editing', async () => {
-    imageGateway.chooseAndImport.mockResolvedValue(
+    imageGateway.chooseAndImport.mockResolvedValue([
       'campaigns/campaign-id/media/locations/port.webp',
-    );
+    ]);
     const fixture = TestBed.createComponent(LocationWorkspace);
     fixture.detectChanges();
     await renderUntil(fixture, 'Port Nyanzaru');
@@ -213,13 +215,84 @@ describe('LocationWorkspace', () => {
     await renderUntil(fixture, 'Modifier');
     element.querySelector<HTMLButtonElement>('.detail-actions .ui-button--primary')?.click();
     fixture.detectChanges();
-    element.querySelector<HTMLButtonElement>('.image-action')?.click();
+    [...element.querySelectorAll<HTMLButtonElement>('.location-gallery__actions button')]
+      .find((button) => button.textContent?.includes('Ajouter'))
+      ?.click();
 
     await vi.waitFor(() => {
       fixture.detectChanges();
       expect(element.querySelector<HTMLImageElement>('.location-image-frame img')?.src).toContain(
         'asset://location',
       );
+    });
+  });
+
+  it('navigates the gallery, opens the viewer and displays the current image', async () => {
+    const imagePaths = [
+      'universes/forgotten-realms/media/locations/port.webp',
+      'universes/forgotten-realms/media/locations/port-map.webp',
+    ];
+    const galleryPort = location({ ...port, imagePaths, imagePath: imagePaths[0] });
+    locationService.list.mockResolvedValue([chult, galleryPort]);
+    imageGateway.resolveUrl.mockImplementation((path: string) =>
+      Promise.resolve(`asset://${path}`),
+    );
+    const fixture = TestBed.createComponent(LocationWorkspace);
+    fixture.detectChanges();
+    await renderUntil(fixture, 'Port Nyanzaru');
+    const element = fixture.nativeElement as HTMLElement;
+
+    element.querySelectorAll<HTMLButtonElement>('.location-list-item')[1]?.click();
+    await vi.waitFor(() => {
+      fixture.detectChanges();
+      expect(element.textContent).toContain('1 / 2');
+    });
+    element.querySelectorAll<HTMLButtonElement>('.location-gallery__arrow')[1]?.click();
+    fixture.detectChanges();
+    expect(element.textContent).toContain('2 / 2');
+    expect(element.querySelector<HTMLImageElement>('.location-image-frame img')?.src).toContain(
+      'port-map.webp',
+    );
+
+    element.querySelector<HTMLButtonElement>('.location-image-frame')?.click();
+    fixture.detectChanges();
+    expect(element.querySelector('.media-viewer')).toBeTruthy();
+    element.querySelector<HTMLButtonElement>('.media-viewer__close')?.click();
+    element.querySelector<HTMLButtonElement>('.display-button')?.click();
+
+    await vi.waitFor(() => {
+      expect(displayGateway.sendPlayerDisplayState).toHaveBeenCalledWith(
+        expect.objectContaining({ imagePath: `asset://${imagePaths[1]}` }),
+      );
+    });
+  });
+
+  it('returns the player display to neutral when its gallery image is deleted', async () => {
+    const imagePath = 'universes/forgotten-realms/media/locations/port.webp';
+    const illustratedPort = location({ ...port, imagePaths: [imagePath], imagePath });
+    locationService.list.mockResolvedValue([chult, illustratedPort]);
+    imageGateway.resolveUrl.mockResolvedValue(`asset://${imagePath}`);
+    const fixture = TestBed.createComponent(LocationWorkspace);
+    fixture.detectChanges();
+    await renderUntil(fixture, 'Port Nyanzaru');
+    const element = fixture.nativeElement as HTMLElement;
+
+    element.querySelectorAll<HTMLButtonElement>('.location-list-item')[1]?.click();
+    await renderUntil(fixture, 'Afficher aux joueurs');
+    element.querySelector<HTMLButtonElement>('.display-button')?.click();
+    await renderUntil(fixture, 'Arrêter l’affichage');
+    element.querySelector<HTMLButtonElement>('.detail-actions .ui-button--primary')?.click();
+    fixture.detectChanges();
+    [...element.querySelectorAll<HTMLButtonElement>('.location-gallery__actions button')]
+      .find((button) => button.textContent?.includes('Supprimer'))
+      ?.click();
+    fixture.detectChanges();
+    [...element.querySelectorAll<HTMLButtonElement>('.dialog button')]
+      .find((button) => button.textContent?.includes('Supprimer l’image'))
+      ?.click();
+
+    await vi.waitFor(() => {
+      expect(displayGateway.sendPlayerDisplayState).toHaveBeenLastCalledWith({ mode: 'neutral' });
     });
   });
 
@@ -292,6 +365,7 @@ function location(overrides: Partial<Location>): Location {
     summary: '',
     description: createEmptyRichTextDocument(),
     notes: '',
+    imagePaths: [],
     imagePath: null,
     createdAt: '2026-08-12T18:30:00.000Z',
     updatedAt: '2026-08-12T18:30:00.000Z',

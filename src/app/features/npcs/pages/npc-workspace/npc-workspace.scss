@@ -146,7 +146,7 @@ textarea {
 .form-section-heading h3,
 .official-description-readonly h3 {
   margin: 0;
-  font-family: Georgia, 'Times New Roman', serif;
+  font-family: var(--font-workspace-display);
   font-size: 1.35rem;
 }
 
@@ -249,7 +249,7 @@ dd {
 .stat-block-heading h3 {
   margin: 0;
   color: #612d35;
-  font-family: Georgia, 'Times New Roman', serif;
+  font-family: var(--font-workspace-display);
   font-size: 1.8rem;
   text-transform: uppercase;
 }

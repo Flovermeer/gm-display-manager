@@ -6,6 +6,10 @@
 /out-tsc
 /bazel-out
 
+# Downloaded font variants not used by the bundled application
+/public/fonts/*/static/
+/public/fonts/*/README.txt
+
 # Node
 /node_modules
 npm-debug.log

@@ -37,7 +37,7 @@
 .chapter-number {
   grid-row: 1 / 3;
   color: #b89bc9;
-  font-family: Georgia, 'Times New Roman', serif;
+  font-family: var(--font-workspace-display);
   font-size: 1.3rem;
 }
 
@@ -180,7 +180,7 @@
 
 .chapter-map-preview h3 {
   color: #302b26;
-  font-family: Georgia, 'Times New Roman', serif;
+  font-family: var(--font-workspace-display);
   font-size: 1.25rem;
   font-weight: 500;
 }

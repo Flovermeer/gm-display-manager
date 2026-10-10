@@ -96,7 +96,7 @@
 }
 
 .bestiary-detail__toolbar h2 {
-  font-family: Georgia, 'Times New Roman', serif;
+  font-family: var(--font-workspace-display);
   font-size: clamp(2rem, 4vw, 3.4rem);
   font-weight: 500;
 }

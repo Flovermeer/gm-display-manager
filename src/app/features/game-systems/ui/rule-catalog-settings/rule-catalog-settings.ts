@@ -12,6 +12,7 @@ import { TagPill } from '@app/shared/ui/tag-pill/tag-pill';
 
 @Component({
   selector: 'app-rule-catalog-settings',
+  standalone: true,
   imports: [ReactiveFormsModule, ButtonDirective, Dialog, FormField, RuleCatalogSection, TagPill],
   templateUrl: './rule-catalog-settings.html',
   styleUrl: './rule-catalog-settings.scss',

@@ -23,4 +23,5 @@ export abstract class GameRuleOptionRepository {
     category: GameRuleCategory,
   ): Promise<readonly GameRuleOption[]>;
   abstract save(option: GameRuleOption): Promise<void>;
+  abstract remove(option: GameRuleOption): Promise<boolean>;
 }

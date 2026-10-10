@@ -50,6 +50,16 @@
         @for (option of creatureTypes(); track option.id) {
           <span class="rule-pill">
             {{ option.label }} <small>{{ origin(option) }}</small>
+            @if (option.universeId) {
+              <button
+                type="button"
+                class="rule-pill__remove"
+                [attr.aria-label]="'Supprimer ' + option.label"
+                (click)="requestRemoval(option)"
+              >
+                ×
+              </button>
+            }
           </span>
         }
       </div>
@@ -85,6 +95,16 @@
         @for (option of subspecies(); track option.id) {
           <span class="rule-pill">
             {{ option.label }} <small>{{ parentLabel(option) }} · {{ origin(option) }}</small>
+            @if (option.universeId) {
+              <button
+                type="button"
+                class="rule-pill__remove"
+                [attr.aria-label]="'Supprimer ' + option.label"
+                (click)="requestRemoval(option)"
+              >
+                ×
+              </button>
+            }
           </span>
         } @empty {
           <span class="rule-empty">Aucune sous-espèce configurée.</span>
@@ -113,6 +133,16 @@
         @for (option of languages(); track option.id) {
           <span class="rule-pill">
             {{ option.label }} <small>{{ origin(option) }}</small>
+            @if (option.universeId) {
+              <button
+                type="button"
+                class="rule-pill__remove"
+                [attr.aria-label]="'Supprimer ' + option.label"
+                (click)="requestRemoval(option)"
+              >
+                ×
+              </button>
+            }
           </span>
         }
       </div>
@@ -135,6 +165,16 @@
         @for (option of races(); track option.id) {
           <span class="rule-pill">
             {{ option.label }} <small>{{ origin(option) }}</small>
+            @if (option.universeId) {
+              <button
+                type="button"
+                class="rule-pill__remove"
+                [attr.aria-label]="'Supprimer ' + option.label"
+                (click)="requestRemoval(option)"
+              >
+                ×
+              </button>
+            }
           </span>
         } @empty {
           <span class="rule-empty">Aucune race configurée.</span>
@@ -159,6 +199,16 @@
         @for (option of classes(); track option.id) {
           <span class="rule-pill">
             {{ option.label }} <small>{{ origin(option) }}</small>
+            @if (option.universeId) {
+              <button
+                type="button"
+                class="rule-pill__remove"
+                [attr.aria-label]="'Supprimer ' + option.label"
+                (click)="requestRemoval(option)"
+              >
+                ×
+              </button>
+            }
           </span>
         } @empty {
           <span class="rule-empty">Aucune classe configurée.</span>
@@ -171,3 +221,26 @@
     <p class="configuration-error" role="alert">{{ message }}</p>
   }
 </div>
+
+@if (pendingRemoval(); as option) {
+  <app-dialog
+    kicker="Référentiel de l’univers"
+    [title]="'Supprimer ' + option.label + ' ?'"
+    headingId="rule-option-removal-title"
+  >
+    <p>La valeur sera supprimée de cet univers si aucune fiche ne l’utilise.</p>
+    <div dialog-actions class="dialog-actions">
+      <button
+        appButton="secondary"
+        type="button"
+        [disabled]="isSaving()"
+        (click)="pendingRemoval.set(null)"
+      >
+        Annuler
+      </button>
+      <button appButton="danger" type="button" [disabled]="isSaving()" (click)="confirmRemoval()">
+        Supprimer
+      </button>
+    </div>
+  </app-dialog>
+}

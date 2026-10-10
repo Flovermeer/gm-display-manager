@@ -5,11 +5,12 @@ import { GameRuleOptionService } from '@app/features/game-systems/application/ga
 import type { GameRuleOption } from '@app/features/game-systems/domain/game-rule-option';
 import type { GameSystem, GameUniverse } from '@app/features/game-systems/domain/game-system';
 import { ButtonDirective } from '@app/shared/ui/button/button.directive';
+import { Dialog } from '@app/shared/ui/dialog/dialog';
 import { FormField } from '@app/shared/ui/form-field/form-field';
 
 @Component({
   selector: 'app-rule-catalog-settings',
-  imports: [ReactiveFormsModule, ButtonDirective, FormField],
+  imports: [ReactiveFormsModule, ButtonDirective, Dialog, FormField],
   templateUrl: './rule-catalog-settings.html',
   styleUrl: './rule-catalog-settings.scss',
 })
@@ -29,6 +30,7 @@ export class RuleCatalogSettings {
   protected readonly isLoading = signal(true);
   protected readonly isSaving = signal(false);
   protected readonly error = signal<string | null>(null);
+  protected readonly pendingRemoval = signal<GameRuleOption | null>(null);
   protected readonly newType = new FormControl('', {
     nonNullable: true,
     validators: [Validators.required],
@@ -100,6 +102,30 @@ export class RuleCatalogSettings {
     );
   }
 
+  protected requestRemoval(option: GameRuleOption): void {
+    this.pendingRemoval.set(option);
+    this.error.set(null);
+  }
+
+  protected async confirmRemoval(): Promise<void> {
+    const option = this.pendingRemoval();
+    if (!option || this.isSaving()) return;
+    this.isSaving.set(true);
+    this.error.set(null);
+    try {
+      await this.service.removeFromUniverse(option);
+      this.pendingRemoval.set(null);
+      await this.load(this.system().id, this.universe().id, false);
+    } catch (error) {
+      this.pendingRemoval.set(null);
+      this.error.set(
+        error instanceof Error ? error.message : 'Impossible de supprimer cette valeur.',
+      );
+    } finally {
+      this.isSaving.set(false);
+    }
+  }
+
   private async add(
     category: 'creature_type' | 'creature_subspecies' | 'language' | 'race' | 'class',
     control: FormControl<string>,
@@ -118,7 +144,7 @@ export class RuleCatalogSettings {
       );
       control.reset('');
       if (category === 'creature_subspecies') this.subspeciesParentId.reset('');
-      await this.load(this.system().id, this.universe().id);
+      await this.load(this.system().id, this.universe().id, false);
     } catch (error) {
       this.error.set(error instanceof Error ? error.message : 'Impossible d’ajouter cette valeur.');
     } finally {
@@ -126,8 +152,8 @@ export class RuleCatalogSettings {
     }
   }
 
-  private async load(gameSystemId: string, universeId: string): Promise<void> {
-    this.isLoading.set(true);
+  private async load(gameSystemId: string, universeId: string, showLoading = true): Promise<void> {
+    if (showLoading) this.isLoading.set(true);
     this.error.set(null);
     try {
       const [alignments, sizes, creatureTypes, subspecies, languages, races, classes] =

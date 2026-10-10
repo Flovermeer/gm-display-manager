@@ -57,4 +57,11 @@ export class GameRuleOptionService {
     await this.repository.save(option);
     return option;
   }
+
+  async removeFromUniverse(option: GameRuleOption): Promise<void> {
+    if (!option.universeId) throw new Error('Les valeurs du système sont protégées.');
+    if (!(await this.repository.remove(option))) {
+      throw new Error('Cette valeur est utilisée par une fiche ou une sous-espèce.');
+    }
+  }
 }

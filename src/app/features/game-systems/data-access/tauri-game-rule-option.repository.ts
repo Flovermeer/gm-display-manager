@@ -83,6 +83,51 @@ export class TauriGameRuleOptionRepository extends GameRuleOptionRepository {
     );
   }
 
+  override async remove(option: GameRuleOption): Promise<boolean> {
+    if (!option.universeId) return false;
+    const database = await this.getDatabase();
+    const path =
+      option.category === 'language'
+        ? '$.languageOptionIds'
+        : `$.${OPTION_ID_FIELD[option.category]}`;
+    const usesOption = (column: string): string =>
+      option.category === 'language'
+        ? `EXISTS (SELECT 1 FROM json_each(json_extract(${column}, '${path}'))
+            WHERE value = $1)`
+        : `json_extract(${column}, '${path}') = $1`;
+    const overridePath =
+      option.category === 'language'
+        ? '$.sheet.languageOptionIds'
+        : `$.sheet.${OPTION_ID_FIELD[option.category]}`;
+    const overrideUsesOption =
+      option.category === 'language'
+        ? `EXISTS (SELECT 1 FROM json_each(json_extract(snapshot_json, '${overridePath}'))
+          WHERE value = $1)`
+        : `json_extract(snapshot_json, '${overridePath}') = $1`;
+
+    const result = await database.execute(
+      `DELETE FROM game_rule_option
+       WHERE id = $1 AND universe_id = $2
+         AND NOT EXISTS (
+           SELECT 1 FROM game_rule_option AS child WHERE child.parent_option_id = $1
+         )
+         AND NOT EXISTS (
+           SELECT 1 FROM npc WHERE ${usesOption('sheet_json')}
+         )
+         AND NOT EXISTS (
+           SELECT 1 FROM monster WHERE ${usesOption('sheet_json')}
+         )
+         AND NOT EXISTS (
+           SELECT 1 FROM player_character WHERE ${usesOption('sheet_json')}
+         )
+         AND NOT EXISTS (
+           SELECT 1 FROM campaign_resource_override WHERE ${overrideUsesOption}
+         )`,
+      [option.id, option.universeId],
+    );
+    return result.rowsAffected === 1;
+  }
+
   private getDatabase(): Promise<Database> {
     this.databasePromise ??= Database.load(DATABASE_URL).catch((error: unknown) => {
       this.databasePromise = undefined;
@@ -94,6 +139,16 @@ export class TauriGameRuleOptionRepository extends GameRuleOptionRepository {
 
 const COLUMNS = `SELECT id, game_system_id, universe_id, category, parent_option_id,
   code, label, created_at, updated_at FROM game_rule_option`;
+
+const OPTION_ID_FIELD: Record<GameRuleCategory, string> = {
+  alignment: 'alignmentOptionId',
+  size: 'sizeOptionId',
+  creature_type: 'creatureTypeOptionId',
+  creature_subspecies: 'creatureSubspeciesOptionId',
+  language: 'languageOptionIds',
+  race: 'raceOptionId',
+  class: 'classOptionId',
+};
 
 function mapOption(row: RuleOptionRow): GameRuleOption {
   return {

@@ -49,6 +49,14 @@ export class InMemoryGameRuleOptionRepository extends GameRuleOptionRepository {
     return Promise.resolve();
   }
 
+  override remove(option: GameRuleOption): Promise<boolean> {
+    if (!option.universeId || !this.options.has(option.id)) return Promise.resolve(false);
+    if ([...this.options.values()].some(({ parentOptionId }) => parentOptionId === option.id)) {
+      return Promise.resolve(false);
+    }
+    return Promise.resolve(this.options.delete(option.id));
+  }
+
   private select(
     gameSystemId: string,
     category: GameRuleCategory,

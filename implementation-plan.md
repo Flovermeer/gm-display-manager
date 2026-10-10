@@ -762,6 +762,9 @@ Avant chaque ligne de ce tableau, l'agent doit présenter les paquets exacts, le
 
 ### Nice to have après le MVP
 
+- permettre de cloner une campagne ; avant de créer la copie, afficher une boîte de dialogue demandant
+  si les notes privées du MJ doivent être conservées ou exclues du clone, sans jamais modifier la
+  campagne source ;
 - évaluer un catalogue local versionné et une récupération par API, en tenant compte du
   fonctionnement hors ligne, de la version du système, de la langue et de la licence des données ;
 - isoler la source de ces référentiels derrière un service afin que les fiches enregistrées ne

@@ -175,5 +175,11 @@ fn migrations() -> Vec<Migration> {
             sql: include_str!("../migrations/0021_add_character_rule_catalogs.sql"),
             kind: MigrationKind::Up,
         },
+        Migration {
+            version: 22,
+            description: "add_campaign_location_description",
+            sql: include_str!("../migrations/0022_add_campaign_location_description.sql"),
+            kind: MigrationKind::Up,
+        },
     ]
 }

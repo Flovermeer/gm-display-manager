@@ -6,7 +6,7 @@ import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angula
 import { CampaignContext } from '@app/features/campaigns/application/campaign-context';
 import { DisplayGateway } from '@app/features/display/data-access/display.gateway';
 import { PlayerDisplayStore } from '@app/features/display/application/player-display.store';
-import type { Location } from '@app/features/locations/domain/location';
+import type { Location, UpdateLocationInput } from '@app/features/locations/domain/location';
 import { LocationService } from '@app/features/locations/application/location.service';
 import { LocationImageGateway } from '@app/features/locations/data-access/location-image.gateway';
 import type { PendingChangesAware } from '@app/core/navigation/pending-changes.guard';
@@ -19,6 +19,13 @@ import { EmptyState } from '@app/shared/ui/empty-state/empty-state';
 import { EntityTitle } from '@app/shared/ui/entity-title/entity-title';
 import { FormField, type FormFieldOption } from '@app/shared/ui/form-field/form-field';
 import { ActiveSceneService } from '@app/features/scenes/application/active-scene.service';
+import { RichTextEditor } from '@app/shared/rich-text-editor/rich-text-editor';
+import {
+  createEmptyRichTextDocument,
+  type RichTextDocument,
+} from '@app/shared/rich-text-editor/rich-text-document';
+import type { ResourceMentionCandidate } from '@app/shared/rich-text-editor/resource-mention';
+import { ResourceMentionNavigationService } from '@app/shared/rich-text-editor/resource-mention-navigation.service';
 
 type PendingDecisionResolver = (canLeave: boolean) => void;
 type LocationListEntry = Readonly<{ location: Location; depth: number; path: string }>;
@@ -36,6 +43,7 @@ const DEMO_LOCATION_IMAGE_URL = '/demo/tavern.svg';
     EntityTitle,
     FormField,
     RecentResourceTrackerDirective,
+    RichTextEditor,
   ],
   templateUrl: './location-workspace.html',
   styleUrl: './location-workspace.scss',
@@ -49,6 +57,7 @@ export class LocationWorkspace implements OnInit, PendingChangesAware {
   private readonly displayGateway = inject(DisplayGateway);
   private readonly playerDisplayStore = inject(PlayerDisplayStore);
   private readonly activeSceneService = inject(ActiveSceneService);
+  private readonly mentionNavigation = inject(ResourceMentionNavigationService);
   private readonly recentResources = inject(RecentResourceStore, { optional: true });
   private pendingDecisionResolver?: PendingDecisionResolver;
   private readonly journalEntries = viewChild<JournalEntryList>(JournalEntryList);
@@ -79,6 +88,8 @@ export class LocationWorkspace implements OnInit, PendingChangesAware {
   protected readonly showResetDialog = signal(false);
   protected readonly error = signal<string | null>(null);
   protected readonly focusedJournalEntryId = signal<string | null>(null);
+  protected readonly mentionCandidates = signal<readonly ResourceMentionCandidate[]>([]);
+  protected readonly descriptionDraft = signal<RichTextDocument>(createEmptyRichTextDocument());
   protected readonly effectiveImagePath = computed(
     () => this.draftImagePath() ?? this.selectedLocation()?.imagePath ?? null,
   );
@@ -165,6 +176,7 @@ export class LocationWorkspace implements OnInit, PendingChangesAware {
     this.draftImagePath.set(null);
     this.isCreating.set(true);
     this.isEditing.set(true);
+    this.descriptionDraft.set(createEmptyRichTextDocument());
     this.locationForm.reset({ name: '', parentLocationId: null, summary: '', notes: '' });
     this.locationForm.markAsPristine();
   }
@@ -233,6 +245,16 @@ export class LocationWorkspace implements OnInit, PendingChangesAware {
     void this.abandonChanges();
   }
 
+  protected updateDescription(description: RichTextDocument): void {
+    this.descriptionDraft.set(description);
+    this.locationForm.markAsDirty();
+  }
+
+  protected openMention(mention: ResourceMentionCandidate): void {
+    const campaign = this.campaign();
+    if (campaign) void this.mentionNavigation.open(campaign.id, mention);
+  }
+
   protected async chooseImage(): Promise<void> {
     const campaign = this.campaign();
     if (!campaign || this.isImportingImage()) {
@@ -282,11 +304,11 @@ export class LocationWorkspace implements OnInit, PendingChangesAware {
       const previousImagePath = selectedLocation?.imagePath ?? null;
       const imagePath = this.effectiveImagePath();
       const savedLocation = this.isCreating()
-        ? await this.locationService.create(campaign.id, this.locationForm.getRawValue(), imagePath)
+        ? await this.locationService.create(campaign.id, this.locationInput(), imagePath)
         : selectedLocation
           ? await this.locationService.update(
               selectedLocation,
-              this.locationForm.getRawValue(),
+              this.locationInput(),
               imagePath,
             )
           : null;
@@ -429,8 +451,13 @@ export class LocationWorkspace implements OnInit, PendingChangesAware {
 
   private async initialize(): Promise<void> {
     try {
-      if (!(await this.campaignContext.load())) return;
-      await this.reloadLocations();
+      const campaign = await this.campaignContext.load();
+      if (!campaign) return;
+      const [, mentionCandidates] = await Promise.all([
+        this.reloadLocations(),
+        this.mentionNavigation.listCandidates(campaign.id),
+      ]);
+      this.mentionCandidates.set(mentionCandidates);
       await this.openRequestedLocation(
         this.route.snapshot.queryParamMap?.get('resourceId'),
         this.route.snapshot.queryParamMap?.get('entryId'),
@@ -481,7 +508,12 @@ export class LocationWorkspace implements OnInit, PendingChangesAware {
       summary: location.summary,
       notes: '',
     });
+    this.descriptionDraft.set(location.description);
     this.locationForm.markAsPristine();
+  }
+
+  private locationInput(): UpdateLocationInput {
+    return { ...this.locationForm.getRawValue(), description: this.descriptionDraft() };
   }
 
   private async abandonChanges(): Promise<void> {
@@ -499,6 +531,7 @@ export class LocationWorkspace implements OnInit, PendingChangesAware {
       await this.loadImagePreview(selectedLocation.imagePath);
     } else {
       this.locationForm.reset({ name: '', parentLocationId: null, summary: '', notes: '' });
+      this.descriptionDraft.set(createEmptyRichTextDocument());
       this.imageUrl.set(DEMO_LOCATION_IMAGE_URL);
     }
   }

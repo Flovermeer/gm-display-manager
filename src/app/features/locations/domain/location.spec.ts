@@ -3,6 +3,7 @@ import {
   updateLocation,
   type LocationFactoryDependencies,
 } from '@app/features/locations/domain/location';
+import { createEmptyRichTextDocument } from '@app/shared/rich-text-editor/rich-text-document';
 
 describe('Location', () => {
   const dependencies: LocationFactoryDependencies = {
@@ -28,6 +29,7 @@ describe('Location', () => {
       parentLocationId: null,
       name: 'Port Nyanzaru',
       summary: 'Grande cité portuaire',
+      description: createEmptyRichTextDocument(),
       notes: 'Point de départ.',
       imagePath: null,
       createdAt: '2026-08-12T18:30:00.000Z',

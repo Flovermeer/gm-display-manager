@@ -2,6 +2,7 @@ import Database from '@tauri-apps/plugin-sql';
 
 import type { Location } from '@app/features/locations/domain/location';
 import { TauriLocationRepository } from '@app/features/locations/data-access/tauri-location.repository';
+import { createEmptyRichTextDocument } from '@app/shared/rich-text-editor/rich-text-document';
 
 vi.mock('@tauri-apps/plugin-sql', () => ({
   default: { load: vi.fn() },
@@ -64,7 +65,12 @@ describe('TauriLocationRepository', () => {
     expect(database.execute).toHaveBeenNthCalledWith(
       2,
       expect.stringContaining('campaign_location'),
-      ['campaign-id', 'location-id', '2026-08-12T18:30:00.000Z'],
+      [
+        'campaign-id',
+        'location-id',
+        '2026-08-12T18:30:00.000Z',
+        JSON.stringify(createEmptyRichTextDocument()),
+      ],
     );
   });
 });
@@ -76,6 +82,7 @@ const location: Location = {
   parentLocationId: 'parent-id',
   name: "Beholder's Inn",
   summary: 'Auberge de Port Nyanzaru',
+  description: createEmptyRichTextDocument(),
   notes: 'Repère animé.',
   imagePath: 'campaigns/campaign-id/media/locations/inn.webp',
   createdAt: '2026-08-12T18:30:00.000Z',
@@ -88,6 +95,7 @@ const locationRow = {
   parent_location_id: 'parent-id',
   name: "Beholder's Inn",
   summary: 'Auberge de Port Nyanzaru',
+  description_json: JSON.stringify(createEmptyRichTextDocument()),
   notes: 'Repère animé.',
   image_path: 'campaigns/campaign-id/media/locations/inn.webp',
   created_at: '2026-08-12T18:30:00.000Z',

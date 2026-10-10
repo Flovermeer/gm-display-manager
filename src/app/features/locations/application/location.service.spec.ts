@@ -4,6 +4,10 @@ import { InMemoryLocationRepository } from '@app/features/locations/data-access/
 import type { Location } from '@app/features/locations/domain/location';
 import { LocationRepository } from '@app/features/locations/data-access/location.repository';
 import { LocationService } from '@app/features/locations/application/location.service';
+import {
+  createEmptyRichTextDocument,
+  type RichTextDocument,
+} from '@app/shared/rich-text-editor/rich-text-document';
 
 describe('LocationService', () => {
   let service: LocationService;
@@ -96,8 +100,38 @@ describe('LocationService', () => {
       expect.objectContaining({ id: canonical.id, name: 'Chult', provenance: 'universe' }),
     );
   });
+
+  it('keeps the detailed description scoped to each campaign', async () => {
+    const canonical = await service.create('campaign-one', locationInput('Chult'));
+    await service.promote(canonical);
+    await service.attach('campaign-two', canonical.id);
+
+    const campaignOneLocation = (await service.list('campaign-one'))[0];
+    const campaignTwoLocation = (await service.list('campaign-two'))[0];
+    const campaignOneDescription = richText('Description de la première campagne.');
+
+    await service.update(campaignOneLocation, {
+      ...locationInput(campaignOneLocation.name),
+      description: campaignOneDescription,
+    });
+
+    await expect(service.list('campaign-one')).resolves.toContainEqual(
+      expect.objectContaining({ description: campaignOneDescription }),
+    );
+    await expect(service.list('campaign-two')).resolves.toContainEqual(
+      expect.objectContaining({ description: createEmptyRichTextDocument() }),
+    );
+    expect(campaignTwoLocation.description).not.toEqual(campaignOneDescription);
+  });
 });
 
 function locationInput(name: string) {
   return { parentLocationId: null, name, summary: '', notes: '' };
+}
+
+function richText(text: string): RichTextDocument {
+  return {
+    schemaVersion: 1,
+    content: { type: 'doc', content: [{ type: 'paragraph', content: [{ type: 'text', text }] }] },
+  };
 }

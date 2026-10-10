@@ -357,6 +357,7 @@ Travail :
 
 - lister, créer, modifier et supprimer une campagne ;
 - lister, créer et modifier ses lieux et PNJ ;
+- fournir aux lieux une description riche propre à chaque campagne, avec mentions `@` ;
 - demander confirmation avant une suppression destructive ;
 - utiliser des formulaires Angular typés avec validations simples ;
 - fournir une navigation campagne -> lieux/PNJ -> fiche ;
@@ -368,6 +369,10 @@ Critères de validation :
 - deux campagnes ne mélangent jamais leurs entités ;
 - un PNJ et un lieu enregistrés réapparaissent après redémarrage ;
 - le panneau de régie peut sélectionner et afficher ces entités.
+
+Amélioration future : permettre une description canonique du lieu au niveau de l'univers, puis une
+surcharge facultative par campagne. La première version conserve volontairement uniquement le texte
+de campagne afin d'éviter toute propagation implicite entre campagnes.
 
 ### Jalon 6 — Import et lecture des médias
 

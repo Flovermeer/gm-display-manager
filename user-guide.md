@@ -83,10 +83,13 @@ Un lieu peut rester à la racine ou être rangé dans un autre lieu, par exemple
 `Chult › Port Nyanzaru › Beholder's Inn`. La recherche porte aussi sur ce chemin,
 ce qui permet de distinguer facilement deux lieux portant le même nom.
 
-La fiche permet de modifier le nom, le lieu parent, le résumé et les notes. Elle
-accepte une illustration PNG, JPG, JPEG ou WebP, copiée dans le dossier interne
-de la campagne. Comme pour les PNJ, un brouillon importé est supprimé si tu
-annules la modification.
+La fiche permet de modifier le nom, le lieu parent et le résumé. La **Description détaillée** utilise
+le même éditeur riche que les PNJ, accepte les mentions `@` et reste propre à la campagne active.
+Elle n'est pas recopiée dans les autres campagnes qui utilisent le même lieu. Les observations de
+session restent dans le Journal.
+
+La fiche accepte une illustration PNG, JPG, JPEG ou WebP, copiée dans le dossier interne de la
+campagne. Comme pour les PNJ, un brouillon importé est supprimé si tu annules la modification.
 
 En lecture seule, **Afficher aux joueurs** envoie l'illustration au Player
 Display. L'image de démonstration de l'auberge, marquée **Démo**, est utilisée si

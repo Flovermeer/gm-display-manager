@@ -13,6 +13,10 @@ import Database from '@tauri-apps/plugin-sql';
 
 import type { Location } from '@app/features/locations/domain/location';
 import { LocationRepository } from '@app/features/locations/data-access/location.repository';
+import {
+  createEmptyRichTextDocument,
+  type RichTextDocument,
+} from '@app/shared/rich-text-editor/rich-text-document';
 
 const DATABASE_URL = 'sqlite:beholders-inn.db';
 
@@ -22,6 +26,7 @@ type LocationRow = Readonly<{
   parent_location_id: string | null;
   name: string;
   summary: string;
+  description_json: string;
   notes: string;
   image_path: string | null;
   created_at: string;
@@ -53,7 +58,9 @@ export class TauriLocationRepository extends LocationRepository {
   override listAvailableByCampaign(campaignId: string): Promise<readonly Location[]> {
     return this.select(
       `SELECT location.id, campaign.id AS campaign_id, location.parent_location_id,
-              location.name, location.summary, '' AS notes, location.image_path,
+              location.name, location.summary,
+              '${EMPTY_DESCRIPTION_JSON}' AS description_json,
+              '' AS notes, location.image_path,
               location.created_at, location.updated_at, location.source_campaign_id,
               NULL AS override_snapshot
        FROM campaign JOIN location ON location.universe_id=campaign.universe_id
@@ -95,32 +102,31 @@ export class TauriLocationRepository extends LocationRepository {
            snapshot_json=excluded.snapshot_json, updated_at=excluded.updated_at`,
         [location.campaignId, location.id, JSON.stringify(snapshot(location)), location.updatedAt],
       );
-      return;
+    } else {
+      await database.execute(
+        `INSERT INTO location(
+           id, universe_id, parent_location_id, name, summary, image_path,
+           created_at, updated_at, source_campaign_id
+         ) VALUES ($1,(SELECT universe_id FROM campaign WHERE id=$2),$3,$4,$5,$6,$7,$8,$2)
+         ON CONFLICT(id) DO UPDATE SET
+           parent_location_id=excluded.parent_location_id,
+           name=excluded.name, summary=excluded.summary,
+           image_path=excluded.image_path, updated_at=excluded.updated_at
+         WHERE location.universe_id=excluded.universe_id
+           AND location.source_campaign_id=excluded.source_campaign_id`,
+        [
+          location.id,
+          location.campaignId,
+          location.parentLocationId,
+          location.name,
+          location.summary,
+          location.imagePath,
+          location.createdAt,
+          location.updatedAt,
+        ],
+      );
     }
-
-    await database.execute(
-      `INSERT INTO location(
-         id, universe_id, parent_location_id, name, summary, image_path,
-         created_at, updated_at, source_campaign_id
-       ) VALUES ($1,(SELECT universe_id FROM campaign WHERE id=$2),$3,$4,$5,$6,$7,$8,$2)
-       ON CONFLICT(id) DO UPDATE SET
-         parent_location_id=excluded.parent_location_id,
-         name=excluded.name, summary=excluded.summary,
-         image_path=excluded.image_path, updated_at=excluded.updated_at
-       WHERE location.universe_id=excluded.universe_id
-         AND location.source_campaign_id=excluded.source_campaign_id`,
-      [
-        location.id,
-        location.campaignId,
-        location.parentLocationId,
-        location.name,
-        location.summary,
-        location.imagePath,
-        location.createdAt,
-        location.updatedAt,
-      ],
-    );
-    await this.attachAssociation(location.campaignId, location.id, location.createdAt);
+    await this.saveAssociation(location);
   }
 
   override async delete(campaignId: string, id: string): Promise<void> {
@@ -221,17 +227,20 @@ export class TauriLocationRepository extends LocationRepository {
     );
   }
 
-  private async attachAssociation(
-    campaignId: string,
-    id: string,
-    createdAt: string,
-  ): Promise<void> {
+  private async saveAssociation(location: Location): Promise<void> {
     await (
       await this.database()
     ).execute(
-      `INSERT INTO campaign_location(campaign_id, location_id, created_at)
-       VALUES ($1,$2,$3) ON CONFLICT(campaign_id, location_id) DO NOTHING`,
-      [campaignId, id, createdAt],
+      `INSERT INTO campaign_location(campaign_id, location_id, created_at, description_json)
+       VALUES ($1,$2,$3,$4)
+       ON CONFLICT(campaign_id, location_id) DO UPDATE SET
+         description_json=excluded.description_json`,
+      [
+        location.campaignId,
+        location.id,
+        location.createdAt,
+        JSON.stringify(location.description),
+      ],
     );
   }
 
@@ -250,7 +259,8 @@ export class TauriLocationRepository extends LocationRepository {
 }
 
 const LOCATION_COLUMNS = `SELECT location.id, campaign_location.campaign_id,
-  location.parent_location_id, location.name, location.summary, '' AS notes,
+  location.parent_location_id, location.name, location.summary,
+  campaign_location.description_json, '' AS notes,
   location.image_path, location.created_at, location.updated_at,
   location.source_campaign_id, resource_override.snapshot_json AS override_snapshot`;
 
@@ -265,11 +275,26 @@ function mapLocationRow(row: LocationRow): Location {
     parentLocationId: override?.parentLocationId ?? row.parent_location_id,
     name: override?.name ?? row.name,
     summary: override?.summary ?? row.summary,
+    description: parseDescription(row.description_json),
     notes: row.notes,
     imagePath: override?.imagePath ?? row.image_path,
     createdAt: row.created_at,
     updatedAt: override?.updatedAt ?? row.updated_at,
   };
+}
+
+const EMPTY_DESCRIPTION_JSON = JSON.stringify(createEmptyRichTextDocument()).replaceAll("'", "''");
+
+function parseDescription(value: string): RichTextDocument {
+  try {
+    const parsed = JSON.parse(value) as Partial<RichTextDocument>;
+    if (parsed.schemaVersion === 1 && parsed.content?.type === 'doc') {
+      return parsed as RichTextDocument;
+    }
+  } catch {
+    // Une description invalide ne doit pas empêcher l'ouverture de la campagne.
+  }
+  return createEmptyRichTextDocument();
 }
 
 function snapshot(location: Location) {

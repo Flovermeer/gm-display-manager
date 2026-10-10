@@ -13,6 +13,7 @@ import { LocationImageGateway } from '@app/features/locations/data-access/locati
 import { LocationWorkspace } from '@app/features/locations/pages/location-workspace/location-workspace';
 import { ResourceMentionNavigationService } from '@app/shared/rich-text-editor/resource-mention-navigation.service';
 import { ActiveSceneService } from '@app/features/scenes/application/active-scene.service';
+import { createEmptyRichTextDocument } from '@app/shared/rich-text-editor/rich-text-document';
 
 describe('LocationWorkspace', () => {
   const campaign: Campaign = {
@@ -201,6 +202,35 @@ describe('LocationWorkspace', () => {
     });
     expect(activeSceneService.clear).toHaveBeenCalledWith(campaign.id);
   });
+
+  it('renders the campaign detailed description in read-only mode', async () => {
+    const detailedPort = location({
+      ...port,
+      description: {
+        schemaVersion: 1,
+        content: {
+          type: 'doc',
+          content: [
+            {
+              type: 'paragraph',
+              content: [{ type: 'text', text: 'Les quais sont surveillés par les Zhentarim.' }],
+            },
+          ],
+        },
+      },
+    });
+    locationService.list.mockResolvedValue([chult, detailedPort]);
+    const fixture = TestBed.createComponent(LocationWorkspace);
+    fixture.detectChanges();
+    await renderUntil(fixture, 'Port Nyanzaru');
+    const buttons = (fixture.nativeElement as HTMLElement).querySelectorAll<HTMLButtonElement>(
+      '.location-list-item',
+    );
+    buttons[1]?.click();
+
+    await renderUntil(fixture, 'Les quais sont surveillés par les Zhentarim.');
+    expect((fixture.nativeElement as HTMLElement).textContent).toContain('Description détaillée');
+  });
 });
 
 function location(overrides: Partial<Location>): Location {
@@ -211,6 +241,7 @@ function location(overrides: Partial<Location>): Location {
     parentLocationId: null,
     name: 'Lieu',
     summary: '',
+    description: createEmptyRichTextDocument(),
     notes: '',
     imagePath: null,
     createdAt: '2026-08-12T18:30:00.000Z',

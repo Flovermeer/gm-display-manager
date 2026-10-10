@@ -244,7 +244,10 @@
             />
           </div>
 
-          <section class="item-description" aria-labelledby="item-description-form-title">
+          <section
+            class="item-description entity-workspace__rich-description"
+            aria-labelledby="item-description-form-title"
+          >
             <h3 id="item-description-form-title">Description officielle</h3>
             <app-rich-text-editor
               [value]="descriptionDraft()"
@@ -282,7 +285,10 @@
               <dd>{{ item.summary || 'Non renseigné' }}</dd>
             </div>
           </dl>
-          <section class="item-description" aria-labelledby="item-description-title">
+          <section
+            class="item-description entity-workspace__rich-description"
+            aria-labelledby="item-description-title"
+          >
             <h3 id="item-description-title">Description officielle</h3>
             <app-rich-text-editor
               [value]="item.description"

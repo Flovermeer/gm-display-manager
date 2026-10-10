@@ -9,11 +9,16 @@
 
 import type { Location } from '@app/features/locations/domain/location';
 import { LocationRepository } from '@app/features/locations/data-access/location.repository';
+import {
+  createEmptyRichTextDocument,
+  type RichTextDocument,
+} from '@app/shared/rich-text-editor/rich-text-document';
 
 export class InMemoryLocationRepository extends LocationRepository {
   private readonly locations = new Map<string, Location>();
   private readonly campaignIds = new Map<string, Set<string>>();
   private readonly overrides = new Map<string, Location>();
+  private readonly descriptions = new Map<string, RichTextDocument>();
 
   override listByCampaign(campaignId: string): Promise<readonly Location[]> {
     const ids = this.campaignIds.get(campaignId) ?? new Set<string>();
@@ -33,7 +38,11 @@ export class InMemoryLocationRepository extends LocationRepository {
       sort(
         [...this.locations.values()]
           .filter((location) => location.provenance === 'universe' && !selected.has(location.id))
-          .map((location) => ({ ...location, campaignId })),
+          .map((location) => ({
+            ...location,
+            campaignId,
+            description: createEmptyRichTextDocument(),
+          })),
       ),
     );
   }
@@ -56,6 +65,7 @@ export class InMemoryLocationRepository extends LocationRepository {
         provenance: 'override',
       });
     }
+    this.descriptions.set(this.key(location.campaignId, location.id), location.description);
     this.associate(location.campaignId, location.id);
   }
 
@@ -74,6 +84,7 @@ export class InMemoryLocationRepository extends LocationRepository {
       }
     }
     this.overrides.delete(this.key(campaignId, id));
+    this.descriptions.delete(this.key(campaignId, id));
     this.campaignIds.get(campaignId)?.delete(id);
     return Promise.resolve();
   }
@@ -129,10 +140,19 @@ export class InMemoryLocationRepository extends LocationRepository {
     const ids = this.campaignIds.get(campaignId) ?? new Set<string>();
     ids.add(id);
     this.campaignIds.set(campaignId, ids);
+    const key = this.key(campaignId, id);
+    if (!this.descriptions.has(key)) {
+      this.descriptions.set(key, createEmptyRichTextDocument());
+    }
   }
 
   private effective(location: Location, campaignId: string): Location {
-    return this.overrides.get(this.key(campaignId, location.id)) ?? { ...location, campaignId };
+    const key = this.key(campaignId, location.id);
+    const effective = this.overrides.get(key) ?? { ...location, campaignId };
+    return {
+      ...effective,
+      description: this.descriptions.get(key) ?? createEmptyRichTextDocument(),
+    };
   }
 
   private key(campaignId: string, id: string): string {

@@ -1,4 +1,8 @@
 import type { ResourceProvenance } from '@app/shared/domain/resource-provenance';
+import {
+  createEmptyRichTextDocument,
+  type RichTextDocument,
+} from '@app/shared/rich-text-editor/rich-text-document';
 
 export type Location = Readonly<{
   id: string;
@@ -7,6 +11,7 @@ export type Location = Readonly<{
   parentLocationId: string | null;
   name: string;
   summary: string;
+  description: RichTextDocument;
   notes: string;
   imagePath: string | null;
   createdAt: string;
@@ -18,6 +23,7 @@ export type CreateLocationInput = Readonly<{
   parentLocationId?: string | null;
   name: string;
   summary?: string;
+  description?: RichTextDocument;
   notes?: string;
   imagePath?: string | null;
 }>;
@@ -26,6 +32,7 @@ export type UpdateLocationInput = Readonly<{
   parentLocationId: string | null;
   name: string;
   summary: string;
+  description?: RichTextDocument;
   notes: string;
 }>;
 
@@ -52,6 +59,7 @@ export function createLocation(
     parentLocationId: input.parentLocationId ?? null,
     name: requiredName(input.name),
     summary: input.summary?.trim() ?? '',
+    description: input.description ?? createEmptyRichTextDocument(),
     notes: input.notes?.trim() ?? '',
     imagePath: input.imagePath ?? null,
     createdAt: now,
@@ -73,6 +81,7 @@ export function updateLocation(
     parentLocationId: input.parentLocationId,
     name: requiredName(input.name),
     summary: input.summary.trim(),
+    description: input.description ?? location.description,
     notes: input.notes.trim(),
     updatedAt: now().toISOString(),
   };

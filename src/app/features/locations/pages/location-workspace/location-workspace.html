@@ -198,6 +198,20 @@
             formControlName="summary"
             placeholder="Ville portuaire, temple oublié, auberge animée…"
           />
+
+          <section
+            class="location-description entity-workspace__rich-description"
+            aria-labelledby="location-description-form-title"
+          >
+            <h3 id="location-description-form-title">Description détaillée</h3>
+            <p>Ce contenu est propre à cette campagne.</p>
+            <app-rich-text-editor
+              [value]="descriptionDraft()"
+              [mentionCandidates]="mentionCandidates()"
+              (valueChange)="updateDescription($event)"
+              (mentionActivate)="openMention($event)"
+            />
+          </section>
         </form>
       } @else if (selectedLocation(); as location) {
         <article class="location-sheet">
@@ -211,6 +225,19 @@
               <dd>{{ location.summary || 'Non renseigné' }}</dd>
             </div>
           </dl>
+
+          <section
+            class="location-description entity-workspace__rich-description"
+            aria-labelledby="location-description-title"
+          >
+            <h3 id="location-description-title">Description détaillée</h3>
+            <app-rich-text-editor
+              [value]="location.description"
+              [editable]="false"
+              [mentionCandidates]="mentionCandidates()"
+              (mentionActivate)="openMention($event)"
+            />
+          </section>
 
           @if (campaign(); as activeCampaign) {
             <app-journal-entry-list

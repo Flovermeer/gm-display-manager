@@ -123,10 +123,14 @@ Chult
 ```
 
 La hiérarchie reste facultative : un lieu peut être créé directement à la racine d'un univers.
-Un lieu contient également un résumé, des notes simples et un `image_path` relatif
-vers son illustration dans le dossier interne de la campagne. L'illustration est
-utilisée dans la fiche MJ et sur le Player Display ; le visuel de démonstration de
-l'auberge sert de fallback tant qu'aucune image n'est enregistrée.
+Un lieu contient également un résumé et un `image_path` relatif vers son illustration dans le
+dossier interne de la campagne. L'illustration est utilisée dans la fiche MJ et sur le Player
+Display ; le visuel de démonstration de l'auberge sert de fallback tant qu'aucune image n'est
+enregistrée.
+
+`campaign_location.description_json` conserve une description riche propre à l'utilisation du lieu
+dans une campagne. Cette description n'est pas propagée au catalogue d'univers et deux campagnes
+qui utilisent le même lieu peuvent donc posséder des textes différents.
 
 Un lieu ne peut pas devenir son propre parent ni être placé dans un de ses
 descendants. `campaign_location` sélectionne explicitement les lieux utilisés par une campagne.

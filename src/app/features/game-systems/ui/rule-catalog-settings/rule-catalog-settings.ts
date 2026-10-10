@@ -4,6 +4,7 @@ import { FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
 import { GameRuleOptionService } from '@app/features/game-systems/application/game-rule-option.service';
 import type { GameRuleOption } from '@app/features/game-systems/domain/game-rule-option';
 import type { GameSystem, GameUniverse } from '@app/features/game-systems/domain/game-system';
+import { RuleCatalogSection } from '@app/features/game-systems/ui/rule-catalog-section/rule-catalog-section';
 import { ButtonDirective } from '@app/shared/ui/button/button.directive';
 import { Dialog } from '@app/shared/ui/dialog/dialog';
 import { FormField } from '@app/shared/ui/form-field/form-field';
@@ -11,7 +12,7 @@ import { TagPill } from '@app/shared/ui/tag-pill/tag-pill';
 
 @Component({
   selector: 'app-rule-catalog-settings',
-  imports: [ReactiveFormsModule, ButtonDirective, Dialog, FormField, TagPill],
+  imports: [ReactiveFormsModule, ButtonDirective, Dialog, FormField, RuleCatalogSection, TagPill],
   templateUrl: './rule-catalog-settings.html',
   styleUrl: './rule-catalog-settings.scss',
 })

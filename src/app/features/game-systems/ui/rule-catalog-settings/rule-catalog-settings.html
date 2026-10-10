@@ -11,8 +11,7 @@
   @if (isLoading()) {
     <p>Chargement…</p>
   } @else {
-    <section class="rule-section">
-      <h3>Alignements</h3>
+    <app-rule-catalog-section title="Alignements">
       <div class="rule-list">
         @for (option of alignments(); track option.id) {
           <app-tag-pill
@@ -23,10 +22,9 @@
           />
         }
       </div>
-    </section>
+    </app-rule-catalog-section>
 
-    <section class="rule-section">
-      <h3>Tailles</h3>
+    <app-rule-catalog-section title="Tailles">
       <div class="rule-list">
         @for (option of sizes(); track option.id) {
           <app-tag-pill
@@ -37,10 +35,9 @@
           />
         }
       </div>
-    </section>
+    </app-rule-catalog-section>
 
-    <section class="rule-section">
-      <h3>Types de créatures</h3>
+    <app-rule-catalog-section title="Types de créatures">
       <div class="inline-create">
         <app-form-field inputId="new-creature-type" label="Nouveau type" [formControl]="newType" />
         <button
@@ -64,10 +61,9 @@
           />
         }
       </div>
-    </section>
+    </app-rule-catalog-section>
 
-    <section class="rule-section">
-      <h3>Sous-espèces</h3>
+    <app-rule-catalog-section title="Sous-espèces">
       <div class="rule-create rule-create--subspecies">
         <app-form-field
           inputId="subspecies-parent"
@@ -106,10 +102,9 @@
           <span class="rule-empty">Aucune sous-espèce configurée.</span>
         }
       </div>
-    </section>
+    </app-rule-catalog-section>
 
-    <section class="rule-section">
-      <h3>Langues</h3>
+    <app-rule-catalog-section title="Langues">
       <div class="inline-create">
         <app-form-field
           inputId="new-language"
@@ -137,10 +132,9 @@
           />
         }
       </div>
-    </section>
+    </app-rule-catalog-section>
 
-    <section class="rule-section">
-      <h3>Races</h3>
+    <app-rule-catalog-section title="Races">
       <div class="inline-create">
         <app-form-field inputId="new-race" label="Nouvelle race" [formControl]="newRace" />
         <button
@@ -166,10 +160,9 @@
           <span class="rule-empty">Aucune race configurée.</span>
         }
       </div>
-    </section>
+    </app-rule-catalog-section>
 
-    <section class="rule-section">
-      <h3>Classes</h3>
+    <app-rule-catalog-section title="Classes">
       <div class="inline-create">
         <app-form-field inputId="new-class" label="Nouvelle classe" [formControl]="newClass" />
         <button
@@ -195,7 +188,7 @@
           <span class="rule-empty">Aucune classe configurée.</span>
         }
       </div>
-    </section>
+    </app-rule-catalog-section>
   }
 
   @if (error(); as message) {

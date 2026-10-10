@@ -43,7 +43,7 @@ jobs:
           "version=$($package.version)" >> $env:GITHUB_OUTPUT
 
       - name: Build NSIS installer
-        run: npm run tauri -- build --bundles nsis
+        run: npm run tauri:build -- --bundles nsis
 
       - name: Upload installer
         uses: actions/upload-artifact@v7

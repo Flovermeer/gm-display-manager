@@ -33,8 +33,12 @@ Microsoft documente ce comportement dans
 Depuis la racine du projet :
 
 ```powershell
-npm.cmd run tauri dev
+npm.cmd run tauri:dev
 ```
+
+Cette commande ouvre **Beholder's Inn — Développement** avec un dossier de données indépendant de
+la version installée. Les campagnes, médias, sauvegardes et migrations utilisées pour développer ou
+tester manuellement ne modifient jamais les données de production.
 
 Au premier lancement, Cargo peut compiler de nombreuses dépendances Rust. Les
 lancements suivants réutilisent le cache de compilation et sont normalement
@@ -400,7 +404,7 @@ le raccourci Windows.
 En développement, redémarre complètement le processus Tauri pour recharger les capabilities :
 
 ```powershell
-npm.cmd run tauri dev
+npm.cmd run tauri:dev
 ```
 
 Si une erreur apparaît dans l'interface ou dans le terminal, conserve son texte

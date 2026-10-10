@@ -9,14 +9,19 @@ Les commandes du projet ne produisent pas toutes le même résultat :
 
 - `npm.cmd run build` compile uniquement le frontend Angular dans
   `dist/gm-display-manager/browser/` ;
-- `npm.cmd run tauri dev` démarre Angular sur `localhost:4300` et ouvre un exécutable Tauri de
-  développement qui dépend de ce serveur ;
-- `npm.cmd run tauri -- build --bundles nsis` compile Angular, construit Tauri en mode release et
+- `npm.cmd run tauri:dev` démarre Angular sur `localhost:4300` et ouvre un exécutable Tauri de
+  développement qui dépend de ce serveur et utilise l'identifiant isolé
+  `com.beholdersinn.app.dev` ;
+- `npm.cmd run tauri:build -- --bundles nsis` compile Angular, construit Tauri en mode release et
   génère un installateur Windows autonome.
 
 L'exécutable debug situé dans `src-tauri/target/debug/` n'est pas distribuable : lancé seul, il
 peut afficher une erreur de connexion à `localhost`. Pour installer et utiliser normalement
 l'application desktop, il faut employer l'installateur NSIS.
+
+Le dossier de données de développement est séparé de celui de la version installée. Il contient sa
+propre base SQLite, ses médias, ses sauvegardes et ses journaux ; une migration exécutée en
+développement ne peut donc plus rendre une ancienne version installée incompatible avec sa base.
 
 ## Prérequis pour construire localement
 
@@ -48,7 +53,7 @@ Depuis la racine du dépôt :
 ```powershell
 npm.cmd run test -- --watch=false
 cargo test --manifest-path src-tauri/Cargo.toml
-npm.cmd run tauri -- build --bundles nsis
+npm.cmd run tauri:build -- --bundles nsis
 ```
 
 La dernière commande exécute automatiquement le build Angular configuré par
@@ -88,7 +93,7 @@ de version avant de relancer le workflow.
 
 ## Installer l'application
 
-1. Fermer toute instance lancée avec `npm.cmd run tauri dev`.
+1. Fermer toute instance lancée avec `npm.cmd run tauri:dev`.
 2. Si les données locales ont de la valeur, créer une sauvegarde depuis la Configuration de
    l'application avant de poursuivre.
 3. Télécharger l'installateur `.exe` depuis la dernière Release privée, ou extraire l'artefact

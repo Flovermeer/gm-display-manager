@@ -61,8 +61,12 @@ Routes actuelles :
 Lancer Angular dans la fenêtre desktop Tauri :
 
 ```powershell
-npm.cmd run tauri dev
+npm.cmd run tauri:dev
 ```
+
+Le mode développement utilise l'identifiant `com.beholdersinn.app.dev` et un dossier de données
+distinct de l'application installée. Sa base SQLite, ses médias, ses sauvegardes et ses journaux ne
+peuvent donc pas migrer ou remplacer les données de production.
 
 Le premier lancement télécharge et compile les crates Rust déclarées dans
 `src-tauri/Cargo.toml`. Il peut donc prendre plusieurs minutes.
@@ -83,7 +87,7 @@ moniteurs physiques à partir du jalon 2.
 Pour produire localement l'installateur NSIS de la version courante :
 
 ```powershell
-npm.cmd run tauri -- build --bundles nsis
+npm.cmd run tauri:build -- --bundles nsis
 ```
 
 Le workflow `Windows installer` est déclenché manuellement. Depuis la racine du projet, avec GitHub

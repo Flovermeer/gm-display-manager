@@ -8,6 +8,10 @@ import { ChangeDetectionStrategy, Component, input, output } from '@angular/core
 })
 export class TagPill {
   readonly label = input.required<string>();
+  readonly code = input('');
+  readonly detail = input('');
+  readonly variant = input<'default' | 'catalog'>('default');
   readonly removable = input(true);
+  readonly removeVerb = input('Retirer');
   readonly remove = output<void>();
 }

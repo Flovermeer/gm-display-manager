@@ -1,11 +1,17 @@
-<span class="tag-pill">
+<span class="tag-pill" [class.tag-pill--catalog]="variant() === 'catalog'">
+  @if (code()) {
+    <strong class="tag-pill__code">{{ code() }}</strong>
+  }
   <span class="tag-pill__label">{{ label() }}</span>
+  @if (detail()) {
+    <small class="tag-pill__detail">{{ detail() }}</small>
+  }
   @if (removable()) {
     <button
       class="tag-pill__remove"
       type="button"
-      [attr.aria-label]="'Retirer ' + label()"
-      [attr.title]="'Retirer ' + label()"
+      [attr.aria-label]="removeVerb() + ' ' + label()"
+      [attr.title]="removeVerb() + ' ' + label()"
       (click)="$event.stopPropagation(); remove.emit()"
     >
       ×

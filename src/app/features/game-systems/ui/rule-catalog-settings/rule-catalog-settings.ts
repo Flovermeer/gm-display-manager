@@ -7,10 +7,11 @@ import type { GameSystem, GameUniverse } from '@app/features/game-systems/domain
 import { ButtonDirective } from '@app/shared/ui/button/button.directive';
 import { Dialog } from '@app/shared/ui/dialog/dialog';
 import { FormField } from '@app/shared/ui/form-field/form-field';
+import { TagPill } from '@app/shared/ui/tag-pill/tag-pill';
 
 @Component({
   selector: 'app-rule-catalog-settings',
-  imports: [ReactiveFormsModule, ButtonDirective, Dialog, FormField],
+  imports: [ReactiveFormsModule, ButtonDirective, Dialog, FormField, TagPill],
   templateUrl: './rule-catalog-settings.html',
   styleUrl: './rule-catalog-settings.scss',
 })

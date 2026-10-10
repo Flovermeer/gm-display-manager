@@ -15,9 +15,12 @@
       <h3>Alignements</h3>
       <div class="rule-list">
         @for (option of alignments(); track option.id) {
-          <span class="rule-pill"
-            ><strong>{{ option.code }}</strong> {{ option.label }}</span
-          >
+          <app-tag-pill
+            [label]="option.label"
+            [code]="option.code"
+            variant="catalog"
+            [removable]="false"
+          />
         }
       </div>
     </section>
@@ -26,9 +29,12 @@
       <h3>Tailles</h3>
       <div class="rule-list">
         @for (option of sizes(); track option.id) {
-          <span class="rule-pill"
-            ><strong>{{ option.code }}</strong> {{ option.label }}</span
-          >
+          <app-tag-pill
+            [label]="option.label"
+            [code]="option.code"
+            variant="catalog"
+            [removable]="false"
+          />
         }
       </div>
     </section>
@@ -48,19 +54,14 @@
       </div>
       <div class="rule-list">
         @for (option of creatureTypes(); track option.id) {
-          <span class="rule-pill">
-            {{ option.label }} <small>{{ origin(option) }}</small>
-            @if (option.universeId) {
-              <button
-                type="button"
-                class="rule-pill__remove"
-                [attr.aria-label]="'Supprimer ' + option.label"
-                (click)="requestRemoval(option)"
-              >
-                ×
-              </button>
-            }
-          </span>
+          <app-tag-pill
+            [label]="option.label"
+            [detail]="origin(option)"
+            variant="catalog"
+            [removable]="!!option.universeId"
+            removeVerb="Supprimer"
+            (remove)="requestRemoval(option)"
+          />
         }
       </div>
     </section>
@@ -93,19 +94,14 @@
       </div>
       <div class="rule-list">
         @for (option of subspecies(); track option.id) {
-          <span class="rule-pill">
-            {{ option.label }} <small>{{ parentLabel(option) }} · {{ origin(option) }}</small>
-            @if (option.universeId) {
-              <button
-                type="button"
-                class="rule-pill__remove"
-                [attr.aria-label]="'Supprimer ' + option.label"
-                (click)="requestRemoval(option)"
-              >
-                ×
-              </button>
-            }
-          </span>
+          <app-tag-pill
+            [label]="option.label"
+            [detail]="parentLabel(option) + ' · ' + origin(option)"
+            variant="catalog"
+            [removable]="!!option.universeId"
+            removeVerb="Supprimer"
+            (remove)="requestRemoval(option)"
+          />
         } @empty {
           <span class="rule-empty">Aucune sous-espèce configurée.</span>
         }
@@ -131,19 +127,14 @@
       </div>
       <div class="rule-list">
         @for (option of languages(); track option.id) {
-          <span class="rule-pill">
-            {{ option.label }} <small>{{ origin(option) }}</small>
-            @if (option.universeId) {
-              <button
-                type="button"
-                class="rule-pill__remove"
-                [attr.aria-label]="'Supprimer ' + option.label"
-                (click)="requestRemoval(option)"
-              >
-                ×
-              </button>
-            }
-          </span>
+          <app-tag-pill
+            [label]="option.label"
+            [detail]="origin(option)"
+            variant="catalog"
+            [removable]="!!option.universeId"
+            removeVerb="Supprimer"
+            (remove)="requestRemoval(option)"
+          />
         }
       </div>
     </section>
@@ -163,19 +154,14 @@
       </div>
       <div class="rule-list">
         @for (option of races(); track option.id) {
-          <span class="rule-pill">
-            {{ option.label }} <small>{{ origin(option) }}</small>
-            @if (option.universeId) {
-              <button
-                type="button"
-                class="rule-pill__remove"
-                [attr.aria-label]="'Supprimer ' + option.label"
-                (click)="requestRemoval(option)"
-              >
-                ×
-              </button>
-            }
-          </span>
+          <app-tag-pill
+            [label]="option.label"
+            [detail]="origin(option)"
+            variant="catalog"
+            [removable]="!!option.universeId"
+            removeVerb="Supprimer"
+            (remove)="requestRemoval(option)"
+          />
         } @empty {
           <span class="rule-empty">Aucune race configurée.</span>
         }
@@ -197,19 +183,14 @@
       </div>
       <div class="rule-list">
         @for (option of classes(); track option.id) {
-          <span class="rule-pill">
-            {{ option.label }} <small>{{ origin(option) }}</small>
-            @if (option.universeId) {
-              <button
-                type="button"
-                class="rule-pill__remove"
-                [attr.aria-label]="'Supprimer ' + option.label"
-                (click)="requestRemoval(option)"
-              >
-                ×
-              </button>
-            }
-          </span>
+          <app-tag-pill
+            [label]="option.label"
+            [detail]="origin(option)"
+            variant="catalog"
+            [removable]="!!option.universeId"
+            removeVerb="Supprimer"
+            (remove)="requestRemoval(option)"
+          />
         } @empty {
           <span class="rule-empty">Aucune classe configurée.</span>
         }

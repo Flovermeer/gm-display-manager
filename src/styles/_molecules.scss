@@ -113,3 +113,11 @@
     top: 6rem;
   }
 }
+
+.inline-create {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: end;
+  gap: 0.65rem;
+  margin-bottom: 0.5rem;
+}

@@ -1,4 +1,5 @@
 export type PlayerDisplayState =
+  | Readonly<{ mode: 'neutral' }>
   | Readonly<{ mode: 'blank' }>
   | Readonly<{
       mode: 'scene';
@@ -54,4 +55,4 @@ export type PlayerDisplayForeground =
       summary?: string;
     }>;
 
-export const initialPlayerDisplayState: PlayerDisplayState = { mode: 'blank' };
+export const initialPlayerDisplayState: PlayerDisplayState = { mode: 'neutral' };

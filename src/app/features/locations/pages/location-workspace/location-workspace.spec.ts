@@ -12,6 +12,7 @@ import { JournalEntryService } from '@app/features/journal/application/journal-e
 import { LocationImageGateway } from '@app/features/locations/data-access/location-image.gateway';
 import { LocationWorkspace } from '@app/features/locations/pages/location-workspace/location-workspace';
 import { ResourceMentionNavigationService } from '@app/shared/rich-text-editor/resource-mention-navigation.service';
+import { ActiveSceneService } from '@app/features/scenes/application/active-scene.service';
 
 describe('LocationWorkspace', () => {
   const campaign: Campaign = {
@@ -56,6 +57,7 @@ describe('LocationWorkspace', () => {
     isPlayerDisplayOpen: vi.fn(),
     sendPlayerDisplayState: vi.fn(),
   };
+  const activeSceneService = { clear: vi.fn() };
 
   beforeEach(async () => {
     vi.clearAllMocks();
@@ -72,6 +74,7 @@ describe('LocationWorkspace', () => {
     imageGateway.discard.mockResolvedValue(undefined);
     displayGateway.isPlayerDisplayOpen.mockResolvedValue(true);
     displayGateway.sendPlayerDisplayState.mockResolvedValue(undefined);
+    activeSceneService.clear.mockResolvedValue(undefined);
 
     await TestBed.configureTestingModule({
       imports: [LocationWorkspace],
@@ -90,6 +93,7 @@ describe('LocationWorkspace', () => {
         },
         { provide: LocationImageGateway, useValue: imageGateway },
         { provide: DisplayGateway, useValue: displayGateway },
+        { provide: ActiveSceneService, useValue: activeSceneService },
         {
           provide: ActivatedRoute,
           useValue: { snapshot: { paramMap: { get: () => campaign.id } } },
@@ -188,6 +192,14 @@ describe('LocationWorkspace', () => {
         imagePath: '/demo/tavern.svg',
       });
     });
+
+    await renderUntil(fixture, 'Arrêter l’affichage');
+    element.querySelector<HTMLButtonElement>('.display-button')?.click();
+
+    await vi.waitFor(() => {
+      expect(displayGateway.sendPlayerDisplayState).toHaveBeenLastCalledWith({ mode: 'neutral' });
+    });
+    expect(activeSceneService.clear).toHaveBeenCalledWith(campaign.id);
   });
 });
 

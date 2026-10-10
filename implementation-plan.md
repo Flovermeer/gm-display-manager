@@ -179,6 +179,7 @@ Le Player Display consomme un état complet plutôt qu'une succession d'ordres i
 
 ```ts
 type PlayerDisplayState =
+  | { mode: 'neutral' }
   | { mode: 'blank' }
   | { mode: 'location'; locationId: string; imagePath: string; name?: string }
   | {
@@ -305,7 +306,9 @@ Travail :
 - fournir trois actions avec des médias de démonstration locaux : lieu, PNJ et noir ;
 - rendre l'image avec `object-fit: contain` ou `cover` selon le mode ;
 - ajouter uniquement un fondu CSS court ;
-- afficher dans le panneau MJ l'état envoyé et la disponibilité de la fenêtre joueurs.
+- afficher dans le panneau MJ l'état envoyé et la disponibilité de la fenêtre joueurs ;
+- utiliser le fond animé neutre comme état sans contenu, distinct de l'écran noir de sécurité ;
+- traiter les actions d'affichage comme des toggles : un second clic revient au neutre sans pile.
 
 Critère de réussite :
 
@@ -464,9 +467,10 @@ Décisions V1 confirmées :
 - sélectionner une scène ouvre seulement sa fiche ; une action explicite l'active sur le Player Display ;
 - l'activation affiche le lieu en fond lorsqu'il possède une image, sinon le brouillard Vanta violet par défaut ;
 - un seul PNJ, monstre ou objet peut occuper le premier plan ; il n'apparaît jamais automatiquement ;
-- masquer le premier plan conserve le fond de la scène ; l'écran noir reste une action de sécurité explicite ;
+- arrêter l'affichage d'un premier plan désactive la scène et revient au fond animé neutre, sans
+  pile de contenus précédents ; l'écran noir reste une action de sécurité explicite ;
 - la scène active est persistée, mais la fenêtre joueurs ne se rouvre pas automatiquement ; à sa réouverture, le fond est restauré sans premier plan ;
-- supprimer la scène active ramène le Player Display au fond par défaut sans fermer sa fenêtre ;
+- supprimer la scène active ramène le Player Display au fond animé neutre sans fermer sa fenêtre ;
 - les changements utilisent une sortie à opacité `0` puis une entrée à opacité `1`, en 300 ms, et respectent `prefers-reduced-motion` ;
 - les scènes possèdent des notes journalisées et sont disponibles dans les mentions `@`.
 
@@ -475,14 +479,15 @@ Travail :
 - créer et éditer une scène ;
 - afficher le lieu comme fond ;
 - afficher un PNJ au premier plan avec son nom ;
-- masquer le PNJ et revenir automatiquement au lieu ;
+- arrêter l'affichage du PNJ et revenir au fond animé neutre ;
 - mémoriser l'état narratif courant ;
 - ajouter des transitions CSS coordonnées et respectueuses de `prefers-reduced-motion` ;
 - gérer un média absent sans casser toute la composition.
 
 Critère de validation :
 
-> Lieu -> PNJ -> masquer le PNJ -> retour au lieu fonctionne sans autre action du MJ.
+> Scène -> PNJ -> arrêter le PNJ -> fond animé neutre fonctionne sans restaurer de contenu
+> précédent.
 
 ### Jalon 9 — Bestiaire
 
@@ -709,7 +714,7 @@ Critères de validation :
 - sélection/reconnaissance d'un moniteur à partir de descripteurs simulés ;
 - tests des repositories SQLite sur une base temporaire ;
 - migrations d'une version de schéma à la suivante ;
-- état narratif lieu/PNJ/retour au lieu ;
+- état narratif lieu/PNJ/retour au fond neutre sans pile ;
 - fallback vidéo vers image ;
 - isolation des données par campagne.
 

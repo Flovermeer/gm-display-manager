@@ -48,6 +48,7 @@ import { Dialog } from '@app/shared/ui/dialog/dialog';
 import { EmptyState } from '@app/shared/ui/empty-state/empty-state';
 import { EntityTitle } from '@app/shared/ui/entity-title/entity-title';
 import { FormField, type FormFieldOption } from '@app/shared/ui/form-field/form-field';
+import { ActiveSceneService } from '@app/features/scenes/application/active-scene.service';
 import { RichTextFeatureEditor } from '@app/shared/ui/rich-text-feature-editor/rich-text-feature-editor';
 import { RichTextFeatureSection } from '@app/shared/ui/rich-text-feature-section/rich-text-feature-section';
 import { CreatureRuleCatalogService } from '@app/features/game-systems/application/creature-rule-catalog.service';
@@ -106,6 +107,7 @@ export class NpcWorkspace implements OnInit, PendingChangesAware {
   private readonly npcIdleVideoGateway = inject(NpcIdleVideoGateway);
   private readonly displayGateway = inject(DisplayGateway);
   private readonly playerDisplayStore = inject(PlayerDisplayStore);
+  private readonly activeSceneService = inject(ActiveSceneService);
   private readonly creatureRules = inject(CreatureRuleCatalogService);
   private readonly characterRules = inject(CharacterRuleCatalogService);
   private readonly mentionNavigation = inject(ResourceMentionNavigationService);
@@ -175,6 +177,11 @@ export class NpcWorkspace implements OnInit, PendingChangesAware {
   protected readonly effectiveIdleVideoPath = computed(
     () => this.draftIdleVideoPath() ?? this.selectedNpc()?.idleVideoPath ?? null,
   );
+  protected readonly isSelectedNpcDisplayed = computed(() => {
+    const npc = this.selectedNpc();
+    const state = this.playerDisplayStore.state();
+    return npc !== null && state.mode === 'npc' && state.npcId === npc.id;
+  });
   protected readonly filteredNpcs = computed(() => {
     const searchTerm = this.searchTerm().trim().toLocaleLowerCase('fr');
     if (!searchTerm) {
@@ -449,6 +456,13 @@ export class NpcWorkspace implements OnInit, PendingChangesAware {
     this.error.set(null);
 
     try {
+      await this.activeSceneService.clear(npc.campaignId);
+      if (this.isSelectedNpcDisplayed()) {
+        const state = { mode: 'neutral' as const };
+        this.playerDisplayStore.setState(state);
+        await this.displayGateway.sendPlayerDisplayState(state);
+        return;
+      }
       const state = {
         mode: 'npc' as const,
         npcId: npc.id,
@@ -475,7 +489,9 @@ export class NpcWorkspace implements OnInit, PendingChangesAware {
       return "Ouvre d'abord l'écran joueurs depuis la régie.";
     }
 
-    return "Afficher ce PNJ sur l'écran joueurs";
+    return this.isSelectedNpcDisplayed()
+      ? "Retirer ce PNJ de l'écran joueurs"
+      : "Afficher ce PNJ sur l'écran joueurs";
   }
 
   protected cancelDelete(): void {
@@ -494,9 +510,9 @@ export class NpcWorkspace implements OnInit, PendingChangesAware {
     try {
       const displayState = this.playerDisplayStore.state();
       if (displayState.mode === 'npc' && displayState.npcId === npc.id) {
-        this.playerDisplayStore.showBlank();
+        this.playerDisplayStore.showNeutral();
         if (this.isPlayerDisplayOpen()) {
-          await this.displayGateway.sendPlayerDisplayState({ mode: 'blank' });
+          await this.displayGateway.sendPlayerDisplayState({ mode: 'neutral' });
         }
       }
 

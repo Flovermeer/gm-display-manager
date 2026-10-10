@@ -94,6 +94,7 @@
               appButton="secondary"
               type="button"
               [disabled]="!selectedItem()?.imagePath || !isPlayerDisplayOpen() || isPublishing()"
+              [attr.aria-pressed]="isSelectedItemDisplayed()"
               [title]="
                 !selectedItem()?.imagePath
                   ? 'Ajoute une image pour afficher cet objet.'
@@ -103,7 +104,13 @@
               "
               (click)="showOnPlayerDisplay()"
             >
-              {{ isPublishing() ? 'Envoi…' : 'Afficher aux joueurs' }}
+              {{
+                isPublishing()
+                  ? 'Envoi…'
+                  : isSelectedItemDisplayed()
+                    ? 'Arrêter l’affichage'
+                    : 'Afficher aux joueurs'
+              }}
             </button>
             <button appButton="primary" type="button" (click)="editItem()">Modifier</button>
             @if (selectedItem()?.provenance === 'override') {

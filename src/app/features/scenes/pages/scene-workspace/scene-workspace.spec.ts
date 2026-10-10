@@ -145,28 +145,27 @@ describe('SceneWorkspace', () => {
     expect(content).toContain("Anneau de l'Hiver");
   });
 
-  it('deactivates the active scene and restores the default player screen', async () => {
+  it('toggles the active scene off and restores the neutral player screen', async () => {
     activeSceneService.get.mockResolvedValue(scene.id);
+    displayStore.state.mockReturnValue({
+      mode: 'scene',
+      sceneId: scene.id,
+      sceneName: scene.name,
+      background: { type: 'default' },
+    });
     const fixture = TestBed.createComponent(SceneWorkspace);
     fixture.detectChanges();
     await renderUntil(fixture, scene.name);
     (fixture.nativeElement as HTMLElement)
       .querySelector<HTMLButtonElement>('.scene-list__entry')
       ?.click();
-    await renderUntil(fixture, 'Désactiver la scène');
+    await renderUntil(fixture, 'Arrêter l’affichage');
 
-    const deactivateButton = [
-      ...(fixture.nativeElement as HTMLElement).querySelectorAll('button'),
-    ].find((button) => button.textContent?.includes('Désactiver la scène'));
-    deactivateButton?.click();
+    findButton(fixture.nativeElement as HTMLElement, 'Arrêter l’affichage').click();
 
     await vi.waitFor(() => {
       expect(activeSceneService.clear).toHaveBeenCalledWith(campaign.id);
-      expect(displayStore.setState).toHaveBeenCalledWith({
-        mode: 'scene',
-        sceneId: null,
-        background: { type: 'default' },
-      });
+      expect(displayStore.setState).toHaveBeenCalledWith({ mode: 'neutral' });
     });
   });
 

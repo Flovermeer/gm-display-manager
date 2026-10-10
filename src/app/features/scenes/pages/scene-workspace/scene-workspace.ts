@@ -246,22 +246,13 @@ export class SceneWorkspace implements OnInit, PendingChangesAware {
     const scene = this.selectedScene();
     if (!campaign || !scene || this.isPublishing()) return;
     await this.publish(async () => {
+      if (this.isSceneDisplayed(scene)) {
+        await this.clearActiveScene(campaign.id);
+        return;
+      }
       const state = await this.sceneDisplayService.activate(scene);
       this.activeSceneId.set(scene.id);
       await this.sendState(state);
-    });
-  }
-
-  protected async deactivateScene(): Promise<void> {
-    const campaign = this.campaign();
-    const scene = this.selectedScene();
-    if (!campaign || !scene || this.activeSceneId() !== scene.id || this.isPublishing()) {
-      return;
-    }
-    await this.publish(async () => {
-      await this.activeSceneService.clear(campaign.id);
-      this.activeSceneId.set(null);
-      await this.sendState(defaultSceneState());
     });
   }
 
@@ -269,6 +260,10 @@ export class SceneWorkspace implements OnInit, PendingChangesAware {
     const scene = this.selectedScene();
     if (!scene || !npc.portraitPath || this.isPublishing()) return;
     await this.publish(async () => {
+      if (this.isNpcDisplayed(scene, npc)) {
+        await this.clearActiveScene(scene.campaignId);
+        return;
+      }
       const state = await this.sceneDisplayService.build(scene, {
         type: 'npc',
         resourceId: npc.id,
@@ -286,6 +281,10 @@ export class SceneWorkspace implements OnInit, PendingChangesAware {
     const scene = this.selectedScene();
     if (!scene || !item.imagePath || this.isPublishing()) return;
     await this.publish(async () => {
+      if (this.isItemDisplayed(scene, item)) {
+        await this.clearActiveScene(scene.campaignId);
+        return;
+      }
       await this.sendState(
         await this.sceneDisplayService.build(scene, {
           type: 'item',
@@ -298,10 +297,29 @@ export class SceneWorkspace implements OnInit, PendingChangesAware {
     });
   }
 
-  protected async hideForeground(): Promise<void> {
-    const scene = this.selectedScene();
-    if (!scene || this.isPublishing()) return;
-    await this.publish(async () => this.sendState(await this.sceneDisplayService.build(scene)));
+  protected isSceneDisplayed(scene: Scene): boolean {
+    const state = this.displayStore.state();
+    return state.mode === 'scene' && state.sceneId === scene.id;
+  }
+
+  protected isNpcDisplayed(scene: Scene, npc: Npc): boolean {
+    const state = this.displayStore.state();
+    return (
+      state.mode === 'scene' &&
+      state.sceneId === scene.id &&
+      state.foreground?.type === 'npc' &&
+      state.foreground.resourceId === npc.id
+    );
+  }
+
+  protected isItemDisplayed(scene: Scene, item: NarrativeItem): boolean {
+    const state = this.displayStore.state();
+    return (
+      state.mode === 'scene' &&
+      state.sceneId === scene.id &&
+      state.foreground?.type === 'item' &&
+      state.foreground.resourceId === item.id
+    );
   }
 
   protected requestDeleteScene(): void {
@@ -443,6 +461,12 @@ export class SceneWorkspace implements OnInit, PendingChangesAware {
     if (this.displayGateway.isDesktop && this.isPlayerDisplayOpen()) {
       await this.displayGateway.sendPlayerDisplayState(state);
     }
+  }
+
+  private async clearActiveScene(campaignId: string): Promise<void> {
+    await this.activeSceneService.clear(campaignId);
+    this.activeSceneId.set(null);
+    await this.sendState(defaultSceneState());
   }
 
   private async publish(action: () => Promise<void>): Promise<void> {

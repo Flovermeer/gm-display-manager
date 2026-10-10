@@ -35,6 +35,7 @@ import { Dialog } from '@app/shared/ui/dialog/dialog';
 import { EmptyState } from '@app/shared/ui/empty-state/empty-state';
 import { EntityTitle } from '@app/shared/ui/entity-title/entity-title';
 import { FormField, type FormFieldOption } from '@app/shared/ui/form-field/form-field';
+import { ActiveSceneService } from '@app/features/scenes/application/active-scene.service';
 
 type PendingDecisionResolver = (canLeave: boolean) => void;
 type OwnerOption = Readonly<{ resourceType: ItemOwnerType; resourceId: string; label: string }>;
@@ -69,6 +70,7 @@ export class NarrativeItemWorkspace implements OnInit, PendingChangesAware {
   private readonly imageGateway = inject(ItemImageGateway);
   private readonly displayGateway = inject(DisplayGateway);
   private readonly displayStore = inject(PlayerDisplayStore);
+  private readonly activeSceneService = inject(ActiveSceneService);
   private readonly mentionNavigation = inject(ResourceMentionNavigationService);
   private readonly recentResources = inject(RecentResourceStore, { optional: true });
   private readonly journalEntries = viewChild<JournalEntryList>(JournalEntryList);
@@ -125,6 +127,11 @@ export class NarrativeItemWorkspace implements OnInit, PendingChangesAware {
   protected readonly effectiveImagePath = computed(
     () => this.draftImagePath() ?? this.selectedItem()?.imagePath ?? null,
   );
+  protected readonly isSelectedItemDisplayed = computed(() => {
+    const item = this.selectedItem();
+    const state = this.displayStore.state();
+    return item !== null && state.mode === 'item' && state.itemId === item.id;
+  });
   protected readonly filteredItems = computed(() => {
     const term = this.searchTerm().trim().toLocaleLowerCase('fr');
     if (!term) return this.items();
@@ -332,9 +339,9 @@ export class NarrativeItemWorkspace implements OnInit, PendingChangesAware {
     try {
       const state = this.displayStore.state();
       if (state.mode === 'item' && state.itemId === item.id) {
-        this.displayStore.showBlank();
+        this.displayStore.showNeutral();
         if (this.isPlayerDisplayOpen())
-          await this.displayGateway.sendPlayerDisplayState({ mode: 'blank' });
+          await this.displayGateway.sendPlayerDisplayState({ mode: 'neutral' });
       }
       await this.itemService.delete(item);
       await this.recentResources?.remove('item', item.id);
@@ -355,6 +362,13 @@ export class NarrativeItemWorkspace implements OnInit, PendingChangesAware {
     if (!item?.imagePath || !this.isPlayerDisplayOpen() || this.isPublishing()) return;
     this.isPublishing.set(true);
     try {
+      await this.activeSceneService.clear(item.campaignId);
+      if (this.isSelectedItemDisplayed()) {
+        const state = { mode: 'neutral' as const };
+        this.displayStore.setState(state);
+        await this.displayGateway.sendPlayerDisplayState(state);
+        return;
+      }
       const state = {
         mode: 'item' as const,
         itemId: item.id,

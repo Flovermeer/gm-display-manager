@@ -124,10 +124,17 @@
               appButton="secondary"
               type="button"
               [disabled]="!isPlayerDisplayOpen() || isPublishing()"
+              [attr.aria-pressed]="isSelectedNpcDisplayed()"
               [attr.title]="playerDisplayActionTitle()"
               (click)="showNpcOnPlayerDisplay()"
             >
-              {{ isPublishing() ? 'Envoi…' : 'Afficher aux joueurs' }}
+              {{
+                isPublishing()
+                  ? 'Envoi…'
+                  : isSelectedNpcDisplayed()
+                    ? 'Arrêter l’affichage'
+                    : 'Afficher aux joueurs'
+              }}
             </button>
             <button appButton="primary" type="button" (click)="editNpc()">Modifier</button>
             @if (selectedNpc()?.provenance === 'override') {

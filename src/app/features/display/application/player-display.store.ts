@@ -4,7 +4,7 @@
  *
  * Responsabilités
  * - offre une source réactive commune aux fenêtres Angular ;
- * - centralise les transitions vers l’écran vide ;
+ * - centralise les transitions vers le fond neutre ;
  */
 
 import { Injectable, signal } from '@angular/core';
@@ -24,7 +24,7 @@ export class PlayerDisplayStore {
     this.stateSignal.set(state);
   }
 
-  showBlank(): void {
-    this.setState({ mode: 'blank' });
+  showNeutral(): void {
+    this.setState({ mode: 'neutral' });
   }
 }

@@ -62,5 +62,5 @@ export class SceneDisplayService {
 }
 
 export function defaultSceneState(): PlayerDisplayState {
-  return { mode: 'scene', sceneId: null, background: { type: 'default' } };
+  return { mode: 'neutral' };
 }

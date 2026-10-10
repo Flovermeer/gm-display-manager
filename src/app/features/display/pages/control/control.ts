@@ -114,6 +114,10 @@ export class Control implements OnInit, OnDestroy {
   }
 
   protected showLocation(): void {
+    if (this.playerDisplayStore.state().mode === 'location') {
+      void this.publishDisplayState({ mode: 'neutral' });
+      return;
+    }
     void this.publishDisplayState({
       mode: 'location',
       locationId: 'demo-tavern',
@@ -123,6 +127,10 @@ export class Control implements OnInit, OnDestroy {
   }
 
   protected showNpc(): void {
+    if (this.playerDisplayStore.state().mode === 'npc') {
+      void this.publishDisplayState({ mode: 'neutral' });
+      return;
+    }
     void this.publishDisplayState({
       mode: 'npc',
       npcId: 'demo-innkeeper',
@@ -138,6 +146,8 @@ export class Control implements OnInit, OnDestroy {
 
   protected displayStateLabel(state: PlayerDisplayState): string {
     switch (state.mode) {
+      case 'neutral':
+        return 'Fond neutre';
       case 'blank':
         return 'Écran noir';
       case 'location':

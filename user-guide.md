@@ -316,7 +316,10 @@ démonstration :
 
 - **Lieu — Beholder's Inn** affiche une illustration locale de l'auberge ;
 - **PNJ — Mira Vell** superpose un portrait local au décor de l'auberge ;
-- **Écran noir** masque immédiatement le contenu destiné aux joueurs.
+- lorsqu’un contenu est affiché, le bouton qui l’a envoyé devient **Arrêter l’affichage** ; un
+  second clic retire tout le contenu sans restaurer le précédent et affiche le fond animé neutre ;
+- **Écran noir** masque immédiatement le contenu destiné aux joueurs et reste distinct du fond
+  neutre.
 
 Le contenu courant est indiqué en haut à droite de la section. Les médias de
 démonstration sont inclus dans le projet et fonctionnent hors ligne.

@@ -16,6 +16,7 @@ import { PlayerCharacterService } from '@app/features/players/application/player
 import { createEmptyRichTextDocument } from '@app/shared/rich-text-editor/rich-text-document';
 import { ResourceMentionNavigationService } from '@app/shared/rich-text-editor/resource-mention-navigation.service';
 import { NarrativeItemWorkspace } from '@app/features/items/pages/narrative-item-workspace/narrative-item-workspace';
+import { ActiveSceneService } from '@app/features/scenes/application/active-scene.service';
 
 describe('NarrativeItemWorkspace', () => {
   const campaign: Campaign = {
@@ -62,6 +63,7 @@ describe('NarrativeItemWorkspace', () => {
     isPlayerDisplayOpen: vi.fn(),
     sendPlayerDisplayState: vi.fn(),
   };
+  const activeSceneService = { clear: vi.fn() };
   const mentionNavigation = { listCandidates: vi.fn(), open: vi.fn() };
   const journalService = {
     listForTarget: vi.fn(),
@@ -83,6 +85,7 @@ describe('NarrativeItemWorkspace', () => {
     imageGateway.resolveUrl.mockResolvedValue('asset://item.webp');
     mentionNavigation.listCandidates.mockResolvedValue([]);
     journalService.listForTarget.mockResolvedValue([]);
+    activeSceneService.clear.mockResolvedValue(undefined);
 
     await TestBed.configureTestingModule({
       imports: [NarrativeItemWorkspace],
@@ -95,6 +98,7 @@ describe('NarrativeItemWorkspace', () => {
         { provide: PlayerCharacterService, useValue: emptyResourceService },
         { provide: ItemImageGateway, useValue: imageGateway },
         { provide: DisplayGateway, useValue: displayGateway },
+        { provide: ActiveSceneService, useValue: activeSceneService },
         { provide: ResourceMentionNavigationService, useValue: mentionNavigation },
         { provide: JournalEntryService, useValue: journalService },
         {

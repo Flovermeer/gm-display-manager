@@ -18,6 +18,7 @@ import { Dialog } from '@app/shared/ui/dialog/dialog';
 import { EmptyState } from '@app/shared/ui/empty-state/empty-state';
 import { EntityTitle } from '@app/shared/ui/entity-title/entity-title';
 import { FormField, type FormFieldOption } from '@app/shared/ui/form-field/form-field';
+import { ActiveSceneService } from '@app/features/scenes/application/active-scene.service';
 
 type PendingDecisionResolver = (canLeave: boolean) => void;
 type LocationListEntry = Readonly<{ location: Location; depth: number; path: string }>;
@@ -47,6 +48,7 @@ export class LocationWorkspace implements OnInit, PendingChangesAware {
   private readonly locationImageGateway = inject(LocationImageGateway);
   private readonly displayGateway = inject(DisplayGateway);
   private readonly playerDisplayStore = inject(PlayerDisplayStore);
+  private readonly activeSceneService = inject(ActiveSceneService);
   private readonly recentResources = inject(RecentResourceStore, { optional: true });
   private pendingDecisionResolver?: PendingDecisionResolver;
   private readonly journalEntries = viewChild<JournalEntryList>(JournalEntryList);
@@ -81,6 +83,11 @@ export class LocationWorkspace implements OnInit, PendingChangesAware {
     () => this.draftImagePath() ?? this.selectedLocation()?.imagePath ?? null,
   );
   protected readonly isUsingDemoImage = computed(() => this.effectiveImagePath() === null);
+  protected readonly isSelectedLocationDisplayed = computed(() => {
+    const location = this.selectedLocation();
+    const state = this.playerDisplayStore.state();
+    return location !== null && state.mode === 'location' && state.locationId === location.id;
+  });
   protected readonly locationEntries = computed(() => {
     const entries = buildLocationEntries(this.locations());
     const searchTerm = this.searchTerm().trim().toLocaleLowerCase('fr');
@@ -324,6 +331,13 @@ export class LocationWorkspace implements OnInit, PendingChangesAware {
     this.error.set(null);
 
     try {
+      await this.activeSceneService.clear(location.campaignId);
+      if (this.isSelectedLocationDisplayed()) {
+        const state = { mode: 'neutral' as const };
+        this.playerDisplayStore.setState(state);
+        await this.displayGateway.sendPlayerDisplayState(state);
+        return;
+      }
       const state = {
         mode: 'location' as const,
         locationId: location.id,
@@ -344,7 +358,9 @@ export class LocationWorkspace implements OnInit, PendingChangesAware {
 
   protected playerDisplayActionTitle(): string {
     return this.isPlayerDisplayOpen()
-      ? "Afficher ce lieu sur l'écran joueurs"
+      ? this.isSelectedLocationDisplayed()
+        ? "Retirer ce lieu de l'écran joueurs"
+        : "Afficher ce lieu sur l'écran joueurs"
       : "Ouvre d'abord l'écran joueurs depuis la régie.";
   }
 
@@ -364,9 +380,9 @@ export class LocationWorkspace implements OnInit, PendingChangesAware {
     try {
       const displayState = this.playerDisplayStore.state();
       if (displayState.mode === 'location' && displayState.locationId === location.id) {
-        this.playerDisplayStore.showBlank();
+        this.playerDisplayStore.showNeutral();
         if (this.isPlayerDisplayOpen()) {
-          await this.displayGateway.sendPlayerDisplayState({ mode: 'blank' });
+          await this.displayGateway.sendPlayerDisplayState({ mode: 'neutral' });
         }
       }
 

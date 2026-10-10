@@ -62,11 +62,7 @@ describe('SceneDisplayService', () => {
       background: { type: 'default' },
       foreground: undefined,
     });
-    await expect(service.restore('campaign-id')).resolves.toEqual({
-      mode: 'scene',
-      sceneId: null,
-      background: { type: 'default' },
-    });
+    await expect(service.restore('campaign-id')).resolves.toEqual({ mode: 'neutral' });
     expect(activeScene.clear).toHaveBeenCalledWith('campaign-id');
   });
 

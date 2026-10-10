@@ -16,6 +16,7 @@ import { createEmptyRichTextDocument } from '@app/shared/rich-text-editor/rich-t
 import { RichTextEditor } from '@app/shared/rich-text-editor/rich-text-editor';
 import { ResourceMentionNavigationService } from '@app/shared/rich-text-editor/resource-mention-navigation.service';
 import { NpcWorkspace } from '@app/features/npcs/pages/npc-workspace/npc-workspace';
+import { ActiveSceneService } from '@app/features/scenes/application/active-scene.service';
 
 describe('NpcWorkspace', () => {
   const campaign: Campaign = {
@@ -110,6 +111,7 @@ describe('NpcWorkspace', () => {
     isPlayerDisplayOpen: vi.fn(),
     sendPlayerDisplayState: vi.fn(),
   };
+  const activeSceneService = { clear: vi.fn() };
   const mention = {
     resourceType: 'location' as const,
     resourceId: 'location-id',
@@ -138,6 +140,7 @@ describe('NpcWorkspace', () => {
     idleVideoGateway.discard.mockResolvedValue(undefined);
     displayGateway.isPlayerDisplayOpen.mockResolvedValue(true);
     displayGateway.sendPlayerDisplayState.mockResolvedValue(undefined);
+    activeSceneService.clear.mockResolvedValue(undefined);
     mentionNavigation.listCandidates.mockResolvedValue([mention]);
     mentionNavigation.open.mockResolvedValue(undefined);
 
@@ -159,6 +162,7 @@ describe('NpcWorkspace', () => {
         { provide: NpcPortraitGateway, useValue: portraitGateway },
         { provide: NpcIdleVideoGateway, useValue: idleVideoGateway },
         { provide: DisplayGateway, useValue: displayGateway },
+        { provide: ActiveSceneService, useValue: activeSceneService },
         {
           provide: ActivatedRoute,
           useValue: { snapshot: { paramMap: { get: () => campaign.id } } },

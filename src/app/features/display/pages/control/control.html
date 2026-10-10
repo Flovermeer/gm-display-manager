@@ -110,6 +110,7 @@
         type="button"
         class="content-button"
         [class.active]="displayState().mode === 'location'"
+        [attr.aria-pressed]="displayState().mode === 'location'"
         (click)="showLocation()"
       >
         <span class="button-label">Lieu</span>
@@ -119,6 +120,7 @@
         type="button"
         class="content-button"
         [class.active]="displayState().mode === 'npc'"
+        [attr.aria-pressed]="displayState().mode === 'npc'"
         (click)="showNpc()"
       >
         <span class="button-label">PNJ</span>
@@ -128,6 +130,7 @@
         type="button"
         class="content-button blank-button"
         [class.active]="displayState().mode === 'blank'"
+        [attr.aria-pressed]="displayState().mode === 'blank'"
         (click)="showBlank()"
       >
         <span class="button-label">Sécurité</span>

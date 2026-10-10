@@ -9,6 +9,9 @@
 
   @let display = state();
   @switch (display.mode) {
+    @case ('neutral') {
+      <app-default-display-background />
+    }
     @case ('blank') {
       <div class="blank-screen" aria-label="Écran noir"></div>
     }

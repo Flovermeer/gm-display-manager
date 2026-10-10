@@ -99,10 +99,17 @@
               appButton="secondary"
               type="button"
               [disabled]="!isPlayerDisplayOpen() || isPublishing()"
+              [attr.aria-pressed]="isSelectedLocationDisplayed()"
               [attr.title]="playerDisplayActionTitle()"
               (click)="showLocationOnPlayerDisplay()"
             >
-              {{ isPublishing() ? 'Envoi…' : 'Afficher aux joueurs' }}
+              {{
+                isPublishing()
+                  ? 'Envoi…'
+                  : isSelectedLocationDisplayed()
+                    ? 'Arrêter l’affichage'
+                    : 'Afficher aux joueurs'
+              }}
             </button>
             <button appButton="primary" type="button" (click)="editLocation()">Modifier</button>
             @if (selectedLocation()?.provenance === 'override') {

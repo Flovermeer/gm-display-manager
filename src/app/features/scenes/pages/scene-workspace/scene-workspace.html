@@ -102,22 +102,13 @@
               appButton="secondary"
               type="button"
               [disabled]="isPublishing()"
+              [attr.aria-pressed]="isSceneDisplayed(selectedScene()!)"
               (click)="activateScene()"
             >
               {{
-                activeSceneId() === selectedScene()?.id ? 'Réactiver la scène' : 'Activer la scène'
+                isSceneDisplayed(selectedScene()!) ? 'Arrêter l’affichage' : 'Activer la scène'
               }}
             </button>
-            @if (activeSceneId() === selectedScene()?.id) {
-              <button
-                appButton="secondary"
-                type="button"
-                [disabled]="isPublishing()"
-                (click)="deactivateScene()"
-              >
-                Désactiver la scène
-              </button>
-            }
             <button appButton="primary" type="button" (click)="editScene()">Modifier</button>
             <button appButton="secondary-danger" type="button" (click)="requestDeleteScene()">
               Supprimer
@@ -224,15 +215,7 @@
           </dl>
           @if (activeSceneId() === scene.id) {
             <div class="scene-active">
-              <strong>Scène active</strong
-              ><button
-                appButton="secondary"
-                type="button"
-                [disabled]="isPublishing()"
-                (click)="hideForeground()"
-              >
-                Masquer le premier plan
-              </button>
+              <strong>Scène active</strong>
             </div>
           }
           <section class="scene-resources">
@@ -249,9 +232,10 @@
                         [disabled]="
                           activeSceneId() !== scene.id || !npc.portraitPath || isPublishing()
                         "
+                        [attr.aria-pressed]="isNpcDisplayed(scene, npc)"
                         (click)="showNpc(npc)"
                       >
-                        Afficher
+                        {{ isNpcDisplayed(scene, npc) ? 'Arrêter' : 'Afficher' }}
                       </button>
                     </li>
                   }
@@ -273,9 +257,10 @@
                         [disabled]="
                           activeSceneId() !== scene.id || !item.imagePath || isPublishing()
                         "
+                        [attr.aria-pressed]="isItemDisplayed(scene, item)"
                         (click)="showItem(item)"
                       >
-                        Afficher
+                        {{ isItemDisplayed(scene, item) ? 'Arrêter' : 'Afficher' }}
                       </button>
                     </li>
                   }
@@ -347,7 +332,7 @@
     headingId="scene-delete-title"
     ><p>
       Cette action supprimera définitivement la scène et ses notes. Si elle est active, l’écran
-      joueurs reviendra au fond par défaut.
+      joueurs reviendra au fond animé neutre.
     </p>
     <div dialog-actions class="scene-dialog-actions">
       <button appButton="secondary" type="button" (click)="cancelDelete()">Annuler</button

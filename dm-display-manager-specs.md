@@ -51,7 +51,8 @@ Il doit pouvoir afficher :
 - illustration d’un objet ;
 - document ou indice ;
 - visuel d’ambiance ;
-- écran noir / neutre si nécessaire.
+- fond animé neutre lorsqu’aucun contenu n’est envoyé ;
+- écran noir de sécurité lorsque le MJ veut masquer explicitement l’affichage.
 
 Format envisagé :
 

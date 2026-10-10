@@ -1,10 +1,10 @@
 import { PlayerDisplayStore } from '@app/features/display/application/player-display.store';
 
 describe('PlayerDisplayStore', () => {
-  it('starts with a blank display', () => {
+  it('starts with the neutral display', () => {
     const store = new PlayerDisplayStore();
 
-    expect(store.state()).toEqual({ mode: 'blank' });
+    expect(store.state()).toEqual({ mode: 'neutral' });
   });
 
   it('replaces the complete display state', () => {
@@ -25,7 +25,7 @@ describe('PlayerDisplayStore', () => {
     });
   });
 
-  it('returns to blank from another mode', () => {
+  it('returns to neutral from another mode', () => {
     const store = new PlayerDisplayStore();
     store.setState({
       mode: 'npc',
@@ -34,8 +34,8 @@ describe('PlayerDisplayStore', () => {
       portraitPath: '/demo/innkeeper.svg',
     });
 
-    store.showBlank();
+    store.showNeutral();
 
-    expect(store.state()).toEqual({ mode: 'blank' });
+    expect(store.state()).toEqual({ mode: 'neutral' });
   });
 });

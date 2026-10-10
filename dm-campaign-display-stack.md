@@ -708,7 +708,8 @@ Scene {
 }
 ```
 
-Le Player Display peut alors revenir automatiquement au lieu lorsque le PNJ est masqué.
+Une action d’affichage est un toggle : retirer le contenu courant revient toujours au fond animé
+neutre, sans restaurer le lieu ou un autre contenu précédent.
 
 ---
 

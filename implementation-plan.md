@@ -73,14 +73,14 @@ coordonnées et huit sauvegardes sans fermeture ni erreur.
 | 1 — Shell Angular + Tauri   | Terminé                              | Application standalone zoneless, routes Angular, fenêtre principale maximisée et capabilities Tauri en place.                                                                                                                                                                     |
 | 2 — Multi-écran             | Validé sur le matériel courant       | Détection, plein écran, fermeture, réouverture, perte, reconnexion, changement de coordonnées et facteurs d'échelle distincts sont validés avec deux écrans. Une paire de moniteurs identiques reste à tester.                                                                    |
 | 3 — Régie verticale         | Terminé                              | Écran noir, lieux, PNJ et objets peuvent être envoyés au Player Display ; synchronisation `ready` et fallback statique des PNJ en place.                                                                                                                                          |
-| 4 — SQLite                  | Terminé pour les tranches livrées    | Vingt-et-une migrations couvrent notamment systèmes, univers, campagnes, propriété des ressources, référentiels de personnages, combat, historique récent, tables aléatoires et classement des scènes par chapitre. Repositories Tauri et mémoire isolés derrière des interfaces. |
+| 4 — SQLite                  | Terminé pour les tranches livrées    | Vingt-trois migrations couvrent notamment systèmes, univers, campagnes, propriété des ressources, référentiels de personnages, combat, historique récent, tables aléatoires et classement des scènes par chapitre. Repositories Tauri et mémoire isolés derrière des interfaces. |
 | 5 — Gestion de campagne     | Terminé et étendu                    | CRUD campagnes, lieux hiérarchiques, PNJ structurés, PJ orientés MJ et objets narratifs. Navigation campagne persistante et protection des modifications non enregistrées.                                                                                                        |
 | 6 — Médias locaux           | Durcissement V1.1 validé dans Tauri  | Import/copie locale des portraits PNJ/PJ, images de lieux, objets et monstres, vidéo idle PNJ et nettoyage des médias. Le diagnostic natif et le remplacement au même chemin sont validés sans faux positif.                                                                      |
 | 7 — Tiptap et journal       | Terminé pour l’usage actuel          | Chapitres et descriptions riches, notes journalisées éditables, regroupement quotidien, mentions `@` cliquables vers les ressources de campagne et fallback texte si la cible disparaît.                                                                                          |
 | 8 — Scènes                  | V1 terminée                          | Composition facultative avec lieu + PNJ + monstres + objets, activation du Player Display, appartenance obligatoire à un chapitre, ordre manuel, gestion depuis le chapitre et mentions `@` sont livrés.                                                                          |
 | 9 — Bestiaire               | Terminé et catalogue global finalisé | Les catalogues canoniques PNJ, PJ, lieux, objets et monstres disposent d’éditeurs détaillés par univers. Le bestiaire conserve sa sélection par campagne, sa fiche D&D complète, ses scènes, notes et mentions `@`.                                                               |
 | 10 — Combat léger           | Terminé                              | Un combat actif persistant par campagne, panneau MJ superposé, ajout PJ/PNJ/monstres, initiative manuelle triée et suivi rapide des PV.                                                                                                                                           |
-| 11 — Historique récent      | Terminé                              | Huit pills persistées et cliquables par campagne, dédupliquées par récence et purgées lorsque leur cible disparaît.                                                                                                                                                               |
+| 11 — Historique récent      | Terminé                              | Cinq pills persistées et cliquables par campagne, dédupliquées par récence et purgées lorsque leur cible disparaît.                                                                                                                                                               |
 | 12 — Carte heuristique      | Terminé                              | Graphe interactif progressif dans Carte et Chapitres, dérivé des chapitres, scènes, ressources liées et mentions `@`, avec navigation et fallback des cibles supprimées.                                                                                                          |
 | 13 — Tables aléatoires      | Terminé                              | CRUD atomique de tables privées au MJ, plages de 1 à 100 triées automatiquement, validation de couverture continue et tirage uniforme sans historique.                                                                                                                            |
 | 14 — Durcissement/livraison | V1.1 en cours                        | Les flux natifs principaux, la restauration depuis des données vierges, quatre heures de session accélérée, la rotation réelle des journaux et la génération de l'installeur NSIS sont validés. Restent les moniteurs identiques et l'installation sur une autre machine.         |
@@ -104,7 +104,7 @@ coordonnées et huit sauvegardes sans fermeture ni erreur.
   médias, usage par les campagnes, corbeille et restauration ;
 - types et raretés d’objets administrables au niveau de l’univers et partagés par ses campagnes.
 - combat actif privé au MJ, persistant et accessible depuis toute page de campagne sans perdre le contexte courant.
-- historique des huit dernières ressources consultées, persistant par campagne et accessible sous la navigation.
+- historique des cinq dernières ressources consultées, persistant par campagne et accessible sous la navigation.
 - tables aléatoires privées au MJ avec brouillons incomplets, plages continues et tirage local.
 
 ### Prochaine version
@@ -357,6 +357,8 @@ Travail :
 
 - lister, créer, modifier et supprimer une campagne ;
 - lister, créer et modifier ses lieux et PNJ ;
+- permettre de replier les branches de lieux, mémoriser cet état par campagne et ignorer les replis
+  pendant une recherche ;
 - fournir aux lieux une description riche propre à chaque campagne, avec mentions `@` ;
 - demander confirmation avant une suppression destructive ;
 - utiliser des formulaires Angular typés avec validations simples ;
@@ -582,7 +584,7 @@ Périmètre livré :
 - afficher sous la barre de navigation des pills cliquables pour les dernières ressources consultées ;
 - couvrir PNJ, PJ, lieux, chapitres, objets, scènes et monstres ;
 - dédupliquer une ressource revisitée et la replacer en tête ;
-- conserver au maximum huit entrées persistées dans SQLite et isolées par campagne ;
+- conserver au maximum cinq entrées persistées dans SQLite et isolées par campagne ;
 - enregistrer une consultation dès que la fiche est effectivement affichée, quel que soit son point d'entrée ;
 - afficher le type abrégé et le nom actuel de chaque ressource ;
 - masquer entièrement la rangée lorsqu'elle est vide ;

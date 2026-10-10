@@ -3,7 +3,7 @@
  * Porte l'état réactif de l'historique récent pour le layout de campagne.
  *
  * Responsabilités
- * - expose au maximum huit ressources de la plus récente à la plus ancienne ;
+ * - expose au maximum cinq ressources de la plus récente à la plus ancienne ;
  * - sérialise les consultations et suppressions afin de préserver leur ordre.
  */
 

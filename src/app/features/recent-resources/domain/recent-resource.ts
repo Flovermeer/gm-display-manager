@@ -1,4 +1,4 @@
-export const RECENT_RESOURCE_LIMIT = 8;
+export const RECENT_RESOURCE_LIMIT = 5;
 
 export type RecentResourceType =
   'player-character' | 'npc' | 'monster' | 'location' | 'chapter' | 'item' | 'scene';

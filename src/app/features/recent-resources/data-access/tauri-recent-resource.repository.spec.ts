@@ -34,7 +34,7 @@ describe('TauriRecentResourceRepository', () => {
       },
     ]);
     expect(database.select).toHaveBeenCalledWith(
-      expect.stringContaining('ORDER BY viewed_order DESC'),
+      expect.stringMatching(/ORDER BY viewed_order DESC\s+LIMIT 5/),
       ['campaign-id'],
     );
   });

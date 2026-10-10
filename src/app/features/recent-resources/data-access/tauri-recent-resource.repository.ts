@@ -11,9 +11,10 @@ import { Injectable } from '@angular/core';
 import Database from '@tauri-apps/plugin-sql';
 
 import { RecentResourceRepository } from '@app/features/recent-resources/data-access/recent-resource.repository';
-import type {
-  RecentResource,
-  RecentResourceType,
+import {
+  RECENT_RESOURCE_LIMIT,
+  type RecentResource,
+  type RecentResourceType,
 } from '@app/features/recent-resources/domain/recent-resource';
 
 const DATABASE_URL = 'sqlite:beholders-inn.db';
@@ -38,7 +39,7 @@ export class TauriRecentResourceRepository extends RecentResourceRepository {
        FROM recent_resource
        WHERE campaign_id=$1
        ORDER BY viewed_order DESC
-       LIMIT 8`,
+       LIMIT ${RECENT_RESOURCE_LIMIT}`,
       [campaignId],
     );
     return rows.map(mapRecentResource);

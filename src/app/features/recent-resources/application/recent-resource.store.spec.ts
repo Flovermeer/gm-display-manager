@@ -39,6 +39,25 @@ describe('RecentResourceStore', () => {
     expect(service.save).toHaveBeenCalledTimes(3);
   });
 
+  it('exposes only the five most recent resources', async () => {
+    await store.initialize('campaign-id');
+    for (let index = 1; index <= 6; index += 1) {
+      await store.record({
+        resourceType: 'npc',
+        resourceId: `npc-${index}`,
+        displayName: `NPC ${index}`,
+      });
+    }
+
+    expect(store.resources().map(({ resourceId }) => resourceId)).toEqual([
+      'npc-6',
+      'npc-5',
+      'npc-4',
+      'npc-3',
+      'npc-2',
+    ]);
+  });
+
   it('removes an unavailable target immediately', async () => {
     await store.initialize('campaign-id');
     await store.record({ resourceType: 'scene', resourceId: 'scene-id', displayName: 'Audience' });

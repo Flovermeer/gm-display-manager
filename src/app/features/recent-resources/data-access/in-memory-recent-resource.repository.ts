@@ -4,7 +4,7 @@
  *
  * Responsabilités
  * - sert d'adaptateur navigateur et de doublure de test ;
- * - reproduit la limite persistante de huit ressources par campagne.
+ * - reproduit la limite persistante de cinq ressources par campagne.
  */
 
 import { RecentResourceRepository } from '@app/features/recent-resources/data-access/recent-resource.repository';

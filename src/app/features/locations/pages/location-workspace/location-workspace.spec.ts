@@ -14,6 +14,9 @@ import { LocationWorkspace } from '@app/features/locations/pages/location-worksp
 import { ResourceMentionNavigationService } from '@app/shared/rich-text-editor/resource-mention-navigation.service';
 import { ActiveSceneService } from '@app/features/scenes/application/active-scene.service';
 import { createEmptyRichTextDocument } from '@app/shared/rich-text-editor/rich-text-document';
+import { AppSettingRepository } from '@app/core/persistence/app-setting.repository';
+import { InMemoryAppSettingRepository } from '@app/core/persistence/in-memory-app-setting.repository';
+import { LocationTreeStateService } from '@app/features/locations/application/location-tree-state.service';
 
 describe('LocationWorkspace', () => {
   const campaign: Campaign = {
@@ -95,6 +98,7 @@ describe('LocationWorkspace', () => {
         { provide: LocationImageGateway, useValue: imageGateway },
         { provide: DisplayGateway, useValue: displayGateway },
         { provide: ActiveSceneService, useValue: activeSceneService },
+        { provide: AppSettingRepository, useClass: InMemoryAppSettingRepository },
         {
           provide: ActivatedRoute,
           useValue: { snapshot: { paramMap: { get: () => campaign.id } } },
@@ -118,7 +122,52 @@ describe('LocationWorkspace', () => {
       'Chult',
       'Port Nyanzaru',
     ]);
-    expect(items[1].style.getPropertyValue('--location-depth')).toBe('1');
+    expect(items[1].closest<HTMLElement>('.location-list-row')?.style.getPropertyValue('--location-depth')).toBe(
+      '1',
+    );
+  });
+
+  it('collapses a location branch without selecting the parent and persists it', async () => {
+    const fixture = TestBed.createComponent(LocationWorkspace);
+    fixture.detectChanges();
+    await renderUntil(fixture, 'Port Nyanzaru');
+    const element = fixture.nativeElement as HTMLElement;
+
+    element.querySelector<HTMLButtonElement>('.location-tree-toggle')?.click();
+
+    await vi.waitFor(async () => {
+      fixture.detectChanges();
+      expect(element.textContent).not.toContain('Port Nyanzaru');
+      expect(element.querySelector('.location-list-row--collapsed')).toBeTruthy();
+      await expect(TestBed.inject(LocationTreeStateService).load(campaign.id)).resolves.toEqual(
+        new Set([chult.id]),
+      );
+    });
+    expect(element.querySelector('.location-list-item.active')).toBeNull();
+  });
+
+  it('restores collapsed branches but exposes their matches while searching', async () => {
+    await TestBed.inject(LocationTreeStateService).save(campaign.id, new Set([chult.id]));
+    const fixture = TestBed.createComponent(LocationWorkspace);
+    fixture.detectChanges();
+    await renderUntil(fixture, 'Chult');
+    const element = fixture.nativeElement as HTMLElement;
+
+    expect(element.textContent).not.toContain('Port Nyanzaru');
+    const search = element.querySelector<HTMLInputElement>('#location-search');
+    if (!search) throw new Error('Location search field not found.');
+    search.value = 'Port';
+    search.dispatchEvent(new Event('input'));
+    fixture.detectChanges();
+
+    expect(element.textContent).toContain('Port Nyanzaru');
+    expect(element.textContent).toContain('Chult › Port Nyanzaru');
+    expect(element.querySelector('.location-tree-toggle')).toBeNull();
+
+    search.value = '';
+    search.dispatchEvent(new Event('input'));
+    fixture.detectChanges();
+    expect(element.textContent).not.toContain('Port Nyanzaru');
   });
 
   it('asks what to do before leaving a dirty form', async () => {

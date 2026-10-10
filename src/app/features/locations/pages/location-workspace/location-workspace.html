@@ -46,16 +46,43 @@
         </p>
       } @else {
         @for (entry of locationEntries(); track entry.location.id) {
-          <button
-            class="location-list-item"
-            type="button"
-            [class.active]="selectedLocation()?.id === entry.location.id && !isCreating()"
+          <div
+            class="location-list-row"
+            [class.location-list-row--collapsed]="
+              entry.hasChildren && !searchTerm() && isLocationCollapsed(entry.location.id)
+            "
             [style.--location-depth]="entry.depth"
-            (click)="requestSelectLocation(entry.location)"
           >
-            <strong>{{ entry.location.name }}</strong>
-            <span>{{ searchTerm() ? entry.path : entry.location.summary || 'Lieu' }}</span>
-          </button>
+            @if (entry.hasChildren && !searchTerm()) {
+              <button
+                class="location-tree-toggle"
+                type="button"
+                [attr.aria-expanded]="!isLocationCollapsed(entry.location.id)"
+                [attr.aria-label]="
+                  (isLocationCollapsed(entry.location.id) ? 'Déplier ' : 'Replier ') +
+                  entry.location.name
+                "
+                [attr.title]="
+                  (isLocationCollapsed(entry.location.id) ? 'Déplier ' : 'Replier ') +
+                  entry.location.name
+                "
+                (click)="toggleLocationCollapsed(entry.location.id)"
+              >
+                {{ isLocationCollapsed(entry.location.id) ? '▸' : '▾' }}
+              </button>
+            } @else {
+              <span class="location-tree-spacer" aria-hidden="true"></span>
+            }
+            <button
+              class="location-list-item"
+              type="button"
+              [class.active]="selectedLocation()?.id === entry.location.id && !isCreating()"
+              (click)="requestSelectLocation(entry.location)"
+            >
+              <strong>{{ entry.location.name }}</strong>
+              <span>{{ searchTerm() ? entry.path : entry.location.summary || 'Lieu' }}</span>
+            </button>
+          </div>
         }
       }
     </div>

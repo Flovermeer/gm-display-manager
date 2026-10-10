@@ -8,6 +8,7 @@ import { DisplayGateway } from '@app/features/display/data-access/display.gatewa
 import { PlayerDisplayStore } from '@app/features/display/application/player-display.store';
 import type { Location, UpdateLocationInput } from '@app/features/locations/domain/location';
 import { LocationService } from '@app/features/locations/application/location.service';
+import { LocationTreeStateService } from '@app/features/locations/application/location-tree-state.service';
 import { LocationImageGateway } from '@app/features/locations/data-access/location-image.gateway';
 import type { PendingChangesAware } from '@app/core/navigation/pending-changes.guard';
 import { JournalEntryList } from '@app/features/journal/ui/journal-entry-list/journal-entry-list';
@@ -28,7 +29,12 @@ import type { ResourceMentionCandidate } from '@app/shared/rich-text-editor/reso
 import { ResourceMentionNavigationService } from '@app/shared/rich-text-editor/resource-mention-navigation.service';
 
 type PendingDecisionResolver = (canLeave: boolean) => void;
-type LocationListEntry = Readonly<{ location: Location; depth: number; path: string }>;
+type LocationListEntry = Readonly<{
+  location: Location;
+  depth: number;
+  path: string;
+  hasChildren: boolean;
+}>;
 
 const DEMO_LOCATION_IMAGE_URL = '/demo/tavern.svg';
 
@@ -53,6 +59,7 @@ export class LocationWorkspace implements OnInit, PendingChangesAware {
   private readonly route = inject(ActivatedRoute);
   private readonly destroyRef = inject(DestroyRef);
   private readonly locationService = inject(LocationService);
+  private readonly locationTreeState = inject(LocationTreeStateService);
   private readonly locationImageGateway = inject(LocationImageGateway);
   private readonly displayGateway = inject(DisplayGateway);
   private readonly playerDisplayStore = inject(PlayerDisplayStore);
@@ -73,6 +80,7 @@ export class LocationWorkspace implements OnInit, PendingChangesAware {
   protected readonly imageUrl = signal<string>(DEMO_LOCATION_IMAGE_URL);
   protected readonly draftImagePath = signal<string | null>(null);
   protected readonly searchTerm = signal('');
+  protected readonly collapsedLocationIds = signal<ReadonlySet<string>>(new Set());
   protected readonly isSidebarCollapsed = signal(false);
   protected readonly isLoading = signal(true);
   protected readonly isSaving = signal(false);
@@ -103,7 +111,7 @@ export class LocationWorkspace implements OnInit, PendingChangesAware {
     const entries = buildLocationEntries(this.locations());
     const searchTerm = this.searchTerm().trim().toLocaleLowerCase('fr');
     if (!searchTerm) {
-      return entries;
+      return hideCollapsedDescendants(entries, this.collapsedLocationIds());
     }
 
     return entries
@@ -154,6 +162,27 @@ export class LocationWorkspace implements OnInit, PendingChangesAware {
 
   protected updateSearch(event: Event): void {
     this.searchTerm.set((event.target as HTMLInputElement).value);
+  }
+
+  protected isLocationCollapsed(locationId: string): boolean {
+    return this.collapsedLocationIds().has(locationId);
+  }
+
+  protected toggleLocationCollapsed(locationId: string): void {
+    const collapsedLocationIds = new Set(this.collapsedLocationIds());
+    if (collapsedLocationIds.has(locationId)) {
+      collapsedLocationIds.delete(locationId);
+    } else {
+      collapsedLocationIds.add(locationId);
+    }
+    this.collapsedLocationIds.set(collapsedLocationIds);
+
+    const campaign = this.campaign();
+    if (campaign) {
+      void this.locationTreeState
+        .save(campaign.id, collapsedLocationIds)
+        .catch((error: unknown) => this.error.set(this.errorMessage(error)));
+    }
   }
 
   protected async requestSelectLocation(location: Location): Promise<void> {
@@ -453,11 +482,13 @@ export class LocationWorkspace implements OnInit, PendingChangesAware {
     try {
       const campaign = await this.campaignContext.load();
       if (!campaign) return;
-      const [, mentionCandidates] = await Promise.all([
+      const [, mentionCandidates, collapsedLocationIds] = await Promise.all([
         this.reloadLocations(),
         this.mentionNavigation.listCandidates(campaign.id),
+        this.locationTreeState.load(campaign.id),
       ]);
       this.mentionCandidates.set(mentionCandidates);
+      this.collapsedLocationIds.set(collapsedLocationIds);
       await this.openRequestedLocation(
         this.route.snapshot.queryParamMap?.get('resourceId'),
         this.route.snapshot.queryParamMap?.get('entryId'),
@@ -633,7 +664,12 @@ function buildLocationEntries(locations: readonly Location[]): readonly Location
       }
       visited.add(location.id);
       const path = parentPath ? `${parentPath} › ${location.name}` : location.name;
-      entries.push({ location, depth, path });
+      entries.push({
+        location,
+        depth,
+        path,
+        hasChildren: (byParent.get(location.id)?.length ?? 0) > 0,
+      });
       append(location.id, depth + 1, path);
     }
   };
@@ -641,10 +677,34 @@ function buildLocationEntries(locations: readonly Location[]): readonly Location
   append(null, 0, '');
   for (const location of locations) {
     if (!visited.has(location.id)) {
-      entries.push({ location, depth: 0, path: location.name });
+      entries.push({
+        location,
+        depth: 0,
+        path: location.name,
+        hasChildren: (byParent.get(location.id)?.length ?? 0) > 0,
+      });
     }
   }
   return entries;
+}
+
+function hideCollapsedDescendants(
+  entries: readonly LocationListEntry[],
+  collapsedLocationIds: ReadonlySet<string>,
+): readonly LocationListEntry[] {
+  const hiddenDepths: number[] = [];
+
+  return entries.filter((entry) => {
+    while (hiddenDepths.length > 0 && entry.depth <= hiddenDepths.at(-1)!) {
+      hiddenDepths.pop();
+    }
+
+    const isHidden = hiddenDepths.length > 0;
+    if (!isHidden && collapsedLocationIds.has(entry.location.id)) {
+      hiddenDepths.push(entry.depth);
+    }
+    return !isHidden;
+  });
 }
 
 function descendantIds(locations: readonly Location[], parentId: string): Set<string> {

@@ -3,5 +3,4 @@
 - quand je clique sur un lien (genre autre pnj), ça devrait me remonter au-dessus de la page (DONE)
 - Pour les lieux, ajouter une deuxième image facultative pour la carte (map). Elle devrait s'ouvrir en grand quand on clique dessus (écran MJ) et devrait pouvoir être diffusée. En fait je me dis qu'il faudrait pouvoir uploader plusieurs images /lieu. Avoir des flèches gauche/droite de part et d'autre de la miniature pour changer. Quand on choisi d'afficher au joueur, c'est l'image courante. Quand on cliue dessus, ça s'ouvre en grand (DONE)
 - Dans la visionneuse des lieux, ajuster l'image à la taille de l'écran et permettre de zoomer, dézoomer, réinitialiser et naviguer par cliquer-glisser (DONE)
-- Corriger l'éditeur de texte riche : `Ctrl+I` active l'italique mais ne le désactive pas au second appui, et les boutons de mise en forme réagissent de manière irrégulière.
 - Mémoriser l'état ouvert ou replié du drawer gauche : la création ou le changement d'une ressource, notamment une scène, ne doit pas le rouvrir systématiquement.

@@ -1,8 +1,13 @@
+import { invoke } from '@tauri-apps/api/core';
 import Database from '@tauri-apps/plugin-sql';
 
 import type { Location } from '@app/features/locations/domain/location';
 import { TauriLocationRepository } from '@app/features/locations/data-access/tauri-location.repository';
 import { createEmptyRichTextDocument } from '@app/shared/rich-text-editor/rich-text-document';
+
+vi.mock('@tauri-apps/api/core', () => ({
+  invoke: vi.fn(),
+}));
 
 vi.mock('@tauri-apps/plugin-sql', () => ({
   default: { load: vi.fn() },
@@ -17,6 +22,7 @@ describe('TauriLocationRepository', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.mocked(Database.load).mockResolvedValue(database as never);
+    vi.mocked(invoke).mockResolvedValue(undefined);
     database.execute.mockResolvedValue({ rowsAffected: 1 });
   });
 
@@ -48,32 +54,21 @@ describe('TauriLocationRepository', () => {
 
     await repository.save(location);
 
-    expect(database.execute).toHaveBeenCalledWith(expect.stringContaining('ON CONFLICT(id)'), [
-      'location-id',
-      'campaign-id',
-      'parent-id',
-      "Beholder's Inn",
-      'Auberge de Port Nyanzaru',
-      'campaigns/campaign-id/media/locations/inn.webp',
-      '2026-08-12T18:30:00.000Z',
-      '2026-08-12T18:30:00.000Z',
-    ]);
-    expect(database.execute).toHaveBeenCalledWith(expect.stringContaining('campaign_location'), [
-      'campaign-id',
-      'location-id',
-      '2026-08-12T18:30:00.000Z',
-      JSON.stringify(createEmptyRichTextDocument()),
-    ]);
-    expect(database.execute).toHaveBeenCalledWith(
-      expect.stringContaining('INSERT INTO location_image'),
-      [
-        'location-id',
-        'campaigns/campaign-id/media/locations/inn.webp',
-        0,
-        '2026-08-12T18:30:00.000Z',
-      ],
-    );
-    expect(database.execute).toHaveBeenCalledWith('COMMIT');
+    expect(invoke).toHaveBeenCalledWith('save_location_transaction', {
+      input: {
+        id: 'location-id',
+        campaignId: 'campaign-id',
+        parentLocationId: 'parent-id',
+        name: "Beholder's Inn",
+        summary: 'Auberge de Port Nyanzaru',
+        descriptionJson: JSON.stringify(createEmptyRichTextDocument()),
+        imagePath: 'campaigns/campaign-id/media/locations/inn.webp',
+        imagePaths: ['campaigns/campaign-id/media/locations/inn.webp'],
+        createdAt: '2026-08-12T18:30:00.000Z',
+        updatedAt: '2026-08-12T18:30:00.000Z',
+        overrideSnapshotJson: null,
+      },
+    });
   });
 });
 

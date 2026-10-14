@@ -2,6 +2,7 @@ use tauri_plugin_sql::{Migration, MigrationKind};
 
 mod backup;
 mod diagnostics;
+mod location;
 
 const DATABASE_URL: &str = "sqlite:beholders-inn.db";
 
@@ -42,6 +43,7 @@ pub fn run() {
             backup::take_restore_result,
             backup::exit_application,
             diagnostics::open_log_directory,
+            location::save_location_transaction,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

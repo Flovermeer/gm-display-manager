@@ -9,6 +9,7 @@
  */
 
 import { Injectable } from '@angular/core';
+import { invoke } from '@tauri-apps/api/core';
 import Database from '@tauri-apps/plugin-sql';
 
 import type { Location } from '@app/features/locations/domain/location';
@@ -94,54 +95,23 @@ export class TauriLocationRepository extends LocationRepository {
   }
 
   override async save(location: Location): Promise<void> {
-    const database = await this.database();
-    await database.execute('BEGIN IMMEDIATE');
-    try {
-      if (location.provenance !== 'campaign') {
-        await database.execute(
-          `INSERT INTO campaign_resource_override(
-           campaign_id, resource_type, resource_id, snapshot_json, created_at, updated_at
-         ) VALUES ($1,'location',$2,$3,$4,$4)
-         ON CONFLICT(campaign_id, resource_type, resource_id) DO UPDATE SET
-           snapshot_json=excluded.snapshot_json, updated_at=excluded.updated_at`,
-          [
-            location.campaignId,
-            location.id,
-            JSON.stringify(snapshot(location)),
-            location.updatedAt,
-          ],
-        );
-      } else {
-        await database.execute(
-          `INSERT INTO location(
-           id, universe_id, parent_location_id, name, summary, image_path,
-           created_at, updated_at, source_campaign_id
-         ) VALUES ($1,(SELECT universe_id FROM campaign WHERE id=$2),$3,$4,$5,$6,$7,$8,$2)
-         ON CONFLICT(id) DO UPDATE SET
-           parent_location_id=excluded.parent_location_id,
-           name=excluded.name, summary=excluded.summary,
-           image_path=excluded.image_path, updated_at=excluded.updated_at
-         WHERE location.universe_id=excluded.universe_id
-           AND location.source_campaign_id=excluded.source_campaign_id`,
-          [
-            location.id,
-            location.campaignId,
-            location.parentLocationId,
-            location.name,
-            location.summary,
-            location.imagePath,
-            location.createdAt,
-            location.updatedAt,
-          ],
-        );
-      }
-      await this.saveAssociation(location, database);
-      await this.replaceImages(location, database);
-      await database.execute('COMMIT');
-    } catch (error) {
-      await database.execute('ROLLBACK').catch(() => undefined);
-      throw error;
-    }
+    await this.database();
+    await invoke('save_location_transaction', {
+      input: {
+        id: location.id,
+        campaignId: location.campaignId,
+        parentLocationId: location.parentLocationId,
+        name: location.name,
+        summary: location.summary,
+        descriptionJson: JSON.stringify(location.description),
+        imagePath: location.imagePath,
+        imagePaths: location.imagePaths,
+        createdAt: location.createdAt,
+        updatedAt: location.updatedAt,
+        overrideSnapshotJson:
+          location.provenance === 'campaign' ? null : JSON.stringify(snapshot(location)),
+      },
+    });
   }
 
   override async delete(campaignId: string, id: string): Promise<void> {
@@ -240,31 +210,6 @@ export class TauriLocationRepository extends LocationRepository {
        WHERE campaign_id=$1 AND resource_type='location' AND resource_id=$2`,
       [campaignId, id],
     );
-  }
-
-  private async saveAssociation(location: Location, database: Database): Promise<void> {
-    await database.execute(
-      `INSERT INTO campaign_location(campaign_id, location_id, created_at, description_json)
-       VALUES ($1,$2,$3,$4)
-       ON CONFLICT(campaign_id, location_id) DO UPDATE SET
-         description_json=excluded.description_json`,
-      [location.campaignId, location.id, location.createdAt, JSON.stringify(location.description)],
-    );
-  }
-
-  private async replaceImages(location: Location, database: Database): Promise<void> {
-    await database.execute('DELETE FROM location_image WHERE location_id=$1', [location.id]);
-    for (const [position, imagePath] of location.imagePaths.entries()) {
-      await database.execute(
-        `INSERT INTO location_image(location_id, image_path, position, created_at)
-         VALUES ($1,$2,$3,$4)`,
-        [location.id, imagePath, position, location.updatedAt],
-      );
-    }
-    await database.execute('UPDATE location SET image_path=$2 WHERE id=$1', [
-      location.id,
-      location.imagePath,
-    ]);
   }
 
   private async select(query: string, values: readonly unknown[]): Promise<readonly Location[]> {

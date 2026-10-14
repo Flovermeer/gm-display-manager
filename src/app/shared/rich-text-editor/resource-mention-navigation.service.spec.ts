@@ -20,12 +20,20 @@ describe('ResourceMentionNavigationService', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    npcService.list.mockResolvedValue([{ id: 'npc-id', name: 'Syndra' }]);
-    locationService.list.mockResolvedValue([{ id: 'location-id', name: 'Port Nyanzaru' }]);
+    npcService.list.mockResolvedValue([
+      { id: 'npc-id', name: 'Syndra', portraitPath: 'portrait.webp' },
+    ]);
+    locationService.list.mockResolvedValue([
+      { id: 'location-id', name: 'Port Nyanzaru', imagePath: 'port.webp' },
+    ]);
     characterService.list.mockResolvedValue([{ id: 'character-id', name: 'Flore' }]);
-    itemService.list.mockResolvedValue([{ id: 'item-id', name: "Anneau de l'Hiver" }]);
+    itemService.list.mockResolvedValue([
+      { id: 'item-id', name: "Anneau de l'Hiver", imagePath: 'ring.webp' },
+    ]);
     sceneService.list.mockResolvedValue([{ id: 'scene-id', name: 'Audience à la villa' }]);
-    monsterService.list.mockResolvedValue([{ id: 'monster-id', name: 'Atropal' }]);
+    monsterService.list.mockResolvedValue([
+      { id: 'monster-id', name: 'Atropal', imagePath: 'atropal.webp' },
+    ]);
     router.navigate.mockResolvedValue(true);
     TestBed.configureTestingModule({
       providers: [
@@ -46,11 +54,36 @@ describe('ResourceMentionNavigationService', () => {
 
     await expect(service.listCandidates('campaign-id')).resolves.toEqual([
       { resourceType: 'player-character', resourceId: 'character-id', label: 'Flore' },
-      { resourceType: 'npc', resourceId: 'npc-id', label: 'Syndra' },
-      { resourceType: 'monster', resourceId: 'monster-id', label: 'Atropal' },
-      { resourceType: 'location', resourceId: 'location-id', label: 'Port Nyanzaru' },
-      { resourceType: 'item', resourceId: 'item-id', label: "Anneau de l'Hiver" },
-      { resourceType: 'scene', resourceId: 'scene-id', label: 'Audience à la villa' },
+      {
+        resourceType: 'npc',
+        resourceId: 'npc-id',
+        label: 'Syndra',
+        playerDisplayAvailable: true,
+      },
+      {
+        resourceType: 'monster',
+        resourceId: 'monster-id',
+        label: 'Atropal',
+        playerDisplayAvailable: true,
+      },
+      {
+        resourceType: 'location',
+        resourceId: 'location-id',
+        label: 'Port Nyanzaru',
+        playerDisplayAvailable: true,
+      },
+      {
+        resourceType: 'item',
+        resourceId: 'item-id',
+        label: "Anneau de l'Hiver",
+        playerDisplayAvailable: true,
+      },
+      {
+        resourceType: 'scene',
+        resourceId: 'scene-id',
+        label: 'Audience à la villa',
+        playerDisplayAvailable: true,
+      },
     ]);
     await service.open('campaign-id', {
       resourceType: 'npc',

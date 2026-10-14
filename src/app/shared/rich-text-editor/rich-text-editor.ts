@@ -6,6 +6,7 @@ import {
   OnDestroy,
   ViewEncapsulation,
   effect,
+  inject,
   input,
   output,
   signal,
@@ -26,6 +27,7 @@ import {
   type ResourceMentionCandidate,
   type ResourceMentionMatch,
 } from '@app/shared/rich-text-editor/resource-mention';
+import { ResourceMentionDisplayGateway } from '@app/shared/rich-text-editor/resource-mention-display.gateway';
 
 @Component({
   selector: 'app-rich-text-editor',
@@ -34,6 +36,7 @@ import {
   encapsulation: ViewEncapsulation.None,
 })
 export class RichTextEditor implements AfterViewInit, OnDestroy {
+  private readonly mentionDisplay = inject(ResourceMentionDisplayGateway, { optional: true });
   readonly value = input<RichTextDocument>(createEmptyRichTextDocument());
   readonly editable = input(true);
   readonly mentionCandidates = input<readonly ResourceMentionCandidate[]>([]);
@@ -45,6 +48,7 @@ export class RichTextEditor implements AfterViewInit, OnDestroy {
   private readonly editorRevision = signal(0);
   protected readonly mentionMatch = signal<ResourceMentionMatch | null>(null);
   protected readonly selectedMentionIndex = signal(0);
+  protected readonly displayError = signal<string | null>(null);
   protected readonly filteredMentionCandidates = computed(() => {
     const match = this.mentionMatch();
     if (!match) return [];
@@ -77,6 +81,13 @@ export class RichTextEditor implements AfterViewInit, OnDestroy {
     this.editor.commands.setContent(this.editor.getJSON(), { emitUpdate: false });
   });
 
+  private readonly synchronizeMentionDisplayState = effect(() => {
+    this.mentionDisplay?.isPlayerDisplayOpen();
+    this.mentionDisplay?.isPublishing();
+    this.editorReady();
+    this.updateMentionDisplayButtons();
+  });
+
   ngAfterViewInit(): void {
     this.editor = new Editor({
       element: this.editorHost().nativeElement,
@@ -93,6 +104,8 @@ export class RichTextEditor implements AfterViewInit, OnDestroy {
               (candidate) =>
                 candidate.resourceType === resourceType && candidate.resourceId === resourceId,
             ),
+          displayState: (resourceType, resourceId) =>
+            this.mentionDisplayState(resourceType, resourceId),
         }),
         createResourceMentionTrigger(
           (match) => {
@@ -110,10 +123,23 @@ export class RichTextEditor implements AfterViewInit, OnDestroy {
           role: 'textbox',
         },
         handleDOMEvents: {
-          click: (_view, event) => this.activateMention(event.target),
+          click: (_view, event) =>
+            this.displayMention(event.target) || this.activateMention(event.target),
+          mouseover: (_view, event) => {
+            if (
+              event.target instanceof Element &&
+              event.target.closest('[data-resource-mention="resolved"]')
+            ) {
+              void this.mentionDisplay?.refreshPlayerDisplayStatus();
+            }
+            return false;
+          },
           keydown: (_view, event) => {
             if (event.key !== 'Enter' && event.key !== ' ') return false;
-            return this.activateMention(document.activeElement);
+            return (
+              this.displayMention(document.activeElement) ||
+              this.activateMention(document.activeElement)
+            );
           },
         },
       },
@@ -127,6 +153,7 @@ export class RichTextEditor implements AfterViewInit, OnDestroy {
       },
     });
     this.editorReady.set(true);
+    void this.mentionDisplay?.refreshPlayerDisplayStatus();
   }
 
   ngOnDestroy(): void {
@@ -202,16 +229,78 @@ export class RichTextEditor implements AfterViewInit, OnDestroy {
 
   private activateMention(target: EventTarget | null): boolean {
     if (this.editable() || !(target instanceof Element)) return false;
-    const element = target.closest<HTMLElement>('[data-resource-mention="resolved"]');
-    if (!element) return false;
-    const resourceType = element.dataset['resourceType'];
-    const resourceId = element.dataset['resourceId'];
-    const candidate = this.mentionCandidates().find(
-      (item) => item.resourceType === resourceType && item.resourceId === resourceId,
-    );
+    const trigger = target.closest<HTMLElement>('[data-resource-mention-open]');
+    const candidate = this.candidateFromElement(trigger);
     if (!candidate) return false;
     this.mentionActivate.emit(candidate);
     return true;
+  }
+
+  private displayMention(target: EventTarget | null): boolean {
+    if (this.editable() || !(target instanceof Element)) return false;
+    const trigger = target.closest<HTMLButtonElement>('[data-resource-mention-display]');
+    const candidate = this.candidateFromElement(trigger);
+    if (!trigger || trigger.disabled || !candidate || !this.mentionDisplay) return false;
+    this.displayError.set(null);
+    void this.mentionDisplay.display(candidate).catch((error: unknown) => {
+      this.displayError.set(
+        error instanceof Error
+          ? error.message
+          : 'Impossible d’afficher cette ressource sur l’écran joueurs.',
+      );
+    });
+    return true;
+  }
+
+  private candidateFromElement(element: Element | null): ResourceMentionCandidate | undefined {
+    const mention = element?.closest<HTMLElement>('[data-resource-mention="resolved"]');
+    const resourceType = mention?.dataset['resourceType'];
+    const resourceId = mention?.dataset['resourceId'];
+    return this.mentionCandidates().find(
+      (candidate) =>
+        candidate.resourceType === resourceType && candidate.resourceId === resourceId,
+    );
+  }
+
+  private mentionDisplayState(
+    resourceType: ResourceMentionCandidate['resourceType'],
+    resourceId: string,
+  ): 'hidden' | 'disabled' | 'enabled' | 'active' | 'busy' {
+    if (this.editable()) return 'hidden';
+    const candidate = this.mentionCandidates().find(
+      (item) => item.resourceType === resourceType && item.resourceId === resourceId,
+    );
+    if (!candidate?.playerDisplayAvailable || !this.mentionDisplay) return 'hidden';
+    if (this.mentionDisplay.isPublishing()) return 'busy';
+    if (!this.mentionDisplay.isPlayerDisplayOpen()) return 'disabled';
+    return this.mentionDisplay.isDisplayed(candidate) ? 'active' : 'enabled';
+  }
+
+  private updateMentionDisplayButtons(): void {
+    if (!this.editorReady()) return;
+    for (const mention of this.editorHost().nativeElement.querySelectorAll<HTMLElement>(
+      '[data-resource-mention="resolved"]',
+    )) {
+      const candidate = this.candidateFromElement(mention);
+      const button = mention.querySelector<HTMLButtonElement>('[data-resource-mention-display]');
+      if (!candidate || !button) continue;
+      const state = this.mentionDisplayState(candidate.resourceType, candidate.resourceId);
+      const active = state === 'active';
+      button.disabled = state === 'disabled' || state === 'busy';
+      button.classList.toggle('active', active);
+      button.setAttribute('aria-pressed', String(active));
+      button.setAttribute(
+        'aria-label',
+        active
+          ? `Arrêter l’affichage de ${candidate.label}`
+          : `Afficher ${candidate.label} aux joueurs`,
+      );
+      button.title = button.disabled
+        ? 'Ouvre d’abord l’écran joueurs depuis la régie.'
+        : active
+          ? 'Arrêter l’affichage'
+          : 'Afficher aux joueurs';
+    }
   }
 
   protected isActive(name: string, attributes?: Record<string, unknown>): boolean {

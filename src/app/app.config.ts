@@ -96,6 +96,8 @@ import { MediaDiagnosticGateway } from '@app/features/diagnostics/data-access/me
 import { TauriMediaDiagnosticGateway } from '@app/features/diagnostics/data-access/tauri-media-diagnostic.gateway';
 import { TauriTechnicalLogGateway } from '@app/features/diagnostics/data-access/tauri-technical-log.gateway';
 import { TechnicalLogGateway } from '@app/features/diagnostics/data-access/technical-log.gateway';
+import { ResourceMentionPlayerDisplayService } from '@app/features/display/application/resource-mention-player-display.service';
+import { ResourceMentionDisplayGateway } from '@app/shared/rich-text-editor/resource-mention-display.gateway';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -111,6 +113,10 @@ export const appConfig: ApplicationConfig = {
       if (!backup.recovery()) await diagnostics.initialize();
     }),
     { provide: ErrorHandler, useClass: GlobalErrorHandler },
+    {
+      provide: ResourceMentionDisplayGateway,
+      useExisting: ResourceMentionPlayerDisplayService,
+    },
     {
       provide: TechnicalLogGateway,
       useFactory: () =>

@@ -47,30 +47,35 @@ export class ResourceMentionNavigationService {
         resourceId: id,
         label: name,
       })),
-      ...npcs.map(({ id, name }) => ({
+      ...npcs.map(({ id, name, portraitPath }) => ({
         resourceType: 'npc' as const,
         resourceId: id,
         label: name,
+        playerDisplayAvailable: Boolean(portraitPath),
       })),
-      ...monsters.map(({ id, name }) => ({
+      ...monsters.map(({ id, name, imagePath }) => ({
         resourceType: 'monster' as const,
         resourceId: id,
         label: name,
+        playerDisplayAvailable: Boolean(imagePath),
       })),
-      ...locations.map(({ id, name }) => ({
+      ...locations.map(({ id, name, imagePath }) => ({
         resourceType: 'location' as const,
         resourceId: id,
         label: name,
+        playerDisplayAvailable: Boolean(imagePath),
       })),
-      ...items.map(({ id, name }) => ({
+      ...items.map(({ id, name, imagePath }) => ({
         resourceType: 'item' as const,
         resourceId: id,
         label: name,
+        playerDisplayAvailable: Boolean(imagePath),
       })),
       ...scenes.map(({ id, name }) => ({
         resourceType: 'scene' as const,
         resourceId: id,
         label: name,
+        playerDisplayAvailable: true,
       })),
     ];
   }

@@ -395,9 +395,12 @@ Il peut afficher :
 
 ```text
 Blank
+Neutral
 Location
 NPC
+Monster
 Item
+Scene
 Document
 Ambience
 Video
@@ -418,6 +421,12 @@ Exemple de composition :
 ```
 
 Le MJ contrôle cet écran depuis son laptop.
+
+Dans les contenus riches en lecture seule, une mention de PNJ, lieu, objet, monstre ou scène
+affichable expose au survol une action secondaire pour l’envoyer directement au Player Display.
+Le clic principal sur la mention continue d’ouvrir sa fiche. L’action d’affichage est désactivée
+si la fenêtre joueurs est fermée ; un second clic sur la ressource déjà affichée revient au fond
+neutre. Ces raccourcis utilisent un affichage autonome et ne dépendent pas de la scène active.
 
 ---
 

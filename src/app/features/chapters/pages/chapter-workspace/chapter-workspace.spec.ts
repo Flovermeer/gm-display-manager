@@ -272,6 +272,7 @@ describe('ChapterWorkspace', () => {
       resourceType: 'scene' as const,
       resourceId: scene.id,
       label: scene.name,
+      playerDisplayAvailable: true,
     };
     expect(editor.mentionCandidates()).toContainEqual(mention);
 

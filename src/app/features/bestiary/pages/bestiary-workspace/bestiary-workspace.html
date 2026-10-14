@@ -364,6 +364,22 @@
             <p>{{ typeLine(monster.sheet) }}</p>
           </div>
           <div class="toolbar-actions">
+            <button
+              appButton="secondary"
+              type="button"
+              [disabled]="!canShowMonster(monster)"
+              [attr.aria-pressed]="isMonsterDisplayed(monster)"
+              [title]="
+                !monster.imagePath
+                  ? 'Ajoute une image pour afficher ce monstre.'
+                  : !canShowMonster(monster)
+                    ? 'Ouvre d’abord l’écran joueurs depuis la régie.'
+                    : ''
+              "
+              (click)="showMonsterOnPlayerDisplay(monster)"
+            >
+              {{ isMonsterDisplayed(monster) ? 'Arrêter l’affichage' : 'Afficher aux joueurs' }}
+            </button>
             <button appButton="secondary" type="button" (click)="addToCombat(monster)">
               Ajouter au combat
             </button>

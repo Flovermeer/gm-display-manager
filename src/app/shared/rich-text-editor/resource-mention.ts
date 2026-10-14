@@ -15,6 +15,7 @@ export type ResourceMentionCandidate = Readonly<{
   resourceType: ResourceType;
   resourceId: string;
   label: string;
+  playerDisplayAvailable?: boolean;
 }>;
 
 export type ResourceMentionMatch = Readonly<{
@@ -43,6 +44,10 @@ const RESOURCE_ROUTE_SEGMENTS: Readonly<Record<ResourceType, string>> = {
 
 type ResourceMentionExtensionOptions = Readonly<{
   isAvailable: (resourceType: ResourceType, resourceId: string) => boolean;
+  displayState: (
+    resourceType: ResourceType,
+    resourceId: string,
+  ) => 'hidden' | 'disabled' | 'enabled' | 'active' | 'busy';
 }>;
 
 export function createResourceMentionExtension(options: ResourceMentionExtensionOptions): Node {
@@ -70,17 +75,71 @@ export function createResourceMentionExtension(options: ResourceMentionExtension
       const resourceId = node.attrs['resourceId'] as string;
       const label = node.attrs['label'] as string;
       const available = options.isAvailable(resourceType, resourceId);
+      const displayState = options.displayState(resourceType, resourceId);
+      if (!available) {
+        return [
+          'span',
+          mergeAttributes(HTMLAttributes, {
+            'data-resource-mention': 'broken',
+            class: 'resource-mention-broken',
+          }),
+          `@${label}`,
+        ];
+      }
+      const displayDisabled = displayState === 'disabled' || displayState === 'busy';
+      const displayActive = displayState === 'active';
       return [
         'span',
         mergeAttributes(HTMLAttributes, {
-          'data-resource-mention': available ? 'resolved' : 'broken',
+          'data-resource-mention': 'resolved',
           'data-resource-type': resourceType,
           'data-resource-id': resourceId,
-          class: available ? 'resource-mention' : 'resource-mention-broken',
-          role: available ? 'link' : null,
-          tabindex: available ? '0' : null,
+          class: 'resource-mention-shell',
         }),
-        `@${label}`,
+        [
+          'span',
+          {
+            'data-resource-mention-open': '',
+            class: 'resource-mention',
+            role: 'link',
+            tabindex: '0',
+          },
+          `@${label}`,
+        ],
+        ...(displayState === 'hidden'
+          ? []
+          : [
+              [
+                'button',
+                {
+                  type: 'button',
+                  'data-resource-mention-display': '',
+                  class: `resource-mention-display${displayActive ? ' active' : ''}`,
+                  contenteditable: 'false',
+                  disabled: displayDisabled ? 'disabled' : null,
+                  'aria-label': displayActive
+                    ? `Arrêter l’affichage de ${label}`
+                    : `Afficher ${label} aux joueurs`,
+                  'aria-pressed': displayActive ? 'true' : 'false',
+                  title: displayDisabled
+                    ? 'Ouvre d’abord l’écran joueurs depuis la régie.'
+                    : displayActive
+                      ? 'Arrêter l’affichage'
+                      : 'Afficher aux joueurs',
+                },
+                [
+                  'svg',
+                  { viewBox: '0 0 24 24', 'aria-hidden': 'true' },
+                  [
+                    'path',
+                    {
+                      d: 'M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z',
+                    },
+                  ],
+                  ['circle', { cx: '12', cy: '12', r: '2.75' }],
+                ],
+              ],
+            ]),
       ];
     },
 

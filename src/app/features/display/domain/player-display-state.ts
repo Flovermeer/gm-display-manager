@@ -34,6 +34,12 @@ export type PlayerDisplayState =
       imagePath: string;
       name: string;
       summary?: string;
+    }>
+  | Readonly<{
+      mode: 'monster';
+      monsterId: string;
+      imagePath: string;
+      name: string;
     }>;
 
 export type PlayerDisplayBackground =

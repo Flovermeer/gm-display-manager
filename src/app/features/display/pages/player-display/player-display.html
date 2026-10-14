@@ -104,5 +104,11 @@
         </figcaption>
       </figure>
     }
+    @case ('monster') {
+      <figure class="item-display monster-display">
+        <img [src]="display.imagePath" [alt]="display.name" />
+        <figcaption class="player-display__label">{{ display.name }}</figcaption>
+      </figure>
+    }
   }
 </main>

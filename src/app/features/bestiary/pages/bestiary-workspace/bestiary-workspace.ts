@@ -42,6 +42,8 @@ import {
 } from '@app/features/game-systems/domain/creature-rule-catalog';
 import type { FormFieldOption } from '@app/shared/ui/form-field/form-field';
 import { MultiSelectField } from '@app/shared/ui/multi-select-field/multi-select-field';
+import { ResourceMentionDisplayGateway } from '@app/shared/rich-text-editor/resource-mention-display.gateway';
+import type { ResourceMentionCandidate } from '@app/shared/rich-text-editor/resource-mention';
 
 type TagField =
   | 'savingThrows'
@@ -82,6 +84,7 @@ export class BestiaryWorkspace implements OnInit, PendingChangesAware {
   private readonly creatureRules = inject(CreatureRuleCatalogService);
   private readonly combat = inject(CombatStore, { optional: true });
   private readonly recentResources = inject(RecentResourceStore, { optional: true });
+  private readonly mentionDisplay = inject(ResourceMentionDisplayGateway, { optional: true });
   private readonly journalEntries = viewChild<JournalEntryList>(JournalEntryList);
   private pendingDecisionResolver?: PendingDecisionResolver;
 
@@ -162,6 +165,26 @@ export class BestiaryWorkspace implements OnInit, PendingChangesAware {
     void this.combat?.requestAdd(monsterCombatantSource(monster));
   }
 
+  protected isMonsterDisplayed(monster: Monster): boolean {
+    return this.mentionDisplay?.isDisplayed(this.displayCandidate(monster)) ?? false;
+  }
+
+  protected canShowMonster(monster: Monster): boolean {
+    return Boolean(
+      monster.imagePath &&
+        this.mentionDisplay?.isPlayerDisplayOpen() &&
+        !this.mentionDisplay.isPublishing(),
+    );
+  }
+
+  protected async showMonsterOnPlayerDisplay(monster: Monster): Promise<void> {
+    try {
+      await this.mentionDisplay?.display(this.displayCandidate(monster));
+    } catch (error) {
+      this.error.set(this.errorMessage(error));
+    }
+  }
+
   ngOnInit(): void {
     this.route.queryParamMap
       .pipe(takeUntilDestroyed(this.destroyRef))
@@ -169,6 +192,7 @@ export class BestiaryWorkspace implements OnInit, PendingChangesAware {
         (params) => void this.openRequestedMonster(params.get('resourceId'), params.get('entryId')),
       );
     void this.initialize();
+    void this.mentionDisplay?.refreshPlayerDisplayStatus();
   }
 
   canDeactivate(): boolean | Promise<boolean> {
@@ -304,6 +328,9 @@ export class BestiaryWorkspace implements OnInit, PendingChangesAware {
   protected async confirmDetach(): Promise<void> {
     const monster = this.monsterPendingDetachment();
     if (!monster) return;
+    if (this.isMonsterDisplayed(monster)) {
+      await this.mentionDisplay?.display(this.displayCandidate(monster));
+    }
     await this.service.detach(monster);
     await this.recentResources?.remove('monster', monster.id);
     this.monsterPendingDetachment.set(null);
@@ -612,5 +639,14 @@ export class BestiaryWorkspace implements OnInit, PendingChangesAware {
     if (error instanceof Error) return error.message;
     if (typeof error === 'string') return error;
     return 'Impossible de gérer le bestiaire.';
+  }
+
+  private displayCandidate(monster: Monster): ResourceMentionCandidate {
+    return {
+      resourceType: 'monster' as const,
+      resourceId: monster.id,
+      label: monster.name,
+      playerDisplayAvailable: Boolean(monster.imagePath),
+    };
   }
 }

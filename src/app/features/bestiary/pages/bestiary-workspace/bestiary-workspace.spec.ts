@@ -1,3 +1,4 @@
+import { signal } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ActivatedRoute, convertToParamMap } from '@angular/router';
 import { BehaviorSubject } from 'rxjs';
@@ -10,6 +11,7 @@ import { createEmptyMonsterSheet, type Monster } from '@app/features/bestiary/do
 import { JournalEntryService } from '@app/features/journal/application/journal-entry.service';
 import { ResourceMentionNavigationService } from '@app/shared/rich-text-editor/resource-mention-navigation.service';
 import { BestiaryWorkspace } from '@app/features/bestiary/pages/bestiary-workspace/bestiary-workspace';
+import { ResourceMentionDisplayGateway } from '@app/shared/rich-text-editor/resource-mention-display.gateway';
 
 describe('BestiaryWorkspace', () => {
   const campaign: Campaign = {
@@ -46,6 +48,13 @@ describe('BestiaryWorkspace', () => {
     update: vi.fn(),
     delete: vi.fn(),
   };
+  const mentionDisplay = {
+    isPlayerDisplayOpen: signal(true),
+    isPublishing: signal(false),
+    refreshPlayerDisplayStatus: vi.fn(),
+    isDisplayed: vi.fn(),
+    display: vi.fn(),
+  };
 
   beforeEach(async () => {
     vi.clearAllMocks();
@@ -57,6 +66,9 @@ describe('BestiaryWorkspace', () => {
       }),
     );
     journalEntryService.listForTarget.mockResolvedValue([]);
+    mentionDisplay.refreshPlayerDisplayStatus.mockResolvedValue(undefined);
+    mentionDisplay.isDisplayed.mockReturnValue(false);
+    mentionDisplay.display.mockResolvedValue(undefined);
     const queryParamMap = new BehaviorSubject(
       convertToParamMap({ resourceId: monster.id, entryId: 'entry-id' }),
     );
@@ -82,6 +94,7 @@ describe('BestiaryWorkspace', () => {
           provide: ResourceMentionNavigationService,
           useValue: { listCandidates: () => Promise.resolve([]), open: vi.fn() },
         },
+        { provide: ResourceMentionDisplayGateway, useValue: mentionDisplay },
       ],
     }).compileComponents();
   });
@@ -113,6 +126,23 @@ describe('BestiaryWorkspace', () => {
 
     expect(workspace?.classList).toContain('entity-workspace--sidebar-collapsed');
     expect(toggle?.getAttribute('aria-label')).toBe('Déplier le bestiaire');
+  });
+
+  it('offers autonomous player display for a monster with an image', async () => {
+    const displayableMonster = { ...monster, imagePath: 'atropal.webp' };
+    monsterService.list.mockResolvedValue([displayableMonster]);
+    const fixture = TestBed.createComponent(BestiaryWorkspace);
+    fixture.detectChanges();
+    await renderUntil(fixture, 'Afficher aux joueurs');
+
+    findButton(fixture.nativeElement as HTMLElement, 'Afficher aux joueurs').click();
+
+    expect(mentionDisplay.display).toHaveBeenCalledWith({
+      resourceType: 'monster',
+      resourceId: monster.id,
+      label: monster.name,
+      playerDisplayAvailable: true,
+    });
   });
 
   it('edits and saves a repeatable monster action', async () => {

@@ -158,6 +158,8 @@ export class Control implements OnInit, OnDestroy {
         return state.name ?? 'Document';
       case 'item':
         return state.name;
+      case 'monster':
+        return state.name;
       case 'scene':
         return state.foreground?.name ?? state.sceneName ?? 'Fond par défaut';
     }

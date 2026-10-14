@@ -1,8 +1,10 @@
+import { signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { Editor } from '@tiptap/core';
 
 import { RICH_TEXT_SCHEMA_VERSION, type RichTextDocument } from '@app/shared/rich-text-editor/rich-text-document';
 import { RichTextEditor } from '@app/shared/rich-text-editor/rich-text-editor';
+import { ResourceMentionDisplayGateway } from '@app/shared/rich-text-editor/resource-mention-display.gateway';
 
 const FIRST_DOCUMENT: RichTextDocument = {
   schemaVersion: RICH_TEXT_SCHEMA_VERSION,
@@ -105,11 +107,83 @@ describe('RichTextEditor', () => {
     await fixture.whenStable();
 
     const mention = (fixture.nativeElement as HTMLElement).querySelector<HTMLElement>(
-      '[data-resource-mention="resolved"]',
+      '[data-resource-mention-open]',
     );
     expect(mention?.getAttribute('role')).toBe('link');
     mention?.click();
 
     expect(activated).toHaveBeenCalledWith(candidate);
   });
+
+  it('reveals a disabled display eye until the player display is open', async () => {
+    const isPlayerDisplayOpen = signal(false);
+    const display = vi.fn().mockResolvedValue(undefined);
+    TestBed.configureTestingModule({
+      providers: [
+        {
+          provide: ResourceMentionDisplayGateway,
+          useValue: {
+            isPlayerDisplayOpen,
+            isPublishing: signal(false),
+            refreshPlayerDisplayStatus: vi.fn().mockResolvedValue(undefined),
+            isDisplayed: vi.fn().mockReturnValue(false),
+            display,
+          },
+        },
+      ],
+    });
+    const fixture = TestBed.createComponent(RichTextEditor);
+    const candidate = {
+      resourceType: 'monster' as const,
+      resourceId: 'monster-id',
+      label: 'Atropal',
+      playerDisplayAvailable: true,
+    };
+    fixture.componentRef.setInput('editable', false);
+    fixture.componentRef.setInput('mentionCandidates', [candidate]);
+    fixture.componentRef.setInput('value', mentionDocument(candidate));
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    let eye = (fixture.nativeElement as HTMLElement).querySelector<HTMLButtonElement>(
+      '[data-resource-mention-display]',
+    );
+    expect(eye?.disabled).toBe(true);
+    expect(eye?.title).toContain('Ouvre d’abord');
+
+    isPlayerDisplayOpen.set(true);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    eye = (fixture.nativeElement as HTMLElement).querySelector<HTMLButtonElement>(
+      '[data-resource-mention-display]',
+    );
+    expect(eye?.disabled).toBe(false);
+    eye?.click();
+
+    expect(display).toHaveBeenCalledWith(candidate);
+  });
 });
+
+function mentionDocument(candidate: {
+  resourceType: 'monster';
+  resourceId: string;
+  label: string;
+}): RichTextDocument {
+  return {
+    schemaVersion: RICH_TEXT_SCHEMA_VERSION,
+    content: {
+      type: 'doc',
+      content: [
+        {
+          type: 'paragraph',
+          content: [
+            {
+              type: 'resourceMention',
+              attrs: candidate,
+            },
+          ],
+        },
+      ],
+    },
+  };
+}

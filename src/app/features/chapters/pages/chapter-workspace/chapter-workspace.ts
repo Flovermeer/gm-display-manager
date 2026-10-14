@@ -13,10 +13,7 @@ import {
   type UpdateChapterInput,
 } from '@app/features/chapters/domain/chapter';
 import { ChapterService } from '@app/features/chapters/application/chapter.service';
-import { LocationService } from '@app/features/locations/application/location.service';
 import type { PendingChangesAware } from '@app/core/navigation/pending-changes.guard';
-import { NpcService } from '@app/features/npcs/application/npc.service';
-import { PlayerCharacterService } from '@app/features/players/application/player-character.service';
 import { SceneService } from '@app/features/scenes/application/scene.service';
 import { ActiveSceneService } from '@app/features/scenes/application/active-scene.service';
 import { defaultSceneState } from '@app/features/scenes/application/scene-display.service';
@@ -69,9 +66,6 @@ export class ChapterWorkspace implements OnInit, PendingChangesAware {
   private readonly activeSceneService = inject(ActiveSceneService);
   private readonly displayGateway = inject(DisplayGateway);
   private readonly displayStore = inject(PlayerDisplayStore);
-  private readonly locationService = inject(LocationService);
-  private readonly npcService = inject(NpcService);
-  private readonly characterService = inject(PlayerCharacterService);
   private readonly mentionNavigation = inject(ResourceMentionNavigationService);
   private readonly recentResources = inject(RecentResourceStore, { optional: true });
   private pendingDecisionResolver?: PendingDecisionResolver;
@@ -376,37 +370,14 @@ export class ChapterWorkspace implements OnInit, PendingChangesAware {
     try {
       const campaign = await this.campaignContext.load();
       if (!campaign) return;
-      const [chapters, scenes, locations, npcs, characters] = await Promise.all([
+      const [chapters, scenes, mentionCandidates] = await Promise.all([
         this.chapterService.list(campaign.id),
         this.sceneService.list(campaign.id),
-        this.locationService.list(campaign.id),
-        this.npcService.list(campaign.id),
-        this.characterService.list(campaign.id),
+        this.mentionNavigation.listCandidates(campaign.id),
       ]);
       this.chapters.set(chapters);
       this.scenes.set(scenes);
-      this.mentionCandidates.set([
-        ...characters.map((character) => ({
-          resourceType: 'player-character' as const,
-          resourceId: character.id,
-          label: character.name,
-        })),
-        ...npcs.map((npc) => ({
-          resourceType: 'npc' as const,
-          resourceId: npc.id,
-          label: npc.name,
-        })),
-        ...locations.map((location) => ({
-          resourceType: 'location' as const,
-          resourceId: location.id,
-          label: location.name,
-        })),
-        ...scenes.map((scene) => ({
-          resourceType: 'scene' as const,
-          resourceId: scene.id,
-          label: scene.name,
-        })),
-      ]);
+      this.mentionCandidates.set(mentionCandidates);
       await this.openRequestedChapter(this.route.snapshot.queryParamMap.get('resourceId'));
     } catch (error) {
       this.error.set(errorMessage(error));

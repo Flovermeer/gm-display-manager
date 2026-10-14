@@ -79,6 +79,10 @@
 
   <div #editorHost class="rich-text-content" [class.readonly]="!editable()"></div>
 
+  @if (displayError(); as message) {
+    <p class="resource-mention-display-error" role="alert">{{ message }}</p>
+  }
+
   @if (mentionMatch() && editable()) {
     <div class="mention-menu" role="listbox" aria-label="Ressources de la campagne">
       @for (

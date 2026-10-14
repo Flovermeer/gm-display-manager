@@ -290,6 +290,7 @@ function sceneFixture(chapterId: string): Scene {
     position: 0,
     name: 'Campement dans la jungle',
     summary: 'Repos nocturne',
+    description: { schemaVersion: 1, content: { type: 'doc' } },
     locationId: null,
     npcIds: [],
     monsterIds: [],

@@ -15,6 +15,7 @@ import {
   SceneRepository,
   type SceneOrder,
 } from '@app/features/scenes/data-access/scene.repository';
+import type { RichTextDocument } from '@app/shared/rich-text-editor/rich-text-document';
 
 const DATABASE_URL = 'sqlite:beholders-inn.db';
 
@@ -25,6 +26,8 @@ type SceneRow = Readonly<{
   position: number;
   name: string;
   summary: string;
+  description_json: string;
+  description_schema_version: number;
   location_id: string | null;
   created_at: string;
   updated_at: string;
@@ -74,9 +77,12 @@ export class TauriSceneRepository extends SceneRepository {
     const database = await this.getDatabase();
     await database.execute(
       `INSERT INTO scene (
-         id, campaign_id, chapter_id, position, name, summary, location_id, created_at, updated_at
-       ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+         id, campaign_id, chapter_id, position, name, summary,
+         description_json, description_schema_version, location_id, created_at, updated_at
+       ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
        ON CONFLICT(id) DO UPDATE SET name = excluded.name, summary = excluded.summary,
+         description_json = excluded.description_json,
+         description_schema_version = excluded.description_schema_version,
          chapter_id = excluded.chapter_id, position = excluded.position,
          location_id = excluded.location_id, updated_at = excluded.updated_at
        WHERE scene.campaign_id = excluded.campaign_id`,
@@ -87,6 +93,8 @@ export class TauriSceneRepository extends SceneRepository {
         scene.position,
         scene.name,
         scene.summary,
+        JSON.stringify(scene.description.content),
+        scene.description.schemaVersion,
         scene.locationId,
         scene.createdAt,
         scene.updatedAt,
@@ -187,6 +195,7 @@ export class TauriSceneRepository extends SceneRepository {
       position: row.position,
       name: row.name,
       summary: row.summary,
+      description: parseDescription(row.description_json, row.description_schema_version),
       locationId: row.location_id,
       npcIds: npcRows
         .filter(({ scene_id }) => scene_id === row.id && sceneIds.has(scene_id))
@@ -212,5 +221,17 @@ export class TauriSceneRepository extends SceneRepository {
 }
 
 const SCENE_COLUMNS = `SELECT scene.id, scene.campaign_id, scene.chapter_id, scene.position,
-                              scene.name, scene.summary, scene.location_id,
+                              scene.name, scene.summary, scene.description_json,
+                              scene.description_schema_version, scene.location_id,
                               scene.created_at, scene.updated_at`;
+
+function parseDescription(value: string, schemaVersion: number): RichTextDocument {
+  const content: unknown = JSON.parse(value);
+  if (typeof content !== 'object' || content === null || Array.isArray(content)) {
+    throw new Error('Invalid scene description data.');
+  }
+  if (schemaVersion !== 1) {
+    throw new Error(`Unsupported scene description schema: ${schemaVersion}.`);
+  }
+  return { schemaVersion, content } as RichTextDocument;
+}

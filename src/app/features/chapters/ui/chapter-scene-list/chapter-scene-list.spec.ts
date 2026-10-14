@@ -53,6 +53,7 @@ const scene: Scene = {
   position: 0,
   name: 'Débarquement',
   summary: '',
+  description: { schemaVersion: 1, content: { type: 'doc' } },
   locationId: null,
   npcIds: [],
   monsterIds: [],

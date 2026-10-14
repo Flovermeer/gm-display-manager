@@ -51,6 +51,7 @@ describe('SceneService', () => {
     const scene = await service.create('campaign-id', chapter.id, {
       name: 'Campement',
       summary: '',
+      description: { schemaVersion: 1, content: { type: 'doc' } },
       locationId: null,
       npcIds: [],
       monsterIds: [],
@@ -71,6 +72,7 @@ describe('SceneService', () => {
       service.create('campaign-id', chapter.id, {
         name: 'Campement',
         summary: '',
+        description: { schemaVersion: 1, content: { type: 'doc' } },
         locationId: 'foreign-location',
         npcIds: [],
         monsterIds: [],
@@ -93,6 +95,7 @@ describe('SceneService', () => {
     const first = await service.create('campaign-id', firstChapter.id, {
       name: 'Débarquement',
       summary: '',
+      description: { schemaVersion: 1, content: { type: 'doc' } },
       locationId: null,
       npcIds: [],
       monsterIds: [],
@@ -101,6 +104,7 @@ describe('SceneService', () => {
     const second = await service.create('campaign-id', firstChapter.id, {
       name: 'Audience',
       summary: '',
+      description: { schemaVersion: 1, content: { type: 'doc' } },
       locationId: null,
       npcIds: [],
       monsterIds: [],

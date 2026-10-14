@@ -84,6 +84,7 @@ function sceneFixture(overrides: Partial<Scene> = {}): Scene {
     position: 0,
     name: 'Audience',
     summary: '',
+    description: { schemaVersion: 1, content: { type: 'doc' } },
     locationId: null,
     npcIds: [],
     monsterIds: [],

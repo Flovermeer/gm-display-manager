@@ -12,6 +12,7 @@ describe('Scene', () => {
         {
           name: '  Arrivée au port  ',
           summary: '  Première rencontre  ',
+          description: { schemaVersion: 1, content: { type: 'doc' } },
           locationId: '',
           npcIds: ['npc-1', 'npc-1', 'npc-2'],
           monsterIds: ['monster-1', 'monster-1'],
@@ -27,6 +28,7 @@ describe('Scene', () => {
       position: 2,
       name: 'Arrivée au port',
       summary: 'Première rencontre',
+      description: { schemaVersion: 1, content: { type: 'doc' } },
       locationId: null,
       npcIds: ['npc-1', 'npc-2'],
       monsterIds: ['monster-1'],
@@ -41,7 +43,15 @@ describe('Scene', () => {
       'campaign-id',
       'chapter-id',
       0,
-      { name: 'Port', summary: '', locationId: null, npcIds: [], monsterIds: [], itemIds: [] },
+      {
+        name: 'Port',
+        summary: '',
+        description: { schemaVersion: 1, content: { type: 'doc' } },
+        locationId: null,
+        npcIds: [],
+        monsterIds: [],
+        itemIds: [],
+      },
       () => 'scene-id',
       now,
     );
@@ -51,6 +61,7 @@ describe('Scene', () => {
         {
           name: 'Villa',
           summary: 'Audience',
+          description: { schemaVersion: 1, content: { type: 'doc' } },
           locationId: 'location-id',
           npcIds: ['npc-id'],
           monsterIds: [],
@@ -67,6 +78,7 @@ describe('Scene', () => {
       updateScene(scene, {
         name: ' ',
         summary: '',
+        description: { schemaVersion: 1, content: { type: 'doc' } },
         locationId: null,
         npcIds: [],
         monsterIds: [],
@@ -80,7 +92,15 @@ describe('Scene', () => {
       'campaign-id',
       'chapter-1',
       0,
-      { name: 'Port', summary: '', locationId: null, npcIds: [], monsterIds: [], itemIds: [] },
+      {
+        name: 'Port',
+        summary: '',
+        description: { schemaVersion: 1, content: { type: 'doc' } },
+        locationId: null,
+        npcIds: [],
+        monsterIds: [],
+        itemIds: [],
+      },
       () => 'scene-id',
       now,
     );

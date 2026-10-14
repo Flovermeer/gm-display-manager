@@ -1,3 +1,8 @@
+import {
+  createEmptyRichTextDocument,
+  type RichTextDocument,
+} from '@app/shared/rich-text-editor/rich-text-document';
+
 export type Scene = Readonly<{
   id: string;
   campaignId: string;
@@ -5,6 +10,7 @@ export type Scene = Readonly<{
   position: number;
   name: string;
   summary: string;
+  description: RichTextDocument;
   locationId: string | null;
   npcIds: readonly string[];
   monsterIds: readonly string[];
@@ -16,6 +22,7 @@ export type Scene = Readonly<{
 export type UpdateSceneInput = Readonly<{
   name: string;
   summary: string;
+  description: RichTextDocument;
   locationId: string | null;
   npcIds: readonly string[];
   monsterIds: readonly string[];
@@ -71,10 +78,23 @@ function normalizeInput(input: UpdateSceneInput): UpdateSceneInput {
   return {
     name,
     summary: input.summary.trim(),
+    description: input.description,
     locationId: input.locationId || null,
     npcIds: uniqueIds(input.npcIds),
     monsterIds: uniqueIds(input.monsterIds),
     itemIds: uniqueIds(input.itemIds),
+  };
+}
+
+export function emptySceneInput(): UpdateSceneInput {
+  return {
+    name: '',
+    summary: '',
+    description: createEmptyRichTextDocument(),
+    locationId: null,
+    npcIds: [],
+    monsterIds: [],
+    itemIds: [],
   };
 }
 

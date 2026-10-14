@@ -52,6 +52,11 @@ app-entity-title {
 .scene-form__summary {
   grid-column: 1 / -1;
 }
+.scene-form__description {
+  display: grid;
+  grid-column: 1 / -1;
+  gap: 0.5rem;
+}
 .scene-form__chapter {
   display: grid;
   align-content: center;
@@ -68,6 +73,12 @@ app-entity-title {
 }
 .scene-sheet {
   padding-top: 2rem;
+}
+.scene-description {
+  margin-top: 2rem;
+}
+.scene-description h3 {
+  font-family: var(--font-workspace-display);
 }
 .scene-facts {
   display: grid;

@@ -38,6 +38,18 @@ describe('SceneWorkspace', () => {
     position: 0,
     name: 'Audience à la villa',
     summary: 'Wakanga reçoit les aventuriers.',
+    description: {
+      schemaVersion: 1,
+      content: {
+        type: 'doc',
+        content: [
+          {
+            type: 'paragraph',
+            content: [{ type: 'text', text: 'Une audience sous tension.' }],
+          },
+        ],
+      },
+    },
     locationId: 'location-id',
     npcIds: ['npc-id'],
     monsterIds: ['monster-id'],
@@ -143,6 +155,7 @@ describe('SceneWorkspace', () => {
     expect(content).toContain('Wakanga');
     expect(content).toContain('Atropal');
     expect(content).toContain("Anneau de l'Hiver");
+    expect(content).toContain('Une audience sous tension.');
   });
 
   it('toggles the active scene off and restores the neutral player screen', async () => {
@@ -192,7 +205,10 @@ describe('SceneWorkspace', () => {
       expect(sceneService.create).toHaveBeenCalledWith(
         campaign.id,
         'chapter-id',
-        expect.objectContaining({ name: 'Arrivée au port' }),
+        expect.objectContaining({
+          name: 'Arrivée au port',
+          description: expect.objectContaining({ schemaVersion: 1 }),
+        }),
       ),
     );
     await vi.waitFor(() =>

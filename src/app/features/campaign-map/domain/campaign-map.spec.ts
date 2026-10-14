@@ -107,6 +107,10 @@ function scene(
     position,
     name: id,
     summary: '',
+    description: {
+      schemaVersion: RICH_TEXT_SCHEMA_VERSION,
+      content: { type: 'doc' },
+    },
     locationId: null,
     npcIds: [],
     monsterIds: [],

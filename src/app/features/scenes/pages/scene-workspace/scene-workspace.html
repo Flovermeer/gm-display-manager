@@ -196,6 +196,15 @@
             [options]="monsterOptions()"
             formControlName="monsterIds"
           />
+          <div class="field scene-form__description">
+            <label>Description détaillée</label>
+            <app-rich-text-editor
+              [value]="descriptionDraft()"
+              [mentionCandidates]="mentionCandidates()"
+              (valueChange)="updateDescription($event)"
+              (mentionActivate)="openMention($event)"
+            />
+          </div>
         </form>
       } @else if (selectedScene(); as scene) {
         <article class="scene-sheet">
@@ -213,6 +222,15 @@
               <dd>{{ scene.summary || 'Non renseigné' }}</dd>
             </div>
           </dl>
+          <section class="scene-description" aria-labelledby="scene-description-title">
+            <h3 id="scene-description-title">Description détaillée</h3>
+            <app-rich-text-editor
+              [value]="scene.description"
+              [editable]="false"
+              [mentionCandidates]="mentionCandidates()"
+              (mentionActivate)="openMention($event)"
+            />
+          </section>
           @if (activeSceneId() === scene.id) {
             <div class="scene-active">
               <strong>Scène active</strong>

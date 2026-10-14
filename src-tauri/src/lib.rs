@@ -193,5 +193,11 @@ fn migrations() -> Vec<Migration> {
             sql: include_str!("../migrations/0024_create_location_gallery.sql"),
             kind: MigrationKind::Up,
         },
+        Migration {
+            version: 25,
+            description: "add_scene_description",
+            sql: include_str!("../migrations/0025_add_scene_description.sql"),
+            kind: MigrationKind::Up,
+        },
     ]
 }

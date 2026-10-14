@@ -2,6 +2,7 @@ import { Component, computed, DestroyRef, inject, OnInit, signal, viewChild } fr
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
+import type { JSONContent } from '@tiptap/core';
 
 import { CampaignContext } from '@app/features/campaigns/application/campaign-context';
 import { ChapterService } from '@app/features/chapters/application/chapter.service';
@@ -21,7 +22,11 @@ import type { Npc } from '@app/features/npcs/domain/npc';
 import { NpcService } from '@app/features/npcs/application/npc.service';
 import { MonsterService } from '@app/features/bestiary/application/monster.service';
 import type { Monster } from '@app/features/bestiary/domain/monster';
-import type { Scene, UpdateSceneInput } from '@app/features/scenes/domain/scene';
+import {
+  emptySceneInput,
+  type Scene,
+  type UpdateSceneInput,
+} from '@app/features/scenes/domain/scene';
 import { SceneService } from '@app/features/scenes/application/scene.service';
 import { ActiveSceneService } from '@app/features/scenes/application/active-scene.service';
 import {
@@ -32,6 +37,10 @@ import { JournalEntryList } from '@app/features/journal/ui/journal-entry-list/jo
 import { RecentResourceTrackerDirective } from '@app/features/recent-resources/ui/recent-resource-tracker.directive';
 import { RecentResourceStore } from '@app/features/recent-resources/application/recent-resource.store';
 import { errorMessage as resolveErrorMessage } from '@app/shared/error-message';
+import type { RichTextDocument } from '@app/shared/rich-text-editor/rich-text-document';
+import { RichTextEditor } from '@app/shared/rich-text-editor/rich-text-editor';
+import type { ResourceMentionCandidate } from '@app/shared/rich-text-editor/resource-mention';
+import { ResourceMentionNavigationService } from '@app/shared/rich-text-editor/resource-mention-navigation.service';
 import { ButtonDirective } from '@app/shared/ui/button/button.directive';
 import { Dialog } from '@app/shared/ui/dialog/dialog';
 import { EmptyState } from '@app/shared/ui/empty-state/empty-state';
@@ -56,6 +65,7 @@ type PendingDecisionResolver = (canLeave: boolean) => void;
     FormField,
     SearchableSelect,
     RecentResourceTrackerDirective,
+    RichTextEditor,
   ],
   templateUrl: './scene-workspace.html',
   styleUrl: './scene-workspace.scss',
@@ -79,6 +89,7 @@ export class SceneWorkspace implements OnInit, PendingChangesAware {
   private readonly npcIdleVideoGateway = inject(NpcIdleVideoGateway);
   private readonly itemImageGateway = inject(ItemImageGateway);
   private readonly recentResources = inject(RecentResourceStore, { optional: true });
+  private readonly mentionNavigation = inject(ResourceMentionNavigationService);
   private readonly journalEntries = viewChild<JournalEntryList>(JournalEntryList);
   private pendingDecisionResolver?: PendingDecisionResolver;
 
@@ -90,6 +101,9 @@ export class SceneWorkspace implements OnInit, PendingChangesAware {
   protected readonly monsters = signal<readonly Monster[]>([]);
   protected readonly items = signal<readonly NarrativeItem[]>([]);
   protected readonly selectedScene = signal<Scene | null>(null);
+  protected readonly descriptionDraft = signal<RichTextDocument>(emptySceneInput().description);
+  protected readonly descriptionDirty = signal(false);
+  protected readonly mentionCandidates = signal<readonly ResourceMentionCandidate[]>([]);
   protected readonly searchTerm = signal('');
   protected readonly isSidebarCollapsed = signal(false);
   protected readonly isLoading = signal(true);
@@ -109,7 +123,10 @@ export class SceneWorkspace implements OnInit, PendingChangesAware {
     const term = this.searchTerm().trim().toLocaleLowerCase('fr');
     return term
       ? this.scenes().filter((scene) =>
-          [scene.name, scene.summary].join(' ').toLocaleLowerCase('fr').includes(term),
+          [scene.name, scene.summary, richTextAsPlainText(scene.description.content)]
+            .join(' ')
+            .toLocaleLowerCase('fr')
+            .includes(term),
         )
       : this.scenes();
   });
@@ -184,6 +201,8 @@ export class SceneWorkspace implements OnInit, PendingChangesAware {
       itemIds: [],
     });
     this.sceneForm.markAsPristine();
+    this.descriptionDraft.set(emptySceneInput().description);
+    this.descriptionDirty.set(false);
   }
 
   protected editScene(): void {
@@ -195,6 +214,17 @@ export class SceneWorkspace implements OnInit, PendingChangesAware {
 
   protected cancelEditing(): void {
     void this.abandonChanges();
+  }
+
+  protected updateDescription(description: RichTextDocument): void {
+    if (!this.isEditing()) return;
+    this.descriptionDraft.set(description);
+    this.descriptionDirty.set(true);
+  }
+
+  protected openMention(mention: ResourceMentionCandidate): void {
+    const campaign = this.campaign();
+    if (campaign) void this.mentionNavigation.open(campaign.id, mention);
   }
 
   protected async saveScene(): Promise<boolean> {
@@ -408,20 +438,23 @@ export class SceneWorkspace implements OnInit, PendingChangesAware {
     try {
       const campaign = await this.campaignContext.load();
       if (!campaign) return;
-      const [scenes, chapters, locations, npcs, monsters, items] = await Promise.all([
-        this.sceneService.list(campaign.id),
-        this.chapterService.list(campaign.id),
-        this.locationService.list(campaign.id),
-        this.npcService.list(campaign.id),
-        this.monsterService.list(campaign.id),
-        this.itemService.list(campaign.id),
-      ]);
+      const [scenes, chapters, locations, npcs, monsters, items, mentionCandidates] =
+        await Promise.all([
+          this.sceneService.list(campaign.id),
+          this.chapterService.list(campaign.id),
+          this.locationService.list(campaign.id),
+          this.npcService.list(campaign.id),
+          this.monsterService.list(campaign.id),
+          this.itemService.list(campaign.id),
+          this.mentionNavigation.listCandidates(campaign.id),
+        ]);
       this.scenes.set(scenes);
       this.chapters.set(chapters);
       this.locations.set(locations);
       this.npcs.set(npcs);
       this.monsters.set(monsters);
       this.items.set(items);
+      this.mentionCandidates.set(mentionCandidates);
       this.activeSceneId.set(await this.activeSceneService.get(campaign.id));
       if (this.displayGateway.isDesktop) {
         this.isPlayerDisplayOpen.set(await this.displayGateway.isPlayerDisplayOpen());
@@ -501,11 +534,13 @@ export class SceneWorkspace implements OnInit, PendingChangesAware {
       itemIds: scene.itemIds,
     });
     this.sceneForm.markAsPristine();
+    this.descriptionDraft.set(scene.description);
+    this.descriptionDirty.set(false);
   }
 
   private formInput(): UpdateSceneInput {
     const { chapterId: _chapterId, ...input } = this.sceneForm.getRawValue();
-    return input;
+    return { ...input, description: this.descriptionDraft() };
   }
 
   private async abandonChanges(): Promise<void> {
@@ -513,7 +548,7 @@ export class SceneWorkspace implements OnInit, PendingChangesAware {
     this.isEditing.set(false);
     this.isCreating.set(false);
     if (selected) this.populateForm(selected);
-    else
+    else {
       this.sceneForm.reset({
         chapterId: '',
         name: '',
@@ -523,10 +558,16 @@ export class SceneWorkspace implements OnInit, PendingChangesAware {
         monsterIds: [],
         itemIds: [],
       });
+      this.descriptionDraft.set(emptySceneInput().description);
+      this.descriptionDirty.set(false);
+    }
   }
 
   private confirmPendingChanges(): boolean | Promise<boolean> {
-    if (!(this.isEditing() && this.sceneForm.dirty) && !this.journalEntries()?.hasPendingChanges())
+    if (
+      !(this.isEditing() && (this.sceneForm.dirty || this.descriptionDirty())) &&
+      !this.journalEntries()?.hasPendingChanges()
+    )
       return true;
     if (this.pendingDecisionResolver) return false;
     this.showPendingChangesDialog.set(true);
@@ -539,6 +580,11 @@ export class SceneWorkspace implements OnInit, PendingChangesAware {
     this.showPendingChangesDialog.set(false);
     resolve?.(value);
   }
+}
+
+function richTextAsPlainText(node: JSONContent): string {
+  const ownText = node.text ?? '';
+  return [ownText, ...(node.content ?? []).map(richTextAsPlainText)].join(' ');
 }
 
 function errorMessage(error: unknown): string {

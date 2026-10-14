@@ -257,6 +257,15 @@ describe('LocationWorkspace', () => {
     element.querySelector<HTMLButtonElement>('.location-image-frame')?.click();
     fixture.detectChanges();
     expect(element.querySelector('.media-viewer')).toBeTruthy();
+    expect(element.querySelector('.media-viewer__zoom-level')?.textContent).toContain('100 %');
+    element.querySelector<HTMLButtonElement>('[aria-label="Zoomer"]')?.click();
+    fixture.detectChanges();
+    expect(element.querySelector('.media-viewer__zoom-level')?.textContent).toContain('125 %');
+    [...element.querySelectorAll<HTMLButtonElement>('.media-viewer__controls button')]
+      .find((button) => button.textContent?.includes('Ajuster'))
+      ?.click();
+    fixture.detectChanges();
+    expect(element.querySelector('.media-viewer__zoom-level')?.textContent).toContain('100 %');
     element.querySelector<HTMLButtonElement>('.media-viewer__close')?.click();
     element.querySelector<HTMLButtonElement>('.display-button')?.click();
 

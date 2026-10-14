@@ -2,6 +2,7 @@ import {
   Component,
   computed,
   DestroyRef,
+  ElementRef,
   HostListener,
   inject,
   OnInit,
@@ -46,6 +47,9 @@ type LocationListEntry = Readonly<{
 }>;
 
 const DEMO_LOCATION_IMAGE_URL = '/demo/tavern.svg';
+const MIN_VIEWER_ZOOM = 1;
+const MAX_VIEWER_ZOOM = 5;
+const VIEWER_ZOOM_STEP = 0.25;
 
 @Component({
   selector: 'app-location-workspace',
@@ -77,6 +81,10 @@ export class LocationWorkspace implements OnInit, PendingChangesAware {
   private readonly recentResources = inject(RecentResourceStore, { optional: true });
   private pendingDecisionResolver?: PendingDecisionResolver;
   private readonly journalEntries = viewChild<JournalEntryList>(JournalEntryList);
+  private readonly imageViewerViewport = viewChild<ElementRef<HTMLDivElement>>('imageViewerViewport');
+  private draggedPointerId: number | null = null;
+  private dragStart = { x: 0, y: 0 };
+  private dragStartOffset = { x: 0, y: 0 };
 
   protected readonly campaign = this.campaignContext.campaign;
   protected readonly locations = signal<readonly Location[]>([]);
@@ -107,6 +115,8 @@ export class LocationWorkspace implements OnInit, PendingChangesAware {
   protected readonly showResetDialog = signal(false);
   protected readonly showImageDeleteDialog = signal(false);
   protected readonly showImageViewer = signal(false);
+  protected readonly imageViewerZoom = signal(MIN_VIEWER_ZOOM);
+  protected readonly imageViewerOffset = signal({ x: 0, y: 0 });
   protected readonly error = signal<string | null>(null);
   protected readonly focusedJournalEntryId = signal<string | null>(null);
   protected readonly mentionCandidates = signal<readonly ResourceMentionCandidate[]>([]);
@@ -118,6 +128,13 @@ export class LocationWorkspace implements OnInit, PendingChangesAware {
     () => this.galleryImageUrls()[this.selectedImageIndex()] ?? DEMO_LOCATION_IMAGE_URL,
   );
   protected readonly isUsingDemoImage = computed(() => this.currentImagePath() === null);
+  protected readonly imageViewerTransform = computed(() => {
+    const { x, y } = this.imageViewerOffset();
+    return `translate3d(${x}px, ${y}px, 0) scale(${this.imageViewerZoom()})`;
+  });
+  protected readonly imageViewerZoomPercent = computed(() =>
+    Math.round(this.imageViewerZoom() * 100),
+  );
   protected readonly hasPreviousImage = computed(() => this.selectedImageIndex() > 0);
   protected readonly hasNextImage = computed(
     () => this.selectedImageIndex() < this.galleryImagePaths().length - 1,
@@ -164,7 +181,7 @@ export class LocationWorkspace implements OnInit, PendingChangesAware {
 
   @HostListener('document:keydown.escape')
   protected closeImageViewerOnEscape(): void {
-    if (this.showImageViewer()) this.showImageViewer.set(false);
+    if (this.showImageViewer()) this.closeImageViewer();
   }
 
   ngOnInit(): void {
@@ -309,15 +326,74 @@ export class LocationWorkspace implements OnInit, PendingChangesAware {
   }
 
   protected selectPreviousImage(): void {
-    if (this.hasPreviousImage()) this.selectedImageIndex.update((index) => index - 1);
+    if (this.hasPreviousImage()) {
+      this.selectedImageIndex.update((index) => index - 1);
+      this.resetImageViewer();
+    }
   }
 
   protected selectNextImage(): void {
-    if (this.hasNextImage()) this.selectedImageIndex.update((index) => index + 1);
+    if (this.hasNextImage()) {
+      this.selectedImageIndex.update((index) => index + 1);
+      this.resetImageViewer();
+    }
   }
 
   protected openImageViewer(): void {
-    if (!this.isUsingDemoImage()) this.showImageViewer.set(true);
+    if (!this.isUsingDemoImage()) {
+      this.resetImageViewer();
+      this.showImageViewer.set(true);
+    }
+  }
+
+  protected closeImageViewer(): void {
+    this.showImageViewer.set(false);
+    this.resetImageViewer();
+  }
+
+  protected zoomImageViewerIn(): void {
+    this.setImageViewerZoom(this.imageViewerZoom() + VIEWER_ZOOM_STEP);
+  }
+
+  protected zoomImageViewerOut(): void {
+    this.setImageViewerZoom(this.imageViewerZoom() - VIEWER_ZOOM_STEP);
+  }
+
+  protected zoomImageViewerWithWheel(event: WheelEvent): void {
+    event.preventDefault();
+    const direction = event.deltaY < 0 ? VIEWER_ZOOM_STEP : -VIEWER_ZOOM_STEP;
+    this.setImageViewerZoom(this.imageViewerZoom() + direction, event.clientX, event.clientY);
+  }
+
+  protected startImageViewerDrag(event: PointerEvent): void {
+    if (this.imageViewerZoom() === MIN_VIEWER_ZOOM || event.button !== 0) return;
+    this.draggedPointerId = event.pointerId;
+    this.dragStart = { x: event.clientX, y: event.clientY };
+    this.dragStartOffset = this.imageViewerOffset();
+    (event.currentTarget as HTMLElement).setPointerCapture(event.pointerId);
+  }
+
+  protected moveImageViewer(event: PointerEvent): void {
+    if (event.pointerId !== this.draggedPointerId) return;
+    this.imageViewerOffset.set(
+      this.clampImageViewerOffset({
+        x: this.dragStartOffset.x + event.clientX - this.dragStart.x,
+        y: this.dragStartOffset.y + event.clientY - this.dragStart.y,
+      }),
+    );
+  }
+
+  protected stopImageViewerDrag(event: PointerEvent): void {
+    if (event.pointerId !== this.draggedPointerId) return;
+    const target = event.currentTarget as HTMLElement;
+    if (target.hasPointerCapture(event.pointerId)) target.releasePointerCapture(event.pointerId);
+    this.draggedPointerId = null;
+  }
+
+  protected resetImageViewer(): void {
+    this.imageViewerZoom.set(MIN_VIEWER_ZOOM);
+    this.imageViewerOffset.set({ x: 0, y: 0 });
+    this.draggedPointerId = null;
   }
 
   protected async chooseImages(): Promise<void> {
@@ -381,7 +457,7 @@ export class LocationWorkspace implements OnInit, PendingChangesAware {
     this.galleryImageUrls.update((urls) => urls.filter((_, candidate) => candidate !== index));
     this.selectedImageIndex.set(Math.max(0, Math.min(index, this.galleryImagePaths().length - 1)));
     this.showImageDeleteDialog.set(false);
-    this.showImageViewer.set(false);
+    this.closeImageViewer();
     this.locationForm.markAsDirty();
 
     if (this.importedDraftImagePaths().includes(path)) {
@@ -672,12 +748,57 @@ export class LocationWorkspace implements OnInit, PendingChangesAware {
     }
   }
 
+  private setImageViewerZoom(nextZoom: number, clientX?: number, clientY?: number): void {
+    const currentZoom = this.imageViewerZoom();
+    const zoom = Math.min(MAX_VIEWER_ZOOM, Math.max(MIN_VIEWER_ZOOM, nextZoom));
+    if (zoom === currentZoom) return;
+
+    const viewport = this.imageViewerViewport()?.nativeElement;
+    const currentOffset = this.imageViewerOffset();
+    let nextOffset = currentOffset;
+
+    if (viewport && clientX !== undefined && clientY !== undefined) {
+      const bounds = viewport.getBoundingClientRect();
+      const pointerX = clientX - bounds.left - bounds.width / 2;
+      const pointerY = clientY - bounds.top - bounds.height / 2;
+      const ratio = zoom / currentZoom;
+      nextOffset = {
+        x: pointerX - (pointerX - currentOffset.x) * ratio,
+        y: pointerY - (pointerY - currentOffset.y) * ratio,
+      };
+    } else {
+      const ratio = zoom / currentZoom;
+      nextOffset = { x: currentOffset.x * ratio, y: currentOffset.y * ratio };
+    }
+
+    this.imageViewerZoom.set(zoom);
+    this.imageViewerOffset.set(
+      zoom === MIN_VIEWER_ZOOM ? { x: 0, y: 0 } : this.clampImageViewerOffset(nextOffset),
+    );
+  }
+
+  private clampImageViewerOffset(offset: { x: number; y: number }): { x: number; y: number } {
+    const viewport = this.imageViewerViewport()?.nativeElement;
+    const image = viewport?.querySelector('img');
+    if (!viewport || !image) return offset;
+
+    const zoom = this.imageViewerZoom();
+    const viewportBounds = viewport.getBoundingClientRect();
+    const maxX = Math.max(0, (image.clientWidth * zoom - viewportBounds.width) / 2);
+    const maxY = Math.max(0, (image.clientHeight * zoom - viewportBounds.height) / 2);
+
+    return {
+      x: Math.min(maxX, Math.max(-maxX, offset.x)),
+      y: Math.min(maxY, Math.max(-maxY, offset.y)),
+    };
+  }
+
   private resetGallery(): void {
     this.galleryImagePaths.set([]);
     this.galleryImageUrls.set([]);
     this.importedDraftImagePaths.set([]);
     this.selectedImageIndex.set(0);
-    this.showImageViewer.set(false);
+    this.closeImageViewer();
     this.showImageDeleteDialog.set(false);
   }
 

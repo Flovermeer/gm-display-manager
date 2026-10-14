@@ -334,7 +334,12 @@
 </main>
 
 @if (showImageViewer() && !isUsingDemoImage()) {
-  <div class="media-viewer" role="presentation" (click)="showImageViewer.set(false)">
+  <div
+    class="media-viewer"
+    role="presentation"
+    (click)="closeImageViewer()"
+    (wheel)="zoomImageViewerWithWheel($event)"
+  >
     <section
       class="media-viewer__dialog"
       role="dialog"
@@ -346,7 +351,7 @@
         class="media-viewer__close"
         type="button"
         aria-label="Fermer l’image"
-        (click)="showImageViewer.set(false)"
+        (click)="closeImageViewer()"
       >
         ×
       </button>
@@ -359,7 +364,22 @@
       >
         ‹
       </button>
-      <img [src]="imageUrl()" [alt]="selectedLocation()?.name || 'Image du lieu'" />
+      <div
+        #imageViewerViewport
+        class="media-viewer__viewport"
+        [class.media-viewer__viewport--zoomed]="imageViewerZoom() > 1"
+        (pointerdown)="startImageViewerDrag($event)"
+        (pointermove)="moveImageViewer($event)"
+        (pointerup)="stopImageViewerDrag($event)"
+        (pointercancel)="stopImageViewerDrag($event)"
+      >
+        <img
+          [src]="imageUrl()"
+          [alt]="selectedLocation()?.name || 'Image du lieu'"
+          [style.transform]="imageViewerTransform()"
+          draggable="false"
+        />
+      </div>
       <button
         class="media-viewer__arrow media-viewer__arrow--next"
         type="button"
@@ -369,6 +389,28 @@
       >
         ›
       </button>
+      <div class="media-viewer__controls" role="group" aria-label="Contrôles du zoom">
+        <button
+          type="button"
+          aria-label="Dézoomer"
+          [disabled]="imageViewerZoom() <= 1"
+          (click)="zoomImageViewerOut()"
+        >
+          −
+        </button>
+        <span class="media-viewer__zoom-level" aria-live="polite">
+          {{ imageViewerZoomPercent() }} %
+        </span>
+        <button
+          type="button"
+          aria-label="Zoomer"
+          [disabled]="imageViewerZoom() >= 5"
+          (click)="zoomImageViewerIn()"
+        >
+          +
+        </button>
+        <button type="button" (click)="resetImageViewer()">Ajuster</button>
+      </div>
       <span class="media-viewer__counter">
         {{ selectedImageIndex() + 1 }} / {{ galleryImagePaths().length }}
       </span>

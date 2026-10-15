@@ -338,7 +338,7 @@ describe('LocationWorkspace', () => {
         mode: 'location',
         locationId: port.id,
         name: port.name,
-        imagePath: '/demo/tavern.svg',
+        imagePath: '/demo/location-placeholder.png',
       });
     });
 

@@ -129,6 +129,8 @@ Ne pas ajouter sans demande explicite :
 ## Modification du dépôt
 
 - Inspecter les fichiers concernés avant de proposer ou d'effectuer une modification.
+- Travailler sur une branche dédiée et passer par une pull request vers `main` ; la CI est
+  déclenchée uniquement sur ces pull requests.
 - Préserver les changements existants de l'utilisateur et éviter toute réécriture sans rapport avec la demande.
 - Ne modifier que ce qui est nécessaire à la tâche en cours.
 - Créer de petits commits cohérents au fur et à mesure de l'implémentation, chaque commit correspondant à une étape fonctionnelle ou documentaire clairement identifiable.

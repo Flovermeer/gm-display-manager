@@ -135,7 +135,7 @@ export class Control implements OnInit, OnDestroy {
       mode: 'npc',
       npcId: 'demo-innkeeper',
       name: 'Mira Vell',
-      portraitPath: '/demo/innkeeper.svg',
+      portraitPath: '/demo/npc-placeholder.png',
       backgroundPath: '/demo/location-placeholder.png',
     });
   }

@@ -31,7 +31,7 @@ describe('PlayerDisplayStore', () => {
       mode: 'npc',
       npcId: 'demo-innkeeper',
       name: 'Mira Vell',
-      portraitPath: '/demo/innkeeper.svg',
+      portraitPath: '/demo/npc-placeholder.png',
     });
 
     store.showNeutral();

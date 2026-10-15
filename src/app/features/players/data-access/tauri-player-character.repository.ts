@@ -72,7 +72,10 @@ export class TauriPlayerCharacterRepository extends PlayerCharacterRepository {
               player_character.created_at, player_character.updated_at,
               player_character.source_campaign_id, NULL AS override_snapshot
        FROM campaign
-       JOIN player_character ON player_character.universe_id=campaign.universe_id
+       JOIN player_character ON player_character.universe_id IN (
+         campaign.universe_id,
+         (SELECT game_system_id || ':generic' FROM game_universe WHERE id=campaign.universe_id)
+       )
        WHERE campaign.id=$1 AND player_character.source_campaign_id IS NULL
          AND player_character.deleted_at IS NULL
          AND NOT EXISTS (
@@ -202,7 +205,10 @@ export class TauriPlayerCharacterRepository extends PlayerCharacterRepository {
        SELECT campaign.id, player_character.id, '', 'active',
               player_character.max_hit_points, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
        FROM campaign JOIN player_character ON player_character.id=$2
-       WHERE campaign.id=$1 AND campaign.universe_id=player_character.universe_id
+       WHERE campaign.id=$1 AND player_character.universe_id IN (
+         campaign.universe_id,
+         (SELECT game_system_id || ':generic' FROM game_universe WHERE id=campaign.universe_id)
+       )
          AND player_character.source_campaign_id IS NULL
          AND player_character.deleted_at IS NULL
        ON CONFLICT(campaign_id, player_character_id) DO NOTHING`,

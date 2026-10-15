@@ -1,4 +1,4 @@
-import { Component, computed, effect, inject, input, signal, viewChild } from '@angular/core';
+import { Component, computed, effect, inject, input, output, signal, viewChild } from '@angular/core';
 
 import { UniverseResourceService } from '@app/features/game-systems/application/universe-resource.service';
 import type { GameUniverse } from '@app/features/game-systems/domain/game-system';
@@ -29,6 +29,8 @@ export class UniverseResourceCatalog {
   private readonly editor = viewChild(UniverseResourceEditor);
 
   readonly universe = input.required<GameUniverse>();
+  readonly universes = input.required<readonly GameUniverse[]>();
+  readonly universeChange = output<string>();
 
   protected readonly sections: readonly CatalogSection[] = [
     { type: 'npc', label: 'PNJ', emptyLabel: 'Aucun PNJ canonique.' },
@@ -41,6 +43,7 @@ export class UniverseResourceCatalog {
   protected readonly resources = signal<readonly UniverseResourceSummary[]>([]);
   protected readonly pendingTrash = signal<UniverseResourceSummary | null>(null);
   protected readonly editingResourceId = signal<string | null>(null);
+  protected readonly editingUniverseId = signal<string | null>(null);
   protected readonly isCreating = signal(false);
   protected readonly isEditorOpen = computed(
     () => this.isCreating() || this.editingResourceId() !== null,
@@ -64,22 +67,26 @@ export class UniverseResourceCatalog {
 
   protected createResource(): void {
     this.editingResourceId.set(null);
+    this.editingUniverseId.set(this.universe().id);
     this.isCreating.set(true);
   }
 
   protected editResource(resource: UniverseResourceSummary): void {
     if (resource.deletedAt) return;
     this.editingResourceId.set(resource.id);
+    this.editingUniverseId.set(resource.universeId);
     this.isCreating.set(false);
   }
 
   protected closeEditor(): void {
     this.editingResourceId.set(null);
+    this.editingUniverseId.set(null);
     this.isCreating.set(false);
   }
 
   protected async resourceSaved(resource: UniverseResourceDetail): Promise<void> {
     this.editingResourceId.set(resource.id);
+    this.editingUniverseId.set(resource.universeId);
     this.isCreating.set(false);
     await this.reload();
   }
@@ -111,6 +118,16 @@ export class UniverseResourceCatalog {
     return count === 1 ? '1 campagne' : `${count} campagnes`;
   }
 
+  protected originLabel(resource: UniverseResourceSummary): string {
+    return this.universes().find(({ id }) => id === resource.universeId)?.name ?? 'Univers inconnu';
+  }
+
+  protected changeUniverse(event: Event): void {
+    const id = (event.target as HTMLSelectElement).value;
+    if (id === this.universe().id) return;
+    this.universeChange.emit(id);
+  }
+
   protected async restore(resource: UniverseResourceSummary): Promise<void> {
     await this.run(async () => {
       await this.service.restore(resource);
@@ -136,7 +153,8 @@ export class UniverseResourceCatalog {
     this.isLoading.set(true);
     this.error.set(null);
     try {
-      this.resources.set(await this.service.list(universeId, type));
+      const universe = this.universes().find(({ id }) => id === universeId) ?? this.universe();
+      this.resources.set(await this.service.listForCatalog(universe, type));
     } catch (error) {
       this.error.set(
         error instanceof Error ? error.message : 'Impossible de charger le catalogue.',

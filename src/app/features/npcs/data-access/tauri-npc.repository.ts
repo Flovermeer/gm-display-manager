@@ -60,7 +60,10 @@ export class TauriNpcRepository extends NpcRepository {
               '' AS summary, '' AS notes, npc.portrait_path, npc.idle_video_path,
               npc.sheet_json, npc.sheet_schema_version, npc.created_at, npc.updated_at,
               npc.source_campaign_id, NULL AS override_snapshot
-       FROM campaign JOIN npc ON npc.universe_id=campaign.universe_id
+       FROM campaign JOIN npc ON npc.universe_id IN (
+         campaign.universe_id,
+         (SELECT game_system_id || ':generic' FROM game_universe WHERE id=campaign.universe_id)
+       )
        WHERE campaign.id=$1 AND npc.source_campaign_id IS NULL AND npc.deleted_at IS NULL
          AND NOT EXISTS (SELECT 1 FROM campaign_npc
            WHERE campaign_npc.campaign_id=$1 AND campaign_npc.npc_id=npc.id)
@@ -160,7 +163,10 @@ export class TauriNpcRepository extends NpcRepository {
       `INSERT INTO campaign_npc(campaign_id,npc_id,status,role_summary,created_at,updated_at)
        SELECT campaign.id,npc.id,'active','',CURRENT_TIMESTAMP,CURRENT_TIMESTAMP
        FROM campaign JOIN npc ON npc.id=$2
-       WHERE campaign.id=$1 AND campaign.universe_id=npc.universe_id
+       WHERE campaign.id=$1 AND npc.universe_id IN (
+         campaign.universe_id,
+         (SELECT game_system_id || ':generic' FROM game_universe WHERE id=campaign.universe_id)
+       )
          AND npc.source_campaign_id IS NULL AND npc.deleted_at IS NULL
        ON CONFLICT(campaign_id,npc_id) DO NOTHING`,
       [campaignId, id],

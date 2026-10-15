@@ -10,6 +10,26 @@
 
 .universe-catalog__heading {
   grid-column: 1 / -1;
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.universe-catalog__universe-select {
+  display: grid;
+  gap: 0.3rem;
+  min-width: 15rem;
+  color: #746b61;
+  font-size: 0.8rem;
+}
+
+.universe-catalog__universe-select select {
+  padding: 0.6rem 2rem 0.6rem 0.7rem;
+  border: 1px solid #c9c0b3;
+  border-radius: 0.4rem;
+  color: #2f2923;
+  background: #fff;
 }
 
 .universe-catalog__heading p,
@@ -91,6 +111,11 @@
   display: block;
 }
 
+.universe-catalog__card .universe-catalog__origin {
+  color: #76538d;
+  font-weight: 700;
+}
+
 .universe-catalog__card small {
   margin-top: 0.2rem;
   color: #746b61;
@@ -115,6 +140,7 @@
   }
 
   .universe-catalog__content-heading,
+  .universe-catalog__heading,
   .universe-catalog__card {
     align-items: stretch;
     flex-direction: column;

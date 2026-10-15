@@ -56,4 +56,25 @@ describe('UniverseResourceService', () => {
       service.save({ ...draft, name: 'Boucle', parentLocationId: draft.id }),
     ).rejects.toThrow('Un lieu ne peut pas être son propre parent.');
   });
+
+  it('includes generic resources in a specific universe catalog', async () => {
+    const generic = service.createDraft('dnd5e:generic', 'monster');
+    const specific = service.createDraft('forgotten-realms', 'monster');
+    await service.save({ ...generic, name: 'Ours-hibou' });
+    await service.save({ ...specific, name: 'Dracoliche' });
+
+    const resources = await service.listForCatalog(
+      {
+        id: 'forgotten-realms',
+        gameSystemId: 'dnd5e',
+        name: 'Forgotten Realms',
+        deletedAt: null,
+        createdAt: '2026-01-01T00:00:00.000Z',
+        updatedAt: '2026-01-01T00:00:00.000Z',
+      },
+      'monster',
+    );
+
+    expect(resources.map(({ name }) => name)).toEqual(['Dracoliche', 'Ours-hibou']);
+  });
 });

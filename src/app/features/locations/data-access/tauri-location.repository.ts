@@ -66,7 +66,10 @@ export class TauriLocationRepository extends LocationRepository {
               ${LOCATION_IMAGES_JSON} AS image_paths_json,
               location.created_at, location.updated_at, location.source_campaign_id,
               NULL AS override_snapshot
-       FROM campaign JOIN location ON location.universe_id=campaign.universe_id
+       FROM campaign JOIN location ON location.universe_id IN (
+         campaign.universe_id,
+         (SELECT game_system_id || ':generic' FROM game_universe WHERE id=campaign.universe_id)
+       )
        WHERE campaign.id=$1 AND location.source_campaign_id IS NULL
          AND location.deleted_at IS NULL
          AND NOT EXISTS (
@@ -147,7 +150,10 @@ export class TauriLocationRepository extends LocationRepository {
       `WITH RECURSIVE ancestors(id, parent_location_id) AS (
          SELECT location.id, location.parent_location_id
          FROM campaign JOIN location ON location.id=$2
-         WHERE campaign.id=$1 AND campaign.universe_id=location.universe_id
+         WHERE campaign.id=$1 AND location.universe_id IN (
+           campaign.universe_id,
+           (SELECT game_system_id || ':generic' FROM game_universe WHERE id=campaign.universe_id)
+         )
            AND location.source_campaign_id IS NULL AND location.deleted_at IS NULL
          UNION ALL
          SELECT parent.id, parent.parent_location_id

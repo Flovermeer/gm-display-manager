@@ -27,6 +27,17 @@ export class InMemoryGameSystemRepository extends GameSystemRepository {
   ]);
   private readonly universes = new Map<string, GameUniverse>([
     [
+      'dnd5e:generic',
+      {
+        id: 'dnd5e:generic',
+        gameSystemId: 'dnd5e',
+        name: 'Dungeons & Dragons 5e (générique)',
+        deletedAt: null,
+        createdAt: timestamp,
+        updatedAt: timestamp,
+      },
+    ],
+    [
       'forgotten-realms',
       {
         id: 'forgotten-realms',

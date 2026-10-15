@@ -54,7 +54,7 @@ describe('NarrativeItemWorkspace', () => {
     promote: vi.fn(),
     resetOverride: vi.fn(),
   };
-  const configurationService = { ensureDefaults: vi.fn(), list: vi.fn() };
+  const configurationService = { ensureDefaults: vi.fn(), listForCampaign: vi.fn() };
   const npcService = { list: vi.fn() };
   const emptyResourceService = { list: vi.fn() };
   const imageGateway = { chooseAndImport: vi.fn(), resolveUrl: vi.fn(), discard: vi.fn() };
@@ -77,7 +77,7 @@ describe('NarrativeItemWorkspace', () => {
     itemService.list.mockResolvedValue([item]);
     itemService.listAvailable.mockResolvedValue([]);
     configurationService.ensureDefaults.mockResolvedValue(undefined);
-    configurationService.list
+    configurationService.listForCampaign
       .mockResolvedValueOnce([{ id: 'type-id', name: 'Artefact' }])
       .mockResolvedValueOnce([{ id: 'rarity-id', name: 'Légendaire' }]);
     npcService.list.mockResolvedValue([{ id: 'npc-id', name: 'Artus Cimber' }]);

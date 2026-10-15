@@ -439,8 +439,8 @@ export class NarrativeItemWorkspace implements OnInit, PendingChangesAware {
       const [items, types, rarities, npcs, locations, characters, mentionCandidates] =
         await Promise.all([
           this.itemService.list(campaign.id),
-          this.configurationService.list(campaign.universeId, 'type'),
-          this.configurationService.list(campaign.universeId, 'rarity'),
+          this.configurationService.listForCampaign(campaign.universeId, 'type'),
+          this.configurationService.listForCampaign(campaign.universeId, 'rarity'),
           this.npcService.list(campaign.id),
           this.locationService.list(campaign.id),
           this.characterService.list(campaign.id),

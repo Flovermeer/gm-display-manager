@@ -1,7 +1,17 @@
 <section class="universe-catalog" aria-labelledby="universe-catalog-title">
   <header class="universe-catalog__heading">
-    <p>Ressources partagées</p>
-    <h2 id="universe-catalog-title">Catalogue de {{ universe().name }}</h2>
+    <div>
+      <p>Ressources partagées</p>
+      <h2 id="universe-catalog-title">Catalogue de {{ universe().name }}</h2>
+    </div>
+    <label class="universe-catalog__universe-select">
+      <span>Catalogue</span>
+      <select [value]="universe().id" [disabled]="isEditorOpen()" (change)="changeUniverse($event)">
+        @for (option of universes(); track option.id) {
+          <option [value]="option.id">{{ option.name }}</option>
+        }
+      </select>
+    </label>
   </header>
 
   <nav class="universe-catalog__menu" aria-label="Types de ressources">
@@ -21,7 +31,7 @@
   <div class="universe-catalog__content">
     @if (isEditorOpen()) {
       <app-universe-resource-editor
-        [universeId]="universe().id"
+        [universeId]="editingUniverseId() ?? universe().id"
         [type]="selectedType()"
         [resourceId]="editingResourceId()"
         (saved)="resourceSaved($event)"
@@ -63,6 +73,7 @@
             >
               <div>
                 <strong>{{ resource.name }}</strong>
+                <small class="universe-catalog__origin">{{ originLabel(resource) }}</small>
                 <small>{{ resource.summary || usageLabel(resource.campaignCount) }}</small>
                 @if (resource.summary) {
                   <small>{{ usageLabel(resource.campaignCount) }}</small>

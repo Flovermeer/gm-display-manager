@@ -10,6 +10,11 @@
 import { inject, Injectable } from '@angular/core';
 
 import { UniverseResourceRepository } from '@app/features/game-systems/data-access/universe-resource.repository';
+import {
+  genericUniverseId,
+  isGenericUniverse,
+  type GameUniverse,
+} from '@app/features/game-systems/domain/game-system';
 import type {
   UniverseResourceDetail,
   UniverseResourceDetailFor,
@@ -36,6 +41,21 @@ export class UniverseResourceService {
     type: UniverseResourceType,
   ): Promise<readonly UniverseResourceSummary[]> {
     return this.repository.list(universeId, type);
+  }
+
+  async listForCatalog(
+    universe: GameUniverse,
+    type: UniverseResourceType,
+  ): Promise<readonly UniverseResourceSummary[]> {
+    if (isGenericUniverse(universe)) return this.list(universe.id, type);
+
+    const [specific, generic] = await Promise.all([
+      this.list(universe.id, type),
+      this.list(genericUniverseId(universe.gameSystemId), type),
+    ]);
+    return [...specific, ...generic].sort(
+      (left, right) => left.name.localeCompare(right.name) || left.id.localeCompare(right.id),
+    );
   }
 
   find(

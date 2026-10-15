@@ -24,7 +24,7 @@
         [disabled]="!selectedUniverse()"
         (click)="openSection('resources')"
       >
-        Ressources de l’univers
+        Ressources partagées
       </button>
       <button
         class="configuration-menu__item"
@@ -74,7 +74,11 @@
       "
     >
       @if (section() === 'resources' && selectedUniverse(); as universe) {
-        <app-universe-resource-catalog [universe]="universe" />
+        <app-universe-resource-catalog
+          [universe]="universe"
+          [universes]="catalogUniverses()"
+          (universeChange)="selectUniverse($event)"
+        />
       } @else if (section() === 'rules' && selectedSystem(); as system) {
         @if (selectedUniverse(); as universe) {
           <app-rule-catalog-settings [system]="system" [universe]="universe" />
@@ -159,7 +163,7 @@
                 </div>
               }
 
-              @for (universe of universes(); track universe.id) {
+              @for (universe of managedUniverses(); track universe.id) {
                 <article
                   class="configuration-card"
                   [class.configuration-card--selected]="universe.id === selectedUniverseId()"

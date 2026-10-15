@@ -17,11 +17,14 @@ import {
 } from '@app/features/items/domain/item-configuration';
 import { ItemConfigurationRepository } from '@app/features/items/data-access/item-configuration.repository';
 import { NarrativeItemRepository } from '@app/features/items/data-access/narrative-item.repository';
+import { GameSystemService } from '@app/features/game-systems/application/game-system.service';
+import { genericUniverseId } from '@app/features/game-systems/domain/game-system';
 
 @Injectable({ providedIn: 'root' })
 export class ItemConfigurationService {
   private readonly repository = inject(ItemConfigurationRepository);
   private readonly itemRepository = inject(NarrativeItemRepository);
+  private readonly gameSystemService = inject(GameSystemService);
   private readonly defaultInitializations = new Map<string, Promise<void>>();
 
   list(
@@ -29,6 +32,22 @@ export class ItemConfigurationService {
     kind: ItemConfigurationKind,
   ): Promise<readonly ItemConfigurationOption[]> {
     return this.repository.list(universeId, kind);
+  }
+
+  async listForCampaign(
+    universeId: string,
+    kind: ItemConfigurationKind,
+  ): Promise<readonly ItemConfigurationOption[]> {
+    const universe = await this.gameSystemService.findUniverse(universeId);
+    if (!universe) return this.list(universeId, kind);
+
+    const [specific, generic] = await Promise.all([
+      this.list(universeId, kind),
+      this.list(genericUniverseId(universe.gameSystemId), kind),
+    ]);
+    return [...specific, ...generic].sort(
+      (left, right) => left.name.localeCompare(right.name) || left.id.localeCompare(right.id),
+    );
   }
 
   ensureDefaults(universeId: string): Promise<void> {

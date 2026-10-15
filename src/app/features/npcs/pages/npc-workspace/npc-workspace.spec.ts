@@ -334,7 +334,7 @@ describe('NpcWorkspace', () => {
     await renderUntil(fixture, 'Afficher aux joueurs');
 
     expect(element.querySelector<HTMLImageElement>('.portrait-frame img')?.src).toContain(
-      '/demo/innkeeper.svg',
+      '/demo/npc-placeholder.png',
     );
     expect(element.querySelector('.portrait-demo-label')?.textContent).toContain('Démo');
 
@@ -345,7 +345,7 @@ describe('NpcWorkspace', () => {
         mode: 'npc',
         npcId: npc.id,
         name: npc.name,
-        portraitPath: '/demo/innkeeper.svg',
+        portraitPath: '/demo/npc-placeholder.png',
       });
     });
   });

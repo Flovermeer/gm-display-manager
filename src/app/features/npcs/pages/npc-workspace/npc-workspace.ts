@@ -68,7 +68,7 @@ import {
 } from '@app/shared/ui/rich-text-feature-editor/creature-feature-sections';
 
 type PendingDecisionResolver = (canLeave: boolean) => void;
-const DEMO_NPC_PORTRAIT_URL = '/demo/innkeeper.svg';
+const DEMO_NPC_PORTRAIT_URL = '/demo/npc-placeholder.png';
 type NpcTagField =
   | 'savingThrows'
   | 'skills'

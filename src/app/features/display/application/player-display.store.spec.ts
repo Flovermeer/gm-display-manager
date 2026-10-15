@@ -13,14 +13,14 @@ describe('PlayerDisplayStore', () => {
     store.setState({
       mode: 'location',
       locationId: 'demo-tavern',
-      imagePath: '/demo/tavern.svg',
+      imagePath: '/demo/location-placeholder.png',
       name: "Beholder's Inn",
     });
 
     expect(store.state()).toEqual({
       mode: 'location',
       locationId: 'demo-tavern',
-      imagePath: '/demo/tavern.svg',
+      imagePath: '/demo/location-placeholder.png',
       name: "Beholder's Inn",
     });
   });

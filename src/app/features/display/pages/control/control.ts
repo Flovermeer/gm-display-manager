@@ -121,7 +121,7 @@ export class Control implements OnInit, OnDestroy {
     void this.publishDisplayState({
       mode: 'location',
       locationId: 'demo-tavern',
-      imagePath: '/demo/tavern.svg',
+      imagePath: '/demo/location-placeholder.png',
       name: "Beholder's Inn",
     });
   }
@@ -136,7 +136,7 @@ export class Control implements OnInit, OnDestroy {
       npcId: 'demo-innkeeper',
       name: 'Mira Vell',
       portraitPath: '/demo/innkeeper.svg',
-      backgroundPath: '/demo/tavern.svg',
+      backgroundPath: '/demo/location-placeholder.png',
     });
   }
 

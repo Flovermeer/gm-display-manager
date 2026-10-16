@@ -48,7 +48,10 @@ export class TauriItemConfigurationRepository extends ItemConfigurationRepositor
       `SELECT config.id, config.universe_id, config.name,
               config.created_at, config.updated_at
        FROM ${table(kind)} AS config
-       JOIN campaign ON campaign.universe_id=config.universe_id
+       JOIN campaign ON config.universe_id IN (
+         campaign.universe_id,
+         (SELECT game_system_id || ':generic' FROM game_universe WHERE id=campaign.universe_id)
+       )
        WHERE campaign.id = $1 AND config.id = $2`,
       [campaignId, id],
     );

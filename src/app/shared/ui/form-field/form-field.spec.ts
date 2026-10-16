@@ -32,7 +32,7 @@ import { FormField } from '@app/shared/ui/form-field/form-field';
 class TestHost {
   readonly control = new FormControl('Valeur initiale', Validators.required);
   readonly numberControl = new FormControl<number | null>(null);
-  readonly selectControl = new FormControl<string | null>(null);
+  readonly selectControl = new FormControl<string | null>('parent-id');
 }
 
 describe('FormField', () => {
@@ -69,6 +69,14 @@ describe('FormField', () => {
     input.dispatchEvent(new Event('input'));
 
     expect(fixture.componentInstance.numberControl.value).toBe(7);
+  });
+
+  it('selects an initial value when options are rendered dynamically', () => {
+    const select = (fixture.nativeElement as HTMLElement).querySelector<HTMLSelectElement>(
+      '#select-field',
+    )!;
+
+    expect(select.value).toBe('parent-id');
   });
 
   it('maps an empty select option back to null', () => {

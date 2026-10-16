@@ -3,7 +3,11 @@ import { FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 
 import { GameSystemService } from '@app/features/game-systems/application/game-system.service';
-import type { GameSystem, GameUniverse } from '@app/features/game-systems/domain/game-system';
+import {
+  isGenericUniverse,
+  type GameSystem,
+  type GameUniverse,
+} from '@app/features/game-systems/domain/game-system';
 import { ButtonDirective } from '@app/shared/ui/button/button.directive';
 import { Dialog } from '@app/shared/ui/dialog/dialog';
 import { FormField } from '@app/shared/ui/form-field/form-field';
@@ -50,6 +54,12 @@ export class GlobalConfiguration implements OnInit, PendingChangesAware {
   protected readonly selectedUniverse = computed(
     () => this.universes().find(({ id }) => id === this.selectedUniverseId()) ?? null,
   );
+  protected readonly managedUniverses = computed(() =>
+    this.universes().filter((universe) => !isGenericUniverse(universe)),
+  );
+  protected readonly catalogUniverses = computed(() =>
+    this.universes().filter(({ deletedAt }) => !deletedAt),
+  );
   protected readonly isLoading = signal(true);
   protected readonly isSubmitting = signal(false);
   protected readonly error = signal<string | null>(null);
@@ -72,7 +82,8 @@ export class GlobalConfiguration implements OnInit, PendingChangesAware {
     await this.loadUniverses(id);
   }
 
-  protected selectUniverse(id: string): void {
+  protected async selectUniverse(id: string): Promise<void> {
+    if (!(await this.confirmPendingChanges())) return;
     this.selectedUniverseId.set(id);
   }
 
@@ -191,13 +202,18 @@ export class GlobalConfiguration implements OnInit, PendingChangesAware {
   }
 
   private async loadUniverses(gameSystemId: string | null): Promise<void> {
-    const universes = gameSystemId ? await this.service.listUniverses(gameSystemId, true) : [];
+    const universes = gameSystemId
+      ? await this.service.listCatalogUniverses(gameSystemId, true)
+      : [];
     this.universes.set(universes);
     const currentId = this.selectedUniverseId();
     this.selectedUniverseId.set(
       currentId && universes.some(({ id }) => id === currentId)
         ? currentId
-        : (universes.find(({ deletedAt }) => !deletedAt)?.id ?? universes[0]?.id ?? null),
+        : (universes.find((universe) => !universe.deletedAt && isGenericUniverse(universe))?.id ??
+          universes.find(({ deletedAt }) => !deletedAt)?.id ??
+          universes[0]?.id ??
+          null),
     );
   }
 

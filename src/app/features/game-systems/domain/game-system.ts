@@ -15,6 +15,20 @@ export type GameUniverse = Readonly<{
   updatedAt: string;
 }>;
 
+const GENERIC_UNIVERSE_SUFFIX = ':generic';
+
+export function genericUniverseId(gameSystemId: string): string {
+  return `${gameSystemId}${GENERIC_UNIVERSE_SUFFIX}`;
+}
+
+export function isGenericUniverse(universe: GameUniverse): boolean {
+  return universe.id === genericUniverseId(universe.gameSystemId);
+}
+
+export function genericUniverseName(gameSystemName: string): string {
+  return `${gameSystemName} (générique)`;
+}
+
 export function createGameSystem(
   name: string,
   createId: () => string = () => crypto.randomUUID(),
@@ -46,6 +60,18 @@ export function createGameUniverse(
     createdAt: timestamp,
     updatedAt: timestamp,
   };
+}
+
+export function createGenericUniverse(
+  gameSystem: GameSystem,
+  now: () => Date = () => new Date(),
+): GameUniverse {
+  return createGameUniverse(
+    gameSystem.id,
+    genericUniverseName(gameSystem.name),
+    () => genericUniverseId(gameSystem.id),
+    now,
+  );
 }
 
 export function renameGameSystem(

@@ -201,5 +201,11 @@ fn migrations() -> Vec<Migration> {
             sql: include_str!("../migrations/0025_add_scene_description.sql"),
             kind: MigrationKind::Up,
         },
+        Migration {
+            version: 26,
+            description: "create_generic_universes",
+            sql: include_str!("../migrations/0026_create_generic_universes.sql"),
+            kind: MigrationKind::Up,
+        },
     ]
 }

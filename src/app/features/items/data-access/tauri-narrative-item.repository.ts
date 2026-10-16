@@ -68,7 +68,10 @@ export class TauriNarrativeItemRepository extends NarrativeItemRepository {
               narrative_item.updated_at, narrative_item.source_campaign_id,
               NULL AS override_snapshot
        FROM campaign
-       JOIN narrative_item ON narrative_item.universe_id=campaign.universe_id
+       JOIN narrative_item ON narrative_item.universe_id IN (
+         campaign.universe_id,
+         (SELECT game_system_id || ':generic' FROM game_universe WHERE id=campaign.universe_id)
+       )
        WHERE campaign.id=$1 AND narrative_item.source_campaign_id IS NULL
          AND narrative_item.deleted_at IS NULL
          AND NOT EXISTS (
@@ -195,7 +198,10 @@ export class TauriNarrativeItemRepository extends NarrativeItemRepository {
        SELECT campaign.id, narrative_item.id, 'active', NULL, NULL, NULL,
               CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
        FROM campaign JOIN narrative_item ON narrative_item.id=$2
-       WHERE campaign.id=$1 AND campaign.universe_id=narrative_item.universe_id
+       WHERE campaign.id=$1 AND narrative_item.universe_id IN (
+         campaign.universe_id,
+         (SELECT game_system_id || ':generic' FROM game_universe WHERE id=campaign.universe_id)
+       )
          AND narrative_item.source_campaign_id IS NULL
          AND narrative_item.deleted_at IS NULL
        ON CONFLICT(campaign_id, item_id) DO NOTHING`,

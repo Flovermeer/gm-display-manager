@@ -46,7 +46,7 @@ type LocationListEntry = Readonly<{
   hasChildren: boolean;
 }>;
 
-const DEMO_LOCATION_IMAGE_URL = '/demo/tavern.svg';
+const DEMO_LOCATION_IMAGE_URL = '/demo/location-placeholder.png';
 const MIN_VIEWER_ZOOM = 1;
 const MAX_VIEWER_ZOOM = 5;
 const VIEWER_ZOOM_STEP = 0.25;

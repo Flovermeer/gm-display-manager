@@ -129,6 +129,23 @@ describe('LocationWorkspace', () => {
     ).toBe('1');
   });
 
+  it('preselects the current parent when editing a location', async () => {
+    const fixture = TestBed.createComponent(LocationWorkspace);
+    fixture.detectChanges();
+    await renderUntil(fixture, 'Port Nyanzaru');
+    const element = fixture.nativeElement as HTMLElement;
+    const portButton = [...element.querySelectorAll<HTMLButtonElement>('.location-list-item')].find(
+      (button) => button.textContent?.includes(port.name),
+    );
+
+    portButton?.click();
+    await renderUntil(fixture, 'Modifier');
+    element.querySelector<HTMLButtonElement>('.detail-actions .ui-button--primary')?.click();
+    fixture.detectChanges();
+
+    expect(element.querySelector<HTMLSelectElement>('#location-parent')?.value).toBe(chult.id);
+  });
+
   it('collapses a location branch without selecting the parent and persists it', async () => {
     const fixture = TestBed.createComponent(LocationWorkspace);
     fixture.detectChanges();
@@ -321,7 +338,7 @@ describe('LocationWorkspace', () => {
         mode: 'location',
         locationId: port.id,
         name: port.name,
-        imagePath: '/demo/tavern.svg',
+        imagePath: '/demo/location-placeholder.png',
       });
     });
 

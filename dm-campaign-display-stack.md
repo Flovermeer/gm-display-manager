@@ -211,6 +211,11 @@ Relation
 
 Les ressources partageables appartiennent à un univers et leur contexte appartient à la campagne :
 
+Chaque système de jeu possède aussi un univers technique `<gameSystemId>:generic`, masqué lors de
+la création des campagnes. Il porte les ressources communes au système. Le catalogue d'un univers
+affiche ses propres ressources et celles de cet univers générique ; les deux origines restent
+identifiables et une campagne peut importer les ressources de ces deux niveaux.
+
 ```ts
 Npc {
   id

@@ -12,7 +12,11 @@ import { inject, Injectable } from '@angular/core';
 import { GameSystemRepository } from '@app/features/game-systems/data-access/game-system.repository';
 import {
   createGameSystem,
+  createGenericUniverse,
   createGameUniverse,
+  genericUniverseId,
+  genericUniverseName,
+  isGenericUniverse,
   renameGameSystem,
   renameGameUniverse,
   type GameSystem,
@@ -28,6 +32,15 @@ export class GameSystemService {
   }
 
   listUniverses(gameSystemId: string, includeDeleted = false): Promise<readonly GameUniverse[]> {
+    return this.repository
+      .listUniverses(gameSystemId, includeDeleted)
+      .then((universes) => universes.filter((universe) => !isGenericUniverse(universe)));
+  }
+
+  listCatalogUniverses(
+    gameSystemId: string,
+    includeDeleted = false,
+  ): Promise<readonly GameUniverse[]> {
     return this.repository.listUniverses(gameSystemId, includeDeleted);
   }
 
@@ -38,12 +51,19 @@ export class GameSystemService {
   async createSystem(name: string): Promise<GameSystem> {
     const item = createGameSystem(name);
     await this.repository.saveSystem(item);
+    await this.repository.saveUniverse(createGenericUniverse(item));
     return item;
   }
 
   async renameSystem(item: GameSystem, name: string): Promise<GameSystem> {
     const updated = renameGameSystem(item, name);
     await this.repository.saveSystem(updated);
+    const generic = await this.repository.findUniverse(genericUniverseId(item.id));
+    if (generic) {
+      await this.repository.saveUniverse(
+        renameGameUniverse(generic, genericUniverseName(updated.name)),
+      );
+    }
     return updated;
   }
 

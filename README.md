@@ -80,6 +80,10 @@ npm.cmd run test -- --watch=false
 cargo test --manifest-path src-tauri/Cargo.toml
 ```
 
+Le développement courant se fait sur une branche dédiée. Toute pull request vers `main`
+déclenche automatiquement la CI Windows, qui exécute ces tests et le build Angular. Un push sur
+une autre branche ou directement sur `main` ne déclenche pas ce workflow.
+
 Le comportement multi-écran devra être validé manuellement sur plusieurs
 moniteurs physiques à partir du jalon 2.
 

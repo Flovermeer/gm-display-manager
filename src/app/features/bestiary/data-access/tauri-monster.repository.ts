@@ -56,7 +56,10 @@ export class TauriMonsterRepository extends MonsterRepository {
               monster.created_at, monster.updated_at, monster.source_campaign_id,
               NULL AS override_snapshot
        FROM campaign
-       JOIN monster ON monster.universe_id=campaign.universe_id
+       JOIN monster ON monster.universe_id IN (
+         campaign.universe_id,
+         (SELECT game_system_id || ':generic' FROM game_universe WHERE id=campaign.universe_id)
+       )
        WHERE campaign.id=$1 AND monster.source_campaign_id IS NULL
          AND monster.deleted_at IS NULL AND NOT EXISTS (
          SELECT 1 FROM campaign_monster
@@ -128,7 +131,10 @@ export class TauriMonsterRepository extends MonsterRepository {
       `INSERT INTO campaign_monster(campaign_id, monster_id, created_at)
        SELECT campaign.id, monster.id, CURRENT_TIMESTAMP
        FROM campaign JOIN monster ON monster.id=$2
-       WHERE campaign.id=$1 AND campaign.universe_id=monster.universe_id
+       WHERE campaign.id=$1 AND monster.universe_id IN (
+         campaign.universe_id,
+         (SELECT game_system_id || ':generic' FROM game_universe WHERE id=campaign.universe_id)
+       )
        ON CONFLICT(campaign_id, monster_id) DO NOTHING`,
       [campaignId, monsterId],
     );

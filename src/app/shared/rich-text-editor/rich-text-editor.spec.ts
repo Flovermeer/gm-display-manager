@@ -3,7 +3,10 @@ import { TestBed } from '@angular/core/testing';
 import { Editor } from '@tiptap/core';
 
 import { RICH_TEXT_SCHEMA_VERSION, type RichTextDocument } from '@app/shared/rich-text-editor/rich-text-document';
-import { RichTextEditor } from '@app/shared/rich-text-editor/rich-text-editor';
+import {
+  calculateMentionMenuPosition,
+  RichTextEditor,
+} from '@app/shared/rich-text-editor/rich-text-editor';
 import { ResourceMentionDisplayGateway } from '@app/shared/rich-text-editor/resource-mention-display.gateway';
 
 const FIRST_DOCUMENT: RichTextDocument = {
@@ -161,6 +164,35 @@ describe('RichTextEditor', () => {
     eye?.click();
 
     expect(display).toHaveBeenCalledWith(candidate);
+  });
+});
+
+describe('calculateMentionMenuPosition', () => {
+  it('opens the menu below the caret when enough space is available', () => {
+    expect(
+      calculateMentionMenuPosition(
+        { left: 240, top: 200, bottom: 220 },
+        { width: 1200, height: 800 },
+      ),
+    ).toEqual({ left: 240, top: 228, bottom: null, maxHeight: 288 });
+  });
+
+  it('opens the menu above the caret near the bottom of the viewport', () => {
+    expect(
+      calculateMentionMenuPosition(
+        { left: 240, top: 730, bottom: 750 },
+        { width: 1200, height: 800 },
+      ),
+    ).toEqual({ left: 240, top: null, bottom: 78, maxHeight: 288 });
+  });
+
+  it('keeps the menu inside the right edge of the viewport', () => {
+    expect(
+      calculateMentionMenuPosition(
+        { left: 950, top: 200, bottom: 220 },
+        { width: 1000, height: 800 },
+      ).left,
+    ).toBe(600);
   });
 });
 

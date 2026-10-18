@@ -29,6 +29,19 @@ import {
 } from '@app/shared/rich-text-editor/resource-mention';
 import { ResourceMentionDisplayGateway } from '@app/shared/rich-text-editor/resource-mention-display.gateway';
 
+export type MentionMenuPosition = Readonly<{
+  left: number;
+  top: number | null;
+  bottom: number | null;
+  maxHeight: number;
+}>;
+
+const MENTION_MENU_GAP = 8;
+const MENTION_MENU_MAX_HEIGHT = 288;
+const MENTION_MENU_MAX_WIDTH = 384;
+const MENTION_MENU_MIN_SPACE = 160;
+const MENTION_MENU_VIEWPORT_PADDING = 16;
+
 @Component({
   selector: 'app-rich-text-editor',
   templateUrl: './rich-text-editor.html',
@@ -47,6 +60,7 @@ export class RichTextEditor implements AfterViewInit, OnDestroy {
   private readonly editorReady = signal(false);
   private readonly editorRevision = signal(0);
   protected readonly mentionMatch = signal<ResourceMentionMatch | null>(null);
+  protected readonly mentionMenuPosition = signal<MentionMenuPosition | null>(null);
   protected readonly selectedMentionIndex = signal(0);
   protected readonly displayError = signal<string | null>(null);
   protected readonly filteredMentionCandidates = computed(() => {
@@ -58,6 +72,7 @@ export class RichTextEditor implements AfterViewInit, OnDestroy {
       .slice(0, 8);
   });
   private editor: Editor | null = null;
+  private readonly refreshMentionMenuPosition = () => this.updateMentionMenuPosition();
 
   private readonly synchronizeExternalValue = effect(() => {
     const value = this.value();
@@ -111,6 +126,7 @@ export class RichTextEditor implements AfterViewInit, OnDestroy {
           (match) => {
             this.mentionMatch.set(this.editable() ? match : null);
             this.selectedMentionIndex.set(0);
+            this.updateMentionMenuPosition();
           },
           (event) => this.handleMentionKeydown(event),
         ),
@@ -152,11 +168,15 @@ export class RichTextEditor implements AfterViewInit, OnDestroy {
         });
       },
     });
+    window.addEventListener('resize', this.refreshMentionMenuPosition);
+    window.addEventListener('scroll', this.refreshMentionMenuPosition, true);
     this.editorReady.set(true);
     void this.mentionDisplay?.refreshPlayerDisplayStatus();
   }
 
   ngOnDestroy(): void {
+    window.removeEventListener('resize', this.refreshMentionMenuPosition);
+    window.removeEventListener('scroll', this.refreshMentionMenuPosition, true);
     this.editor?.destroy();
     this.editor = null;
   }
@@ -220,7 +240,7 @@ export class RichTextEditor implements AfterViewInit, OnDestroy {
         { type: 'text', text: ' ' },
       ])
       .run();
-    this.mentionMatch.set(null);
+    this.closeMentionMenu();
   }
 
   protected resourceTypeLabel(candidate: ResourceMentionCandidate): string {
@@ -324,11 +344,67 @@ export class RichTextEditor implements AfterViewInit, OnDestroy {
       return true;
     }
     if (event.key === 'Escape') {
-      this.mentionMatch.set(null);
+      this.closeMentionMenu();
       return true;
     }
     return false;
   }
+
+  private updateMentionMenuPosition(): void {
+    const match = this.mentionMatch();
+    if (!this.editor || !match) {
+      this.mentionMenuPosition.set(null);
+      return;
+    }
+
+    try {
+      const cursor = this.editor.view.coordsAtPos(match.to);
+      this.mentionMenuPosition.set(
+        calculateMentionMenuPosition(cursor, {
+          width: window.innerWidth,
+          height: window.innerHeight,
+        }),
+      );
+    } catch {
+      this.mentionMenuPosition.set(null);
+    }
+  }
+
+  private closeMentionMenu(): void {
+    this.mentionMatch.set(null);
+    this.mentionMenuPosition.set(null);
+  }
+}
+
+export function calculateMentionMenuPosition(
+  cursor: Pick<DOMRect, 'left' | 'top' | 'bottom'>,
+  viewport: Readonly<{ width: number; height: number }>,
+): MentionMenuPosition {
+  const menuWidth = Math.min(
+    MENTION_MENU_MAX_WIDTH,
+    Math.max(0, viewport.width - MENTION_MENU_VIEWPORT_PADDING * 2),
+  );
+  const maximumLeft = Math.max(
+    MENTION_MENU_VIEWPORT_PADDING,
+    viewport.width - MENTION_MENU_VIEWPORT_PADDING - menuWidth,
+  );
+  const left = Math.min(Math.max(cursor.left, MENTION_MENU_VIEWPORT_PADDING), maximumLeft);
+  const spaceBelow = Math.max(
+    0,
+    viewport.height - cursor.bottom - MENTION_MENU_GAP - MENTION_MENU_VIEWPORT_PADDING,
+  );
+  const spaceAbove = Math.max(
+    0,
+    cursor.top - MENTION_MENU_GAP - MENTION_MENU_VIEWPORT_PADDING,
+  );
+  const displayBelow = spaceBelow >= MENTION_MENU_MIN_SPACE || spaceBelow >= spaceAbove;
+
+  return {
+    left,
+    top: displayBelow ? cursor.bottom + MENTION_MENU_GAP : null,
+    bottom: displayBelow ? null : viewport.height - cursor.top + MENTION_MENU_GAP,
+    maxHeight: Math.min(MENTION_MENU_MAX_HEIGHT, displayBelow ? spaceBelow : spaceAbove),
+  };
 }
 
 function documentsAreEqual(current: JSONContent, next: JSONContent): boolean {

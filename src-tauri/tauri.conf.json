@@ -1,7 +1,7 @@
 {
   "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
   "productName": "Beholders Inn",
-  "version": "1.1.6",
+  "version": "1.1.7",
   "identifier": "com.beholdersinn.app",
   "build": {
     "frontendDist": "../dist/gm-display-manager/browser",

@@ -8,6 +8,7 @@
  */
 
 import { GameRuleOptionRepository } from '@app/features/game-systems/data-access/game-rule-option.repository';
+import { genericUniverseId } from '@app/features/game-systems/domain/game-system';
 import type {
   GameRuleCategory,
   GameRuleOption,
@@ -28,9 +29,13 @@ export class InMemoryGameRuleOptionRepository extends GameRuleOptionRepository {
     universeId: string,
     category: GameRuleCategory,
   ): Promise<readonly GameRuleOption[]> {
+    const genericId = genericUniverseId(gameSystemId);
     return Promise.resolve(
       this.select(gameSystemId, category).filter(
-        ({ universeId: scope }) => scope === null || scope === universeId,
+        ({ universeId: scope }) =>
+          scope === null ||
+          scope === universeId ||
+          ((category === 'race' || category === 'class') && scope === genericId),
       ),
     );
   }

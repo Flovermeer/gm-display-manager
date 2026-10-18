@@ -11,6 +11,7 @@ import { Injectable } from '@angular/core';
 import Database from '@tauri-apps/plugin-sql';
 
 import { GameRuleOptionRepository } from '@app/features/game-systems/data-access/game-rule-option.repository';
+import { genericUniverseId } from '@app/features/game-systems/domain/game-system';
 import type {
   GameRuleCategory,
   GameRuleOption,
@@ -53,11 +54,13 @@ export class TauriGameRuleOptionRepository extends GameRuleOptionRepository {
     category: GameRuleCategory,
   ): Promise<readonly GameRuleOption[]> {
     const database = await this.getDatabase();
+    const genericId = genericUniverseId(gameSystemId);
     const rows = await database.select<RuleOptionRow[]>(
       `${COLUMNS} WHERE game_system_id=$1 AND category=$2
-       AND (universe_id IS NULL OR universe_id=$3)
-       ORDER BY universe_id IS NOT NULL, label COLLATE NOCASE, id`,
-      [gameSystemId, category, universeId],
+       AND (universe_id IS NULL OR universe_id=$4
+         OR (category IN ('race', 'class') AND universe_id=$3))
+       ORDER BY universe_id IS NOT NULL, universe_id=$4, label COLLATE NOCASE, id`,
+      [gameSystemId, category, genericId, universeId],
     );
     return rows.map(mapOption);
   }

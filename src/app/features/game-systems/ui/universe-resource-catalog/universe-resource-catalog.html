@@ -29,10 +29,16 @@
   </nav>
 
   <div class="universe-catalog__content">
-    @if (isEditorOpen()) {
+    @if (characterRuleCategory(); as category) {
+      <app-character-rule-catalog-settings
+        [universe]="universe()"
+        [universes]="universes()"
+        [category]="category"
+      />
+    } @else if (isEditorOpen()) {
       <app-universe-resource-editor
         [universeId]="editingUniverseId() ?? universe().id"
-        [type]="selectedType()"
+        [type]="resourceType() ?? 'npc'"
         [resourceId]="editingResourceId()"
         (saved)="resourceSaved($event)"
         (canceled)="closeEditor()"

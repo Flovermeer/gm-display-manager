@@ -1,0 +1,23 @@
+:host {
+  display: block;
+}
+
+.character-rule-catalog {
+  display: grid;
+  gap: 1.25rem;
+}
+
+.character-rule-catalog__heading h3,
+.character-rule-catalog__heading p {
+  margin: 0;
+}
+
+.character-rule-catalog__heading p {
+  margin-top: 0.4rem;
+  color: #746b61;
+  line-height: 1.5;
+}
+
+.character-rule-catalog__empty {
+  color: #746b61;
+}

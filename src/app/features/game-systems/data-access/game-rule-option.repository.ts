@@ -3,7 +3,8 @@
  * Définit le port de lecture et d’enrichissement des référentiels de règles.
  *
  * Responsabilités
- * - fusionne les valeurs natives du système avec celles de l’univers ;
+ * - fusionne les valeurs natives et propres à l’univers ;
+ * - ajoute l’héritage du catalogue générique pour les races et classes ;
  * - persiste uniquement les ajouts propres à un univers.
  */
 

@@ -10,17 +10,29 @@ import {
 import { ButtonDirective } from '@app/shared/ui/button/button.directive';
 import { Dialog } from '@app/shared/ui/dialog/dialog';
 import { ItemConfigurationSettings } from '@app/features/items/ui/item-configuration-settings/item-configuration-settings';
+import {
+  CharacterRuleCatalogSettings,
+  type CharacterRuleCategory,
+} from '@app/features/game-systems/ui/character-rule-catalog-settings/character-rule-catalog-settings';
 import { UniverseResourceEditor } from '@app/features/game-systems/ui/universe-resource-editor/universe-resource-editor';
 
+type SharedCatalogType = UniverseResourceType | CharacterRuleCategory;
+
 type CatalogSection = Readonly<{
-  type: UniverseResourceType;
+  type: SharedCatalogType;
   label: string;
   emptyLabel: string;
 }>;
 
 @Component({
   selector: 'app-universe-resource-catalog',
-  imports: [ButtonDirective, Dialog, ItemConfigurationSettings, UniverseResourceEditor],
+  imports: [
+    ButtonDirective,
+    CharacterRuleCatalogSettings,
+    Dialog,
+    ItemConfigurationSettings,
+    UniverseResourceEditor,
+  ],
   templateUrl: './universe-resource-catalog.html',
   styleUrl: './universe-resource-catalog.scss',
 })
@@ -35,11 +47,13 @@ export class UniverseResourceCatalog {
   protected readonly sections: readonly CatalogSection[] = [
     { type: 'npc', label: 'PNJ', emptyLabel: 'Aucun PNJ canonique.' },
     { type: 'player-character', label: 'PJ', emptyLabel: 'Aucun PJ canonique.' },
+    { type: 'race', label: 'Races', emptyLabel: 'Aucune race configurée.' },
+    { type: 'class', label: 'Classes', emptyLabel: 'Aucune classe configurée.' },
     { type: 'location', label: 'Lieux', emptyLabel: 'Aucun lieu canonique.' },
     { type: 'item', label: 'Objets', emptyLabel: 'Aucun objet canonique.' },
     { type: 'monster', label: 'Bestiaire', emptyLabel: 'Aucun monstre canonique.' },
   ];
-  protected readonly selectedType = signal<UniverseResourceType>('npc');
+  protected readonly selectedType = signal<SharedCatalogType>('npc');
   protected readonly resources = signal<readonly UniverseResourceSummary[]>([]);
   protected readonly pendingTrash = signal<UniverseResourceSummary | null>(null);
   protected readonly editingResourceId = signal<string | null>(null);
@@ -56,16 +70,23 @@ export class UniverseResourceCatalog {
     effect(() => {
       const universeId = this.universe().id;
       const type = this.selectedType();
-      void this.load(universeId, type);
+      if (isCharacterRuleCategory(type)) {
+        this.resources.set([]);
+        this.isLoading.set(false);
+      } else {
+        void this.load(universeId, type);
+      }
     });
   }
 
-  protected select(type: UniverseResourceType): void {
+  protected select(type: SharedCatalogType): void {
     if (this.isEditorOpen()) return;
     this.selectedType.set(type);
   }
 
   protected createResource(): void {
+    const type = this.resourceType();
+    if (!type) return;
     this.editingResourceId.set(null);
     this.editingUniverseId.set(this.universe().id);
     this.isCreating.set(true);
@@ -104,13 +125,20 @@ export class UniverseResourceCatalog {
   }
 
   protected createLabel(): string {
+    const type = this.resourceType();
+    if (!type) return '';
     return {
       npc: 'Ajouter un PNJ',
       'player-character': 'Ajouter un PJ',
       location: 'Ajouter un lieu',
       item: 'Ajouter un objet',
       monster: 'Ajouter un monstre',
-    }[this.selectedType()];
+    }[type];
+  }
+
+  protected characterRuleCategory(): CharacterRuleCategory | null {
+    const type = this.selectedType();
+    return isCharacterRuleCategory(type) ? type : null;
   }
 
   protected usageLabel(count: number): string {
@@ -146,7 +174,13 @@ export class UniverseResourceCatalog {
   }
 
   private async reload(): Promise<void> {
-    await this.load(this.universe().id, this.selectedType());
+    const type = this.resourceType();
+    if (type) await this.load(this.universe().id, type);
+  }
+
+  protected resourceType(): UniverseResourceType | null {
+    const type = this.selectedType();
+    return isCharacterRuleCategory(type) ? null : type;
   }
 
   private async load(universeId: string, type: UniverseResourceType): Promise<void> {
@@ -178,4 +212,8 @@ export class UniverseResourceCatalog {
       this.isSaving.set(false);
     }
   }
+}
+
+function isCharacterRuleCategory(type: SharedCatalogType): type is CharacterRuleCategory {
+  return type === 'race' || type === 'class';
 }

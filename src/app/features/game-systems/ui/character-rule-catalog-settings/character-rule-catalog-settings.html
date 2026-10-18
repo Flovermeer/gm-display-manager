@@ -1,0 +1,73 @@
+<section class="character-rule-catalog" [attr.aria-labelledby]="category() + '-catalog-title'">
+  <header class="character-rule-catalog__heading">
+    <div>
+      <h3 [id]="category() + '-catalog-title'">{{ title() }}</h3>
+      <p>
+        Les valeurs héritées restent visibles ici. Sélectionne leur catalogue d’origine pour les
+        modifier.
+      </p>
+    </div>
+  </header>
+
+  <div class="inline-create">
+    <app-form-field
+      [inputId]="'new-' + category()"
+      [label]="'Nouvelle ' + singularLabel()"
+      [formControl]="newOption"
+    />
+    <button
+      appButton="primary"
+      type="button"
+      [disabled]="newOption.invalid || isSaving()"
+      (click)="add()"
+    >
+      Ajouter
+    </button>
+  </div>
+
+  @if (error(); as message) {
+    <p class="configuration-error" role="alert">{{ message }}</p>
+  }
+
+  @if (isLoading()) {
+    <p>Chargement…</p>
+  } @else {
+    <div class="rule-list">
+      @for (option of options(); track option.id) {
+        <app-tag-pill
+          [label]="option.label"
+          [detail]="origin(option)"
+          variant="catalog"
+          [removable]="isOwnedBySelectedUniverse(option)"
+          removeVerb="Supprimer"
+          (remove)="requestRemoval(option)"
+        />
+      } @empty {
+        <span class="character-rule-catalog__empty">Aucune {{ singularLabel() }} configurée.</span>
+      }
+    </div>
+  }
+</section>
+
+@if (pendingRemoval(); as option) {
+  <app-dialog
+    kicker="Ressources partagées"
+    [title]="'Supprimer ' + option.label + ' ?'"
+    headingId="character-rule-option-removal-title"
+  >
+    <p>La valeur sera supprimée de cet univers si aucune fiche ne l’utilise.</p>
+    <div dialog-actions class="dialog-actions">
+      <button
+        appButton="secondary"
+        type="button"
+        [disabled]="isSaving()"
+        (click)="pendingRemoval.set(null)"
+      >
+        Annuler
+      </button>
+      <button appButton="danger" type="button" [disabled]="isSaving()" (click)="confirmRemoval()">
+        Supprimer
+      </button>
+    </div>
+  </app-dialog>
+}

@@ -3,8 +3,8 @@
     <p class="configuration-workspace__kicker">Règles de {{ system().name }}</p>
     <h2>Référentiels de {{ universe().name }}</h2>
     <p>
-      Les valeurs du système sont protégées. L’univers peut enrichir les types, les sous-espèces,
-      les langues, les races et les classes.
+      Les valeurs du système sont protégées. L’univers peut enrichir les types, les sous-espèces et
+      les langues.
     </p>
   </header>
 
@@ -134,61 +134,6 @@
       </div>
     </app-rule-catalog-section>
 
-    <app-rule-catalog-section title="Races">
-      <div class="inline-create">
-        <app-form-field inputId="new-race" label="Nouvelle race" [formControl]="newRace" />
-        <button
-          appButton="primary"
-          type="button"
-          [disabled]="newRace.invalid || isSaving()"
-          (click)="addRace()"
-        >
-          Ajouter
-        </button>
-      </div>
-      <div class="rule-list">
-        @for (option of races(); track option.id) {
-          <app-tag-pill
-            [label]="option.label"
-            [detail]="origin(option)"
-            variant="catalog"
-            [removable]="!!option.universeId"
-            removeVerb="Supprimer"
-            (remove)="requestRemoval(option)"
-          />
-        } @empty {
-          <span class="rule-empty">Aucune race configurée.</span>
-        }
-      </div>
-    </app-rule-catalog-section>
-
-    <app-rule-catalog-section title="Classes">
-      <div class="inline-create">
-        <app-form-field inputId="new-class" label="Nouvelle classe" [formControl]="newClass" />
-        <button
-          appButton="primary"
-          type="button"
-          [disabled]="newClass.invalid || isSaving()"
-          (click)="addClass()"
-        >
-          Ajouter
-        </button>
-      </div>
-      <div class="rule-list">
-        @for (option of classes(); track option.id) {
-          <app-tag-pill
-            [label]="option.label"
-            [detail]="origin(option)"
-            variant="catalog"
-            [removable]="!!option.universeId"
-            removeVerb="Supprimer"
-            (remove)="requestRemoval(option)"
-          />
-        } @empty {
-          <span class="rule-empty">Aucune classe configurée.</span>
-        }
-      </div>
-    </app-rule-catalog-section>
   }
 
   @if (error(); as message) {

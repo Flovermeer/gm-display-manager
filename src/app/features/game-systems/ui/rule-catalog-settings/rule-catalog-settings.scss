@@ -12,12 +12,6 @@
   margin: 0.3rem 0 0;
 }
 
-.rule-list {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-}
-
 .rule-create--subspecies {
   display: grid;
   grid-template-columns: minmax(12rem, 0.8fr) minmax(14rem, 1fr) auto;

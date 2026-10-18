@@ -216,6 +216,10 @@ la création des campagnes. Il porte les ressources communes au système. Le cat
 affiche ses propres ressources et celles de cet univers générique ; les deux origines restent
 identifiables et une campagne peut importer les ressources de ces deux niveaux.
 
+Les référentiels de races et de classes suivent le même héritage : un univers affiche les valeurs
+du catalogue générique du système et peut les compléter. Une valeur héritée reste en lecture seule
+tant que son catalogue d’origine n’est pas sélectionné dans les ressources partagées.
+
 ```ts
 Npc {
   id

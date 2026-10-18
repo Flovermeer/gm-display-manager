@@ -71,3 +71,53 @@ describe('GameRuleOptionRepository removal', () => {
     );
   });
 });
+
+describe('GameRuleOptionRepository catalog inheritance', () => {
+  it('includes generic races in a specific universe without leaking another universe', async () => {
+    const repository = new InMemoryGameRuleOptionRepository();
+    await repository.save({
+      ...option,
+      id: 'generic-race',
+      universeId: 'system-id:generic',
+      label: 'Elfe',
+    });
+    await repository.save({
+      ...option,
+      id: 'specific-race',
+      universeId: 'forgotten-realms',
+      code: 'shadar-kai',
+      label: 'Shadar-kai',
+    });
+    await repository.save({
+      ...option,
+      id: 'other-race',
+      universeId: 'greyhawk',
+      code: 'baklunien',
+      label: 'Baklunien',
+    });
+
+    const races = await repository.listForUniverse('system-id', 'forgotten-realms', 'race');
+
+    expect(races.map(({ id }) => id)).toEqual(['generic-race', 'specific-race']);
+  });
+
+  it('queries SQLite for both the generic and selected universe scopes', async () => {
+    const database = { select: vi.fn().mockResolvedValue([]) };
+    vi.mocked(Database.load).mockResolvedValue(database as never);
+
+    await new TauriGameRuleOptionRepository().listForUniverse(
+      'system-id',
+      'forgotten-realms',
+      'race',
+    );
+
+    const [statement, parameters] = database.select.mock.calls[0];
+    expect(statement).toContain("category IN ('race', 'class') AND universe_id=$3");
+    expect(parameters).toEqual([
+      'system-id',
+      'race',
+      'system-id:generic',
+      'forgotten-realms',
+    ]);
+  });
+});

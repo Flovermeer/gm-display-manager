@@ -16,6 +16,7 @@ import { npcCombatantSource } from '@app/features/combat/domain/combatant-source
 import { CharacterRuleCatalogService } from '@app/features/game-systems/application/character-rule-catalog.service';
 import {
   EMPTY_CHARACTER_RULE_CATALOG,
+  subracesForRace,
   type CharacterRuleCatalog,
 } from '@app/features/game-systems/domain/character-rule-catalog';
 import { DisplayGateway } from '@app/features/display/data-access/display.gateway';
@@ -161,6 +162,13 @@ export class NpcWorkspace implements OnInit, PendingChangesAware {
   protected readonly raceOptions = computed(() =>
     this.formOptions(this.characterRuleCatalog().races, this.selectedNpc()?.sheet.race),
   );
+  protected subraceOptions(): readonly FormFieldOption[] {
+    const raceId = this.npcForm.controls.race.value;
+    return this.formOptions(
+      subracesForRace(this.characterRuleCatalog(), raceId),
+      this.selectedNpc()?.sheet.subrace,
+    );
+  }
   protected readonly classOptions = computed(() =>
     this.formOptions(this.characterRuleCatalog().classes, this.selectedNpc()?.sheet.className),
   );
@@ -199,6 +207,7 @@ export class NpcWorkspace implements OnInit, PendingChangesAware {
     notes: new FormControl('', { nonNullable: true }),
     size: new FormControl('', { nonNullable: true }),
     race: new FormControl('', { nonNullable: true }),
+    subrace: new FormControl('', { nonNullable: true }),
     className: new FormControl('', { nonNullable: true }),
     occupation: new FormControl('', { nonNullable: true }),
     alignment: new FormControl('', { nonNullable: true }),
@@ -227,6 +236,17 @@ export class NpcWorkspace implements OnInit, PendingChangesAware {
 
   protected addToCombat(npc: Npc): void {
     void this.combat?.requestAdd(npcCombatantSource(npc));
+  }
+
+  protected raceChanged(): void {
+    const current = this.npcForm.controls.subrace.value;
+    const raceId = this.npcForm.controls.race.value;
+    if (
+      current &&
+      !subracesForRace(this.characterRuleCatalog(), raceId).some(({ id }) => id === current)
+    ) {
+      this.npcForm.controls.subrace.setValue('');
+    }
   }
 
   ngOnInit(): void {
@@ -613,7 +633,9 @@ export class NpcWorkspace implements OnInit, PendingChangesAware {
 
   protected npcTypeLine(sheet: NpcSheet): string {
     return (
-      [sheet.size, sheet.race, sheet.className, sheet.alignment].filter(Boolean).join(', ') || '—'
+      [sheet.size, sheet.race, sheet.subrace, sheet.className, sheet.alignment]
+        .filter(Boolean)
+        .join(', ') || '—'
     );
   }
 
@@ -710,6 +732,12 @@ export class NpcWorkspace implements OnInit, PendingChangesAware {
       race:
         optionIdFor(sheet.raceOptionId, sheet.race, this.characterRuleCatalog().races) ||
         sheet.race,
+      subrace:
+        optionIdFor(
+          sheet.subraceOptionId,
+          sheet.subrace,
+          this.characterRuleCatalog().subraces,
+        ) || sheet.subrace,
       className:
         optionIdFor(sheet.classOptionId, sheet.className, this.characterRuleCatalog().classes) ||
         sheet.className,
@@ -761,6 +789,7 @@ export class NpcWorkspace implements OnInit, PendingChangesAware {
       notes: '',
       size: sheet.size,
       race: sheet.race,
+      subrace: sheet.subrace,
       className: sheet.className,
       occupation: sheet.occupation,
       alignment: sheet.alignment,
@@ -840,6 +869,12 @@ export class NpcWorkspace implements OnInit, PendingChangesAware {
         creatureSubspecies: previous.creatureSubspecies,
         raceOptionId: this.optionId(value.race, this.characterRuleCatalog().races),
         race: optionLabel(value.race, this.characterRuleCatalog().races, value.race),
+        subraceOptionId: this.optionId(value.subrace, this.characterRuleCatalog().subraces),
+        subrace: optionLabel(
+          value.subrace,
+          this.characterRuleCatalog().subraces,
+          value.subrace,
+        ),
         classOptionId: this.optionId(value.className, this.characterRuleCatalog().classes),
         className: optionLabel(
           value.className,

@@ -434,6 +434,8 @@ function mapPlayerCharacter(row: PlayerDetailRow): UniversePlayerCharacterDetail
           : typeof (parsed as Record<string, unknown>)['species'] === 'string'
             ? String((parsed as Record<string, unknown>)['species'])
             : '',
+      subraceOptionId: typeof parsed.subraceOptionId === 'string' ? parsed.subraceOptionId : null,
+      subrace: typeof parsed.subrace === 'string' ? parsed.subrace : '',
       senses: arrayOfStrings(parsed.senses),
       languages: arrayOfStrings(parsed.languages),
       conditions: arrayOfStrings(parsed.conditions),
@@ -502,7 +504,7 @@ const DESCRIPTORS: Readonly<
     associationResourceColumn: 'npc_id',
     associationCampaignColumn: 'campaign_id',
     summaryExpression:
-      "TRIM(COALESCE(json_extract(resource.sheet_json, '$.race'), json_extract(resource.sheet_json, '$.creatureSubspecies'), json_extract(resource.sheet_json, '$.creatureType'), '') || ' ' || COALESCE(json_extract(resource.sheet_json, '$.className'), '') || ' ' || COALESCE(json_extract(resource.sheet_json, '$.occupation'), ''))",
+      "TRIM(COALESCE(json_extract(resource.sheet_json, '$.race'), json_extract(resource.sheet_json, '$.creatureSubspecies'), json_extract(resource.sheet_json, '$.creatureType'), '') || ' ' || COALESCE(json_extract(resource.sheet_json, '$.subrace'), '') || ' ' || COALESCE(json_extract(resource.sheet_json, '$.className'), '') || ' ' || COALESCE(json_extract(resource.sheet_json, '$.occupation'), ''))",
   },
   'player-character': {
     table: 'player_character',
@@ -510,7 +512,7 @@ const DESCRIPTORS: Readonly<
     associationResourceColumn: 'player_character_id',
     associationCampaignColumn: 'campaign_id',
     summaryExpression:
-      "TRIM(COALESCE(json_extract(resource.sheet_json, '$.race'), json_extract(resource.sheet_json, '$.species'), '') || ' ' || COALESCE(json_extract(resource.sheet_json, '$.className'), ''))",
+      "TRIM(COALESCE(json_extract(resource.sheet_json, '$.race'), json_extract(resource.sheet_json, '$.species'), '') || ' ' || COALESCE(json_extract(resource.sheet_json, '$.subrace'), '') || ' ' || COALESCE(json_extract(resource.sheet_json, '$.className'), ''))",
   },
   location: {
     table: 'location',

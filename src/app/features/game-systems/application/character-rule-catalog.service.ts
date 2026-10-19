@@ -4,7 +4,7 @@
  *
  * Responsabilités
  * - retrouve le système à partir de l'univers de campagne ;
- * - fournit les races et classes configurées pour cet univers.
+ * - fournit les espèces, sous-espèces et classes configurées pour cet univers.
  */
 
 import { inject, Injectable } from '@angular/core';
@@ -25,10 +25,11 @@ export class CharacterRuleCatalogService {
     if (!this.systems || !this.rules) return EMPTY_CHARACTER_RULE_CATALOG;
     const universe = await this.systems.findUniverse(universeId);
     if (!universe) throw new Error('Univers de campagne introuvable.');
-    const [races, classes] = await Promise.all([
+    const [races, subraces, classes] = await Promise.all([
       this.rules.listForUniverse(universe.gameSystemId, universe.id, 'race'),
+      this.rules.listForUniverse(universe.gameSystemId, universe.id, 'subrace'),
       this.rules.listForUniverse(universe.gameSystemId, universe.id, 'class'),
     ]);
-    return { races, classes };
+    return { races, subraces, classes };
   }
 }

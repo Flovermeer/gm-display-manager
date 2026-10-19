@@ -289,12 +289,22 @@
               />
               <app-form-field
                 inputId="npc-race"
-                label="Race"
+                label="Espèce"
                 controlType="select"
                 [options]="raceOptions()"
                 emptyLabel="Non renseignée"
                 emptyValue=""
                 formControlName="race"
+                (valueChange)="raceChanged()"
+              />
+              <app-form-field
+                inputId="npc-subrace"
+                label="Sous-espèce"
+                controlType="select"
+                [options]="subraceOptions()"
+                emptyLabel="Non renseignée"
+                emptyValue=""
+                formControlName="subrace"
               />
               <app-form-field
                 inputId="npc-class"

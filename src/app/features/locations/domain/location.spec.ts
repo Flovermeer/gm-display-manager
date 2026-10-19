@@ -31,6 +31,7 @@ describe('Location', () => {
       summary: 'Grande cité portuaire',
       description: createEmptyRichTextDocument(),
       notes: 'Point de départ.',
+      hideNameOnPlayerDisplay: false,
       imagePaths: [],
       imagePath: null,
       createdAt: '2026-08-12T18:30:00.000Z',

@@ -105,6 +105,28 @@ describe('ResourceMentionPlayerDisplayService', () => {
     });
   });
 
+  it('uses the monster snapshot supplied by the bestiary without reloading it', async () => {
+    monsters.findById.mockResolvedValue(null);
+    const service = TestBed.inject(ResourceMentionPlayerDisplayService);
+    await service.refreshPlayerDisplayStatus();
+
+    await service.display({
+      resourceType: 'monster',
+      resourceId: 'monster-id',
+      label: 'Atropal',
+      playerDisplayAvailable: true,
+      playerDisplayImagePath: 'universes/forgotten-realms/media/monsters/atropal.webp',
+    });
+
+    expect(monsters.findById).not.toHaveBeenCalled();
+    expect(displayGateway.sendPlayerDisplayState).toHaveBeenLastCalledWith({
+      mode: 'monster',
+      monsterId: 'monster-id',
+      name: 'Atropal',
+      imagePath: 'monster://atropal',
+    });
+  });
+
   it('returns an already displayed resource to the neutral screen', async () => {
     displayStore.state.mockReturnValue({
       mode: 'monster',

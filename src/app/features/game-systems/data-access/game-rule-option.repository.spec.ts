@@ -101,6 +101,36 @@ describe('GameRuleOptionRepository catalog inheritance', () => {
     expect(races.map(({ id }) => id)).toEqual(['generic-race', 'specific-race']);
   });
 
+  it('includes generic character subspecies in a specific universe', async () => {
+    const repository = new InMemoryGameRuleOptionRepository();
+    await repository.save({
+      ...option,
+      id: 'generic-subrace',
+      universeId: 'system-id:generic',
+      category: 'subrace',
+      parentOptionId: 'generic-race',
+      code: 'haut-elfe',
+      label: 'Haut-elfe',
+    });
+    await repository.save({
+      ...option,
+      id: 'specific-subrace',
+      universeId: 'forgotten-realms',
+      category: 'subrace',
+      parentOptionId: 'generic-race',
+      code: 'drow',
+      label: 'Drow',
+    });
+
+    const subraces = await repository.listForUniverse(
+      'system-id',
+      'forgotten-realms',
+      'subrace',
+    );
+
+    expect(subraces.map(({ id }) => id)).toEqual(['specific-subrace', 'generic-subrace']);
+  });
+
   it('queries SQLite for both the generic and selected universe scopes', async () => {
     const database = { select: vi.fn().mockResolvedValue([]) };
     vi.mocked(Database.load).mockResolvedValue(database as never);
@@ -112,7 +142,7 @@ describe('GameRuleOptionRepository catalog inheritance', () => {
     );
 
     const [statement, parameters] = database.select.mock.calls[0];
-    expect(statement).toContain("category IN ('race', 'class') AND universe_id=$3");
+    expect(statement).toContain("category IN ('race', 'subrace', 'class') AND universe_id=$3");
     expect(parameters).toEqual([
       'system-id',
       'race',

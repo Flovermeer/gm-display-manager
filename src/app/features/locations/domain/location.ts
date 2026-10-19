@@ -13,6 +13,7 @@ export type Location = Readonly<{
   summary: string;
   description: RichTextDocument;
   notes: string;
+  hideNameOnPlayerDisplay: boolean;
   imagePaths: readonly string[];
   imagePath: string | null;
   createdAt: string;
@@ -26,6 +27,7 @@ export type CreateLocationInput = Readonly<{
   summary?: string;
   description?: RichTextDocument;
   notes?: string;
+  hideNameOnPlayerDisplay?: boolean;
   imagePaths?: readonly string[];
   imagePath?: string | null;
 }>;
@@ -36,6 +38,7 @@ export type UpdateLocationInput = Readonly<{
   summary: string;
   description?: RichTextDocument;
   notes: string;
+  hideNameOnPlayerDisplay?: boolean;
 }>;
 
 export type LocationFactoryDependencies = Readonly<{
@@ -66,6 +69,7 @@ export function createLocation(
     summary: input.summary?.trim() ?? '',
     description: input.description ?? createEmptyRichTextDocument(),
     notes: input.notes?.trim() ?? '',
+    hideNameOnPlayerDisplay: input.hideNameOnPlayerDisplay ?? false,
     imagePaths,
     imagePath: imagePaths[0] ?? null,
     createdAt: now,
@@ -98,6 +102,8 @@ export function updateLocation(
     summary: input.summary.trim(),
     description: input.description ?? location.description,
     notes: input.notes.trim(),
+    hideNameOnPlayerDisplay:
+      input.hideNameOnPlayerDisplay ?? location.hideNameOnPlayerDisplay,
     updatedAt: now().toISOString(),
   };
 }

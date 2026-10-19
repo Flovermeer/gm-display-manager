@@ -96,6 +96,8 @@ describe('TauriUniverseResourceRepository', () => {
       creatureSubspecies: '',
       raceOptionId: null,
       race: '',
+      subraceOptionId: null,
+      subrace: '',
       classOptionId: null,
       className: '',
       occupation: '',

@@ -7,6 +7,7 @@ import { CreatureRuleCatalogService } from '@app/features/game-systems/applicati
 import { UniverseResourceService } from '@app/features/game-systems/application/universe-resource.service';
 import {
   EMPTY_CHARACTER_RULE_CATALOG,
+  subracesForRace,
   type CharacterRuleCatalog,
 } from '@app/features/game-systems/domain/character-rule-catalog';
 import {
@@ -134,6 +135,20 @@ export class UniverseResourceEditor {
       detail?.type === 'npc' || detail?.type === 'player-character' ? detail.sheet.race : '';
     return formOptions(this.characterRuleCatalog().races, legacyLabel);
   });
+  protected npcSubraceOptions(): readonly FormFieldOption[] {
+    const detail = this.detail();
+    return this.characterSubraceOptions(
+      this.creatureForm.controls.race.value,
+      detail?.type === 'npc' ? detail.sheet.subrace : '',
+    );
+  }
+  protected playerSubraceOptions(): readonly FormFieldOption[] {
+    const detail = this.detail();
+    return this.characterSubraceOptions(
+      this.playerForm.controls.race.value,
+      detail?.type === 'player-character' ? detail.sheet.subrace : '',
+    );
+  }
   protected readonly classOptions = computed(() => {
     const detail = this.detail();
     const legacyLabel =
@@ -154,6 +169,7 @@ export class UniverseResourceEditor {
     creatureType: new FormControl('', { nonNullable: true }),
     creatureSubspecies: new FormControl('', { nonNullable: true }),
     race: new FormControl('', { nonNullable: true }),
+    subrace: new FormControl('', { nonNullable: true }),
     className: new FormControl('', { nonNullable: true }),
     occupation: new FormControl('', { nonNullable: true }),
     alignment: new FormControl('', { nonNullable: true }),
@@ -184,6 +200,7 @@ export class UniverseResourceEditor {
     name: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
     maxHitPoints: new FormControl<number | null>(null, [Validators.min(0)]),
     race: new FormControl('', { nonNullable: true }),
+    subrace: new FormControl('', { nonNullable: true }),
     className: new FormControl('', { nonNullable: true }),
     level: new FormControl<number | null>(null, [Validators.min(1), Validators.max(20)]),
     armorClass: new FormControl<number | null>(null, [Validators.min(0)]),
@@ -237,6 +254,28 @@ export class UniverseResourceEditor {
     const current = this.creatureForm.controls.creatureSubspecies.value;
     if (!this.subspeciesOptions().some(({ value }) => value === current)) {
       this.creatureForm.controls.creatureSubspecies.setValue('');
+    }
+  }
+
+  protected npcRaceChanged(): void {
+    const current = this.creatureForm.controls.subrace.value;
+    const raceId = this.creatureForm.controls.race.value;
+    if (
+      current &&
+      !subracesForRace(this.characterRuleCatalog(), raceId).some(({ id }) => id === current)
+    ) {
+      this.creatureForm.controls.subrace.setValue('');
+    }
+  }
+
+  protected playerRaceChanged(): void {
+    const current = this.playerForm.controls.subrace.value;
+    const raceId = this.playerForm.controls.race.value;
+    if (
+      current &&
+      !subracesForRace(this.characterRuleCatalog(), raceId).some(({ id }) => id === current)
+    ) {
+      this.playerForm.controls.subrace.setValue('');
     }
   }
 
@@ -482,6 +521,12 @@ export class UniverseResourceEditor {
       race:
         optionIdFor(sheet.raceOptionId, sheet.race, this.characterRuleCatalog().races) ||
         sheet.race,
+      subrace:
+        optionIdFor(
+          sheet.subraceOptionId,
+          sheet.subrace,
+          this.characterRuleCatalog().subraces,
+        ) || sheet.subrace,
       className:
         optionIdFor(sheet.classOptionId, sheet.className, this.characterRuleCatalog().classes) ||
         sheet.className,
@@ -528,6 +573,12 @@ export class UniverseResourceEditor {
           detail.sheet.race,
           this.characterRuleCatalog().races,
         ) || detail.sheet.race,
+      subrace:
+        optionIdFor(
+          detail.sheet.subraceOptionId,
+          detail.sheet.subrace,
+          this.characterRuleCatalog().subraces,
+        ) || detail.sheet.subrace,
       className:
         optionIdFor(
           detail.sheet.classOptionId,
@@ -619,6 +670,12 @@ export class UniverseResourceEditor {
       race: isNpc
         ? optionLabel(value.race, this.characterRuleCatalog().races, value.race)
         : previous.race,
+      subraceOptionId: isNpc
+        ? optionId(value.subrace, this.characterRuleCatalog().subraces)
+        : previous.subraceOptionId,
+      subrace: isNpc
+        ? optionLabel(value.subrace, this.characterRuleCatalog().subraces, value.subrace)
+        : previous.subrace,
       classOptionId: isNpc
         ? optionId(value.className, this.characterRuleCatalog().classes)
         : previous.classOptionId,
@@ -665,6 +722,8 @@ export class UniverseResourceEditor {
     const sheet: PlayerCharacterSheet = {
       raceOptionId: optionId(value.race, this.characterRuleCatalog().races),
       race: optionLabel(value.race, this.characterRuleCatalog().races, value.race),
+      subraceOptionId: optionId(value.subrace, this.characterRuleCatalog().subraces),
+      subrace: optionLabel(value.subrace, this.characterRuleCatalog().subraces, value.subrace),
       classOptionId: optionId(value.className, this.characterRuleCatalog().classes),
       className: optionLabel(value.className, this.characterRuleCatalog().classes, value.className),
       level: value.level,
@@ -686,6 +745,16 @@ export class UniverseResourceEditor {
       portraitPath: primaryMediaPath ?? detail.portraitPath,
       sheet,
     };
+  }
+
+  private characterSubraceOptions(
+    raceId: string,
+    legacyLabel: string,
+  ): readonly FormFieldOption[] {
+    return formOptions(
+      subracesForRace(this.characterRuleCatalog(), raceId),
+      legacyLabel,
+    );
   }
 
   private activeForm(): FormGroup {

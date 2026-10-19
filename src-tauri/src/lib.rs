@@ -1,5 +1,8 @@
 use tauri_plugin_sql::{Migration, MigrationKind};
 
+#[cfg(test)]
+mod migration_tests;
+
 mod backup;
 mod diagnostics;
 mod location;
@@ -205,6 +208,18 @@ fn migrations() -> Vec<Migration> {
             version: 26,
             description: "create_generic_universes",
             sql: include_str!("../migrations/0026_create_generic_universes.sql"),
+            kind: MigrationKind::Up,
+        },
+        Migration {
+            version: 27,
+            description: "add_character_subspecies",
+            sql: include_str!("../migrations/0027_add_character_subspecies.sql"),
+            kind: MigrationKind::Up,
+        },
+        Migration {
+            version: 28,
+            description: "add_location_player_name_visibility",
+            sql: include_str!("../migrations/0028_add_location_player_name_visibility.sql"),
             kind: MigrationKind::Up,
         },
     ]

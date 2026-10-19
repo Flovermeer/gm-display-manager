@@ -5,6 +5,7 @@ export const GAME_RULE_CATEGORIES = [
   'creature_subspecies',
   'language',
   'race',
+  'subrace',
   'class',
 ] as const;
 
@@ -27,7 +28,7 @@ export function createUniverseRuleOption(
   universeId: string,
   category: Extract<
     GameRuleCategory,
-    'creature_type' | 'creature_subspecies' | 'language' | 'race' | 'class'
+    'creature_type' | 'creature_subspecies' | 'language' | 'race' | 'subrace' | 'class'
   >,
   label: string,
   parentOptionId: string | null = null,
@@ -38,8 +39,8 @@ export function createUniverseRuleOption(
   if (!gameSystemId.trim() || !universeId.trim())
     throw new Error('Le système et l’univers sont requis.');
   if (!normalizedLabel) throw new Error('Le libellé est requis.');
-  if (category === 'creature_subspecies' && !parentOptionId) {
-    throw new Error('Une sous-espèce doit être rattachée à un type.');
+  if ((category === 'creature_subspecies' || category === 'subrace') && !parentOptionId) {
+    throw new Error('Une sous-espèce doit être rattachée à une espèce ou un type.');
   }
   const timestamp = now().toISOString();
   return {
@@ -47,7 +48,8 @@ export function createUniverseRuleOption(
     gameSystemId,
     universeId,
     category,
-    parentOptionId: category === 'creature_subspecies' ? parentOptionId : null,
+    parentOptionId:
+      category === 'creature_subspecies' || category === 'subrace' ? parentOptionId : null,
     code: slug(normalizedLabel),
     label: normalizedLabel,
     createdAt: timestamp,

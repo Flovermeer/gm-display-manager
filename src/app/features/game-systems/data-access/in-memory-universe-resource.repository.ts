@@ -82,9 +82,16 @@ function summary(resource: UniverseResourceDetail): UniverseResourceSummary {
       resource.type === 'location' || resource.type === 'item'
         ? resource.summary
         : resource.type === 'player-character'
-          ? [resource.sheet.race, resource.sheet.className].filter(Boolean).join(' ')
+          ? [resource.sheet.race, resource.sheet.subrace, resource.sheet.className]
+              .filter(Boolean)
+              .join(' ')
           : resource.type === 'npc'
-            ? [resource.sheet.race, resource.sheet.className, resource.sheet.occupation]
+            ? [
+                resource.sheet.race,
+                resource.sheet.subrace,
+                resource.sheet.className,
+                resource.sheet.occupation,
+              ]
                 .filter(Boolean)
                 .join(' · ')
             : resource.sheet.creatureType,

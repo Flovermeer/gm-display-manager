@@ -24,6 +24,10 @@ describe('PlayerCharacter', () => {
         maxHitPoints: 24,
         sheet: {
           ...EMPTY_PLAYER_CHARACTER_SHEET,
+          raceOptionId: 'elf-id',
+          race: '  Elfe  ',
+          subraceOptionId: 'drow-id',
+          subrace: '  Drow  ',
           className: '  Rôdeuse  ',
           level: 3,
           languages: [' Commun ', 'commun', ' Elfique '],
@@ -41,6 +45,9 @@ describe('PlayerCharacter', () => {
       currentHitPoints: 18,
       maxHitPoints: 24,
       sheet: {
+        race: 'Elfe',
+        subraceOptionId: 'drow-id',
+        subrace: 'Drow',
         className: 'Rôdeuse',
         level: 3,
         languages: ['Commun', 'Elfique'],

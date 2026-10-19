@@ -83,8 +83,16 @@
     <p class="resource-mention-display-error" role="alert">{{ message }}</p>
   }
 
-  @if (mentionMatch() && editable()) {
-    <div class="mention-menu" role="listbox" aria-label="Ressources de la campagne">
+  @if (mentionMatch() && editable() && mentionMenuPosition(); as menuPosition) {
+    <div
+      class="mention-menu"
+      role="listbox"
+      aria-label="Ressources de la campagne"
+      [style.left.px]="menuPosition.left"
+      [style.top.px]="menuPosition.top"
+      [style.bottom.px]="menuPosition.bottom"
+      [style.max-height.px]="menuPosition.maxHeight"
+    >
       @for (
         candidate of filteredMentionCandidates();
         track candidate.resourceType + candidate.resourceId;

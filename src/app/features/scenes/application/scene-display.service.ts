@@ -43,7 +43,7 @@ export class SceneDisplayService {
       ? {
           type: 'image' as const,
           imagePath: await this.locationImageGateway.resolveUrl(location.imagePath),
-          name: location.name,
+          name: location.hideNameOnPlayerDisplay ? undefined : location.name,
         }
       : { type: 'default' as const };
     return { mode: 'scene', sceneId: scene.id, sceneName: scene.name, background, foreground };

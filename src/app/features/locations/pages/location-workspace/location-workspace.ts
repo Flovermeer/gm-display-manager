@@ -177,6 +177,7 @@ export class LocationWorkspace implements OnInit, PendingChangesAware {
     parentLocationId: new FormControl<string | null>(null),
     summary: new FormControl('', { nonNullable: true }),
     notes: new FormControl('', { nonNullable: true }),
+    hideNameOnPlayerDisplay: new FormControl(false, { nonNullable: true }),
   });
 
   @HostListener('document:keydown.escape')
@@ -247,7 +248,13 @@ export class LocationWorkspace implements OnInit, PendingChangesAware {
     this.isCreating.set(true);
     this.isEditing.set(true);
     this.descriptionDraft.set(createEmptyRichTextDocument());
-    this.locationForm.reset({ name: '', parentLocationId: null, summary: '', notes: '' });
+    this.locationForm.reset({
+      name: '',
+      parentLocationId: null,
+      summary: '',
+      notes: '',
+      hideNameOnPlayerDisplay: false,
+    });
     this.locationForm.markAsPristine();
   }
 
@@ -541,7 +548,7 @@ export class LocationWorkspace implements OnInit, PendingChangesAware {
       const state = {
         mode: 'location' as const,
         locationId: location.id,
-        name: location.name,
+        name: location.hideNameOnPlayerDisplay ? undefined : location.name,
         imagePath: this.imageUrl(),
       };
       this.playerDisplayStore.setState(state);
@@ -685,6 +692,7 @@ export class LocationWorkspace implements OnInit, PendingChangesAware {
       parentLocationId: location.parentLocationId,
       summary: location.summary,
       notes: '',
+      hideNameOnPlayerDisplay: location.hideNameOnPlayerDisplay,
     });
     this.descriptionDraft.set(location.description);
     this.locationForm.markAsPristine();
@@ -706,7 +714,13 @@ export class LocationWorkspace implements OnInit, PendingChangesAware {
       this.populateForm(selectedLocation);
       await this.loadGalleryPreview(selectedLocation.imagePaths);
     } else {
-      this.locationForm.reset({ name: '', parentLocationId: null, summary: '', notes: '' });
+      this.locationForm.reset({
+        name: '',
+        parentLocationId: null,
+        summary: '',
+        notes: '',
+        hideNameOnPlayerDisplay: false,
+      });
       this.descriptionDraft.set(createEmptyRichTextDocument());
       this.resetGallery();
     }
@@ -737,7 +751,7 @@ export class LocationWorkspace implements OnInit, PendingChangesAware {
 
     const state = {
       ...currentState,
-      name: location.name,
+      name: location.hideNameOnPlayerDisplay ? undefined : location.name,
       imagePath: selectedImagePath
         ? await this.locationImageGateway.resolveUrl(selectedImagePath)
         : DEMO_LOCATION_IMAGE_URL,

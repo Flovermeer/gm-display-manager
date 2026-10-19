@@ -47,7 +47,8 @@ export class UniverseResourceCatalog {
   protected readonly sections: readonly CatalogSection[] = [
     { type: 'npc', label: 'PNJ', emptyLabel: 'Aucun PNJ canonique.' },
     { type: 'player-character', label: 'PJ', emptyLabel: 'Aucun PJ canonique.' },
-    { type: 'race', label: 'Races', emptyLabel: 'Aucune race configurée.' },
+    { type: 'race', label: 'Espèces', emptyLabel: 'Aucune espèce configurée.' },
+    { type: 'subrace', label: 'Sous-espèces', emptyLabel: 'Aucune sous-espèce configurée.' },
     { type: 'class', label: 'Classes', emptyLabel: 'Aucune classe configurée.' },
     { type: 'location', label: 'Lieux', emptyLabel: 'Aucun lieu canonique.' },
     { type: 'item', label: 'Objets', emptyLabel: 'Aucun objet canonique.' },
@@ -215,5 +216,5 @@ export class UniverseResourceCatalog {
 }
 
 function isCharacterRuleCategory(type: SharedCatalogType): type is CharacterRuleCategory {
-  return type === 'race' || type === 'class';
+  return type === 'race' || type === 'subrace' || type === 'class';
 }

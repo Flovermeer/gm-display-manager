@@ -14,6 +14,7 @@ pub struct SaveLocationInput {
     name: String,
     summary: String,
     description_json: String,
+    hide_name_on_player_display: bool,
     image_path: Option<String>,
     image_paths: Vec<String>,
     created_at: String,
@@ -59,12 +60,14 @@ async fn persist_location(pool: &SqlitePool, input: &SaveLocationInput) -> Resul
     } else {
         sqlx::query(
             r#"INSERT INTO location(
-                 id, universe_id, parent_location_id, name, summary, image_path,
+                 id, universe_id, parent_location_id, name, summary,
+                 hide_name_on_player_display, image_path,
                  created_at, updated_at, source_campaign_id
-               ) VALUES ($1,(SELECT universe_id FROM campaign WHERE id=$2),$3,$4,$5,$6,$7,$8,$2)
+               ) VALUES ($1,(SELECT universe_id FROM campaign WHERE id=$2),$3,$4,$5,$6,$7,$8,$9,$2)
                ON CONFLICT(id) DO UPDATE SET
                  parent_location_id=excluded.parent_location_id,
                  name=excluded.name, summary=excluded.summary,
+                 hide_name_on_player_display=excluded.hide_name_on_player_display,
                  image_path=excluded.image_path, updated_at=excluded.updated_at
                WHERE location.universe_id=excluded.universe_id
                  AND location.source_campaign_id=excluded.source_campaign_id"#,
@@ -74,6 +77,7 @@ async fn persist_location(pool: &SqlitePool, input: &SaveLocationInput) -> Resul
         .bind(&input.parent_location_id)
         .bind(&input.name)
         .bind(&input.summary)
+        .bind(input.hide_name_on_player_display)
         .bind(&input.image_path)
         .bind(&input.created_at)
         .bind(&input.updated_at)
@@ -177,6 +181,7 @@ mod tests {
             CREATE TABLE location(
               id TEXT PRIMARY KEY, universe_id TEXT NOT NULL, parent_location_id TEXT,
               name TEXT NOT NULL, summary TEXT NOT NULL, image_path TEXT,
+              hide_name_on_player_display INTEGER NOT NULL DEFAULT 0,
               created_at TEXT NOT NULL, updated_at TEXT NOT NULL,
               source_campaign_id TEXT, deleted_at TEXT
             );
@@ -218,6 +223,7 @@ mod tests {
             name: "Port Nyanzaru".into(),
             summary: "Port tropical".into(),
             description_json: r#"{"schemaVersion":1,"content":{"type":"doc"}}"#.into(),
+            hide_name_on_player_display: false,
             image_path: Some("locations/port.webp".into()),
             image_paths: vec!["locations/port.webp".into()],
             created_at: "2026-10-14T18:00:00.000Z".into(),

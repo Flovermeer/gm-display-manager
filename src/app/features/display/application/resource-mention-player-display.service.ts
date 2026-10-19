@@ -135,7 +135,7 @@ export class ResourceMentionPlayerDisplayService extends ResourceMentionDisplayG
         return {
           mode: 'location',
           locationId: location.id,
-          name: location.name,
+          name: location.hideNameOnPlayerDisplay ? undefined : location.name,
           imagePath: await this.locationImages.resolveUrl(location.imagePath),
         };
       }

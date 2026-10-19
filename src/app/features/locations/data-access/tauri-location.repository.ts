@@ -29,6 +29,7 @@ type LocationRow = Readonly<{
   summary: string;
   description_json: string;
   notes: string;
+  hide_name_on_player_display: number;
   image_path: string | null;
   image_paths_json: string;
   created_at: string;
@@ -62,7 +63,7 @@ export class TauriLocationRepository extends LocationRepository {
       `SELECT location.id, campaign.id AS campaign_id, location.parent_location_id,
               location.name, location.summary,
               '${EMPTY_DESCRIPTION_JSON}' AS description_json,
-              '' AS notes, location.image_path,
+              '' AS notes, location.hide_name_on_player_display, location.image_path,
               ${LOCATION_IMAGES_JSON} AS image_paths_json,
               location.created_at, location.updated_at, location.source_campaign_id,
               NULL AS override_snapshot
@@ -107,6 +108,7 @@ export class TauriLocationRepository extends LocationRepository {
         name: location.name,
         summary: location.summary,
         descriptionJson: JSON.stringify(location.description),
+        hideNameOnPlayerDisplay: location.hideNameOnPlayerDisplay,
         imagePath: location.imagePath,
         imagePaths: location.imagePaths,
         createdAt: location.createdAt,
@@ -245,7 +247,8 @@ const LOCATION_IMAGES_JSON = `COALESCE((
 const LOCATION_COLUMNS = `SELECT location.id, campaign_location.campaign_id,
   location.parent_location_id, location.name, location.summary,
   campaign_location.description_json, '' AS notes,
-  location.image_path, ${LOCATION_IMAGES_JSON} AS image_paths_json,
+  location.hide_name_on_player_display, location.image_path,
+  ${LOCATION_IMAGES_JSON} AS image_paths_json,
   location.created_at, location.updated_at,
   location.source_campaign_id, resource_override.snapshot_json AS override_snapshot`;
 
@@ -263,6 +266,8 @@ function mapLocationRow(row: LocationRow): Location {
     summary: override?.summary ?? row.summary,
     description: parseDescription(row.description_json),
     notes: row.notes,
+    hideNameOnPlayerDisplay:
+      override?.hideNameOnPlayerDisplay ?? Boolean(row.hide_name_on_player_display),
     imagePaths,
     imagePath: imagePaths[0] ?? null,
     createdAt: row.created_at,
@@ -302,6 +307,7 @@ function snapshot(location: Location) {
     parentLocationId: location.parentLocationId,
     name: location.name,
     summary: location.summary,
+    hideNameOnPlayerDisplay: location.hideNameOnPlayerDisplay,
     imagePath: location.imagePath,
     updatedAt: location.updatedAt,
   };

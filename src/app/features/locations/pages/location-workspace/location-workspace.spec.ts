@@ -351,6 +351,59 @@ describe('LocationWorkspace', () => {
     expect(activeSceneService.clear).toHaveBeenCalledWith(campaign.id);
   });
 
+  it('hides the location name on the player display when explicitly requested', async () => {
+    const hiddenNamePort = location({ ...port, hideNameOnPlayerDisplay: true });
+    locationService.list.mockResolvedValue([chult, hiddenNamePort]);
+    const fixture = TestBed.createComponent(LocationWorkspace);
+    fixture.detectChanges();
+    await renderUntil(fixture, 'Port Nyanzaru');
+    const element = fixture.nativeElement as HTMLElement;
+
+    element.querySelectorAll<HTMLButtonElement>('.location-list-item')[1]?.click();
+    await renderUntil(fixture, 'Afficher aux joueurs');
+    element.querySelector<HTMLButtonElement>('.display-button')?.click();
+
+    await vi.waitFor(() => {
+      expect(displayGateway.sendPlayerDisplayState).toHaveBeenCalledWith({
+        mode: 'location',
+        locationId: hiddenNamePort.id,
+        name: undefined,
+        imagePath: '/demo/location-placeholder.png',
+      });
+    });
+  });
+
+  it('saves the explicit player-display name preference with the location sheet', async () => {
+    const fixture = TestBed.createComponent(LocationWorkspace);
+    fixture.detectChanges();
+    await renderUntil(fixture, 'Port Nyanzaru');
+    const element = fixture.nativeElement as HTMLElement;
+
+    element.querySelectorAll<HTMLButtonElement>('.location-list-item')[1]?.click();
+    await renderUntil(fixture, 'Modifier');
+    [...element.querySelectorAll<HTMLButtonElement>('button')]
+      .find((button) => button.textContent?.includes('Modifier'))
+      ?.click();
+    await renderUntil(fixture, 'Masquer le nom sur l’écran joueurs');
+    const checkbox = element.querySelector<HTMLInputElement>(
+      'input[formControlName="hideNameOnPlayerDisplay"]',
+    );
+    if (!checkbox) throw new Error('Player-display name preference not found.');
+    checkbox.checked = true;
+    checkbox.dispatchEvent(new Event('change'));
+    [...element.querySelectorAll<HTMLButtonElement>('button')]
+      .find((button) => button.textContent?.includes('Enregistrer'))
+      ?.click();
+
+    await vi.waitFor(() => {
+      expect(locationService.update).toHaveBeenCalledWith(
+        port,
+        expect.objectContaining({ hideNameOnPlayerDisplay: true }),
+        [],
+      );
+    });
+  });
+
   it('renders the campaign detailed description in read-only mode', async () => {
     const detailedPort = location({
       ...port,
@@ -391,6 +444,7 @@ function location(overrides: Partial<Location>): Location {
     summary: '',
     description: createEmptyRichTextDocument(),
     notes: '',
+    hideNameOnPlayerDisplay: false,
     imagePaths: [],
     imagePath: null,
     createdAt: '2026-08-12T18:30:00.000Z',

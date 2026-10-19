@@ -216,5 +216,11 @@ fn migrations() -> Vec<Migration> {
             sql: include_str!("../migrations/0027_add_character_subspecies.sql"),
             kind: MigrationKind::Up,
         },
+        Migration {
+            version: 28,
+            description: "add_location_player_name_visibility",
+            sql: include_str!("../migrations/0028_add_location_player_name_visibility.sql"),
+            kind: MigrationKind::Up,
+        },
     ]
 }

@@ -260,12 +260,22 @@
               />
               <app-form-field
                 inputId="character-race"
-                label="Race"
+                label="Espèce"
                 controlType="select"
                 [options]="raceOptions()"
                 emptyLabel="Non renseignée"
                 emptyValue=""
                 formControlName="race"
+                (valueChange)="raceChanged()"
+              />
+              <app-form-field
+                inputId="character-subrace"
+                label="Sous-espèce"
+                controlType="select"
+                [options]="subraceOptions()"
+                emptyLabel="Non renseignée"
+                emptyValue=""
+                formControlName="subrace"
               />
               <app-form-field
                 inputId="character-class"
@@ -486,8 +496,12 @@
               <dd>{{ statusLabel(character.status) }}</dd>
             </div>
             <div>
-              <dt>Race</dt>
+              <dt>Espèce</dt>
               <dd>{{ valueOrDash(character.sheet.race) }}</dd>
+            </div>
+            <div>
+              <dt>Sous-espèce</dt>
+              <dd>{{ valueOrDash(character.sheet.subrace) }}</dd>
             </div>
             <div>
               <dt>Sens</dt>

@@ -6,10 +6,10 @@ import type { GameRuleOption } from '@app/features/game-systems/domain/game-rule
 import type { GameUniverse } from '@app/features/game-systems/domain/game-system';
 import { ButtonDirective } from '@app/shared/ui/button/button.directive';
 import { Dialog } from '@app/shared/ui/dialog/dialog';
-import { FormField } from '@app/shared/ui/form-field/form-field';
+import { FormField, type FormFieldOption } from '@app/shared/ui/form-field/form-field';
 import { TagPill } from '@app/shared/ui/tag-pill/tag-pill';
 
-export type CharacterRuleCategory = 'race' | 'class';
+export type CharacterRuleCategory = 'race' | 'subrace' | 'class';
 
 @Component({
   selector: 'app-character-rule-catalog-settings',
@@ -26,6 +26,7 @@ export class CharacterRuleCatalogSettings {
   readonly category = input.required<CharacterRuleCategory>();
 
   protected readonly options = signal<readonly GameRuleOption[]>([]);
+  protected readonly species = signal<readonly GameRuleOption[]>([]);
   protected readonly isLoading = signal(true);
   protected readonly isSaving = signal(false);
   protected readonly error = signal<string | null>(null);
@@ -34,9 +35,20 @@ export class CharacterRuleCatalogSettings {
     nonNullable: true,
     validators: [Validators.required],
   });
-  protected readonly title = computed(() => (this.category() === 'race' ? 'Races' : 'Classes'));
-  protected readonly singularLabel = computed(() =>
-    this.category() === 'race' ? 'race' : 'classe',
+  protected readonly parentOptionId = new FormControl('', {
+    nonNullable: true,
+    validators: [Validators.required],
+  });
+  protected readonly title = computed(
+    () =>
+      ({ race: 'Espèces', subrace: 'Sous-espèces', class: 'Classes' })[this.category()],
+  );
+  protected readonly singularLabel = computed(
+    () => ({ race: 'espèce', subrace: 'sous-espèce', class: 'classe' })[this.category()],
+  );
+  protected readonly isSubrace = computed(() => this.category() === 'subrace');
+  protected readonly speciesOptions = computed<readonly FormFieldOption[]>(() =>
+    this.species().map(({ id, label }) => ({ value: id, label })),
   );
 
   constructor() {
@@ -57,7 +69,12 @@ export class CharacterRuleCatalogSettings {
   }
 
   protected async add(): Promise<void> {
-    if (this.newOption.invalid || this.isSaving()) return;
+    if (
+      this.newOption.invalid ||
+      (this.isSubrace() && this.parentOptionId.invalid) ||
+      this.isSaving()
+    )
+      return;
     this.isSaving.set(true);
     this.error.set(null);
     try {
@@ -67,8 +84,10 @@ export class CharacterRuleCatalogSettings {
         universe.id,
         this.category(),
         this.newOption.value,
+        this.isSubrace() ? this.parentOptionId.value : null,
       );
       this.newOption.reset('');
+      this.parentOptionId.reset('');
       await this.load(universe.gameSystemId, universe.id, this.category(), false);
     } catch (error) {
       this.error.set(error instanceof Error ? error.message : 'Impossible d’ajouter cette valeur.');
@@ -81,6 +100,13 @@ export class CharacterRuleCatalogSettings {
     if (!this.isOwnedBySelectedUniverse(option)) return;
     this.pendingRemoval.set(option);
     this.error.set(null);
+  }
+
+  protected detail(option: GameRuleOption): string {
+    const origin = this.origin(option);
+    if (option.category !== 'subrace') return origin;
+    const parent = this.species().find(({ id }) => id === option.parentOptionId)?.label;
+    return parent ? `${parent} · ${origin}` : origin;
   }
 
   protected async confirmRemoval(): Promise<void> {
@@ -112,7 +138,15 @@ export class CharacterRuleCatalogSettings {
     if (showLoading) this.isLoading.set(true);
     this.error.set(null);
     try {
-      this.options.set(await this.service.listForUniverse(gameSystemId, universeId, category));
+      const [options, species] =
+        category === 'subrace'
+          ? await Promise.all([
+              this.service.listForUniverse(gameSystemId, universeId, category),
+              this.service.listForUniverse(gameSystemId, universeId, 'race'),
+            ])
+          : [await this.service.listForUniverse(gameSystemId, universeId, category), []];
+      this.options.set(options);
+      this.species.set(species);
     } catch (error) {
       this.error.set(
         error instanceof Error ? error.message : 'Impossible de charger le référentiel.',

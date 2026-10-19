@@ -66,4 +66,44 @@ describe('CharacterRuleCatalogSettings', () => {
     expect(element.querySelector('button[aria-label="Supprimer Elfe"]')).toBeNull();
     expect(element.querySelector('button[aria-label="Supprimer Shadar-kai"]')).not.toBeNull();
   });
+
+  it('shows character subspecies with their inherited parent species', async () => {
+    const drow: GameRuleOption = {
+      ...specificRace,
+      id: 'drow',
+      category: 'subrace',
+      parentOptionId: genericRace.id,
+      code: 'drow',
+      label: 'Drow',
+    };
+    const service = {
+      listForUniverse: vi
+        .fn()
+        .mockImplementation((_gameSystemId: string, _universeId: string, category: string) =>
+          Promise.resolve(category === 'subrace' ? [drow] : [genericRace]),
+        ),
+      addForUniverse: vi.fn(),
+      removeFromUniverse: vi.fn(),
+    };
+    await TestBed.configureTestingModule({
+      imports: [CharacterRuleCatalogSettings],
+      providers: [{ provide: GameRuleOptionService, useValue: service }],
+    }).compileComponents();
+    const fixture = TestBed.createComponent(CharacterRuleCatalogSettings);
+    fixture.componentRef.setInput('universe', forgottenRealms);
+    fixture.componentRef.setInput('universes', [genericUniverse, forgottenRealms]);
+    fixture.componentRef.setInput('category', 'subrace');
+
+    fixture.detectChanges();
+    await fixture.whenStable();
+    await vi.waitFor(() => {
+      fixture.detectChanges();
+      expect((fixture.nativeElement as HTMLElement).textContent).toContain('Drow');
+    });
+
+    const element = fixture.nativeElement as HTMLElement;
+    expect(element.textContent).toContain('Sous-espèces');
+    expect(element.textContent).toContain('Elfe · Forgotten Realms');
+    expect(service.listForUniverse).toHaveBeenCalledWith('dnd5e', 'forgotten-realms', 'race');
+  });
 });

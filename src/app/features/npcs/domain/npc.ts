@@ -5,7 +5,7 @@ import {
 import type { ResourceProvenance } from '@app/shared/domain/resource-provenance';
 
 export const NPC_STATUSES = ['active', 'dead', 'retired', 'missing'] as const;
-export const NPC_SHEET_SCHEMA_VERSION = 5 as const;
+export const NPC_SHEET_SCHEMA_VERSION = 6 as const;
 
 export type NpcStatus = (typeof NPC_STATUSES)[number];
 
@@ -33,6 +33,8 @@ export type NpcSheet = Readonly<{
   creatureSubspecies: string;
   raceOptionId: string | null;
   race: string;
+  subraceOptionId: string | null;
+  subrace: string;
   classOptionId: string | null;
   className: string;
   occupation: string;
@@ -118,6 +120,8 @@ export function createEmptyNpcSheet(): NpcSheet {
     creatureSubspecies: '',
     raceOptionId: null,
     race: '',
+    subraceOptionId: null,
+    subrace: '',
     classOptionId: null,
     className: '',
     occupation: '',
@@ -211,6 +215,8 @@ export function normalizeNpcSheet(value: unknown): NpcSheet {
     creatureSubspecies: text(source['creatureSubspecies']),
     raceOptionId: nullableText(source['raceOptionId']),
     race: text(source['race']) || legacyRace,
+    subraceOptionId: nullableText(source['subraceOptionId']),
+    subrace: text(source['subrace']),
     classOptionId: nullableText(source['classOptionId']),
     className: text(source['className']),
     occupation: text(source['occupation']),

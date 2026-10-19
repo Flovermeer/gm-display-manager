@@ -10,6 +10,17 @@
   </header>
 
   <div class="inline-create">
+    @if (isSubrace()) {
+      <app-form-field
+        inputId="new-subrace-parent"
+        label="Espèce parente"
+        controlType="select"
+        [options]="speciesOptions()"
+        emptyLabel="Choisir une espèce"
+        emptyValue=""
+        [formControl]="parentOptionId"
+      />
+    }
     <app-form-field
       [inputId]="'new-' + category()"
       [label]="'Nouvelle ' + singularLabel()"
@@ -18,7 +29,7 @@
     <button
       appButton="primary"
       type="button"
-      [disabled]="newOption.invalid || isSaving()"
+      [disabled]="newOption.invalid || (isSubrace() && parentOptionId.invalid) || isSaving()"
       (click)="add()"
     >
       Ajouter
@@ -36,7 +47,7 @@
       @for (option of options(); track option.id) {
         <app-tag-pill
           [label]="option.label"
-          [detail]="origin(option)"
+          [detail]="detail(option)"
           variant="catalog"
           [removable]="isOwnedBySelectedUniverse(option)"
           removeVerb="Supprimer"

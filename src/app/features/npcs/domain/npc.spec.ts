@@ -88,4 +88,20 @@ describe('Npc', () => {
       occupation: '',
     });
   });
+
+  it('normalizes the character species and subspecies references', () => {
+    expect(
+      normalizeNpcSheet({
+        raceOptionId: 'elf-id',
+        race: ' Elfe ',
+        subraceOptionId: 'drow-id',
+        subrace: ' Drow ',
+      }),
+    ).toMatchObject({
+      raceOptionId: 'elf-id',
+      race: 'Elfe',
+      subraceOptionId: 'drow-id',
+      subrace: 'Drow',
+    });
+  });
 });

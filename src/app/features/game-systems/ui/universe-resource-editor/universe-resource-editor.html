@@ -57,12 +57,22 @@
               } @else {
                 <app-form-field
                   inputId="canonical-npc-race"
-                  label="Race"
+                  label="Espèce"
                   controlType="select"
                   [options]="raceOptions()"
                   emptyLabel="Non renseignée"
                   emptyValue=""
                   formControlName="race"
+                  (valueChange)="npcRaceChanged()"
+                />
+                <app-form-field
+                  inputId="canonical-npc-subrace"
+                  label="Sous-espèce"
+                  controlType="select"
+                  [options]="npcSubraceOptions()"
+                  emptyLabel="Non renseignée"
+                  emptyValue=""
+                  formControlName="subrace"
                 />
                 <app-form-field
                   inputId="canonical-npc-class"
@@ -290,12 +300,22 @@
             <div class="canonical-form__grid canonical-form__grid--four">
               <app-form-field
                 inputId="canonical-player-race"
-                label="Race"
+                label="Espèce"
                 controlType="select"
                 [options]="raceOptions()"
                 emptyLabel="Non renseignée"
                 emptyValue=""
                 formControlName="race"
+                (valueChange)="playerRaceChanged()"
+              />
+              <app-form-field
+                inputId="canonical-player-subrace"
+                label="Sous-espèce"
+                controlType="select"
+                [options]="playerSubraceOptions()"
+                emptyLabel="Non renseignée"
+                emptyValue=""
+                formControlName="subrace"
               />
               <app-form-field
                 inputId="canonical-player-class"

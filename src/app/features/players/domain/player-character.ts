@@ -1,11 +1,13 @@
 export const PLAYER_CHARACTER_STATUSES = ['active', 'dead', 'retired', 'missing'] as const;
-export const PLAYER_CHARACTER_SHEET_SCHEMA_VERSION = 3 as const;
+export const PLAYER_CHARACTER_SHEET_SCHEMA_VERSION = 4 as const;
 
 export type PlayerCharacterStatus = (typeof PLAYER_CHARACTER_STATUSES)[number];
 
 export type PlayerCharacterSheet = Readonly<{
   raceOptionId: string | null;
   race: string;
+  subraceOptionId: string | null;
+  subrace: string;
   classOptionId: string | null;
   className: string;
   level: number | null;
@@ -60,6 +62,8 @@ const defaultDependencies: PlayerCharacterFactoryDependencies = {
 export const EMPTY_PLAYER_CHARACTER_SHEET: PlayerCharacterSheet = {
   raceOptionId: null,
   race: '',
+  subraceOptionId: null,
+  subrace: '',
   classOptionId: null,
   className: '',
   level: null,
@@ -158,6 +162,8 @@ function normalizeInput(input: UpdatePlayerCharacterInput): UpdatePlayerCharacte
     sheet: {
       raceOptionId: nullableText(input.sheet.raceOptionId),
       race: input.sheet.race.trim(),
+      subraceOptionId: nullableText(input.sheet.subraceOptionId),
+      subrace: input.sheet.subrace.trim(),
       classOptionId: nullableText(input.sheet.classOptionId),
       className: input.sheet.className.trim(),
       level: nullableIntegerInRange(input.sheet.level, 1, 20, 'Level'),

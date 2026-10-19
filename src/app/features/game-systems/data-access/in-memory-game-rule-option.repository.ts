@@ -35,7 +35,8 @@ export class InMemoryGameRuleOptionRepository extends GameRuleOptionRepository {
         ({ universeId: scope }) =>
           scope === null ||
           scope === universeId ||
-          ((category === 'race' || category === 'class') && scope === genericId),
+          ((category === 'race' || category === 'subrace' || category === 'class') &&
+            scope === genericId),
       ),
     );
   }

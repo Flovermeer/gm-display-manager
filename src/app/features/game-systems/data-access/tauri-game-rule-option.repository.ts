@@ -58,7 +58,7 @@ export class TauriGameRuleOptionRepository extends GameRuleOptionRepository {
     const rows = await database.select<RuleOptionRow[]>(
       `${COLUMNS} WHERE game_system_id=$1 AND category=$2
        AND (universe_id IS NULL OR universe_id=$4
-         OR (category IN ('race', 'class') AND universe_id=$3))
+         OR (category IN ('race', 'subrace', 'class') AND universe_id=$3))
        ORDER BY universe_id IS NOT NULL, universe_id=$4, label COLLATE NOCASE, id`,
       [gameSystemId, category, genericId, universeId],
     );
@@ -150,6 +150,7 @@ const OPTION_ID_FIELD: Record<GameRuleCategory, string> = {
   creature_subspecies: 'creatureSubspeciesOptionId',
   language: 'languageOptionIds',
   race: 'raceOptionId',
+  subrace: 'subraceOptionId',
   class: 'classOptionId',
 };
 

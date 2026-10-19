@@ -18,6 +18,7 @@ import type { PendingChangesAware } from '@app/core/navigation/pending-changes.g
 import { CharacterRuleCatalogService } from '@app/features/game-systems/application/character-rule-catalog.service';
 import {
   EMPTY_CHARACTER_RULE_CATALOG,
+  subracesForRace,
   type CharacterRuleCatalog,
 } from '@app/features/game-systems/domain/character-rule-catalog';
 import { optionIdFor, optionLabel } from '@app/features/game-systems/domain/creature-rule-catalog';
@@ -96,6 +97,13 @@ export class PlayerCharacterWorkspace implements OnInit, PendingChangesAware {
   protected readonly raceOptions = computed(() =>
     this.formOptions(this.ruleCatalog().races, this.selectedCharacter()?.sheet.race),
   );
+  protected subraceOptions(): readonly FormFieldOption[] {
+    const raceId = this.characterForm.controls.race.value;
+    return this.formOptions(
+      subracesForRace(this.ruleCatalog(), raceId),
+      this.selectedCharacter()?.sheet.subrace,
+    );
+  }
   protected readonly classOptions = computed(() =>
     this.formOptions(this.ruleCatalog().classes, this.selectedCharacter()?.sheet.className),
   );
@@ -110,9 +118,13 @@ export class PlayerCharacterWorkspace implements OnInit, PendingChangesAware {
     const term = this.searchTerm().trim().toLocaleLowerCase('fr');
     if (!term) return this.characters();
     return this.characters().filter((character) =>
-      [character.name, character.playerName, character.sheet.className, character.sheet.race].some(
-        (value) => value.toLocaleLowerCase('fr').includes(term),
-      ),
+      [
+        character.name,
+        character.playerName,
+        character.sheet.className,
+        character.sheet.race,
+        character.sheet.subrace,
+      ].some((value) => value.toLocaleLowerCase('fr').includes(term)),
     );
   });
 
@@ -124,6 +136,7 @@ export class PlayerCharacterWorkspace implements OnInit, PendingChangesAware {
       currentHitPoints: new FormControl<number | null>(null, [Validators.min(0), integerValidator]),
       maxHitPoints: new FormControl<number | null>(null, [Validators.min(0), integerValidator]),
       race: new FormControl('', { nonNullable: true }),
+      subrace: new FormControl('', { nonNullable: true }),
       className: new FormControl('', { nonNullable: true }),
       level: new FormControl<number | null>(null, [
         Validators.min(1),
@@ -178,6 +191,17 @@ export class PlayerCharacterWorkspace implements OnInit, PendingChangesAware {
 
   protected updateSearch(event: Event): void {
     this.searchTerm.set((event.target as HTMLInputElement).value);
+  }
+
+  protected raceChanged(): void {
+    const current = this.characterForm.controls.subrace.value;
+    const raceId = this.characterForm.controls.race.value;
+    if (
+      current &&
+      !subracesForRace(this.ruleCatalog(), raceId).some(({ id }) => id === current)
+    ) {
+      this.characterForm.controls.subrace.setValue('');
+    }
   }
 
   protected async requestSelectCharacter(character: PlayerCharacter): Promise<void> {
@@ -442,7 +466,8 @@ export class PlayerCharacterWorkspace implements OnInit, PendingChangesAware {
       status: 'Statut',
       currentHitPoints: 'PV actuels',
       maxHitPoints: 'PV maximum',
-      race: 'Race',
+      race: 'Espèce',
+      subrace: 'Sous-espèce',
       className: 'Classe',
       level: 'Niveau (1 à 20)',
       armorClass: "Classe d'armure",
@@ -527,6 +552,12 @@ export class PlayerCharacterWorkspace implements OnInit, PendingChangesAware {
       race:
         optionIdFor(character.sheet.raceOptionId, character.sheet.race, this.ruleCatalog().races) ||
         character.sheet.race,
+      subrace:
+        optionIdFor(
+          character.sheet.subraceOptionId,
+          character.sheet.subrace,
+          this.ruleCatalog().subraces,
+        ) || character.sheet.subrace,
       className:
         optionIdFor(
           character.sheet.classOptionId,
@@ -563,6 +594,8 @@ export class PlayerCharacterWorkspace implements OnInit, PendingChangesAware {
       sheet: {
         raceOptionId: this.optionId(value.race, this.ruleCatalog().races),
         race: optionLabel(value.race, this.ruleCatalog().races, value.race),
+        subraceOptionId: this.optionId(value.subrace, this.ruleCatalog().subraces),
+        subrace: optionLabel(value.subrace, this.ruleCatalog().subraces, value.subrace),
         classOptionId: this.optionId(value.className, this.ruleCatalog().classes),
         className: optionLabel(value.className, this.ruleCatalog().classes, value.className),
         level: value.level,

@@ -4,7 +4,7 @@
  *
  * Responsabilités
  * - fusionne les valeurs natives et propres à l’univers ;
- * - ajoute l’héritage du catalogue générique pour les races et classes ;
+ * - ajoute l’héritage du catalogue générique pour les espèces, sous-espèces et classes ;
  * - persiste uniquement les ajouts propres à un univers.
  */
 

@@ -16,6 +16,7 @@ export type ResourceMentionCandidate = Readonly<{
   resourceId: string;
   label: string;
   playerDisplayAvailable?: boolean;
+  playerDisplayImagePath?: string;
 }>;
 
 export type ResourceMentionMatch = Readonly<{

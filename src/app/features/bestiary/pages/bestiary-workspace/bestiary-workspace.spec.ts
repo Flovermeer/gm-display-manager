@@ -142,6 +142,7 @@ describe('BestiaryWorkspace', () => {
       resourceId: monster.id,
       label: monster.name,
       playerDisplayAvailable: true,
+      playerDisplayImagePath: 'atropal.webp',
     });
   });
 

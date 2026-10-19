@@ -153,6 +153,14 @@ export class ResourceMentionPlayerDisplayService extends ResourceMentionDisplayG
         };
       }
       case 'monster': {
+        if (candidate.playerDisplayImagePath) {
+          return {
+            mode: 'monster',
+            monsterId: candidate.resourceId,
+            name: candidate.label,
+            imagePath: await this.monsterImages.resolveUrl(candidate.playerDisplayImagePath),
+          };
+        }
         const monster = await this.monsters.findById(campaignId, candidate.resourceId);
         if (!monster?.imagePath) return null;
         return {

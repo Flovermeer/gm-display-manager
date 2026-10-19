@@ -647,6 +647,7 @@ export class BestiaryWorkspace implements OnInit, PendingChangesAware {
       resourceId: monster.id,
       label: monster.name,
       playerDisplayAvailable: Boolean(monster.imagePath),
+      playerDisplayImagePath: monster.imagePath ?? undefined,
     };
   }
 }

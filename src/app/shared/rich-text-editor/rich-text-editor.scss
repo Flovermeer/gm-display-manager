@@ -52,17 +52,50 @@
 }
 
 .rich-text-content .tiptap .resource-mention-shell {
+  --resource-mention-color: #613b75;
+  --resource-mention-background: #e4d6eb;
+  --resource-mention-hover-background: #dec4e8;
+  --resource-mention-outline: rgb(118 83 141 / 35%);
+
   position: relative;
   display: inline-flex;
   align-items: center;
   white-space: nowrap;
 }
 
+.rich-text-content .tiptap .resource-mention-shell[data-resource-type='monster'] {
+  --resource-mention-color: #852b35;
+  --resource-mention-background: #f2d5d8;
+  --resource-mention-hover-background: #ebc1c6;
+  --resource-mention-outline: rgb(153 55 66 / 35%);
+}
+
+.rich-text-content .tiptap .resource-mention-shell[data-resource-type='location'] {
+  --resource-mention-color: #40596b;
+  --resource-mention-background: #d9e2e8;
+  --resource-mention-hover-background: #c8d6df;
+  --resource-mention-outline: rgb(75 103 123 / 35%);
+}
+
+.rich-text-content .tiptap .resource-mention-shell[data-resource-type='npc'] {
+  --resource-mention-color: #27665f;
+  --resource-mention-background: #d2e9e3;
+  --resource-mention-hover-background: #bfe0d8;
+  --resource-mention-outline: rgb(49 119 109 / 35%);
+}
+
+.rich-text-content .tiptap .resource-mention-shell[data-resource-type='item'] {
+  --resource-mention-color: #8a4b1e;
+  --resource-mention-background: #f3dfca;
+  --resource-mention-hover-background: #edcfaf;
+  --resource-mention-outline: rgb(157 87 35 / 35%);
+}
+
 .rich-text-content .tiptap .resource-mention {
   padding: 0.12rem 0.35rem;
   border-radius: 999px;
-  color: #613b75;
-  background: #e4d6eb;
+  color: var(--resource-mention-color);
+  background: var(--resource-mention-background);
   font-weight: 700;
   white-space: nowrap;
   cursor: pointer;
@@ -70,9 +103,9 @@
 
 .rich-text-content .tiptap .resource-mention:hover,
 .rich-text-content .tiptap .resource-mention:focus-visible {
-  outline: 2px solid rgb(118 83 141 / 35%);
+  outline: 2px solid var(--resource-mention-outline);
   outline-offset: 2px;
-  background: #dec4e8;
+  background: var(--resource-mention-hover-background);
 }
 
 .rich-text-content .tiptap .resource-mention-display {

@@ -75,14 +75,20 @@ Le premier lancement télécharge et compile les crates Rust déclarées dans
 ## Vérifications
 
 ```powershell
+npm.cmd run lint
 npm.cmd run build
 npm.cmd run test -- --watch=false
 cargo test --manifest-path src-tauri/Cargo.toml
 ```
 
 Le développement courant se fait sur une branche dédiée. Toute pull request vers `main`
-déclenche automatiquement la CI Windows, qui exécute ces tests et le build Angular. Un push sur
-une autre branche ou directement sur `main` ne déclenche pas ce workflow.
+déclenche automatiquement la CI Windows, qui exécute le lint, ces tests et le build Angular. Un
+push sur une autre branche ou directement sur `main` ne déclenche pas ce workflow.
+
+`npm.cmd run lint` applique les règles recommandées d'Angular et de TypeScript, ainsi que les
+frontières de couches décrites dans `AGENTS.md` : le `domain/` ne dépend ni d'Angular ni de Tauri,
+et les pages et composants n'importent ni repository ni gateway. Ces règles sont définies dans
+`eslint.config.js`.
 
 Le comportement multi-écran devra être validé manuellement sur plusieurs
 moniteurs physiques à partir du jalon 2.

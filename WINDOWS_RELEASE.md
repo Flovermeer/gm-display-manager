@@ -1,7 +1,7 @@
 # Construire et livrer la version Windows
 
 Ce guide décrit comment transformer Beholder's Inn en application Windows installable. Le format
-de distribution retenu pour la version 1.1.8 est un installateur NSIS généré par Tauri.
+de distribution retenu pour la version 1.1.9 est un installateur NSIS généré par Tauri.
 
 ## Choisir le bon mode d'exécution
 
@@ -44,7 +44,7 @@ Avant de construire une version distribuable, vérifier que la même version est
 - `src-tauri/Cargo.toml` et `src-tauri/Cargo.lock` ;
 - `src-tauri/tauri.conf.json`.
 
-Pour la livraison actuelle, cette version est `1.1.8`.
+Pour la livraison actuelle, cette version est `1.1.9`.
 
 ## Construire localement
 
@@ -107,7 +107,7 @@ continue toutefois de dépendre du runtime WebView2 fourni ou maintenu par Windo
 
 ## Installateur non signé
 
-L'installateur 1.1.8 n'est pas signé. Microsoft Defender SmartScreen peut donc afficher un
+L'installateur 1.1.9 n'est pas signé. Microsoft Defender SmartScreen peut donc afficher un
 avertissement de réputation. Avant de poursuivre, vérifier que le fichier provient bien du workflow
 du dépôt et que son exécution s'est terminée avec succès.
 

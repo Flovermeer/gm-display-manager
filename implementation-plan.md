@@ -6,6 +6,8 @@ Dernière consolidation : 13 novembre 2026
 
 Dernière version publiée : **1.1.8** (19 octobre 2026)
 
+Version en préparation : **1.1.9**
+
 Version fonctionnelle actuelle : **V1 terminée**
 
 Version en cours : **V1.1 — Durcissement et livraison Windows**
@@ -87,6 +89,18 @@ périmètre de la V1.1 :
 - nouveaux visuels de démonstration pour les lieux et les PNJ ;
 - isolation des données Tauri de développement, stabilisation des checksums de migration et
   validation de la CI sur les pull requests vers `main`.
+
+### Version 1.1.9 — en préparation
+
+- correction du gel de l'application lors de la saisie de `@` dans un texte riche : l'ouverture du
+  menu de mentions relançait en boucle la mise à jour de l'éditeur jusqu'à saturer la mémoire ;
+- refactoring clean architecture sans changement fonctionnel attendu : façades `application/` pour
+  les écrans PNJ, lieux, objets, PJ et bestiaire, envoi unique au Player Display par
+  `PlayerDisplayPublisher`, règles et libellés en fonctions pures du domaine, formulaires extraits,
+  fiche PNJ et visionneuse d'images en composants dédiés ;
+- confirmation « Modifications non enregistrées » commune à tous les écrans, avec les mêmes
+  libellés et la même disposition ;
+- documentation actualisée pour les versions 1.1.6 à 1.1.8.
 
 ## Statut consolidé
 

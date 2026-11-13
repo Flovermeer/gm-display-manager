@@ -191,58 +191,16 @@ form {
   display: grid;
 }
 
-label {
-  margin-bottom: 0.45rem;
-  color: #d3ccd6;
-  font-size: 0.82rem;
-  font-weight: 700;
-}
-
-label:not(:first-child) {
-  margin-top: 1rem;
-}
-
-input,
-textarea,
-select {
-  width: 100%;
-  padding: 0.8rem 0.9rem;
-  border: 1px solid #56505a;
-  border-radius: 0.45rem;
-  color: #f5f0f7;
-  background: #171619;
-  font: inherit;
-}
-
-textarea {
-  resize: vertical;
-}
-
-input:focus-visible,
-textarea:focus-visible,
-select:focus-visible,
 button:focus-visible {
   outline: 2px solid #b48bd0;
   outline-offset: 2px;
 }
 
-.field-error,
 .global-error {
+  margin: 1rem 0 0;
   color: #efa6ad;
   font-size: 0.82rem;
-}
-
-.field-error {
-  margin: 0.45rem 0 0;
-}
-
-.create-button {
-  padding: 0.8rem 1.25rem;
-  border: 1px solid #8f69aa;
-  border-radius: 0.45rem;
-  color: #fff;
-  background: #76538d;
-  cursor: pointer;
+  text-align: center;
 }
 
 .form-actions {
@@ -286,20 +244,6 @@ button:focus-visible {
 
 .creation-summary dd {
   margin: 0;
-}
-
-.create-button:hover:not(:disabled) {
-  background: #865fa0;
-}
-
-.create-button:disabled {
-  cursor: not-allowed;
-  opacity: 0.45;
-}
-
-.global-error {
-  margin: 1rem 0 0;
-  text-align: center;
 }
 
 @media (max-width: 52rem) {

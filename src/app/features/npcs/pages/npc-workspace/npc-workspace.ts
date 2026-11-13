@@ -472,9 +472,15 @@ export class NpcWorkspace implements OnInit, PendingChangesAware {
 
   private async reloadNpcs(): Promise<void> {
     const campaign = this.campaign();
-    if (campaign) {
-      this.npcs.set(await this.npcService.list(campaign.id));
-    }
+    if (!campaign) return;
+    // Les mentions sont relues avec la liste : un PNJ créé ou renommé doit être proposé
+    // dans le menu « @ » sans quitter la page.
+    const [npcs, mentionCandidates] = await Promise.all([
+      this.npcService.list(campaign.id),
+      this.mentionNavigation.listCandidates(campaign.id),
+    ]);
+    this.npcs.set(npcs);
+    this.mentionCandidates.set(mentionCandidates);
   }
 
   private openReadOnly(npc: Npc): void {
@@ -537,14 +543,12 @@ export class NpcWorkspace implements OnInit, PendingChangesAware {
   private async loadSupportingCatalogs(): Promise<void> {
     const campaign = this.campaign();
     if (!campaign) return;
-    const [creatureCatalog, characterCatalog, mentionCandidates] = await Promise.all([
+    const [creatureCatalog, characterCatalog] = await Promise.all([
       this.creatureRules.loadForUniverse(campaign.universeId),
       this.characterRules.loadForUniverse(campaign.universeId),
-      this.mentionNavigation.listCandidates(campaign.id),
     ]);
     this.ruleCatalog.set(creatureCatalog);
     this.characterRuleCatalog.set(characterCatalog);
-    this.mentionCandidates.set(mentionCandidates);
   }
 
   private async loadPortraitPreview(relativePath: string | null): Promise<void> {

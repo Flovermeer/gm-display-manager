@@ -16,6 +16,11 @@ import type {
 } from '@app/features/display/domain/player-display-state';
 import { LocationService } from '@app/features/locations/application/location.service';
 import { LocationImageGateway } from '@app/features/locations/data-access/location-image.gateway';
+import { ItemImageGateway } from '@app/features/items/data-access/item-image.gateway';
+import type { NarrativeItem } from '@app/features/items/domain/narrative-item';
+import { NpcIdleVideoGateway } from '@app/features/npcs/data-access/npc-idle-video.gateway';
+import { NpcPortraitGateway } from '@app/features/npcs/data-access/npc-portrait.gateway';
+import type { Npc } from '@app/features/npcs/domain/npc';
 import { playerDisplayName } from '@app/features/locations/domain/location';
 import type { Scene } from '@app/features/scenes/domain/scene';
 import { ActiveSceneService } from '@app/features/scenes/application/active-scene.service';
@@ -27,6 +32,9 @@ export class SceneDisplayService {
   private readonly sceneService = inject(SceneService);
   private readonly locationService = inject(LocationService);
   private readonly locationImageGateway = inject(LocationImageGateway);
+  private readonly npcPortraits = inject(NpcPortraitGateway);
+  private readonly npcIdleVideos = inject(NpcIdleVideoGateway);
+  private readonly itemImages = inject(ItemImageGateway);
 
   async activate(scene: Scene): Promise<PlayerDisplayState> {
     const state = await this.build(scene);
@@ -48,6 +56,36 @@ export class SceneDisplayService {
         }
       : { type: 'default' as const };
     return { mode: 'scene', sceneId: scene.id, sceneName: scene.name, background, foreground };
+  }
+
+  /** Scène avec un PNJ au premier plan ; le PNJ doit posséder un portrait. */
+  async buildWithNpc(
+    scene: Scene,
+    npc: Npc & { portraitPath: string },
+  ): Promise<PlayerDisplayState> {
+    return this.build(scene, {
+      type: 'npc',
+      resourceId: npc.id,
+      name: npc.name,
+      imagePath: await this.npcPortraits.resolveUrl(npc.portraitPath),
+      idleVideoPath: npc.idleVideoPath
+        ? await this.npcIdleVideos.resolveUrl(npc.idleVideoPath)
+        : undefined,
+    });
+  }
+
+  /** Scène avec un objet au premier plan ; l’objet doit posséder une image. */
+  async buildWithItem(
+    scene: Scene,
+    item: NarrativeItem & { imagePath: string },
+  ): Promise<PlayerDisplayState> {
+    return this.build(scene, {
+      type: 'item',
+      resourceId: item.id,
+      name: item.name,
+      imagePath: await this.itemImages.resolveUrl(item.imagePath),
+      summary: item.summary,
+    });
   }
 
   async restore(campaignId: string): Promise<PlayerDisplayState> {

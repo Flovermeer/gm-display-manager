@@ -14,9 +14,6 @@ import {
 } from '@app/features/display/domain/player-display-state';
 import type { Location } from '@app/features/locations/domain/location';
 import { LocationService } from '@app/features/locations/application/location.service';
-import { ItemImageGateway } from '@app/features/items/data-access/item-image.gateway';
-import { NpcIdleVideoGateway } from '@app/features/npcs/data-access/npc-idle-video.gateway';
-import { NpcPortraitGateway } from '@app/features/npcs/data-access/npc-portrait.gateway';
 import type { NarrativeItem } from '@app/features/items/domain/narrative-item';
 import { NarrativeItemService } from '@app/features/items/application/narrative-item.service';
 import type { PendingChangesAware } from '@app/core/navigation/pending-changes.guard';
@@ -89,9 +86,6 @@ export class SceneWorkspace implements OnInit, PendingChangesAware {
   private readonly activeSceneService = inject(ActiveSceneService);
   private readonly playerDisplay = inject(PlayerDisplayPublisher);
   private readonly sceneDisplayService = inject(SceneDisplayService);
-  private readonly npcPortraitGateway = inject(NpcPortraitGateway);
-  private readonly npcIdleVideoGateway = inject(NpcIdleVideoGateway);
-  private readonly itemImageGateway = inject(ItemImageGateway);
   private readonly recentResources = inject(RecentResourceStore, { optional: true });
   private readonly mentionNavigation = inject(ResourceMentionNavigationService);
   private readonly journalEntries = viewChild<JournalEntryList>(JournalEntryList);
@@ -291,41 +285,30 @@ export class SceneWorkspace implements OnInit, PendingChangesAware {
 
   protected async showNpc(npc: Npc): Promise<void> {
     const scene = this.selectedScene();
-    if (!scene || !npc.portraitPath || this.isPublishing()) return;
+    const portraitPath = npc.portraitPath;
+    if (!scene || !portraitPath || this.isPublishing()) return;
     await this.publish(async () => {
       if (this.isNpcDisplayed(scene, npc)) {
         await this.clearActiveScene(scene.campaignId);
         return;
       }
-      const state = await this.sceneDisplayService.build(scene, {
-        type: 'npc',
-        resourceId: npc.id,
-        name: npc.name,
-        imagePath: await this.npcPortraitGateway.resolveUrl(npc.portraitPath!),
-        idleVideoPath: npc.idleVideoPath
-          ? await this.npcIdleVideoGateway.resolveUrl(npc.idleVideoPath)
-          : undefined,
-      });
-      await this.sendState(state);
+      await this.sendState(
+        await this.sceneDisplayService.buildWithNpc(scene, { ...npc, portraitPath }),
+      );
     });
   }
 
   protected async showItem(item: NarrativeItem): Promise<void> {
     const scene = this.selectedScene();
-    if (!scene || !item.imagePath || this.isPublishing()) return;
+    const imagePath = item.imagePath;
+    if (!scene || !imagePath || this.isPublishing()) return;
     await this.publish(async () => {
       if (this.isItemDisplayed(scene, item)) {
         await this.clearActiveScene(scene.campaignId);
         return;
       }
       await this.sendState(
-        await this.sceneDisplayService.build(scene, {
-          type: 'item',
-          resourceId: item.id,
-          name: item.name,
-          imagePath: await this.itemImageGateway.resolveUrl(item.imagePath!),
-          summary: item.summary,
-        }),
+        await this.sceneDisplayService.buildWithItem(scene, { ...item, imagePath }),
       );
     });
   }

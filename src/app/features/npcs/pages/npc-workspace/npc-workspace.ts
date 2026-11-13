@@ -1,14 +1,7 @@
 import { Component, computed, DestroyRef, inject, OnInit, signal, viewChild } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute } from '@angular/router';
-import {
-  type AbstractControl,
-  FormControl,
-  FormGroup,
-  ReactiveFormsModule,
-  type ValidationErrors,
-  Validators,
-} from '@angular/forms';
+import { ReactiveFormsModule } from '@angular/forms';
 
 import { CampaignContext } from '@app/features/campaigns/application/campaign-context';
 import { CombatStore } from '@app/features/combat/application/combat.store';
@@ -20,14 +13,23 @@ import {
   type CharacterRuleCatalog,
 } from '@app/features/game-systems/domain/character-rule-catalog';
 import { NpcWorkspaceFacade } from '@app/features/npcs/application/npc-workspace.facade';
+import { NpcSheetView } from '@app/features/npcs/ui/npc-sheet-view/npc-sheet-view';
+import {
+  createNpcForm,
+  emptyNpcFormValue,
+  npcFormValueToInput,
+  npcToFormValue,
+  ruleFormOptions,
+  type NpcFormCatalogs,
+} from '@app/features/npcs/pages/npc-workspace/npc-form';
 import type { PendingChangesAware } from '@app/core/navigation/pending-changes.guard';
 import {
   createEmptyNpcSheet,
   DEMO_NPC_PORTRAIT_URL,
+  npcStatusIcon,
+  npcStatusLabel,
   NPC_STATUSES,
   type Npc,
-  type NpcSheet,
-  type NpcStatus,
   type UpdateNpcInput,
 } from '@app/features/npcs/domain/npc';
 import { NpcService } from '@app/features/npcs/application/npc.service';
@@ -48,12 +50,9 @@ import { EmptyState } from '@app/shared/ui/empty-state/empty-state';
 import { EntityTitle } from '@app/shared/ui/entity-title/entity-title';
 import { FormField, type FormFieldOption } from '@app/shared/ui/form-field/form-field';
 import { RichTextFeatureEditor } from '@app/shared/ui/rich-text-feature-editor/rich-text-feature-editor';
-import { RichTextFeatureSection } from '@app/shared/ui/rich-text-feature-section/rich-text-feature-section';
 import { CreatureRuleCatalogService } from '@app/features/game-systems/application/creature-rule-catalog.service';
 import {
   EMPTY_CREATURE_RULE_CATALOG,
-  optionIdFor,
-  optionLabel,
   type CreatureRuleCatalog,
 } from '@app/features/game-systems/domain/creature-rule-catalog';
 import { MultiSelectField } from '@app/shared/ui/multi-select-field/multi-select-field';
@@ -80,6 +79,7 @@ type NpcTagField =
 @Component({
   selector: 'app-npc-workspace',
   imports: [
+    NpcSheetView,
     PendingChangesDialog,
     ReactiveFormsModule,
     RichTextEditor,
@@ -91,7 +91,6 @@ type NpcTagField =
     EntityTitle,
     FormField,
     RichTextFeatureEditor,
-    RichTextFeatureSection,
     MultiSelectField,
     RecentResourceTrackerDirective,
   ],
@@ -140,10 +139,12 @@ export class NpcWorkspace implements OnInit, PendingChangesAware {
   protected readonly statusFieldOptions: readonly FormFieldOption[] = NPC_STATUSES.map(
     (status) => ({
       value: status,
-      label: this.statusLabel(status),
+      label: npcStatusLabel(status),
     }),
   );
   protected readonly featureSections = CREATURE_FEATURE_SECTIONS;
+  protected readonly statusLabel = npcStatusLabel;
+  protected readonly statusIcon = npcStatusIcon;
   protected readonly featureDrafts = signal<CreatureFeatureDrafts>(emptyCreatureFeatureDrafts());
   protected readonly officialDescriptionDraft = signal<RichTextDocument>(
     createEmptyRichTextDocument(),
@@ -152,25 +153,25 @@ export class NpcWorkspace implements OnInit, PendingChangesAware {
   protected readonly characterRuleCatalog = signal<CharacterRuleCatalog>(
     EMPTY_CHARACTER_RULE_CATALOG,
   );
-  protected readonly sizeOptions = computed(() => this.formOptions(this.ruleCatalog().sizes));
+  protected readonly sizeOptions = computed(() => ruleFormOptions(this.ruleCatalog().sizes));
   protected readonly raceOptions = computed(() =>
-    this.formOptions(this.characterRuleCatalog().races, this.selectedNpc()?.sheet.race),
+    ruleFormOptions(this.characterRuleCatalog().races, this.selectedNpc()?.sheet.race),
   );
   protected subraceOptions(): readonly FormFieldOption[] {
     const raceId = this.npcForm.controls.race.value;
-    return this.formOptions(
+    return ruleFormOptions(
       subracesForRace(this.characterRuleCatalog(), raceId),
       this.selectedNpc()?.sheet.subrace,
     );
   }
   protected readonly classOptions = computed(() =>
-    this.formOptions(this.characterRuleCatalog().classes, this.selectedNpc()?.sheet.className),
+    ruleFormOptions(this.characterRuleCatalog().classes, this.selectedNpc()?.sheet.className),
   );
   protected readonly alignmentOptions = computed(() =>
-    this.formOptions(this.ruleCatalog().alignments),
+    ruleFormOptions(this.ruleCatalog().alignments),
   );
   protected readonly languageOptions = computed(() =>
-    this.formOptions(this.ruleCatalog().languages),
+    ruleFormOptions(this.ruleCatalog().languages),
   );
   protected readonly effectivePortraitPath = computed(
     () => this.draftPortraitPath() ?? this.selectedNpc()?.portraitPath ?? null,
@@ -193,39 +194,7 @@ export class NpcWorkspace implements OnInit, PendingChangesAware {
       [npc.name, npc.summary].some((value) => value.toLocaleLowerCase('fr').includes(searchTerm)),
     );
   });
-  protected readonly npcForm = new FormGroup({
-    name: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
-    status: new FormControl<NpcStatus>('active', { nonNullable: true }),
-    summary: new FormControl('', { nonNullable: true }),
-    notes: new FormControl('', { nonNullable: true }),
-    size: new FormControl('', { nonNullable: true }),
-    race: new FormControl('', { nonNullable: true }),
-    subrace: new FormControl('', { nonNullable: true }),
-    className: new FormControl('', { nonNullable: true }),
-    occupation: new FormControl('', { nonNullable: true }),
-    alignment: new FormControl('', { nonNullable: true }),
-    armorClass: new FormControl<number | null>(null, [Validators.min(0), integerValidator]),
-    armorClassDetails: new FormControl('', { nonNullable: true }),
-    hitPoints: new FormControl<number | null>(null, [Validators.min(0), integerValidator]),
-    hitPointFormula: new FormControl('', { nonNullable: true }),
-    speed: new FormControl('', { nonNullable: true }),
-    strength: new FormControl<number | null>(null, [Validators.min(0), integerValidator]),
-    dexterity: new FormControl<number | null>(null, [Validators.min(0), integerValidator]),
-    constitution: new FormControl<number | null>(null, [Validators.min(0), integerValidator]),
-    intelligence: new FormControl<number | null>(null, [Validators.min(0), integerValidator]),
-    wisdom: new FormControl<number | null>(null, [Validators.min(0), integerValidator]),
-    charisma: new FormControl<number | null>(null, [Validators.min(0), integerValidator]),
-    savingThrows: new FormControl<readonly string[]>([], { nonNullable: true }),
-    skills: new FormControl<readonly string[]>([], { nonNullable: true }),
-    damageVulnerabilities: new FormControl<readonly string[]>([], { nonNullable: true }),
-    damageResistances: new FormControl<readonly string[]>([], { nonNullable: true }),
-    damageImmunities: new FormControl<readonly string[]>([], { nonNullable: true }),
-    conditionImmunities: new FormControl<readonly string[]>([], { nonNullable: true }),
-    senses: new FormControl<readonly string[]>([], { nonNullable: true }),
-    languages: new FormControl<readonly string[]>([], { nonNullable: true }),
-    challengeRating: new FormControl('', { nonNullable: true }),
-    experiencePoints: new FormControl<number | null>(null, [Validators.min(0), integerValidator]),
-  });
+  protected readonly npcForm = createNpcForm();
 
   protected addToCombat(npc: Npc): void {
     void this.combat?.requestAdd(npcCombatantSource(npc));
@@ -522,26 +491,6 @@ export class NpcWorkspace implements OnInit, PendingChangesAware {
     }
   }
 
-  protected statusLabel(status: NpcStatus): string {
-    const labels: Record<NpcStatus, string> = {
-      active: 'Actif',
-      dead: 'Mort',
-      retired: 'Retiré',
-      missing: 'Disparu',
-    };
-    return labels[status];
-  }
-
-  protected statusIcon(status: NpcStatus): string {
-    const icons: Record<NpcStatus, string> = {
-      active: 'V',
-      dead: '💀',
-      missing: '?',
-      retired: 'X',
-    };
-    return icons[status];
-  }
-
   protected updateTags(field: NpcTagField, value: readonly string[]): void {
     this.npcForm.controls[field].setValue(value);
     this.npcForm.controls[field].markAsDirty();
@@ -563,43 +512,6 @@ export class NpcWorkspace implements OnInit, PendingChangesAware {
   protected openMention(mention: ResourceMentionCandidate): void {
     const campaign = this.campaign();
     if (campaign) void this.mentionNavigation.open(campaign.id, mention);
-  }
-
-  protected abilityModifier(score: number | null): string {
-    if (score === null) return '—';
-    const modifier = Math.floor((score - 10) / 2);
-    return `${score} (${modifier >= 0 ? '+' : ''}${modifier})`;
-  }
-
-  protected npcTypeLine(sheet: NpcSheet): string {
-    return (
-      [sheet.size, sheet.race, sheet.subrace, sheet.className, sheet.alignment]
-        .filter(Boolean)
-        .join(', ') || '—'
-    );
-  }
-
-  protected armorClassLabel(sheet: NpcSheet): string {
-    if (sheet.armorClass === null) return '—';
-    return sheet.armorClassDetails
-      ? `${sheet.armorClass} (${sheet.armorClassDetails})`
-      : String(sheet.armorClass);
-  }
-
-  protected hitPointsLabel(sheet: NpcSheet): string {
-    if (sheet.hitPoints === null) return '—';
-    return sheet.hitPointFormula
-      ? `${sheet.hitPoints} (${sheet.hitPointFormula})`
-      : String(sheet.hitPoints);
-  }
-
-  protected challengeLabel(sheet: NpcSheet): string {
-    if (!sheet.challengeRating && sheet.experiencePoints === null) return '—';
-    const experience =
-      sheet.experiencePoints === null
-        ? ''
-        : ` (${new Intl.NumberFormat('fr-FR').format(sheet.experiencePoints)} PX)`;
-    return `${sheet.challengeRating || '—'}${experience}`;
   }
 
   protected hasInvalidSheetNumbers(): boolean {
@@ -660,98 +572,16 @@ export class NpcWorkspace implements OnInit, PendingChangesAware {
   }
 
   private populateForm(npc: Npc): void {
-    const sheet = npc.sheet;
-    this.npcForm.reset({
-      name: npc.name,
-      status: npc.status,
-      summary: npc.summary,
-      notes: '',
-      size: optionIdFor(sheet.sizeOptionId, sheet.size, this.ruleCatalog().sizes),
-      race:
-        optionIdFor(sheet.raceOptionId, sheet.race, this.characterRuleCatalog().races) ||
-        sheet.race,
-      subrace:
-        optionIdFor(sheet.subraceOptionId, sheet.subrace, this.characterRuleCatalog().subraces) ||
-        sheet.subrace,
-      className:
-        optionIdFor(sheet.classOptionId, sheet.className, this.characterRuleCatalog().classes) ||
-        sheet.className,
-      occupation: sheet.occupation,
-      alignment: optionIdFor(
-        sheet.alignmentOptionId,
-        sheet.alignment,
-        this.ruleCatalog().alignments,
-      ),
-      armorClass: sheet.armorClass,
-      armorClassDetails: sheet.armorClassDetails,
-      hitPoints: sheet.hitPoints,
-      hitPointFormula: sheet.hitPointFormula,
-      speed: sheet.speed,
-      strength: sheet.abilities.strength,
-      dexterity: sheet.abilities.dexterity,
-      constitution: sheet.abilities.constitution,
-      intelligence: sheet.abilities.intelligence,
-      wisdom: sheet.abilities.wisdom,
-      charisma: sheet.abilities.charisma,
-      savingThrows: sheet.savingThrows,
-      skills: sheet.skills,
-      damageVulnerabilities: sheet.damageVulnerabilities,
-      damageResistances: sheet.damageResistances,
-      damageImmunities: sheet.damageImmunities,
-      conditionImmunities: sheet.conditionImmunities,
-      senses: sheet.senses,
-      languages:
-        sheet.languageOptionIds.length > 0
-          ? sheet.languageOptionIds
-          : sheet.languages.flatMap((label) => {
-              const id = optionIdFor(null, label, this.ruleCatalog().languages);
-              return id ? [id] : [];
-            }),
-      challengeRating: sheet.challengeRating,
-      experiencePoints: sheet.experiencePoints,
-    });
-    this.featureDrafts.set(creatureFeatureDraftsFrom(sheet));
-    this.officialDescriptionDraft.set(sheet.officialDescription);
+    this.npcForm.reset(npcToFormValue(npc, this.formCatalogs()));
+    this.featureDrafts.set(creatureFeatureDraftsFrom(npc.sheet));
+    this.officialDescriptionDraft.set(npc.sheet.officialDescription);
     this.npcForm.markAsPristine();
   }
 
   private populateEmptyForm(): void {
-    const sheet = createEmptyNpcSheet();
-    this.npcForm.reset({
-      name: '',
-      status: 'active',
-      summary: '',
-      notes: '',
-      size: sheet.size,
-      race: sheet.race,
-      subrace: sheet.subrace,
-      className: sheet.className,
-      occupation: sheet.occupation,
-      alignment: sheet.alignment,
-      armorClass: sheet.armorClass,
-      armorClassDetails: sheet.armorClassDetails,
-      hitPoints: sheet.hitPoints,
-      hitPointFormula: sheet.hitPointFormula,
-      speed: sheet.speed,
-      strength: sheet.abilities.strength,
-      dexterity: sheet.abilities.dexterity,
-      constitution: sheet.abilities.constitution,
-      intelligence: sheet.abilities.intelligence,
-      wisdom: sheet.abilities.wisdom,
-      charisma: sheet.abilities.charisma,
-      savingThrows: sheet.savingThrows,
-      skills: sheet.skills,
-      damageVulnerabilities: sheet.damageVulnerabilities,
-      damageResistances: sheet.damageResistances,
-      damageImmunities: sheet.damageImmunities,
-      conditionImmunities: sheet.conditionImmunities,
-      senses: sheet.senses,
-      languages: sheet.languageOptionIds,
-      challengeRating: sheet.challengeRating,
-      experiencePoints: sheet.experiencePoints,
-    });
+    this.npcForm.reset(emptyNpcFormValue());
     this.featureDrafts.set(emptyCreatureFeatureDrafts());
-    this.officialDescriptionDraft.set(sheet.officialDescription);
+    this.officialDescriptionDraft.set(createEmptyNpcSheet().officialDescription);
     this.npcForm.markAsPristine();
   }
 
@@ -780,61 +610,15 @@ export class NpcWorkspace implements OnInit, PendingChangesAware {
   }
 
   private formInput(): UpdateNpcInput {
-    const value = this.npcForm.getRawValue();
-    const previous = this.selectedNpc()?.sheet ?? createEmptyNpcSheet();
-    return {
-      name: value.name,
-      status: value.status,
-      summary: value.summary,
-      notes: '',
-      sheet: {
-        sizeOptionId: value.size || null,
-        size: optionLabel(value.size, this.ruleCatalog().sizes),
-        creatureTypeOptionId: previous.creatureTypeOptionId,
-        creatureType: previous.creatureType,
-        creatureSubspeciesOptionId: previous.creatureSubspeciesOptionId,
-        creatureSubspecies: previous.creatureSubspecies,
-        raceOptionId: this.optionId(value.race, this.characterRuleCatalog().races),
-        race: optionLabel(value.race, this.characterRuleCatalog().races, value.race),
-        subraceOptionId: this.optionId(value.subrace, this.characterRuleCatalog().subraces),
-        subrace: optionLabel(value.subrace, this.characterRuleCatalog().subraces, value.subrace),
-        classOptionId: this.optionId(value.className, this.characterRuleCatalog().classes),
-        className: optionLabel(
-          value.className,
-          this.characterRuleCatalog().classes,
-          value.className,
-        ),
-        occupation: value.occupation,
-        alignmentOptionId: value.alignment || null,
-        alignment: optionLabel(value.alignment, this.ruleCatalog().alignments),
-        armorClass: value.armorClass,
-        armorClassDetails: value.armorClassDetails,
-        hitPoints: value.hitPoints,
-        hitPointFormula: value.hitPointFormula,
-        speed: value.speed,
-        abilities: {
-          strength: value.strength,
-          dexterity: value.dexterity,
-          constitution: value.constitution,
-          intelligence: value.intelligence,
-          wisdom: value.wisdom,
-          charisma: value.charisma,
-        },
-        savingThrows: value.savingThrows,
-        skills: value.skills,
-        damageVulnerabilities: value.damageVulnerabilities,
-        damageResistances: value.damageResistances,
-        damageImmunities: value.damageImmunities,
-        conditionImmunities: value.conditionImmunities,
-        senses: value.senses,
-        languageOptionIds: value.languages,
-        languages: value.languages.map((id) => optionLabel(id, this.ruleCatalog().languages, id)),
-        challengeRating: value.challengeRating,
-        experiencePoints: value.experiencePoints,
-        officialDescription: this.officialDescriptionDraft(),
-        ...this.featureDrafts(),
-      },
-    };
+    return npcFormValueToInput(this.npcForm.getRawValue(), this.formCatalogs(), {
+      previousSheet: this.selectedNpc()?.sheet ?? createEmptyNpcSheet(),
+      officialDescription: this.officialDescriptionDraft(),
+      features: this.featureDrafts(),
+    });
+  }
+
+  private formCatalogs(): NpcFormCatalogs {
+    return { creature: this.ruleCatalog(), character: this.characterRuleCatalog() };
   }
 
   private async loadSupportingCatalogs(): Promise<void> {
@@ -848,27 +632,6 @@ export class NpcWorkspace implements OnInit, PendingChangesAware {
     this.ruleCatalog.set(creatureCatalog);
     this.characterRuleCatalog.set(characterCatalog);
     this.mentionCandidates.set(mentionCandidates);
-  }
-
-  private formOptions(
-    options: readonly { id: string; label: string; code: string }[],
-    legacyLabel = '',
-  ): readonly FormFieldOption[] {
-    const normalized = legacyLabel.trim().toLocaleLowerCase('fr');
-    const mapped = options.some(
-      ({ label, code }) =>
-        label.toLocaleLowerCase('fr') === normalized || code.toLocaleLowerCase('fr') === normalized,
-    );
-    return [
-      ...options.map(({ id, label }) => ({ value: id, label })),
-      ...(legacyLabel && !mapped
-        ? [{ value: legacyLabel, label: `${legacyLabel} (ancienne valeur)` }]
-        : []),
-    ];
-  }
-
-  private optionId(value: string, options: readonly { id: string }[]): string | null {
-    return options.some(({ id }) => id === value) ? value : null;
   }
 
   private async loadPortraitPreview(relativePath: string | null): Promise<void> {
@@ -899,8 +662,4 @@ export class NpcWorkspace implements OnInit, PendingChangesAware {
 
     return this.pendingChanges.request();
   }
-}
-
-function integerValidator(control: AbstractControl): ValidationErrors | null {
-  return control.value === null || Number.isInteger(control.value) ? null : { integer: true };
 }

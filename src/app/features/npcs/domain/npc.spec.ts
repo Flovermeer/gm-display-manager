@@ -4,6 +4,9 @@ import {
   NPC_SHEET_SCHEMA_VERSION,
   normalizeNpcSheet,
   npcPlayerDisplayState,
+  npcStatusIcon,
+  npcStatusLabel,
+  npcTypeLine,
   updateNpc,
   type NpcFactoryDependencies,
 } from '@app/features/npcs/domain/npc';
@@ -120,5 +123,25 @@ describe('Npc player display', () => {
     expect(
       npcPlayerDisplayState(npc, { portraitUrl: 'mira.webp', idleVideoUrl: 'mira.webm' }),
     ).toHaveProperty('idleVideoPath', 'mira.webm');
+  });
+});
+
+describe('Npc labels', () => {
+  it('labels every NPC status with text and icon', () => {
+    expect(npcStatusLabel('retired')).toBe('Retiré');
+    expect(npcStatusIcon('dead')).toBe('💀');
+  });
+
+  it('builds the type line from the known identity fields only', () => {
+    expect(
+      npcTypeLine({
+        ...createEmptyNpcSheet(),
+        size: 'Moyenne',
+        race: 'Elfe',
+        subrace: 'Haut-elfe',
+        alignment: 'Neutre bon',
+      }),
+    ).toBe('Moyenne, Elfe, Haut-elfe, Neutre bon');
+    expect(npcTypeLine(createEmptyNpcSheet())).toBe('—');
   });
 });

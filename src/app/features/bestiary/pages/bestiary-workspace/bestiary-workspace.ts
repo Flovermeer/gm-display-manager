@@ -45,6 +45,7 @@ import { MultiSelectField } from '@app/shared/ui/multi-select-field/multi-select
 import { ResourceMentionDisplayGateway } from '@app/shared/rich-text-editor/resource-mention-display.gateway';
 import type { ResourceMentionCandidate } from '@app/shared/rich-text-editor/resource-mention';
 import { errorMessage } from '@app/shared/error-message';
+import { abilityModifier } from '@app/shared/domain/creature-sheet-format';
 import { PendingChangesPrompt } from '@app/core/navigation/pending-changes-prompt';
 import { PendingChangesDialog } from '@app/shared/ui/pending-changes-dialog/pending-changes-dialog';
 
@@ -92,6 +93,7 @@ export class BestiaryWorkspace implements OnInit, PendingChangesAware {
   private readonly journalEntries = viewChild<JournalEntryList>(JournalEntryList);
 
   protected readonly campaign = this.context.campaign;
+  protected readonly abilityModifier = abilityModifier;
   protected readonly monsters = signal<readonly Monster[]>([]);
   protected readonly availableMonsters = signal<readonly Monster[]>([]);
   protected readonly selectedMonster = signal<Monster | null>(null);
@@ -417,12 +419,6 @@ export class BestiaryWorkspace implements OnInit, PendingChangesAware {
   ): void {
     this.featureDrafts.update((drafts) => ({ ...drafts, [section]: features }));
     this.monsterForm.markAsDirty();
-  }
-
-  protected abilityModifier(score: number | null): string {
-    if (score === null) return '—';
-    const modifier = Math.floor((score - 10) / 2);
-    return `${modifier >= 0 ? '+' : ''}${modifier}`;
   }
 
   protected typeLine(sheet: MonsterSheet): string {

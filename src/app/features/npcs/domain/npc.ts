@@ -339,3 +339,34 @@ export function npcPlayerDisplayState(
 
 /** Portrait de démonstration affiché tant qu’un PNJ n’a pas de portrait enregistré. */
 export const DEMO_NPC_PORTRAIT_URL = '/demo/npc-placeholder.png';
+
+const NPC_STATUS_LABELS: Readonly<Record<NpcStatus, string>> = {
+  active: 'Actif',
+  dead: 'Mort',
+  retired: 'Retiré',
+  missing: 'Disparu',
+};
+
+const NPC_STATUS_ICONS: Readonly<Record<NpcStatus, string>> = {
+  active: 'V',
+  dead: '💀',
+  missing: '?',
+  retired: 'X',
+};
+
+export function npcStatusLabel(status: NpcStatus): string {
+  return NPC_STATUS_LABELS[status];
+}
+
+export function npcStatusIcon(status: NpcStatus): string {
+  return NPC_STATUS_ICONS[status];
+}
+
+/** Ligne de type de la fiche : taille, espèce, sous-espèce, classe et alignement connus. */
+export function npcTypeLine(sheet: NpcSheet): string {
+  return (
+    [sheet.size, sheet.race, sheet.subrace, sheet.className, sheet.alignment]
+      .filter(Boolean)
+      .join(', ') || '—'
+  );
+}

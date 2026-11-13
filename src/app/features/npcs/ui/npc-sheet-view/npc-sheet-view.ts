@@ -20,6 +20,8 @@ import { RichTextFeatureSection } from '@app/shared/ui/rich-text-feature-section
 })
 export class NpcSheetView {
   readonly sheet = input.required<NpcSheet>();
+  /** Une organisation n’affiche que sa description, sans fiche technique. */
+  readonly organization = input(false);
   readonly mentionCandidates = input<readonly ResourceMentionCandidate[]>([]);
   readonly mentionActivate = output<ResourceMentionCandidate>();
 

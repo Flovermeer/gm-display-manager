@@ -74,4 +74,20 @@ describe('NpcSheetForm', () => {
 
     expect(events).toEqual(['video', 'submit']);
   });
+
+  it('keeps only the description of an organization and preserves its hidden sheet', async () => {
+    const { fixture, form, element } = await render();
+    form.controls.armorClass.setValue(14);
+    expect(element.querySelector('#npc-profile-form-title')).not.toBeNull();
+
+    const kind = element.querySelector<HTMLSelectElement>('#npc-kind')!;
+    kind.value = 'organization';
+    kind.dispatchEvent(new Event('change'));
+    fixture.detectChanges();
+
+    expect(form.controls.kind.value).toBe('organization');
+    expect(element.querySelector('#npc-profile-form-title')).toBeNull();
+    expect(element.querySelector('#npc-description-form-title')).not.toBeNull();
+    expect(form.controls.armorClass.value).toBe(14);
+  });
 });

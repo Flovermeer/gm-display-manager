@@ -2,7 +2,13 @@ import { Component, computed, input, output } from '@angular/core';
 import { ReactiveFormsModule } from '@angular/forms';
 
 import { subracesForRace } from '@app/features/game-systems/domain/character-rule-catalog';
-import { NPC_STATUSES, npcStatusLabel, type NpcSheet } from '@app/features/npcs/domain/npc';
+import {
+  NPC_KINDS,
+  NPC_STATUSES,
+  npcKindLabel,
+  npcStatusLabel,
+  type NpcSheet,
+} from '@app/features/npcs/domain/npc';
 import type { NpcForm, NpcFormCatalogs } from '@app/features/npcs/pages/npc-workspace/npc-form';
 import { ruleFormOptions } from '@app/shared/ui/form-field/rule-form-options';
 import type { ResourceMentionCandidate } from '@app/shared/rich-text-editor/resource-mention';
@@ -67,6 +73,10 @@ export class NpcSheetForm {
   readonly idleVideoRequested = output();
 
   protected readonly featureSections = CREATURE_FEATURE_SECTIONS;
+  protected readonly kindFieldOptions: readonly FormFieldOption[] = NPC_KINDS.map((kind) => ({
+    value: kind,
+    label: npcKindLabel(kind),
+  }));
   protected readonly statusFieldOptions: readonly FormFieldOption[] = NPC_STATUSES.map(
     (status) => ({ value: status, label: npcStatusLabel(status) }),
   );
@@ -83,6 +93,11 @@ export class NpcSheetForm {
   protected readonly languageOptions = computed(() =>
     ruleFormOptions(this.catalogs().creature.languages),
   );
+
+  /** La fiche technique reste en base mais n’est pas éditée pour une organisation. */
+  protected isOrganization(): boolean {
+    return this.form().controls.kind.value === 'organization';
+  }
 
   protected subraceOptions(): readonly FormFieldOption[] {
     return ruleFormOptions(

@@ -70,3 +70,13 @@ function requiredName(value: string): string {
   if (!name) throw new Error('Monster name is required.');
   return name;
 }
+
+/** Ligne de type du bloc de statistiques : taille, type et alignement connus. */
+export function monsterTypeLine(
+  sheet: Pick<MonsterSheet, 'size' | 'creatureType' | 'alignment'>,
+): string {
+  return (
+    [sheet.size, sheet.creatureType, sheet.alignment].filter(Boolean).join(', ') ||
+    'Type non renseigné'
+  );
+}

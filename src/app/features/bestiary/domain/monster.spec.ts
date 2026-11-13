@@ -1,6 +1,7 @@
 import {
   createEmptyMonsterSheet,
   createMonster,
+  monsterTypeLine,
   MONSTER_SHEET_SCHEMA_VERSION,
   updateMonster,
 } from '@app/features/bestiary/domain/monster';
@@ -49,5 +50,20 @@ describe('Monster', () => {
       sheet: { armorClass: 16 },
       updatedAt: '2026-08-14T13:00:00.000Z',
     });
+  });
+});
+
+describe('monsterTypeLine', () => {
+  it('lists the known size, type and alignment', () => {
+    expect(
+      monsterTypeLine({
+        size: 'Grande',
+        creatureType: 'Mort-vivant',
+        alignment: 'Chaotique mauvais',
+      }),
+    ).toBe('Grande, Mort-vivant, Chaotique mauvais');
+    expect(monsterTypeLine({ size: '', creatureType: '', alignment: '' })).toBe(
+      'Type non renseigné',
+    );
   });
 });

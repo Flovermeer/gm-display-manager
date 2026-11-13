@@ -2,6 +2,8 @@ import { createEmptyRichTextDocument } from '@app/shared/rich-text-editor/rich-t
 import {
   createNarrativeItem,
   itemPlayerDisplayState,
+  attunementLabel,
+  narrativeItemStatusLabel,
   updateNarrativeItem,
 } from '@app/features/items/domain/narrative-item';
 
@@ -61,5 +63,16 @@ describe('NarrativeItem player display', () => {
       summary: 'Glacé.',
       imagePath: 'ring.webp',
     });
+  });
+});
+
+describe('NarrativeItem labels', () => {
+  it('labels statuses and attunement requirements', () => {
+    expect(narrativeItemStatusLabel('lost')).toBe('Perdu');
+    expect(attunementLabel({ attunement: 'none', attunementCondition: '' })).toBe('Aucune');
+    expect(attunementLabel({ attunement: 'required', attunementCondition: '' })).toBe('Requise');
+    expect(attunementLabel({ attunement: 'conditional', attunementCondition: 'par un mage' })).toBe(
+      'Requise — par un mage',
+    );
   });
 });

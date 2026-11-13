@@ -111,3 +111,25 @@ export function itemPlayerDisplayState(
     imagePath: imageUrl,
   };
 }
+
+/** Visuel de démonstration affiché tant qu’un objet n’a pas d’image enregistrée. */
+export const DEMO_ITEM_IMAGE_URL = '/demo/item-placeholder.svg';
+
+const NARRATIVE_ITEM_STATUS_LABELS: Readonly<Record<NarrativeItemStatus, string>> = {
+  active: 'En jeu',
+  lost: 'Perdu',
+  destroyed: 'Détruit',
+  retired: 'Retiré',
+};
+
+export function narrativeItemStatusLabel(status: NarrativeItemStatus): string {
+  return NARRATIVE_ITEM_STATUS_LABELS[status];
+}
+
+export function attunementLabel(
+  item: Pick<NarrativeItem, 'attunement' | 'attunementCondition'>,
+): string {
+  if (item.attunement === 'none') return 'Aucune';
+  if (item.attunement === 'required') return 'Requise';
+  return `Requise — ${item.attunementCondition}`;
+}

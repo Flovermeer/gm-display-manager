@@ -15,6 +15,7 @@ import {
 import {
   createEmptyNpcSheet,
   type Npc,
+  type NpcKind,
   type NpcSheet,
   type NpcStatus,
   type UpdateNpcInput,
@@ -38,6 +39,7 @@ export function createNpcForm() {
 
   return new FormGroup({
     name: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
+    kind: new FormControl<NpcKind>('character', { nonNullable: true }),
     status: new FormControl<NpcStatus>('active', { nonNullable: true }),
     summary: text(),
     notes: text(),
@@ -76,6 +78,7 @@ export function emptyNpcFormValue(): NpcFormValue {
   const sheet = createEmptyNpcSheet();
   return {
     name: '',
+    kind: 'character',
     status: 'active',
     summary: '',
     notes: '',
@@ -96,6 +99,7 @@ export function npcToFormValue(npc: Npc, catalogs: NpcFormCatalogs): NpcFormValu
   const { creature, character } = catalogs;
   return {
     name: npc.name,
+    kind: npc.kind,
     status: npc.status,
     summary: npc.summary,
     notes: '',
@@ -133,6 +137,7 @@ export function npcFormValueToInput(
   const previous = drafts.previousSheet;
   return {
     name: value.name,
+    kind: value.kind,
     status: value.status,
     summary: value.summary,
     notes: '',

@@ -10,7 +10,12 @@
 import { Injectable } from '@angular/core';
 import Database from '@tauri-apps/plugin-sql';
 
-import { normalizeNpcSheet, type Npc, type NpcStatus } from '@app/features/npcs/domain/npc';
+import {
+  normalizeNpcSheet,
+  type Npc,
+  type NpcKind,
+  type NpcStatus,
+} from '@app/features/npcs/domain/npc';
 import { NpcRepository } from '@app/features/npcs/data-access/npc.repository';
 
 const DATABASE_URL = 'sqlite:beholders-inn.db';
@@ -19,6 +24,7 @@ type NpcRow = Readonly<{
   id: string;
   campaign_id: string;
   name: string;
+  kind: NpcKind;
   status: NpcStatus;
   summary: string;
   notes: string;
@@ -56,7 +62,7 @@ export class TauriNpcRepository extends NpcRepository {
 
   override async listAvailableByCampaign(campaignId: string): Promise<readonly Npc[]> {
     const rows = await (await this.getDatabase()).select<NpcRow[]>(
-      `SELECT npc.id, campaign.id AS campaign_id, npc.name, 'active' AS status,
+      `SELECT npc.id, campaign.id AS campaign_id, npc.name, npc.kind, 'active' AS status,
               '' AS summary, '' AS notes, npc.portrait_path, npc.idle_video_path,
               npc.sheet_json, npc.sheet_schema_version, npc.created_at, npc.updated_at,
               npc.source_campaign_id, NULL AS override_snapshot
@@ -104,10 +110,11 @@ export class TauriNpcRepository extends NpcRepository {
     await database.execute(
       `INSERT INTO npc (
          id, universe_id, name, portrait_path, idle_video_path,
-         sheet_json, sheet_schema_version, created_at, updated_at, source_campaign_id
-       ) VALUES ($1, (SELECT universe_id FROM campaign WHERE id=$2), $3, $4, $5, $6, $7, $8, $9, $2)
+         sheet_json, sheet_schema_version, created_at, updated_at, source_campaign_id, kind
+       ) VALUES ($1, (SELECT universe_id FROM campaign WHERE id=$2), $3, $4, $5, $6, $7, $8, $9, $2, $10)
        ON CONFLICT(id) DO UPDATE SET
          name = excluded.name,
+         kind = excluded.kind,
          portrait_path = excluded.portrait_path,
          idle_video_path = excluded.idle_video_path,
          sheet_json = excluded.sheet_json,
@@ -125,6 +132,7 @@ export class TauriNpcRepository extends NpcRepository {
         npc.sheetSchemaVersion,
         npc.createdAt,
         npc.updatedAt,
+        npc.kind,
       ],
     );
     }
@@ -203,7 +211,7 @@ export class TauriNpcRepository extends NpcRepository {
   }
 }
 
-const NPC_COLUMNS = `SELECT npc.id, campaign_npc.campaign_id, npc.name,
+const NPC_COLUMNS = `SELECT npc.id, campaign_npc.campaign_id, npc.name, npc.kind,
                             campaign_npc.status, campaign_npc.role_summary AS summary,
                             '' AS notes, npc.portrait_path, npc.idle_video_path,
                             npc.sheet_json, npc.sheet_schema_version,
@@ -212,12 +220,14 @@ const NPC_COLUMNS = `SELECT npc.id, campaign_npc.campaign_id, npc.name,
                             resource_override.snapshot_json AS override_snapshot`;
 
 function mapNpcRow(row: NpcRow): Npc {
-  const override = row.override_snapshot ? JSON.parse(row.override_snapshot) as ReturnType<typeof snapshot> : null;
+  const override = row.override_snapshot ? JSON.parse(row.override_snapshot) as NpcOverrideSnapshot : null;
   return {
     id: row.id,
     campaignId: row.campaign_id,
     provenance: row.source_campaign_id ? 'campaign' : override ? 'override' : 'universe',
     name: override?.name ?? row.name,
+    // Les surcharges enregistrées avant l’ajout du type n’ont pas de `kind`.
+    kind: override?.kind ?? row.kind,
     status: row.status,
     summary: row.summary,
     notes: row.notes,
@@ -230,8 +240,10 @@ function mapNpcRow(row: NpcRow): Npc {
   };
 }
 
+type NpcOverrideSnapshot = Omit<ReturnType<typeof snapshot>, 'kind'> & { kind?: NpcKind };
+
 function snapshot(npc: Npc) {
-  return { name: npc.name, portraitPath: npc.portraitPath, idleVideoPath: npc.idleVideoPath,
+  return { name: npc.name, kind: npc.kind, portraitPath: npc.portraitPath, idleVideoPath: npc.idleVideoPath,
     sheet: npc.sheet, sheetSchemaVersion: npc.sheetSchemaVersion, updatedAt: npc.updatedAt };
 }
 

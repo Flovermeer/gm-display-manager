@@ -66,15 +66,17 @@
               </span>
               <span class="npc-list-summary">{{ npc.summary || statusLabel(npc.status) }}</span>
             </button>
-            <button
-              class="entity-list-entry__combat"
-              type="button"
-              [attr.aria-label]="'Ajouter ' + npc.name + ' au combat'"
-              [title]="'Ajouter ' + npc.name + ' au combat'"
-              (click)="addToCombat(npc)"
-            >
-              Combat
-            </button>
+            @if (npc.kind === 'character') {
+              <button
+                class="entity-list-entry__combat"
+                type="button"
+                [attr.aria-label]="'Ajouter ' + npc.name + ' au combat'"
+                [title]="'Ajouter ' + npc.name + ' au combat'"
+                (click)="addToCombat(npc)"
+              >
+                Combat
+              </button>
+            }
           </div>
         }
       }
@@ -110,9 +112,11 @@
         <div class="detail-actions entity-workspace__actions">
           @if (!isEditing()) {
             @if (selectedNpc(); as npc) {
-              <button appButton="secondary" type="button" (click)="addToCombat(npc)">
-                Ajouter au combat
-              </button>
+              @if (npc.kind === 'character') {
+                <button appButton="secondary" type="button" (click)="addToCombat(npc)">
+                  Ajouter au combat
+                </button>
+              }
             }
             @if (selectedNpc()?.provenance === 'campaign') {
               <button appButton="secondary" type="button" (click)="requestPromotion()">
@@ -164,7 +168,13 @@
       <header class="detail-heading">
         <div class="npc-identity">
           <app-entity-title
-            [kicker]="isCreating() ? 'Nouveau personnage' : 'Fiche du PNJ'"
+            [kicker]="
+              isCreating()
+                ? 'Nouveau personnage'
+                : selectedNpc()?.kind === 'organization'
+                  ? 'Fiche de l’organisation'
+                  : 'Fiche du PNJ'
+            "
             [title]="isCreating() ? 'Créer un PNJ' : (selectedNpc()?.name ?? '')"
             headingId="npc-detail-title"
           >
@@ -237,6 +247,7 @@
         <article class="npc-sheet">
           <app-npc-sheet-view
             [sheet]="npc.sheet"
+            [organization]="npc.kind === 'organization'"
             [mentionCandidates]="mentionCandidates()"
             (mentionActivate)="openMention($event)"
           />

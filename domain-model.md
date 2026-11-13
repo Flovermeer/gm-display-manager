@@ -109,6 +109,12 @@ Plusieurs personnages, y compris de même nom, peuvent appartenir à la même ca
 JSON versionnée. `campaign_npc` contient le statut et le rôle/résumé propres à la campagne. Les
 notes du MJ restent des entrées de journal liées à la campagne et au PNJ.
 
+`npc.kind` vaut `character` (par défaut) ou `organization`. Une organisation garde son portrait, son
+affichage joueurs, son statut, son résumé, sa description officielle et son journal, mais sa fiche
+technique est masquée et elle n’est pas proposée en combat. La fiche reste stockée : repasser le PNJ
+en personnage la restaure. Une surcharge de campagne enregistrée avant l’ajout du type reprend celui
+du PNJ d’univers.
+
 Un PNJ narratif partage les référentiels d'espèce, de sous-espèce et de classe avec les PJ et possède en plus une
 occupation en texte libre. Les anciens champs de type et sous-espèce de créature sont encore lus
 pour assurer la compatibilité des fiches existantes, mais ne sont plus proposés dans l'interface

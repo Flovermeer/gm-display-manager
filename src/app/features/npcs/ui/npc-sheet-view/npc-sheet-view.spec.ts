@@ -25,4 +25,16 @@ describe('NpcSheetView', () => {
     expect(text).toContain('16 (+3)');
     expect(text).toContain('Commun, Elfique');
   });
+
+  it('shows only the description of an organization', async () => {
+    await TestBed.configureTestingModule({ imports: [NpcSheetView] }).compileComponents();
+    const fixture = TestBed.createComponent(NpcSheetView);
+    fixture.componentRef.setInput('sheet', { ...createEmptyNpcSheet(), armorClass: 12 });
+    fixture.componentRef.setInput('organization', true);
+    fixture.detectChanges();
+
+    const element = fixture.nativeElement as HTMLElement;
+    expect(element.querySelector('.stat-block')).toBeNull();
+    expect(element.textContent).toContain('Description officielle');
+  });
 });

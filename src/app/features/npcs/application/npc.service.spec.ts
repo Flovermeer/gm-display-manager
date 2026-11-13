@@ -18,6 +18,7 @@ describe('NpcService', () => {
   it('creates, updates and deletes campaign NPCs', async () => {
     const created = await service.create('campaign-id', {
       name: 'Syndra Silvane',
+      kind: 'character',
       status: 'active',
       summary: 'Commanditaire',
       notes: '',
@@ -28,6 +29,7 @@ describe('NpcService', () => {
       created,
       {
         name: 'Syndra Silvane',
+        kind: 'character',
         status: 'missing',
         summary: 'Commanditaire',
         notes: 'Introuvable',
@@ -56,6 +58,7 @@ describe('NpcService', () => {
 function npcInput(name: string) {
   return {
     name,
+    kind: 'character' as const,
     status: 'active' as const,
     summary: '',
     notes: '',

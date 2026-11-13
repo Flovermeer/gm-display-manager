@@ -163,7 +163,9 @@ export class CombatPanel {
       if (version !== this.loadVersion) return;
       this.options.set([
         ...players.map((character) => option(playerCharacterCombatantSource(character), 'PJ')),
-        ...npcs.map((npc) => option(npcCombatantSource(npc), 'PNJ')),
+        ...npcs
+          .filter((npc) => npc.kind === 'character')
+          .map((npc) => option(npcCombatantSource(npc), 'PNJ')),
         ...monsters.map((monster) => option(monsterCombatantSource(monster), 'Monstre')),
       ]);
     } catch (error) {

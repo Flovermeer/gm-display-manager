@@ -33,6 +33,7 @@ describe('Npc', () => {
       campaignId: 'campaign-id',
       provenance: 'campaign',
       name: 'Syndra Silvane',
+      kind: 'character',
       status: 'active',
       summary: 'Commanditaire',
       notes: 'Souffre de la malédiction.',
@@ -53,6 +54,7 @@ describe('Npc', () => {
         { ...npc, sheet: { ...createEmptyNpcSheet(), armorClass: 12 } },
         {
           name: ' Syndra Silvane ',
+          kind: 'character',
           status: 'missing',
           summary: ' Commanditaire ',
           notes: ' Introuvable ',

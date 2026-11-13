@@ -32,6 +32,7 @@ describe('NpcWorkspace', () => {
     campaignId: campaign.id,
     provenance: 'campaign',
     name: 'Syndra Silvane',
+    kind: 'character',
     status: 'active',
     summary: 'Commanditaire',
     notes: '',
@@ -375,6 +376,24 @@ describe('NpcWorkspace', () => {
         (componentInstance as RichTextEditor).mentionCandidates().includes(mention),
       ),
     ).toBe(true);
+  });
+
+  it('hides combat actions for an organization', async () => {
+    npcService.list.mockResolvedValue([
+      npc,
+      { ...npc, id: 'guild-id', name: 'Les Zhentarim', kind: 'organization' },
+    ]);
+    const fixture = TestBed.createComponent(NpcWorkspace);
+    fixture.detectChanges();
+    await renderUntil(fixture, 'Les Zhentarim');
+    const element = fixture.nativeElement as HTMLElement;
+
+    expect(element.querySelectorAll('.entity-list-entry__combat')).toHaveLength(1);
+    element.querySelectorAll<HTMLButtonElement>('.npc-list-item')[1]?.click();
+    await renderUntil(fixture, 'Fiche de l’organisation');
+
+    expect(element.textContent).not.toContain('Ajouter au combat');
+    expect(element.querySelector('.stat-block')).toBeNull();
   });
 
   it('refreshes resource mentions after saving an NPC', async () => {

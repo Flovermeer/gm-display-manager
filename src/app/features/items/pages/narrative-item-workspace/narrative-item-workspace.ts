@@ -4,14 +4,15 @@ import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angula
 import { ActivatedRoute } from '@angular/router';
 
 import { CampaignContext } from '@app/features/campaigns/application/campaign-context';
-import { DisplayGateway } from '@app/features/display/data-access/display.gateway';
-import { PlayerDisplayStore } from '@app/features/display/application/player-display.store';
 import { LocationService } from '@app/features/locations/application/location.service';
-import { ItemImageGateway } from '@app/features/items/data-access/item-image.gateway';
+import { NarrativeItemWorkspaceFacade } from '@app/features/items/application/narrative-item-workspace.facade';
 import type { PendingChangesAware } from '@app/core/navigation/pending-changes.guard';
 import {
+  attunementLabel,
+  DEMO_ITEM_IMAGE_URL,
   emptyNarrativeItemInput,
   NARRATIVE_ITEM_STATUSES,
+  narrativeItemStatusLabel,
   type AttunementMode,
   type ItemOwner,
   type ItemOwnerType,
@@ -35,16 +36,18 @@ import { Dialog } from '@app/shared/ui/dialog/dialog';
 import { EmptyState } from '@app/shared/ui/empty-state/empty-state';
 import { EntityTitle } from '@app/shared/ui/entity-title/entity-title';
 import { FormField, type FormFieldOption } from '@app/shared/ui/form-field/form-field';
-import { ActiveSceneService } from '@app/features/scenes/application/active-scene.service';
+import { errorMessage } from '@app/shared/error-message';
+import { PendingChangesPrompt } from '@app/core/navigation/pending-changes-prompt';
+import { PendingChangesDialog } from '@app/shared/ui/pending-changes-dialog/pending-changes-dialog';
 
-type PendingDecisionResolver = (canLeave: boolean) => void;
+const ERROR_FALLBACK = "Impossible d'enregistrer cet objet.";
+
 type OwnerOption = Readonly<{ resourceType: ItemOwnerType; resourceId: string; label: string }>;
-
-const DEMO_ITEM_IMAGE_URL = '/demo/item-placeholder.svg';
 
 @Component({
   selector: 'app-narrative-item-workspace',
   imports: [
+    PendingChangesDialog,
     ReactiveFormsModule,
     JournalEntryList,
     RichTextEditor,
@@ -67,14 +70,10 @@ export class NarrativeItemWorkspace implements OnInit, PendingChangesAware {
   private readonly npcService = inject(NpcService);
   private readonly locationService = inject(LocationService);
   private readonly characterService = inject(PlayerCharacterService);
-  private readonly imageGateway = inject(ItemImageGateway);
-  private readonly displayGateway = inject(DisplayGateway);
-  private readonly displayStore = inject(PlayerDisplayStore);
-  private readonly activeSceneService = inject(ActiveSceneService);
+  private readonly workspace = inject(NarrativeItemWorkspaceFacade);
   private readonly mentionNavigation = inject(ResourceMentionNavigationService);
   private readonly recentResources = inject(RecentResourceStore, { optional: true });
   private readonly journalEntries = viewChild<JournalEntryList>(JournalEntryList);
-  private pendingDecisionResolver?: PendingDecisionResolver;
 
   protected readonly campaign = this.campaignContext.campaign;
   protected readonly items = signal<readonly NarrativeItem[]>([]);
@@ -97,7 +96,7 @@ export class NarrativeItemWorkspace implements OnInit, PendingChangesAware {
   protected readonly isPlayerDisplayOpen = signal(false);
   protected readonly isEditing = signal(false);
   protected readonly isCreating = signal(false);
-  protected readonly showPendingChangesDialog = signal(false);
+  protected readonly pendingChanges = new PendingChangesPrompt();
   protected readonly showDeleteDialog = signal(false);
   protected readonly showCatalogDialog = signal(false);
   protected readonly showPromotionDialog = signal(false);
@@ -117,7 +116,7 @@ export class NarrativeItemWorkspace implements OnInit, PendingChangesAware {
     })),
   );
   protected readonly statusFieldOptions: readonly FormFieldOption[] = NARRATIVE_ITEM_STATUSES.map(
-    (status) => ({ value: status, label: this.statusLabel(status) }),
+    (status) => ({ value: status, label: narrativeItemStatusLabel(status) }),
   );
   protected readonly attunementFieldOptions: readonly FormFieldOption[] = [
     { value: 'none', label: 'Aucune' },
@@ -129,8 +128,7 @@ export class NarrativeItemWorkspace implements OnInit, PendingChangesAware {
   );
   protected readonly isSelectedItemDisplayed = computed(() => {
     const item = this.selectedItem();
-    const state = this.displayStore.state();
-    return item !== null && state.mode === 'item' && state.itemId === item.id;
+    return item !== null && this.workspace.isDisplayed(item, this.workspace.playerDisplayState());
   });
   protected readonly filteredItems = computed(() => {
     const term = this.searchTerm().trim().toLocaleLowerCase('fr');
@@ -268,15 +266,15 @@ export class NarrativeItemWorkspace implements OnInit, PendingChangesAware {
     if (!campaign || this.isImportingImage()) return;
     this.isImportingImage.set(true);
     try {
-      const path = await this.imageGateway.chooseAndImport(campaign.universeId);
-      if (!path) return;
+      const imported = await this.workspace.importImage(campaign.universeId);
+      if (!imported) return;
       const previous = this.draftImagePath();
-      this.draftImagePath.set(path);
-      this.imageUrl.set(await this.imageGateway.resolveUrl(path));
+      this.draftImagePath.set(imported.path);
+      this.imageUrl.set(imported.url);
       this.itemForm.markAsDirty();
-      if (previous) await this.discardImage(previous);
+      this.reportErrors(await this.workspace.discardImages([previous]));
     } catch (error) {
-      this.error.set(errorMessage(error));
+      this.error.set(errorMessage(error, ERROR_FALLBACK));
     } finally {
       this.isImportingImage.set(false);
     }
@@ -297,23 +295,21 @@ export class NarrativeItemWorkspace implements OnInit, PendingChangesAware {
     this.isSaving.set(true);
     this.error.set(null);
     try {
-      const selected = this.selectedItem();
-      const oldImagePath = selected?.imagePath ?? null;
-      const saved = this.isCreating()
-        ? await this.itemService.create(campaign.id, this.formInput(), this.effectiveImagePath())
-        : selected
-          ? await this.itemService.update(selected, this.formInput(), this.effectiveImagePath())
-          : null;
-      if (!saved) return false;
+      const existing = this.isCreating() ? null : this.selectedItem();
+      if (!this.isCreating() && !existing) return false;
+      const { item: saved, cleanupErrors } = await this.workspace.save({
+        campaignId: campaign.id,
+        existing,
+        input: this.formInput(),
+        imagePath: this.effectiveImagePath(),
+      });
       this.draftImagePath.set(null);
       await this.reloadItems();
       this.openReadOnly(saved);
-      if (selected?.provenance === 'campaign' && oldImagePath && oldImagePath !== saved.imagePath) {
-        await this.discardImage(oldImagePath);
-      }
+      this.reportErrors(cleanupErrors);
       return true;
     } catch (error) {
-      this.error.set(errorMessage(error));
+      this.error.set(errorMessage(error, ERROR_FALLBACK));
       return false;
     } finally {
       this.isSaving.set(false);
@@ -337,21 +333,15 @@ export class NarrativeItemWorkspace implements OnInit, PendingChangesAware {
     if (!item || this.isSaving()) return;
     this.isSaving.set(true);
     try {
-      const state = this.displayStore.state();
-      if (state.mode === 'item' && state.itemId === item.id) {
-        this.displayStore.showNeutral();
-        if (this.isPlayerDisplayOpen())
-          await this.displayGateway.sendPlayerDisplayState({ mode: 'neutral' });
-      }
-      await this.itemService.delete(item);
+      const cleanupErrors = await this.workspace.delete(item, this.isPlayerDisplayOpen());
       await this.recentResources?.remove('item', item.id);
-      if (item.provenance === 'campaign' && item.imagePath) await this.discardImage(item.imagePath);
+      this.reportErrors(cleanupErrors);
       await this.reloadItems();
       this.selectedItem.set(null);
       this.imageUrl.set(DEMO_ITEM_IMAGE_URL);
       this.showDeleteDialog.set(false);
     } catch (error) {
-      this.error.set(errorMessage(error));
+      this.error.set(errorMessage(error, ERROR_FALLBACK));
     } finally {
       this.isSaving.set(false);
     }
@@ -362,24 +352,9 @@ export class NarrativeItemWorkspace implements OnInit, PendingChangesAware {
     if (!item?.imagePath || !this.isPlayerDisplayOpen() || this.isPublishing()) return;
     this.isPublishing.set(true);
     try {
-      await this.activeSceneService.clear(item.campaignId);
-      if (this.isSelectedItemDisplayed()) {
-        const state = { mode: 'neutral' as const };
-        this.displayStore.setState(state);
-        await this.displayGateway.sendPlayerDisplayState(state);
-        return;
-      }
-      const state = {
-        mode: 'item' as const,
-        itemId: item.id,
-        name: item.name,
-        summary: item.summary,
-        imagePath: await this.imageGateway.resolveUrl(item.imagePath),
-      };
-      this.displayStore.setState(state);
-      await this.displayGateway.sendPlayerDisplayState(state);
+      await this.workspace.toggleOnPlayerDisplay(item, item.imagePath);
     } catch (error) {
-      this.error.set(errorMessage(error));
+      this.error.set(errorMessage(error, ERROR_FALLBACK));
       this.isPlayerDisplayOpen.set(false);
     } finally {
       this.isPublishing.set(false);
@@ -404,23 +379,16 @@ export class NarrativeItemWorkspace implements OnInit, PendingChangesAware {
     );
   }
 
-  protected statusLabel(status: NarrativeItemStatus): string {
-    return { active: 'En jeu', lost: 'Perdu', destroyed: 'Détruit', retired: 'Retiré' }[status];
-  }
-
-  protected attunementLabel(item: NarrativeItem): string {
-    if (item.attunement === 'none') return 'Aucune';
-    if (item.attunement === 'required') return 'Requise';
-    return `Requise — ${item.attunementCondition}`;
-  }
+  protected readonly statusLabel = narrativeItemStatusLabel;
+  protected readonly attunementLabel = attunementLabel;
 
   protected continueEditing(): void {
-    this.resolvePendingDecision(false);
+    this.pendingChanges.resolve(false);
   }
   protected async leaveWithoutSaving(): Promise<void> {
     if (this.journalEntries()?.hasPendingChanges()) this.journalEntries()?.discardPendingChanges();
     if (this.isEditing()) await this.abandonChanges();
-    this.resolvePendingDecision(true);
+    this.pendingChanges.resolve(true);
   }
   protected async saveAndLeave(): Promise<void> {
     let saved = true;
@@ -428,7 +396,7 @@ export class NarrativeItemWorkspace implements OnInit, PendingChangesAware {
       saved = await this.journalEntries()!.savePendingChanges();
     }
     if (saved && this.isEditing()) saved = await this.saveItem();
-    if (saved) this.resolvePendingDecision(true);
+    if (saved) this.pendingChanges.resolve(true);
   }
 
   private async initialize(): Promise<void> {
@@ -471,10 +439,9 @@ export class NarrativeItemWorkspace implements OnInit, PendingChangesAware {
         this.route.snapshot.queryParamMap?.get('resourceId'),
         this.route.snapshot.queryParamMap?.get('entryId'),
       );
-      if (this.displayGateway.isDesktop)
-        this.isPlayerDisplayOpen.set(await this.displayGateway.isPlayerDisplayOpen());
+      this.isPlayerDisplayOpen.set(await this.workspace.isPlayerDisplayOpen());
     } catch (error) {
-      this.error.set(errorMessage(error));
+      this.error.set(errorMessage(error, ERROR_FALLBACK));
     } finally {
       this.isLoading.set(false);
     }
@@ -540,7 +507,7 @@ export class NarrativeItemWorkspace implements OnInit, PendingChangesAware {
   private async abandonChanges(): Promise<void> {
     const draft = this.draftImagePath();
     this.draftImagePath.set(null);
-    if (draft) await this.discardImage(draft);
+    this.reportErrors(await this.workspace.discardImages([draft]));
     const selected = this.selectedItem();
     this.isEditing.set(false);
     this.isCreating.set(false);
@@ -556,35 +523,21 @@ export class NarrativeItemWorkspace implements OnInit, PendingChangesAware {
     this.imageUrl.set(DEMO_ITEM_IMAGE_URL);
     if (!path) return;
     try {
-      this.imageUrl.set(await this.imageGateway.resolveUrl(path));
+      this.imageUrl.set(await this.workspace.imageUrl(path));
     } catch (error) {
-      this.error.set(errorMessage(error));
+      this.error.set(errorMessage(error, ERROR_FALLBACK));
     }
   }
 
-  private async discardImage(path: string): Promise<void> {
-    try {
-      await this.imageGateway.discard(path);
-    } catch (error) {
-      this.error.set(errorMessage(error));
-    }
+  private reportErrors(errors: readonly unknown[]): void {
+    const lastError = errors.at(-1);
+    if (lastError !== undefined) this.error.set(errorMessage(lastError, ERROR_FALLBACK));
   }
 
   private confirmPendingChanges(): boolean | Promise<boolean> {
     const dirtyItem = this.isEditing() && (this.itemForm.dirty || this.descriptionDirty());
     if (!dirtyItem && !this.journalEntries()?.hasPendingChanges()) return true;
-    if (this.pendingDecisionResolver) return false;
-    this.showPendingChangesDialog.set(true);
-    return new Promise((resolve) => {
-      this.pendingDecisionResolver = resolve;
-    });
-  }
-
-  private resolvePendingDecision(value: boolean): void {
-    const resolve = this.pendingDecisionResolver;
-    this.pendingDecisionResolver = undefined;
-    this.showPendingChangesDialog.set(false);
-    resolve?.(value);
+    return this.pendingChanges.request();
   }
 }
 
@@ -599,7 +552,4 @@ function parseOwner(value: string): ItemOwner | null {
     resourceType: value.slice(0, separator) as ItemOwnerType,
     resourceId: value.slice(separator + 1),
   };
-}
-function errorMessage(error: unknown): string {
-  return error instanceof Error ? error.message : "Impossible d'enregistrer cet objet.";
 }

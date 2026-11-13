@@ -2,6 +2,8 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import type { UnlistenFn } from '@tauri-apps/api/event';
 
+import { AppSettingRepository } from '@app/core/persistence/app-setting.repository';
+import { InMemoryAppSettingRepository } from '@app/core/persistence/in-memory-app-setting.repository';
 import { CampaignContext } from '@app/features/campaigns/application/campaign-context';
 import { PlayerDisplayPreferenceService } from '@app/features/display/application/player-display-preference.service';
 import { PlayerDisplayStore } from '@app/features/display/application/player-display.store';
@@ -83,6 +85,7 @@ describe('Control', () => {
           useValue: { campaign: () => campaign, load: () => Promise.resolve(campaign) },
         },
         { provide: DisplayGateway, useValue: displayGateway },
+        { provide: AppSettingRepository, useClass: InMemoryAppSettingRepository },
         { provide: PlayerDisplayPreferenceService, useValue: preferenceService },
         { provide: SceneDisplayService, useValue: sceneDisplayService },
         {

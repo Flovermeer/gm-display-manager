@@ -13,27 +13,31 @@ import { inject, Injectable, signal } from '@angular/core';
 import { MonsterService } from '@app/features/bestiary/application/monster.service';
 import { MonsterImageGateway } from '@app/features/bestiary/data-access/monster-image.gateway';
 import { CampaignContext } from '@app/features/campaigns/application/campaign-context';
+import { PlayerDisplayPublisher } from '@app/features/display/application/player-display-publisher.service';
+import {
+  isDisplayingResource,
+  type PlayerDisplayState,
+} from '@app/features/display/domain/player-display-state';
+import { NarrativeItemService } from '@app/features/items/application/narrative-item.service';
+import { ItemImageGateway } from '@app/features/items/data-access/item-image.gateway';
+import { itemPlayerDisplayState } from '@app/features/items/domain/narrative-item';
+import { LocationService } from '@app/features/locations/application/location.service';
+import { LocationImageGateway } from '@app/features/locations/data-access/location-image.gateway';
+import { locationPlayerDisplayState } from '@app/features/locations/domain/location';
+import { NpcService } from '@app/features/npcs/application/npc.service';
+import { NpcIdleVideoGateway } from '@app/features/npcs/data-access/npc-idle-video.gateway';
+import { NpcPortraitGateway } from '@app/features/npcs/data-access/npc-portrait.gateway';
+import { npcPlayerDisplayState } from '@app/features/npcs/domain/npc';
 import { ActiveSceneService } from '@app/features/scenes/application/active-scene.service';
 import { SceneDisplayService } from '@app/features/scenes/application/scene-display.service';
 import { SceneService } from '@app/features/scenes/application/scene.service';
-import { DisplayGateway } from '@app/features/display/data-access/display.gateway';
-import type { PlayerDisplayState } from '@app/features/display/domain/player-display-state';
-import { PlayerDisplayStore } from '@app/features/display/application/player-display.store';
-import { ItemImageGateway } from '@app/features/items/data-access/item-image.gateway';
-import { NarrativeItemService } from '@app/features/items/application/narrative-item.service';
-import { LocationImageGateway } from '@app/features/locations/data-access/location-image.gateway';
-import { LocationService } from '@app/features/locations/application/location.service';
-import { NpcIdleVideoGateway } from '@app/features/npcs/data-access/npc-idle-video.gateway';
-import { NpcPortraitGateway } from '@app/features/npcs/data-access/npc-portrait.gateway';
-import { NpcService } from '@app/features/npcs/application/npc.service';
 import { ResourceMentionDisplayGateway } from '@app/shared/rich-text-editor/resource-mention-display.gateway';
 import type { ResourceMentionCandidate } from '@app/shared/rich-text-editor/resource-mention';
 
 @Injectable({ providedIn: 'root' })
 export class ResourceMentionPlayerDisplayService extends ResourceMentionDisplayGateway {
   private readonly campaignContext = inject(CampaignContext);
-  private readonly displayGateway = inject(DisplayGateway);
-  private readonly displayStore = inject(PlayerDisplayStore);
+  private readonly publisher = inject(PlayerDisplayPublisher);
   private readonly activeScene = inject(ActiveSceneService);
   private readonly sceneDisplay = inject(SceneDisplayService);
   private readonly scenes = inject(SceneService);
@@ -53,35 +57,19 @@ export class ResourceMentionPlayerDisplayService extends ResourceMentionDisplayG
   override readonly isPublishing = this.publishing.asReadonly();
 
   override async refreshPlayerDisplayStatus(): Promise<void> {
-    this.playerDisplayOpen.set(
-      this.displayGateway.isDesktop && (await this.displayGateway.isPlayerDisplayOpen()),
-    );
+    this.playerDisplayOpen.set(await this.publisher.isOpen());
   }
 
   override isDisplayed(candidate: ResourceMentionCandidate): boolean {
-    const state = this.displayStore.state();
-    switch (candidate.resourceType) {
-      case 'npc':
-        return state.mode === 'npc' && state.npcId === candidate.resourceId;
-      case 'monster':
-        return state.mode === 'monster' && state.monsterId === candidate.resourceId;
-      case 'location':
-        return state.mode === 'location' && state.locationId === candidate.resourceId;
-      case 'item':
-        return state.mode === 'item' && state.itemId === candidate.resourceId;
-      case 'scene':
-        return state.mode === 'scene' && state.sceneId === candidate.resourceId;
-      default:
-        return false;
-    }
+    return isDisplayingResource(
+      this.publisher.state(),
+      candidate.resourceType,
+      candidate.resourceId,
+    );
   }
 
   override async display(candidate: ResourceMentionCandidate): Promise<void> {
-    if (
-      !candidate.playerDisplayAvailable ||
-      !this.isPlayerDisplayOpen() ||
-      this.isPublishing()
-    ) {
+    if (!candidate.playerDisplayAvailable || !this.isPlayerDisplayOpen() || this.isPublishing()) {
       return;
     }
     const campaign = this.campaignContext.campaign() ?? (await this.campaignContext.load());
@@ -115,42 +103,33 @@ export class ResourceMentionPlayerDisplayService extends ResourceMentionDisplayG
   ): Promise<PlayerDisplayState | null> {
     switch (candidate.resourceType) {
       case 'npc': {
-        const npc = (await this.npcs.list(campaignId)).find(({ id }) => id === candidate.resourceId);
+        const npc = (await this.npcs.list(campaignId)).find(
+          ({ id }) => id === candidate.resourceId,
+        );
         if (!npc?.portraitPath) return null;
-        return {
-          mode: 'npc',
-          npcId: npc.id,
-          name: npc.name,
-          portraitPath: await this.npcPortraits.resolveUrl(npc.portraitPath),
-          idleVideoPath: npc.idleVideoPath
+        return npcPlayerDisplayState(npc, {
+          portraitUrl: await this.npcPortraits.resolveUrl(npc.portraitPath),
+          idleVideoUrl: npc.idleVideoPath
             ? await this.npcVideos.resolveUrl(npc.idleVideoPath)
-            : undefined,
-        };
+            : null,
+        });
       }
       case 'location': {
         const location = (await this.locations.list(campaignId)).find(
           ({ id }) => id === candidate.resourceId,
         );
         if (!location?.imagePath) return null;
-        return {
-          mode: 'location',
-          locationId: location.id,
-          name: location.hideNameOnPlayerDisplay ? undefined : location.name,
-          imagePath: await this.locationImages.resolveUrl(location.imagePath),
-        };
+        return locationPlayerDisplayState(
+          location,
+          await this.locationImages.resolveUrl(location.imagePath),
+        );
       }
       case 'item': {
         const item = (await this.items.list(campaignId)).find(
           ({ id }) => id === candidate.resourceId,
         );
         if (!item?.imagePath) return null;
-        return {
-          mode: 'item',
-          itemId: item.id,
-          name: item.name,
-          summary: item.summary,
-          imagePath: await this.itemImages.resolveUrl(item.imagePath),
-        };
+        return itemPlayerDisplayState(item, await this.itemImages.resolveUrl(item.imagePath));
       }
       case 'monster': {
         if (candidate.playerDisplayImagePath) {
@@ -176,9 +155,8 @@ export class ResourceMentionPlayerDisplayService extends ResourceMentionDisplayG
   }
 
   private async send(state: PlayerDisplayState): Promise<void> {
-    this.displayStore.setState(state);
     try {
-      await this.displayGateway.sendPlayerDisplayState(state);
+      await this.publisher.send(state);
     } catch (error) {
       this.playerDisplayOpen.set(false);
       throw error;

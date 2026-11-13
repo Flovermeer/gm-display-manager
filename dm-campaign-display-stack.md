@@ -102,6 +102,12 @@ src/app/
 Les imports internes utilisent l'alias unique `@app/...`, afin de conserver des chemins lisibles
 sans masquer la structure réelle du projet derrière de nombreux alias.
 
+Les pages restent minces : chaque écran de ressource délègue ses cas d'usage à une façade
+`application/<ressource>-workspace.facade.ts`, les règles et libellés vivent en fonctions pures
+dans `domain/`, et les formulaires réactifs sont construits et convertis par un fichier
+`<ressource>-form.ts`. Tout changement de l'écran joueurs passe par `PlayerDisplayPublisher`, qui
+met à jour l'état partagé puis l'envoie à la fenêtre.
+
 Les services, contexts, stores, guards, repositories et gateways comportent un en-tête court
 `But / Responsabilités`. Les composants Angular et les simples modèles ne répètent pas de
 documentation évidente.
@@ -216,8 +222,9 @@ la création des campagnes. Il porte les ressources communes au système. Le cat
 affiche ses propres ressources et celles de cet univers générique ; les deux origines restent
 identifiables et une campagne peut importer les ressources de ces deux niveaux.
 
-Les référentiels de races et de classes suivent le même héritage : un univers affiche les valeurs
-du catalogue générique du système et peut les compléter. Une valeur héritée reste en lecture seule
+Les référentiels d'espèces, de sous-espèces et de classes suivent le même héritage : un univers
+affiche les valeurs du catalogue générique du système et peut les compléter. Une sous-espèce peut
+dépendre d'une espèce de l'univers ou d'une espèce héritée du catalogue générique. Une valeur héritée reste en lecture seule
 tant que son catalogue d’origine n’est pas sélectionné dans les ressources partagées.
 
 ```ts

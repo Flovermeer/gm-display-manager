@@ -1,3 +1,4 @@
+import type { PlayerDisplayStateOf } from '@app/features/display/domain/player-display-state';
 import {
   createEmptyRichTextDocument,
   type RichTextDocument,
@@ -321,4 +322,51 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 
 export function createNpcFeature(createId: () => string = () => crypto.randomUUID()): NpcFeature {
   return { id: createId(), name: '', description: createEmptyRichTextDocument() };
+}
+
+export function npcPlayerDisplayState(
+  npc: Pick<Npc, 'id' | 'name'>,
+  media: Readonly<{ portraitUrl: string; idleVideoUrl?: string | null }>,
+): PlayerDisplayStateOf<'npc'> {
+  return {
+    mode: 'npc',
+    npcId: npc.id,
+    name: npc.name,
+    portraitPath: media.portraitUrl,
+    ...(media.idleVideoUrl ? { idleVideoPath: media.idleVideoUrl } : {}),
+  };
+}
+
+/** Portrait de démonstration affiché tant qu’un PNJ n’a pas de portrait enregistré. */
+export const DEMO_NPC_PORTRAIT_URL = '/demo/npc-placeholder.png';
+
+const NPC_STATUS_LABELS: Readonly<Record<NpcStatus, string>> = {
+  active: 'Actif',
+  dead: 'Mort',
+  retired: 'Retiré',
+  missing: 'Disparu',
+};
+
+const NPC_STATUS_ICONS: Readonly<Record<NpcStatus, string>> = {
+  active: 'V',
+  dead: '💀',
+  missing: '?',
+  retired: 'X',
+};
+
+export function npcStatusLabel(status: NpcStatus): string {
+  return NPC_STATUS_LABELS[status];
+}
+
+export function npcStatusIcon(status: NpcStatus): string {
+  return NPC_STATUS_ICONS[status];
+}
+
+/** Ligne de type de la fiche : taille, espèce, sous-espèce, classe et alignement connus. */
+export function npcTypeLine(sheet: NpcSheet): string {
+  return (
+    [sheet.size, sheet.race, sheet.subrace, sheet.className, sheet.alignment]
+      .filter(Boolean)
+      .join(', ') || '—'
+  );
 }

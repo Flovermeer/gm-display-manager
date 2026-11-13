@@ -9,9 +9,9 @@
 
 import type { CanDeactivateFn } from '@angular/router';
 
-export interface PendingChangesAware {
+export type PendingChangesAware = Readonly<{
   canDeactivate(): boolean | Promise<boolean>;
-}
+}>;
 
 export const pendingChangesGuard: CanDeactivateFn<PendingChangesAware> = (component) =>
   component.canDeactivate();

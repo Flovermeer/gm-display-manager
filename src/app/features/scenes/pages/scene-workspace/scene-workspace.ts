@@ -7,14 +7,13 @@ import type { JSONContent } from '@tiptap/core';
 import { CampaignContext } from '@app/features/campaigns/application/campaign-context';
 import { ChapterService } from '@app/features/chapters/application/chapter.service';
 import type { Chapter } from '@app/features/chapters/domain/chapter';
-import { DisplayGateway } from '@app/features/display/data-access/display.gateway';
-import type { PlayerDisplayState } from '@app/features/display/domain/player-display-state';
-import { PlayerDisplayStore } from '@app/features/display/application/player-display.store';
+import { PlayerDisplayPublisher } from '@app/features/display/application/player-display-publisher.service';
+import {
+  isDisplayingResource,
+  type PlayerDisplayState,
+} from '@app/features/display/domain/player-display-state';
 import type { Location } from '@app/features/locations/domain/location';
 import { LocationService } from '@app/features/locations/application/location.service';
-import { ItemImageGateway } from '@app/features/items/data-access/item-image.gateway';
-import { NpcIdleVideoGateway } from '@app/features/npcs/data-access/npc-idle-video.gateway';
-import { NpcPortraitGateway } from '@app/features/npcs/data-access/npc-portrait.gateway';
 import type { NarrativeItem } from '@app/features/items/domain/narrative-item';
 import { NarrativeItemService } from '@app/features/items/application/narrative-item.service';
 import type { PendingChangesAware } from '@app/core/navigation/pending-changes.guard';
@@ -36,7 +35,6 @@ import {
 import { JournalEntryList } from '@app/features/journal/ui/journal-entry-list/journal-entry-list';
 import { RecentResourceTrackerDirective } from '@app/features/recent-resources/ui/recent-resource-tracker.directive';
 import { RecentResourceStore } from '@app/features/recent-resources/application/recent-resource.store';
-import { errorMessage as resolveErrorMessage } from '@app/shared/error-message';
 import type { RichTextDocument } from '@app/shared/rich-text-editor/rich-text-document';
 import { RichTextEditor } from '@app/shared/rich-text-editor/rich-text-editor';
 import type { ResourceMentionCandidate } from '@app/shared/rich-text-editor/resource-mention';
@@ -50,12 +48,16 @@ import {
   SearchableSelect,
   type SearchableSelectOption,
 } from '@app/shared/ui/searchable-select/searchable-select';
+import { errorMessage } from '@app/shared/error-message';
+import { PendingChangesPrompt } from '@app/core/navigation/pending-changes-prompt';
+import { PendingChangesDialog } from '@app/shared/ui/pending-changes-dialog/pending-changes-dialog';
 
-type PendingDecisionResolver = (canLeave: boolean) => void;
+const ERROR_FALLBACK = "Impossible d'enregistrer cette scène.";
 
 @Component({
   selector: 'app-scene-workspace',
   imports: [
+    PendingChangesDialog,
     ReactiveFormsModule,
     JournalEntryList,
     ButtonDirective,
@@ -82,16 +84,11 @@ export class SceneWorkspace implements OnInit, PendingChangesAware {
   private readonly monsterService = inject(MonsterService);
   private readonly itemService = inject(NarrativeItemService);
   private readonly activeSceneService = inject(ActiveSceneService);
-  private readonly displayGateway = inject(DisplayGateway);
-  private readonly displayStore = inject(PlayerDisplayStore);
+  private readonly playerDisplay = inject(PlayerDisplayPublisher);
   private readonly sceneDisplayService = inject(SceneDisplayService);
-  private readonly npcPortraitGateway = inject(NpcPortraitGateway);
-  private readonly npcIdleVideoGateway = inject(NpcIdleVideoGateway);
-  private readonly itemImageGateway = inject(ItemImageGateway);
   private readonly recentResources = inject(RecentResourceStore, { optional: true });
   private readonly mentionNavigation = inject(ResourceMentionNavigationService);
   private readonly journalEntries = viewChild<JournalEntryList>(JournalEntryList);
-  private pendingDecisionResolver?: PendingDecisionResolver;
 
   protected readonly campaign = this.campaignContext.campaign;
   protected readonly scenes = signal<readonly Scene[]>([]);
@@ -110,7 +107,7 @@ export class SceneWorkspace implements OnInit, PendingChangesAware {
   protected readonly isSaving = signal(false);
   protected readonly isEditing = signal(false);
   protected readonly isCreating = signal(false);
-  protected readonly showPendingChangesDialog = signal(false);
+  protected readonly pendingChanges = new PendingChangesPrompt();
   protected readonly showDeleteDialog = signal(false);
   protected readonly error = signal<string | null>(null);
   protected readonly activeSceneId = signal<string | null>(null);
@@ -264,7 +261,7 @@ export class SceneWorkspace implements OnInit, PendingChangesAware {
       this.openReadOnly(saved);
       return true;
     } catch (error) {
-      this.error.set(errorMessage(error));
+      this.error.set(errorMessage(error, ERROR_FALLBACK));
       return false;
     } finally {
       this.isSaving.set(false);
@@ -288,52 +285,40 @@ export class SceneWorkspace implements OnInit, PendingChangesAware {
 
   protected async showNpc(npc: Npc): Promise<void> {
     const scene = this.selectedScene();
-    if (!scene || !npc.portraitPath || this.isPublishing()) return;
+    const portraitPath = npc.portraitPath;
+    if (!scene || !portraitPath || this.isPublishing()) return;
     await this.publish(async () => {
       if (this.isNpcDisplayed(scene, npc)) {
         await this.clearActiveScene(scene.campaignId);
         return;
       }
-      const state = await this.sceneDisplayService.build(scene, {
-        type: 'npc',
-        resourceId: npc.id,
-        name: npc.name,
-        imagePath: await this.npcPortraitGateway.resolveUrl(npc.portraitPath!),
-        idleVideoPath: npc.idleVideoPath
-          ? await this.npcIdleVideoGateway.resolveUrl(npc.idleVideoPath)
-          : undefined,
-      });
-      await this.sendState(state);
+      await this.sendState(
+        await this.sceneDisplayService.buildWithNpc(scene, { ...npc, portraitPath }),
+      );
     });
   }
 
   protected async showItem(item: NarrativeItem): Promise<void> {
     const scene = this.selectedScene();
-    if (!scene || !item.imagePath || this.isPublishing()) return;
+    const imagePath = item.imagePath;
+    if (!scene || !imagePath || this.isPublishing()) return;
     await this.publish(async () => {
       if (this.isItemDisplayed(scene, item)) {
         await this.clearActiveScene(scene.campaignId);
         return;
       }
       await this.sendState(
-        await this.sceneDisplayService.build(scene, {
-          type: 'item',
-          resourceId: item.id,
-          name: item.name,
-          imagePath: await this.itemImageGateway.resolveUrl(item.imagePath!),
-          summary: item.summary,
-        }),
+        await this.sceneDisplayService.buildWithItem(scene, { ...item, imagePath }),
       );
     });
   }
 
   protected isSceneDisplayed(scene: Scene): boolean {
-    const state = this.displayStore.state();
-    return state.mode === 'scene' && state.sceneId === scene.id;
+    return isDisplayingResource(this.playerDisplay.state(), 'scene', scene.id);
   }
 
   protected isNpcDisplayed(scene: Scene, npc: Npc): boolean {
-    const state = this.displayStore.state();
+    const state = this.playerDisplay.state();
     return (
       state.mode === 'scene' &&
       state.sceneId === scene.id &&
@@ -343,7 +328,7 @@ export class SceneWorkspace implements OnInit, PendingChangesAware {
   }
 
   protected isItemDisplayed(scene: Scene, item: NarrativeItem): boolean {
-    const state = this.displayStore.state();
+    const state = this.playerDisplay.state();
     return (
       state.mode === 'scene' &&
       state.sceneId === scene.id &&
@@ -378,7 +363,7 @@ export class SceneWorkspace implements OnInit, PendingChangesAware {
       this.selectedScene.set(null);
       this.showDeleteDialog.set(false);
     } catch (error) {
-      this.error.set(errorMessage(error));
+      this.error.set(errorMessage(error, ERROR_FALLBACK));
     } finally {
       this.isSaving.set(false);
     }
@@ -417,13 +402,13 @@ export class SceneWorkspace implements OnInit, PendingChangesAware {
   }
 
   protected continueEditing(): void {
-    this.resolvePendingDecision(false);
+    this.pendingChanges.resolve(false);
   }
 
   protected async leaveWithoutSaving(): Promise<void> {
     if (this.journalEntries()?.hasPendingChanges()) this.journalEntries()?.discardPendingChanges();
     if (this.isEditing()) await this.abandonChanges();
-    this.resolvePendingDecision(true);
+    this.pendingChanges.resolve(true);
   }
 
   protected async saveAndLeave(): Promise<void> {
@@ -431,7 +416,7 @@ export class SceneWorkspace implements OnInit, PendingChangesAware {
     if (this.journalEntries()?.hasPendingChanges())
       saved = await this.journalEntries()!.savePendingChanges();
     if (saved && this.isEditing()) saved = await this.saveScene();
-    if (saved) this.resolvePendingDecision(true);
+    if (saved) this.pendingChanges.resolve(true);
   }
 
   private async initialize(): Promise<void> {
@@ -456,9 +441,7 @@ export class SceneWorkspace implements OnInit, PendingChangesAware {
       this.items.set(items);
       this.mentionCandidates.set(mentionCandidates);
       this.activeSceneId.set(await this.activeSceneService.get(campaign.id));
-      if (this.displayGateway.isDesktop) {
-        this.isPlayerDisplayOpen.set(await this.displayGateway.isPlayerDisplayOpen());
-      }
+      this.isPlayerDisplayOpen.set(await this.playerDisplay.isOpen());
       const queryParams = this.route.snapshot.queryParamMap;
       this.returnChapterId.set(queryParams.get('returnChapterId'));
       if (queryParams.get('create') === 'true') {
@@ -467,7 +450,7 @@ export class SceneWorkspace implements OnInit, PendingChangesAware {
         await this.openRequestedScene(queryParams.get('resourceId'), queryParams.get('entryId'));
       }
     } catch (error) {
-      this.error.set(errorMessage(error));
+      this.error.set(errorMessage(error, ERROR_FALLBACK));
     } finally {
       this.isLoading.set(false);
     }
@@ -490,10 +473,7 @@ export class SceneWorkspace implements OnInit, PendingChangesAware {
   }
 
   private async sendState(state: PlayerDisplayState): Promise<void> {
-    this.displayStore.setState(state);
-    if (this.displayGateway.isDesktop && this.isPlayerDisplayOpen()) {
-      await this.displayGateway.sendPlayerDisplayState(state);
-    }
+    await this.playerDisplay.update(state, this.isPlayerDisplayOpen());
   }
 
   private async clearActiveScene(campaignId: string): Promise<void> {
@@ -508,7 +488,7 @@ export class SceneWorkspace implements OnInit, PendingChangesAware {
     try {
       await action();
     } catch (error) {
-      this.error.set(errorMessage(error));
+      this.error.set(errorMessage(error, ERROR_FALLBACK));
     } finally {
       this.isPublishing.set(false);
     }
@@ -569,24 +549,11 @@ export class SceneWorkspace implements OnInit, PendingChangesAware {
       !this.journalEntries()?.hasPendingChanges()
     )
       return true;
-    if (this.pendingDecisionResolver) return false;
-    this.showPendingChangesDialog.set(true);
-    return new Promise((resolve) => (this.pendingDecisionResolver = resolve));
-  }
-
-  private resolvePendingDecision(value: boolean): void {
-    const resolve = this.pendingDecisionResolver;
-    this.pendingDecisionResolver = undefined;
-    this.showPendingChangesDialog.set(false);
-    resolve?.(value);
+    return this.pendingChanges.request();
   }
 }
 
 function richTextAsPlainText(node: JSONContent): string {
   const ownText = node.text ?? '';
   return [ownText, ...(node.content ?? []).map(richTextAsPlainText)].join(' ');
-}
-
-function errorMessage(error: unknown): string {
-  return resolveErrorMessage(error, "Impossible d'enregistrer cette scène.");
 }

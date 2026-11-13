@@ -23,6 +23,7 @@ import {
 import { playerDisplayEvents } from '@app/features/display/domain/display.events';
 import type { MonitorDescriptor } from '@app/features/display/domain/display.models';
 import type { PlayerDisplayState } from '@app/features/display/domain/player-display-state';
+import { errorMessage } from '@app/shared/error-message';
 
 const PLAYER_DISPLAY_WINDOW_LABEL = 'player-display';
 
@@ -150,7 +151,7 @@ export class DisplayGateway {
     return new Promise((resolve, reject) => {
       void window.once('tauri://created', () => resolve());
       void window.once<unknown>('tauri://error', ({ payload }) => {
-        reject(new Error(this.errorMessage(payload)));
+        reject(new Error(errorMessage(payload)));
       });
     });
   }
@@ -187,13 +188,5 @@ export class DisplayGateway {
     if (!this.isDesktop) {
       throw new Error('La gestion des écrans est uniquement disponible dans Tauri.');
     }
-  }
-
-  private errorMessage(error: unknown): string {
-    if (error instanceof Error) {
-      return error.message;
-    }
-
-    return typeof error === 'string' ? error : String(error);
   }
 }

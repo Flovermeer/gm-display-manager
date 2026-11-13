@@ -1,18 +1,23 @@
 import { Component, computed, DestroyRef, inject, OnInit, signal, viewChild } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { ReactiveFormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 
 import { CampaignContext } from '@app/features/campaigns/application/campaign-context';
 import { CombatStore } from '@app/features/combat/application/combat.store';
 import { monsterCombatantSource } from '@app/features/combat/domain/combatant-source';
 import { MonsterService } from '@app/features/bestiary/application/monster.service';
-import { MonsterImageGateway } from '@app/features/bestiary/data-access/monster-image.gateway';
+import { MonsterWorkspaceFacade } from '@app/features/bestiary/application/monster-workspace.facade';
 import {
   createEmptyMonsterSheet,
+  monsterTypeLine,
   type Monster,
-  type MonsterSheet,
 } from '@app/features/bestiary/domain/monster';
+import {
+  createMonsterForm,
+  monsterFormValueToSheet,
+  monsterToFormValue,
+} from '@app/features/bestiary/pages/bestiary-workspace/monster-form';
 import type { RichTextDocument } from '@app/shared/rich-text-editor/rich-text-document';
 import { RichTextEditor } from '@app/shared/rich-text-editor/rich-text-editor';
 import { ButtonDirective } from '@app/shared/ui/button/button.directive';
@@ -36,14 +41,18 @@ import { RecentResourceStore } from '@app/features/recent-resources/application/
 import { CreatureRuleCatalogService } from '@app/features/game-systems/application/creature-rule-catalog.service';
 import {
   EMPTY_CREATURE_RULE_CATALOG,
-  optionIdFor,
-  optionLabel,
   type CreatureRuleCatalog,
 } from '@app/features/game-systems/domain/creature-rule-catalog';
 import type { FormFieldOption } from '@app/shared/ui/form-field/form-field';
 import { MultiSelectField } from '@app/shared/ui/multi-select-field/multi-select-field';
 import { ResourceMentionDisplayGateway } from '@app/shared/rich-text-editor/resource-mention-display.gateway';
 import type { ResourceMentionCandidate } from '@app/shared/rich-text-editor/resource-mention';
+import { errorMessage } from '@app/shared/error-message';
+import { abilityModifier } from '@app/shared/domain/creature-sheet-format';
+import { PendingChangesPrompt } from '@app/core/navigation/pending-changes-prompt';
+import { PendingChangesDialog } from '@app/shared/ui/pending-changes-dialog/pending-changes-dialog';
+
+const ERROR_FALLBACK = 'Impossible de gérer le bestiaire.';
 
 type TagField =
   | 'savingThrows'
@@ -54,11 +63,10 @@ type TagField =
   | 'conditionImmunities'
   | 'senses';
 
-type PendingDecisionResolver = (canLeave: boolean) => void;
-
 @Component({
   selector: 'app-bestiary-workspace',
   imports: [
+    PendingChangesDialog,
     ReactiveFormsModule,
     ButtonDirective,
     Dialog,
@@ -80,15 +88,15 @@ export class BestiaryWorkspace implements OnInit, PendingChangesAware {
   private readonly route = inject(ActivatedRoute);
   private readonly destroyRef = inject(DestroyRef);
   private readonly service = inject(MonsterService);
-  private readonly imageGateway = inject(MonsterImageGateway);
+  private readonly workspace = inject(MonsterWorkspaceFacade);
   private readonly creatureRules = inject(CreatureRuleCatalogService);
   private readonly combat = inject(CombatStore, { optional: true });
   private readonly recentResources = inject(RecentResourceStore, { optional: true });
   private readonly mentionDisplay = inject(ResourceMentionDisplayGateway, { optional: true });
   private readonly journalEntries = viewChild<JournalEntryList>(JournalEntryList);
-  private pendingDecisionResolver?: PendingDecisionResolver;
 
   protected readonly campaign = this.context.campaign;
+  protected readonly abilityModifier = abilityModifier;
   protected readonly monsters = signal<readonly Monster[]>([]);
   protected readonly availableMonsters = signal<readonly Monster[]>([]);
   protected readonly selectedMonster = signal<Monster | null>(null);
@@ -102,7 +110,7 @@ export class BestiaryWorkspace implements OnInit, PendingChangesAware {
   protected readonly isEditing = signal(false);
   protected readonly isCreating = signal(false);
   protected readonly isCatalogOpen = signal(false);
-  protected readonly showPendingChangesDialog = signal(false);
+  protected readonly pendingChanges = new PendingChangesPrompt();
   protected readonly error = signal<string | null>(null);
   protected readonly focusedJournalEntryId = signal<string | null>(null);
   protected readonly draftImagePath = signal<string | null>(null);
@@ -114,15 +122,21 @@ export class BestiaryWorkspace implements OnInit, PendingChangesAware {
   protected readonly featureDrafts = signal<CreatureFeatureDrafts>(emptyCreatureFeatureDrafts());
   protected readonly ruleCatalog = signal<CreatureRuleCatalog>(EMPTY_CREATURE_RULE_CATALOG);
   protected readonly sizeOptions = computed(() => this.formOptions(this.ruleCatalog().sizes));
-  protected readonly typeOptions = computed(() => this.formOptions(this.ruleCatalog().creatureTypes));
-  protected readonly alignmentOptions = computed(() => this.formOptions(this.ruleCatalog().alignments));
+  protected readonly typeOptions = computed(() =>
+    this.formOptions(this.ruleCatalog().creatureTypes),
+  );
+  protected readonly alignmentOptions = computed(() =>
+    this.formOptions(this.ruleCatalog().alignments),
+  );
   protected subspeciesOptions(): readonly FormFieldOption[] {
     const typeId = this.monsterForm.controls.creatureType.value;
     return this.formOptions(
       this.ruleCatalog().subspecies.filter(({ parentOptionId }) => parentOptionId === typeId),
     );
   }
-  protected readonly languageOptions = computed(() => this.formOptions(this.ruleCatalog().languages));
+  protected readonly languageOptions = computed(() =>
+    this.formOptions(this.ruleCatalog().languages),
+  );
   protected readonly filteredMonsters = computed(() => {
     const term = this.searchTerm().trim().toLocaleLowerCase('fr');
     if (!term) return this.monsters();
@@ -132,34 +146,7 @@ export class BestiaryWorkspace implements OnInit, PendingChangesAware {
       ),
     );
   });
-  protected readonly monsterForm = new FormGroup({
-    name: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
-    size: new FormControl('', { nonNullable: true }),
-    creatureType: new FormControl('', { nonNullable: true }),
-    creatureSubspecies: new FormControl('', { nonNullable: true }),
-    alignment: new FormControl('', { nonNullable: true }),
-    armorClass: new FormControl<number | null>(null, [Validators.min(0)]),
-    armorClassDetails: new FormControl('', { nonNullable: true }),
-    hitPoints: new FormControl<number | null>(null, [Validators.min(0)]),
-    hitPointFormula: new FormControl('', { nonNullable: true }),
-    speed: new FormControl('', { nonNullable: true }),
-    strength: new FormControl<number | null>(null, [Validators.min(0)]),
-    dexterity: new FormControl<number | null>(null, [Validators.min(0)]),
-    constitution: new FormControl<number | null>(null, [Validators.min(0)]),
-    intelligence: new FormControl<number | null>(null, [Validators.min(0)]),
-    wisdom: new FormControl<number | null>(null, [Validators.min(0)]),
-    charisma: new FormControl<number | null>(null, [Validators.min(0)]),
-    savingThrows: new FormControl<readonly string[]>([], { nonNullable: true }),
-    skills: new FormControl<readonly string[]>([], { nonNullable: true }),
-    damageVulnerabilities: new FormControl<readonly string[]>([], { nonNullable: true }),
-    damageResistances: new FormControl<readonly string[]>([], { nonNullable: true }),
-    damageImmunities: new FormControl<readonly string[]>([], { nonNullable: true }),
-    conditionImmunities: new FormControl<readonly string[]>([], { nonNullable: true }),
-    senses: new FormControl<readonly string[]>([], { nonNullable: true }),
-    languages: new FormControl<readonly string[]>([], { nonNullable: true }),
-    challengeRating: new FormControl('', { nonNullable: true }),
-    experiencePoints: new FormControl<number | null>(null, [Validators.min(0)]),
-  });
+  protected readonly monsterForm = createMonsterForm();
 
   protected addToCombat(monster: Monster): void {
     void this.combat?.requestAdd(monsterCombatantSource(monster));
@@ -172,8 +159,8 @@ export class BestiaryWorkspace implements OnInit, PendingChangesAware {
   protected canShowMonster(monster: Monster): boolean {
     return Boolean(
       monster.imagePath &&
-        this.mentionDisplay?.isPlayerDisplayOpen() &&
-        !this.mentionDisplay.isPublishing(),
+      this.mentionDisplay?.isPlayerDisplayOpen() &&
+      !this.mentionDisplay.isPublishing(),
     );
   }
 
@@ -181,7 +168,7 @@ export class BestiaryWorkspace implements OnInit, PendingChangesAware {
     try {
       await this.mentionDisplay?.display(this.displayCandidate(monster));
     } catch (error) {
-      this.error.set(this.errorMessage(error));
+      this.error.set(errorMessage(error, ERROR_FALLBACK));
     }
   }
 
@@ -250,27 +237,23 @@ export class BestiaryWorkspace implements OnInit, PendingChangesAware {
     this.isSaving.set(true);
     this.error.set(null);
     try {
-      const previousImagePath = this.selectedMonster()?.imagePath ?? null;
-      const importedImagePath = this.draftImagePath();
-      const input = {
+      const existing = this.isCreating() ? null : this.selectedMonster();
+      if (!this.isCreating() && !existing) return false;
+      const saved = await this.workspace.save({
+        campaignId: campaign.id,
+        existing,
         name: this.monsterForm.controls.name.value,
-        imagePath: importedImagePath ?? previousImagePath,
         sheet: this.buildSheet(),
-      };
-      const saved = this.isCreating()
-        ? await this.service.create(campaign.id, input)
-        : await this.service.update(this.selectedMonster()!, input);
+        importedImagePath: this.draftImagePath(),
+      });
       this.selectedMonster.set(saved);
       this.isCreating.set(false);
       this.isEditing.set(false);
       this.draftImagePath.set(null);
-      if (importedImagePath && previousImagePath && previousImagePath !== importedImagePath) {
-        await this.discardImageSafely(previousImagePath);
-      }
       await this.load(saved.id);
       return true;
     } catch (error) {
-      this.error.set(this.errorMessage(error));
+      this.error.set(errorMessage(error, ERROR_FALLBACK));
       return false;
     } finally {
       this.isSaving.set(false);
@@ -281,15 +264,15 @@ export class BestiaryWorkspace implements OnInit, PendingChangesAware {
     const campaign = this.campaign();
     if (!campaign) return;
     try {
-      const path = await this.imageGateway.chooseAndImport(campaign.universeId);
-      if (!path) return;
+      const imported = await this.workspace.importImage(campaign.universeId);
+      if (!imported) return;
       const previous = this.draftImagePath();
-      this.draftImagePath.set(path);
-      this.imageUrl.set(await this.imageGateway.resolveUrl(path));
+      this.draftImagePath.set(imported.path);
+      this.imageUrl.set(imported.url);
       this.monsterForm.markAsDirty();
-      if (previous) await this.imageGateway.discard(previous);
+      await this.workspace.discardImage(previous);
     } catch (error) {
-      this.error.set(this.errorMessage(error));
+      this.error.set(errorMessage(error, ERROR_FALLBACK));
     }
   }
 
@@ -367,7 +350,7 @@ export class BestiaryWorkspace implements OnInit, PendingChangesAware {
   }
 
   protected continueEditing(): void {
-    this.resolvePendingDecision(false);
+    this.pendingChanges.resolve(false);
   }
 
   protected async leaveWithoutSaving(): Promise<void> {
@@ -375,14 +358,14 @@ export class BestiaryWorkspace implements OnInit, PendingChangesAware {
     await this.discardDraftImageSafely();
     this.isEditing.set(false);
     this.isCreating.set(false);
-    this.resolvePendingDecision(true);
+    this.pendingChanges.resolve(true);
   }
 
   protected async saveAndLeave(): Promise<void> {
     const saved = this.journalEntries()?.hasPendingChanges()
       ? await this.journalEntries()!.savePendingChanges()
       : await this.saveMonster();
-    if (saved) this.resolvePendingDecision(true);
+    if (saved) this.pendingChanges.resolve(true);
   }
 
   protected updateTags(field: TagField, values: readonly string[]): void {
@@ -410,18 +393,7 @@ export class BestiaryWorkspace implements OnInit, PendingChangesAware {
     this.monsterForm.markAsDirty();
   }
 
-  protected abilityModifier(score: number | null): string {
-    if (score === null) return '—';
-    const modifier = Math.floor((score - 10) / 2);
-    return `${modifier >= 0 ? '+' : ''}${modifier}`;
-  }
-
-  protected typeLine(sheet: MonsterSheet): string {
-    return (
-      [sheet.size, sheet.creatureType, sheet.alignment].filter(Boolean).join(', ') ||
-      'Type non renseigné'
-    );
-  }
+  protected readonly typeLine = monsterTypeLine;
 
   private async load(selectedId?: string): Promise<void> {
     const campaign = this.campaign();
@@ -435,7 +407,7 @@ export class BestiaryWorkspace implements OnInit, PendingChangesAware {
         await this.resolveImage(selected.imagePath);
       }
     } catch (error) {
-      this.error.set(this.errorMessage(error));
+      this.error.set(errorMessage(error, ERROR_FALLBACK));
     } finally {
       this.isLoading.set(false);
     }
@@ -451,7 +423,7 @@ export class BestiaryWorkspace implements OnInit, PendingChangesAware {
         this.route.snapshot.queryParamMap.get('entryId'),
       );
     } catch (error) {
-      this.error.set(this.errorMessage(error));
+      this.error.set(errorMessage(error, ERROR_FALLBACK));
     } finally {
       this.isLoading.set(false);
     }
@@ -484,105 +456,18 @@ export class BestiaryWorkspace implements OnInit, PendingChangesAware {
 
   private populateForm(monster: Monster | null): void {
     const sheet = monster?.sheet ?? createEmptyMonsterSheet();
-    this.monsterForm.reset({
-      name: monster?.name ?? '',
-      size: optionIdFor(sheet.sizeOptionId, sheet.size, this.ruleCatalog().sizes),
-      creatureType: optionIdFor(
-        sheet.creatureTypeOptionId,
-        sheet.creatureType,
-        this.ruleCatalog().creatureTypes,
-      ),
-      creatureSubspecies: optionIdFor(
-        sheet.creatureSubspeciesOptionId,
-        sheet.creatureSubspecies,
-        this.ruleCatalog().subspecies,
-      ),
-      alignment: optionIdFor(
-        sheet.alignmentOptionId,
-        sheet.alignment,
-        this.ruleCatalog().alignments,
-      ),
-      armorClass: sheet.armorClass,
-      armorClassDetails: sheet.armorClassDetails,
-      hitPoints: sheet.hitPoints,
-      hitPointFormula: sheet.hitPointFormula,
-      speed: sheet.speed,
-      strength: sheet.abilities.strength,
-      dexterity: sheet.abilities.dexterity,
-      constitution: sheet.abilities.constitution,
-      intelligence: sheet.abilities.intelligence,
-      wisdom: sheet.abilities.wisdom,
-      charisma: sheet.abilities.charisma,
-      savingThrows: sheet.savingThrows,
-      skills: sheet.skills,
-      damageVulnerabilities: sheet.damageVulnerabilities,
-      damageResistances: sheet.damageResistances,
-      damageImmunities: sheet.damageImmunities,
-      conditionImmunities: sheet.conditionImmunities,
-      senses: sheet.senses,
-      languages:
-        sheet.languageOptionIds.length > 0
-          ? sheet.languageOptionIds
-          : sheet.languages.flatMap((label) => {
-              const id = optionIdFor(null, label, this.ruleCatalog().languages);
-              return id ? [id] : [];
-            }),
-      challengeRating: sheet.challengeRating,
-      experiencePoints: sheet.experiencePoints,
-    });
+    this.monsterForm.reset(monsterToFormValue(monster, this.ruleCatalog()));
     this.officialDescription.set(sheet.officialDescription);
     this.featureDrafts.set(creatureFeatureDraftsFrom(sheet));
     this.monsterForm.markAsPristine();
   }
 
-  private buildSheet(): MonsterSheet {
-    const value = this.monsterForm.getRawValue();
-    const previous = this.selectedMonster()?.sheet ?? createEmptyMonsterSheet();
-    return {
-      ...previous,
-      sizeOptionId: value.size || null,
-      size: optionLabel(value.size, this.ruleCatalog().sizes, previous.size),
-      creatureTypeOptionId: value.creatureType || null,
-      creatureType: optionLabel(
-        value.creatureType,
-        this.ruleCatalog().creatureTypes,
-        previous.creatureType,
-      ),
-      creatureSubspeciesOptionId: value.creatureSubspecies || null,
-      creatureSubspecies: optionLabel(
-        value.creatureSubspecies,
-        this.ruleCatalog().subspecies,
-        '',
-      ),
-      alignmentOptionId: value.alignment || null,
-      alignment: optionLabel(value.alignment, this.ruleCatalog().alignments, previous.alignment),
-      armorClass: value.armorClass,
-      armorClassDetails: value.armorClassDetails,
-      hitPoints: value.hitPoints,
-      hitPointFormula: value.hitPointFormula,
-      speed: value.speed,
-      abilities: {
-        strength: value.strength,
-        dexterity: value.dexterity,
-        constitution: value.constitution,
-        intelligence: value.intelligence,
-        wisdom: value.wisdom,
-        charisma: value.charisma,
-      },
-      savingThrows: value.savingThrows,
-      skills: value.skills,
-      damageVulnerabilities: value.damageVulnerabilities,
-      damageResistances: value.damageResistances,
-      damageImmunities: value.damageImmunities,
-      conditionImmunities: value.conditionImmunities,
-      senses: value.senses,
-      languageOptionIds: value.languages,
-      languages: value.languages.map((id) => optionLabel(id, this.ruleCatalog().languages, id)),
-      challengeRating: value.challengeRating,
-      experiencePoints: value.experiencePoints,
+  private buildSheet() {
+    return monsterFormValueToSheet(this.monsterForm.getRawValue(), this.ruleCatalog(), {
+      previousSheet: this.selectedMonster()?.sheet ?? createEmptyMonsterSheet(),
       officialDescription: this.officialDescription(),
-      ...this.featureDrafts(),
-    };
+      features: this.featureDrafts(),
+    });
   }
 
   private async loadRuleCatalog(): Promise<void> {
@@ -591,27 +476,20 @@ export class BestiaryWorkspace implements OnInit, PendingChangesAware {
     this.ruleCatalog.set(await this.creatureRules.loadForUniverse(campaign.universeId));
   }
 
-  private formOptions(options: readonly { id: string; label: string }[]): readonly FormFieldOption[] {
+  private formOptions(
+    options: readonly { id: string; label: string }[],
+  ): readonly FormFieldOption[] {
     return options.map(({ id, label }) => ({ value: id, label }));
   }
 
   private async resolveImage(path: string | null): Promise<void> {
-    this.imageUrl.set(path ? await this.imageGateway.resolveUrl(path) : null);
+    this.imageUrl.set(await this.workspace.imageUrl(path));
   }
 
   private async discardDraftImageSafely(): Promise<void> {
     const path = this.draftImagePath();
     this.draftImagePath.set(null);
-    if (!path) return;
-    await this.discardImageSafely(path);
-  }
-
-  private async discardImageSafely(path: string): Promise<void> {
-    try {
-      await this.imageGateway.discard(path);
-    } catch {
-      // Le nettoyage ne doit pas empêcher le MJ d'abandonner un brouillon.
-    }
+    await this.workspace.discardImage(path);
   }
 
   private hasPendingChanges(): boolean {
@@ -623,22 +501,7 @@ export class BestiaryWorkspace implements OnInit, PendingChangesAware {
 
   private confirmPendingChanges(): boolean | Promise<boolean> {
     if (!this.hasPendingChanges()) return true;
-    if (this.pendingDecisionResolver) return false;
-    this.showPendingChangesDialog.set(true);
-    return new Promise((resolve) => (this.pendingDecisionResolver = resolve));
-  }
-
-  private resolvePendingDecision(value: boolean): void {
-    const resolve = this.pendingDecisionResolver;
-    this.pendingDecisionResolver = undefined;
-    this.showPendingChangesDialog.set(false);
-    resolve?.(value);
-  }
-
-  private errorMessage(error: unknown): string {
-    if (error instanceof Error) return error.message;
-    if (typeof error === 'string') return error;
-    return 'Impossible de gérer le bestiaire.';
+    return this.pendingChanges.request();
   }
 
   private displayCandidate(monster: Monster): ResourceMentionCandidate {

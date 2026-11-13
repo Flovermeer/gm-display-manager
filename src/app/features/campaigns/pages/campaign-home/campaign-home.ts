@@ -8,10 +8,10 @@ import { ButtonDirective } from '@app/shared/ui/button/button.directive';
 import { Dialog } from '@app/shared/ui/dialog/dialog';
 import { FormField, type FormFieldOption } from '@app/shared/ui/form-field/form-field';
 import { GameSystemService } from '@app/features/game-systems/application/game-system.service';
-import type {
-  GameSystem,
-  GameUniverse,
-} from '@app/features/game-systems/domain/game-system';
+import type { GameSystem, GameUniverse } from '@app/features/game-systems/domain/game-system';
+import { errorMessage } from '@app/shared/error-message';
+
+const ERROR_FALLBACK = "Une erreur inattendue empêche d'accéder aux campagnes.";
 
 type PendingCampaignCreation = Readonly<{
   name: string;
@@ -74,7 +74,7 @@ export class CampaignHome implements OnInit {
       await this.campaignService.activate(campaign.id);
       await this.router.navigate(['/campaigns', campaign.id]);
     } catch (error) {
-      this.error.set(this.errorMessage(error));
+      this.error.set(errorMessage(error, ERROR_FALLBACK));
       this.isSubmitting.set(false);
     }
   }
@@ -152,7 +152,7 @@ export class CampaignHome implements OnInit {
         this.isSubmitting.set(false);
       }
     } catch (error) {
-      this.error.set(this.errorMessage(error));
+      this.error.set(errorMessage(error, ERROR_FALLBACK));
       this.isSubmitting.set(false);
     }
   }
@@ -171,7 +171,7 @@ export class CampaignHome implements OnInit {
       this.campaignPendingCreation.set(null);
       await this.router.navigate(['/campaigns', campaign.id]);
     } catch (error) {
-      this.error.set(this.errorMessage(error));
+      this.error.set(errorMessage(error, ERROR_FALLBACK));
       this.isSubmitting.set(false);
     }
   }
@@ -199,7 +199,7 @@ export class CampaignHome implements OnInit {
       }
       this.campaignPendingDeletion.set(null);
     } catch (error) {
-      this.error.set(this.errorMessage(error));
+      this.error.set(errorMessage(error, ERROR_FALLBACK));
     } finally {
       await this.loadCampaigns();
       this.isSubmitting.set(false);
@@ -215,7 +215,7 @@ export class CampaignHome implements OnInit {
       this.campaigns.set(campaigns);
       this.activeCampaignId.set(activeCampaignId);
     } catch (error) {
-      this.error.set(this.errorMessage(error));
+      this.error.set(errorMessage(error, ERROR_FALLBACK));
     } finally {
       this.isLoading.set(false);
     }
@@ -229,15 +229,13 @@ export class CampaignHome implements OnInit {
       this.campaignForm.controls.gameSystemId.setValue(firstSystemId);
       await Promise.all([this.loadCampaigns(), this.loadUniverses(firstSystemId)]);
     } catch (error) {
-      this.error.set(this.errorMessage(error));
+      this.error.set(errorMessage(error, ERROR_FALLBACK));
       this.isLoading.set(false);
     }
   }
 
   private async loadUniverses(gameSystemId: string): Promise<void> {
-    const universes = gameSystemId
-      ? await this.gameSystemService.listUniverses(gameSystemId)
-      : [];
+    const universes = gameSystemId ? await this.gameSystemService.listUniverses(gameSystemId) : [];
     this.universes.set(universes);
     this.campaignForm.controls.universeId.setValue(universes[0]?.id ?? '');
   }
@@ -251,11 +249,5 @@ export class CampaignHome implements OnInit {
       universeId: this.universes()[0]?.id ?? '',
     });
     this.campaignForm.markAsPristine();
-  }
-
-  private errorMessage(error: unknown): string {
-    if (error instanceof Error) return error.message;
-    if (typeof error === 'string') return error;
-    return "Une erreur inattendue empêche d'accéder aux campagnes.";
   }
 }

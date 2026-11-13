@@ -10,10 +10,12 @@ import { RichTextEditor } from '@app/shared/rich-text-editor/rich-text-editor';
 import { ResourceMentionNavigationService } from '@app/shared/rich-text-editor/resource-mention-navigation.service';
 import type { ResourceMentionCandidate } from '@app/shared/rich-text-editor/resource-mention';
 import { ButtonDirective } from '@app/shared/ui/button/button.directive';
-import { Dialog } from '@app/shared/ui/dialog/dialog';
 import { EmptyState } from '@app/shared/ui/empty-state/empty-state';
+import { errorMessage } from '@app/shared/error-message';
+import { PendingChangesPrompt } from '@app/core/navigation/pending-changes-prompt';
+import { PendingChangesDialog } from '@app/shared/ui/pending-changes-dialog/pending-changes-dialog';
 
-type PendingDecisionResolver = (canLeave: boolean) => void;
+const ERROR_FALLBACK = 'Impossible de charger le journal.';
 
 type ResourceReference = Readonly<{
   resourceName: string;
@@ -35,7 +37,7 @@ type JournalDay = Readonly<{
 
 @Component({
   selector: 'app-journal-workspace',
-  imports: [JournalEntryList, RichTextEditor, ButtonDirective, Dialog, EmptyState],
+  imports: [PendingChangesDialog, JournalEntryList, RichTextEditor, ButtonDirective, EmptyState],
   templateUrl: './journal-workspace.html',
   styleUrl: './journal-workspace.scss',
 })
@@ -45,7 +47,6 @@ export class JournalWorkspace implements OnInit, PendingChangesAware {
   private readonly router = inject(Router);
   private readonly mentionNavigation = inject(ResourceMentionNavigationService);
   private readonly globalEntryEditor = viewChild<JournalEntryList>(JournalEntryList);
-  private pendingDecisionResolver?: PendingDecisionResolver;
 
   protected readonly campaign = this.campaignContext.campaign;
   protected readonly timelineEntries = signal<readonly TimelineEntry[]>([]);
@@ -53,7 +54,7 @@ export class JournalWorkspace implements OnInit, PendingChangesAware {
   protected readonly expandedDays = signal<ReadonlySet<string>>(new Set());
   protected readonly isLoading = signal(true);
   protected readonly error = signal<string | null>(null);
-  protected readonly showPendingChangesDialog = signal(false);
+  protected readonly pendingChanges = new PendingChangesPrompt();
   protected readonly journalDays = computed(() => groupByLocalDay(this.timelineEntries()));
 
   ngOnInit(): void {
@@ -62,11 +63,7 @@ export class JournalWorkspace implements OnInit, PendingChangesAware {
 
   canDeactivate(): boolean | Promise<boolean> {
     if (!this.globalEntryEditor()?.hasPendingChanges()) return true;
-    if (this.pendingDecisionResolver) return false;
-    this.showPendingChangesDialog.set(true);
-    return new Promise<boolean>((resolve) => {
-      this.pendingDecisionResolver = resolve;
-    });
+    return this.pendingChanges.request();
   }
 
   protected addNote(): void {
@@ -101,16 +98,16 @@ export class JournalWorkspace implements OnInit, PendingChangesAware {
   }
 
   protected continueEditing(): void {
-    this.resolvePendingDecision(false);
+    this.pendingChanges.resolve(false);
   }
 
   protected leaveWithoutSaving(): void {
     this.globalEntryEditor()?.discardPendingChanges();
-    this.resolvePendingDecision(true);
+    this.pendingChanges.resolve(true);
   }
 
   protected async saveAndLeave(): Promise<void> {
-    if (await this.globalEntryEditor()?.savePendingChanges()) this.resolvePendingDecision(true);
+    if (await this.globalEntryEditor()?.savePendingChanges()) this.pendingChanges.resolve(true);
   }
 
   protected async openReference(item: TimelineEntry): Promise<void> {
@@ -145,7 +142,7 @@ export class JournalWorkspace implements OnInit, PendingChangesAware {
       if (!campaign) return;
       await this.loadJournal();
     } catch (error) {
-      this.error.set(errorMessage(error));
+      this.error.set(errorMessage(error, ERROR_FALLBACK));
     } finally {
       this.isLoading.set(false);
     }
@@ -194,15 +191,8 @@ export class JournalWorkspace implements OnInit, PendingChangesAware {
       const newestDay = groupByLocalDay(this.timelineEntries())[0]?.key;
       if (newestDay && this.expandedDays().size === 0) this.expandedDays.set(new Set([newestDay]));
     } catch (error) {
-      this.error.set(errorMessage(error));
+      this.error.set(errorMessage(error, ERROR_FALLBACK));
     }
-  }
-
-  private resolvePendingDecision(canLeave: boolean): void {
-    const resolve = this.pendingDecisionResolver;
-    this.pendingDecisionResolver = undefined;
-    this.showPendingChangesDialog.set(false);
-    resolve?.(canLeave);
   }
 }
 
@@ -252,8 +242,4 @@ function plainText(value: unknown): string {
   if (Array.isArray(value)) return value.map(plainText).join(' ');
   const record = value as Record<string, unknown>;
   return `${typeof record['text'] === 'string' ? record['text'] : ''} ${plainText(record['content'])}`;
-}
-
-function errorMessage(error: unknown): string {
-  return error instanceof Error ? error.message : 'Impossible de charger le journal.';
 }

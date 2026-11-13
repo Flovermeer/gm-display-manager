@@ -43,7 +43,7 @@ describe('ResourceMentionPlayerDisplayService', () => {
     items.list.mockResolvedValue([
       {
         id: 'item-id',
-        name: "Anneau de l’Hiver",
+        name: 'Anneau de l’Hiver',
         summary: 'Un froid surnaturel.',
         imagePath: 'ring.webp',
       },
@@ -63,7 +63,10 @@ describe('ResourceMentionPlayerDisplayService', () => {
         { provide: LocationService, useValue: { list: vi.fn() } },
         { provide: LocationImageGateway, useValue: { resolveUrl: vi.fn() } },
         { provide: NarrativeItemService, useValue: items },
-        { provide: ItemImageGateway, useValue: { resolveUrl: vi.fn().mockResolvedValue('item://ring') } },
+        {
+          provide: ItemImageGateway,
+          useValue: { resolveUrl: vi.fn().mockResolvedValue('item://ring') },
+        },
         { provide: MonsterService, useValue: monsters },
         {
           provide: MonsterImageGateway,
@@ -93,13 +96,13 @@ describe('ResourceMentionPlayerDisplayService', () => {
     await service.display({
       resourceType: 'item',
       resourceId: 'item-id',
-      label: "Anneau de l’Hiver",
+      label: 'Anneau de l’Hiver',
       playerDisplayAvailable: true,
     });
     expect(displayGateway.sendPlayerDisplayState).toHaveBeenLastCalledWith({
       mode: 'item',
       itemId: 'item-id',
-      name: "Anneau de l’Hiver",
+      name: 'Anneau de l’Hiver',
       summary: 'Un froid surnaturel.',
       imagePath: 'item://ring',
     });
@@ -146,5 +149,38 @@ describe('ResourceMentionPlayerDisplayService', () => {
 
     expect(activeScene.clear).toHaveBeenCalledWith(campaign.id);
     expect(displayGateway.sendPlayerDisplayState).toHaveBeenLastCalledWith({ mode: 'neutral' });
+  });
+  it('hides a location name when the GM keeps it secret', async () => {
+    const locations = TestBed.inject(LocationService) as unknown as {
+      list: ReturnType<typeof vi.fn>;
+    };
+    const images = TestBed.inject(LocationImageGateway) as unknown as {
+      resolveUrl: ReturnType<typeof vi.fn>;
+    };
+    locations.list.mockResolvedValue([
+      {
+        id: 'crypt',
+        name: 'Crypte oubliée',
+        imagePath: 'crypt.webp',
+        hideNameOnPlayerDisplay: true,
+      },
+    ]);
+    images.resolveUrl.mockResolvedValue('location://crypt');
+    const service = TestBed.inject(ResourceMentionPlayerDisplayService);
+    await service.refreshPlayerDisplayStatus();
+
+    await service.display({
+      resourceType: 'location',
+      resourceId: 'crypt',
+      label: 'Crypte oubliée',
+      playerDisplayAvailable: true,
+    });
+
+    expect(displayGateway.sendPlayerDisplayState).toHaveBeenLastCalledWith({
+      mode: 'location',
+      locationId: 'crypt',
+      name: undefined,
+      imagePath: 'location://crypt',
+    });
   });
 });

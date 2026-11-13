@@ -2,7 +2,10 @@ import { signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { Editor } from '@tiptap/core';
 
-import { RICH_TEXT_SCHEMA_VERSION, type RichTextDocument } from '@app/shared/rich-text-editor/rich-text-document';
+import {
+  RICH_TEXT_SCHEMA_VERSION,
+  type RichTextDocument,
+} from '@app/shared/rich-text-editor/rich-text-document';
 import {
   calculateMentionMenuPosition,
   RichTextEditor,
@@ -38,6 +41,25 @@ describe('RichTextEditor', () => {
     await fixture.whenStable();
 
     expect(element.querySelector('.tiptap')?.textContent).toContain('Deuxième note');
+  });
+
+  it('opens the mention menu without re-rendering the document in a loop', async () => {
+    const fixture = TestBed.createComponent(RichTextEditor);
+    fixture.componentRef.setInput('mentionCandidates', [
+      { resourceType: 'npc' as const, resourceId: 'npc-id', label: 'Mira Vell' },
+    ]);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    const editor = fixture.componentInstance['editor'] as Editor;
+    const getJSON = vi.spyOn(editor, 'getJSON');
+
+    editor.chain().focus().insertContent('@Mi').run();
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    expect(getJSON.mock.calls.length).toBeLessThan(5);
+    expect(fixture.componentInstance['mentionMatch']()?.query).toBe('Mi');
   });
 
   it('destroys the Tiptap editor with the Angular component', () => {

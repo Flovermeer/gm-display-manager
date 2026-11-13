@@ -26,8 +26,10 @@ import { Dialog } from '@app/shared/ui/dialog/dialog';
 import { EmptyState } from '@app/shared/ui/empty-state/empty-state';
 import { EntityTitle } from '@app/shared/ui/entity-title/entity-title';
 import { FormField } from '@app/shared/ui/form-field/form-field';
+import { errorMessage } from '@app/shared/error-message';
+import { PendingChangesPrompt } from '@app/core/navigation/pending-changes-prompt';
+import { PendingChangesDialog } from '@app/shared/ui/pending-changes-dialog/pending-changes-dialog';
 
-type PendingDecisionResolver = (canLeave: boolean) => void;
 type EntryForm = FormGroup<{
   id: FormControl<string>;
   minimum: FormControl<number | null>;
@@ -37,14 +39,21 @@ type EntryForm = FormGroup<{
 
 @Component({
   selector: 'app-random-table-workspace',
-  imports: [ReactiveFormsModule, ButtonDirective, Dialog, EmptyState, EntityTitle, FormField],
+  imports: [
+    PendingChangesDialog,
+    ReactiveFormsModule,
+    ButtonDirective,
+    Dialog,
+    EmptyState,
+    EntityTitle,
+    FormField,
+  ],
   templateUrl: './random-table-workspace.html',
   styleUrl: './random-table-workspace.scss',
 })
 export class RandomTableWorkspace implements OnInit, PendingChangesAware {
   private readonly campaignContext = inject(CampaignContext);
   private readonly service = inject(RandomTableService);
-  private pendingDecisionResolver?: PendingDecisionResolver;
 
   protected readonly tables = signal<readonly RandomTable[]>([]);
   protected readonly selectedTable = signal<RandomTable | null>(null);
@@ -55,7 +64,7 @@ export class RandomTableWorkspace implements OnInit, PendingChangesAware {
   protected readonly isEditing = signal(false);
   protected readonly isCreating = signal(false);
   protected readonly showDeleteDialog = signal(false);
-  protected readonly showPendingChangesDialog = signal(false);
+  protected readonly pendingChanges = new PendingChangesPrompt();
   protected readonly lastRoll = signal<RandomTableRoll | null>(null);
   protected readonly error = signal<string | null>(null);
   protected readonly maximumBound = RANDOM_TABLE_MAXIMUM;
@@ -223,16 +232,16 @@ export class RandomTableWorkspace implements OnInit, PendingChangesAware {
   }
 
   protected continueEditing(): void {
-    this.resolvePendingDecision(false);
+    this.pendingChanges.resolve(false);
   }
 
   protected leaveWithoutSaving(): void {
     this.cancelEditing();
-    this.resolvePendingDecision(true);
+    this.pendingChanges.resolve(true);
   }
 
   protected async saveAndLeave(): Promise<void> {
-    if (await this.saveTable()) this.resolvePendingDecision(true);
+    if (await this.saveTable()) this.pendingChanges.resolve(true);
   }
 
   private async initialize(): Promise<void> {
@@ -282,18 +291,7 @@ export class RandomTableWorkspace implements OnInit, PendingChangesAware {
 
   private confirmPendingChanges(): boolean | Promise<boolean> {
     if (!this.isEditing() || !this.tableForm.dirty) return true;
-    if (this.pendingDecisionResolver) return false;
-    this.showPendingChangesDialog.set(true);
-    return new Promise<boolean>((resolve) => {
-      this.pendingDecisionResolver = resolve;
-    });
-  }
-
-  private resolvePendingDecision(canLeave: boolean): void {
-    const resolve = this.pendingDecisionResolver;
-    this.pendingDecisionResolver = undefined;
-    this.showPendingChangesDialog.set(false);
-    resolve?.(canLeave);
+    return this.pendingChanges.request();
   }
 }
 
@@ -335,8 +333,4 @@ function nullableOrder(left: number | null, right: number | null): number {
   if (left === null) return right === null ? 0 : 1;
   if (right === null) return -1;
   return left - right;
-}
-
-function errorMessage(error: unknown): string {
-  return error instanceof Error ? error.message : 'Une erreur inattendue est survenue.';
 }

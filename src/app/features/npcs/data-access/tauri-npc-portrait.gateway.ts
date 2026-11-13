@@ -39,7 +39,9 @@ export class TauriNpcPortraitGateway extends NpcPortraitGateway {
       await mkdir(relativeDirectory, { baseDir: BaseDirectory.AppData, recursive: true });
       await copyFile(selectedPath, destinationPath);
     } catch (error) {
-      throw new Error(`Impossible de copier le portrait : ${nativeErrorMessage(error)}`);
+      throw new Error(`Impossible de copier le portrait : ${nativeErrorMessage(error)}`, {
+        cause: error,
+      });
     }
     return relativePath;
   }

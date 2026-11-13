@@ -15,5 +15,7 @@ export type ButtonVariant = 'primary' | 'secondary' | 'danger' | 'secondary-dang
 })
 export class ButtonDirective {
   readonly variant = input<ButtonVariant>('secondary', { alias: 'appButton' });
+  // Attribut préfixé comme le sélecteur pour rester lisible dans les templates : appButtonFull.
+  // eslint-disable-next-line @angular-eslint/no-input-rename
   readonly fullWidth = input(false, { alias: 'appButtonFull', transform: booleanAttribute });
 }

@@ -1,0 +1,119 @@
+.npc-form {
+  padding-top: 2rem;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(10rem, 1fr);
+  gap: 1rem;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.form-grid.three-columns {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.combat-basics {
+  grid-template-columns: 9rem minmax(10rem, 1fr) 9rem minmax(10rem, 1fr) minmax(8rem, 0.8fr);
+}
+
+.field {
+  margin-bottom: 1.35rem;
+}
+
+.npc-form input,
+.npc-form textarea,
+.npc-form select {
+  border-color: #bbb2a6;
+  color: #25221e;
+  background: #fff;
+}
+
+.sheet-form-section,
+.official-description-form {
+  margin: 1.5rem 0;
+  padding: 1.5rem;
+  border: 1px solid #d2cbc0;
+  border-radius: 0.65rem;
+  background: #e8e3da;
+}
+
+.form-section-heading {
+  margin-bottom: 1.25rem;
+}
+
+.form-section-heading h3 {
+  margin: 0;
+  font-family: var(--font-workspace-display);
+  font-size: 1.35rem;
+}
+
+.abilities-fieldset {
+  margin: 0 0 1.35rem;
+  padding: 1rem;
+  border: 1px solid #c7bdb0;
+  border-radius: 0.5rem;
+}
+
+.abilities-fieldset legend {
+  padding: 0 0.45rem;
+  color: #5d554c;
+  font-size: 0.8rem;
+  font-weight: 800;
+}
+
+.ability-inputs {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(4rem, 1fr));
+  gap: 0.65rem;
+}
+
+.ability-inputs app-form-field {
+  display: grid;
+  gap: 0.35rem;
+  color: #675d52;
+  font-size: 0.75rem;
+  font-weight: 800;
+  text-align: center;
+}
+
+.ability-inputs ::ng-deep input {
+  text-align: center;
+}
+
+.tag-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.35rem;
+}
+
+.field-error {
+  margin: 0.4rem 0 0;
+  color: #a4303b;
+  font-size: 0.78rem;
+}
+
+.sheet-error {
+  margin-top: 0;
+  font-weight: 700;
+}
+
+@media (max-width: 52rem) {
+  .form-row,
+  .form-grid,
+  .form-grid.three-columns,
+  .combat-basics,
+  .tag-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .ability-inputs {
+    grid-template-columns: repeat(3, minmax(4rem, 1fr));
+  }
+}

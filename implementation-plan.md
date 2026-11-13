@@ -2,7 +2,11 @@
 
 Date de cadrage : 12 août 2026
 
-Dernière consolidation : 24 août 2026
+Dernière consolidation : 13 novembre 2026
+
+Dernière version publiée : **1.1.8** (19 octobre 2026)
+
+Version en préparation : **1.1.9**
 
 Version fonctionnelle actuelle : **V1 terminée**
 
@@ -65,25 +69,58 @@ en maintenant la surveillance du Player Display toutes les deux secondes et la s
 automatique toutes les trente minutes. Il couvre 7 200 contrôles avec changements répétés de
 coordonnées et huit sauvegardes sans fermeture ni erreur.
 
+### Versions 1.1.1 à 1.1.8 — 9 au 19 octobre 2026
+
+Ces versions publiées depuis la branche `main` ajoutent des améliorations d'usage sans changer le
+périmètre de la V1.1 :
+
+- identité visuelle Beholder's Inn, polices locales et libellés affinés du Player Display ;
+- état neutre du Player Display et actions d'affichage réversibles ;
+- descriptions riches propres à la campagne pour les lieux et descriptions riches des scènes ;
+- galeries d'images partagées par univers pour les lieux, visionneuse zoomable et arborescence
+  repliable mémorisée ;
+- historique récent limité à cinq ressources ;
+- affichage aux joueurs directement depuis une mention `@`, menu de suggestions placé près du
+  curseur et couleur des mentions selon le type de ressource ;
+- catalogue générique par système de jeu, hérité par chacun de ses univers ;
+- espèces, sous-espèces et classes des PJ et PNJ déplacées dans les ressources partagées, avec
+  héritage en lecture seule depuis le catalogue générique ;
+- option masquant le nom d'un lieu sur le Player Display ;
+- nouveaux visuels de démonstration pour les lieux et les PNJ ;
+- isolation des données Tauri de développement, stabilisation des checksums de migration et
+  validation de la CI sur les pull requests vers `main`.
+
+### Version 1.1.9 — en préparation
+
+- correction du gel de l'application lors de la saisie de `@` dans un texte riche : l'ouverture du
+  menu de mentions relançait en boucle la mise à jour de l'éditeur jusqu'à saturer la mémoire ;
+- refactoring clean architecture sans changement fonctionnel attendu : façades `application/` pour
+  les écrans PNJ, lieux, objets, PJ et bestiaire, envoi unique au Player Display par
+  `PlayerDisplayPublisher`, règles et libellés en fonctions pures du domaine, formulaires extraits,
+  fiche PNJ et visionneuse d'images en composants dédiés ;
+- confirmation « Modifications non enregistrées » commune à tous les écrans, avec les mêmes
+  libellés et la même disposition ;
+- documentation actualisée pour les versions 1.1.6 à 1.1.8.
+
 ## Statut consolidé
 
-| Jalon                       | Statut                               | État réel                                                                                                                                                                                                                                                                         |
-| --------------------------- | ------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 0 — Environnement           | Terminé                              | Node 24 épinglé avec Volta, Angular 22, Rust stable MSVC, Build Tools et WebView2 validés.                                                                                                                                                                                        |
-| 1 — Shell Angular + Tauri   | Terminé                              | Application standalone zoneless, routes Angular, fenêtre principale maximisée et capabilities Tauri en place.                                                                                                                                                                     |
-| 2 — Multi-écran             | Validé sur le matériel courant       | Détection, plein écran, fermeture, réouverture, perte, reconnexion, changement de coordonnées et facteurs d'échelle distincts sont validés avec deux écrans. Une paire de moniteurs identiques reste à tester.                                                                    |
-| 3 — Régie verticale         | Terminé                              | Écran noir, lieux, PNJ et objets peuvent être envoyés au Player Display ; synchronisation `ready` et fallback statique des PNJ en place.                                                                                                                                          |
-| 4 — SQLite                  | Terminé pour les tranches livrées    | Vingt-quatre migrations couvrent notamment systèmes, univers, campagnes, propriété des ressources, référentiels de personnages, combat, historique récent, galerie des lieux, tables aléatoires et classement des scènes par chapitre. Repositories Tauri et mémoire isolés derrière des interfaces. |
-| 5 — Gestion de campagne     | Terminé et étendu                    | CRUD campagnes, lieux hiérarchiques, PNJ structurés, PJ orientés MJ et objets narratifs. Navigation campagne persistante et protection des modifications non enregistrées.                                                                                                        |
-| 6 — Médias locaux           | Durcissement V1.1 validé dans Tauri  | Import/copie locale des portraits PNJ/PJ, images de lieux, objets et monstres, vidéo idle PNJ et nettoyage des médias. Le diagnostic natif et le remplacement au même chemin sont validés sans faux positif.                                                                      |
-| 7 — Tiptap et journal       | Terminé pour l’usage actuel          | Chapitres et descriptions riches, notes journalisées éditables, regroupement quotidien, mentions `@` cliquables vers les ressources de campagne et fallback texte si la cible disparaît.                                                                                          |
-| 8 — Scènes                  | V1 terminée                          | Composition facultative avec lieu + PNJ + monstres + objets, activation du Player Display, appartenance obligatoire à un chapitre, ordre manuel, gestion depuis le chapitre et mentions `@` sont livrés.                                                                          |
-| 9 — Bestiaire               | Terminé et catalogue global finalisé | Les catalogues canoniques PNJ, PJ, lieux, objets et monstres disposent d’éditeurs détaillés par univers. Le bestiaire conserve sa sélection par campagne, sa fiche D&D complète, ses scènes, notes et mentions `@`.                                                               |
-| 10 — Combat léger           | Terminé                              | Un combat actif persistant par campagne, panneau MJ superposé, ajout PJ/PNJ/monstres, initiative manuelle triée et suivi rapide des PV.                                                                                                                                           |
-| 11 — Historique récent      | Terminé                              | Cinq pills persistées et cliquables par campagne, dédupliquées par récence et purgées lorsque leur cible disparaît.                                                                                                                                                               |
-| 12 — Carte heuristique      | Terminé                              | Graphe interactif progressif dans Carte et Chapitres, dérivé des chapitres, scènes, ressources liées et mentions `@`, avec navigation et fallback des cibles supprimées.                                                                                                          |
-| 13 — Tables aléatoires      | Terminé                              | CRUD atomique de tables privées au MJ, plages de 1 à 100 triées automatiquement, validation de couverture continue et tirage uniforme sans historique.                                                                                                                            |
-| 14 — Durcissement/livraison | V1.1 en cours                        | Les flux natifs principaux, la restauration depuis des données vierges, quatre heures de session accélérée, la rotation réelle des journaux et la génération de l'installeur NSIS sont validés. Restent les moniteurs identiques et l'installation sur une autre machine.         |
+| Jalon                       | Statut                               | État réel                                                                                                                                                                                                                                                                                                                                                                            |
+| --------------------------- | ------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 0 — Environnement           | Terminé                              | Node 24 épinglé avec Volta, Angular 22, Rust stable MSVC, Build Tools et WebView2 validés.                                                                                                                                                                                                                                                                                           |
+| 1 — Shell Angular + Tauri   | Terminé                              | Application standalone zoneless, routes Angular, fenêtre principale maximisée et capabilities Tauri en place.                                                                                                                                                                                                                                                                        |
+| 2 — Multi-écran             | Validé sur le matériel courant       | Détection, plein écran, fermeture, réouverture, perte, reconnexion, changement de coordonnées et facteurs d'échelle distincts sont validés avec deux écrans. Une paire de moniteurs identiques reste à tester.                                                                                                                                                                       |
+| 3 — Régie verticale         | Terminé                              | Écran noir, lieux, PNJ et objets peuvent être envoyés au Player Display ; synchronisation `ready` et fallback statique des PNJ en place.                                                                                                                                                                                                                                             |
+| 4 — SQLite                  | Terminé pour les tranches livrées    | Vingt-huit migrations couvrent notamment systèmes, univers génériques, campagnes, propriété des ressources, référentiels de personnages avec sous-espèces, combat, historique récent, galerie des lieux, visibilité du nom des lieux, tables aléatoires, descriptions de scènes et classement des scènes par chapitre. Repositories Tauri et mémoire isolés derrière des interfaces. |
+| 5 — Gestion de campagne     | Terminé et étendu                    | CRUD campagnes, lieux hiérarchiques, PNJ structurés, PJ orientés MJ et objets narratifs. Navigation campagne persistante et protection des modifications non enregistrées.                                                                                                                                                                                                           |
+| 6 — Médias locaux           | Durcissement V1.1 validé dans Tauri  | Import/copie locale des portraits PNJ/PJ, images de lieux, objets et monstres, vidéo idle PNJ et nettoyage des médias. Le diagnostic natif et le remplacement au même chemin sont validés sans faux positif.                                                                                                                                                                         |
+| 7 — Tiptap et journal       | Terminé pour l’usage actuel          | Chapitres et descriptions riches, notes journalisées éditables, regroupement quotidien, mentions `@` cliquables et colorées par type, affichage aux joueurs depuis une mention et fallback texte si la cible disparaît.                                                                                                                                                              |
+| 8 — Scènes                  | V1 terminée                          | Composition facultative avec lieu + PNJ + monstres + objets, activation du Player Display, appartenance obligatoire à un chapitre, ordre manuel, gestion depuis le chapitre et mentions `@` sont livrés.                                                                                                                                                                             |
+| 9 — Bestiaire               | Terminé et catalogue global finalisé | Les catalogues canoniques PNJ, PJ, lieux, objets et monstres disposent d’éditeurs détaillés par univers, complétés par un catalogue générique par système. Le bestiaire conserve sa sélection par campagne, sa fiche D&D complète, ses scènes, notes et mentions `@`.                                                                                                                |
+| 10 — Combat léger           | Terminé                              | Un combat actif persistant par campagne, panneau MJ superposé, ajout PJ/PNJ/monstres, initiative manuelle triée et suivi rapide des PV.                                                                                                                                                                                                                                              |
+| 11 — Historique récent      | Terminé                              | Cinq pills persistées et cliquables par campagne, dédupliquées par récence et purgées lorsque leur cible disparaît.                                                                                                                                                                                                                                                                  |
+| 12 — Carte heuristique      | Terminé                              | Graphe interactif progressif dans Carte et Chapitres, dérivé des chapitres, scènes, ressources liées et mentions `@`, avec navigation et fallback des cibles supprimées.                                                                                                                                                                                                             |
+| 13 — Tables aléatoires      | Terminé                              | CRUD atomique de tables privées au MJ, plages de 1 à 100 triées automatiquement, validation de couverture continue et tirage uniforme sans historique.                                                                                                                                                                                                                               |
+| 14 — Durcissement/livraison | V1.1 en cours                        | Les flux natifs principaux, la restauration depuis des données vierges, quatre heures de session accélérée, la rotation réelle des journaux et la génération de l'installeur NSIS sont validés. Restent les moniteurs identiques et l'installation sur une autre machine.                                                                                                            |
 
 ### Tranches supplémentaires déjà livrées
 
@@ -117,9 +154,9 @@ La V1 est terminée. L'ordre de livraison de la V1.1 est :
 4. validations matérielles et session longue ;
 5. paquet Windows et documentation de livraison.
 
-Le jalon 12 — carte heuristique — est terminé pendant que les deux validations matérielles de la
-V1.1 restent ouvertes. Les extensions du combat, des tables et des fonds animés configurables
-restent hors de cette version.
+Le jalon 12 — carte heuristique — est terminé et les versions 1.1.1 à 1.1.8 ont été publiées
+pendant que les deux validations matérielles de la V1.1 restent ouvertes. Les extensions du
+combat, des tables et des fonds animés configurables restent hors de cette version.
 
 ## 1. Résultat recherché
 

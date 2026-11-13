@@ -1,3 +1,4 @@
+import type { PlayerDisplayStateOf } from '@app/features/display/domain/player-display-state';
 import type { ResourceProvenance } from '@app/shared/domain/resource-provenance';
 import {
   createEmptyRichTextDocument,
@@ -102,8 +103,7 @@ export function updateLocation(
     summary: input.summary.trim(),
     description: input.description ?? location.description,
     notes: input.notes.trim(),
-    hideNameOnPlayerDisplay:
-      input.hideNameOnPlayerDisplay ?? location.hideNameOnPlayerDisplay,
+    hideNameOnPlayerDisplay: input.hideNameOnPlayerDisplay ?? location.hideNameOnPlayerDisplay,
     updatedAt: now().toISOString(),
   };
 }
@@ -120,3 +120,25 @@ function requiredName(value: string): string {
 function normalizeImagePaths(imagePaths: readonly string[]): readonly string[] {
   return [...new Set(imagePaths.map((path) => path.trim()).filter(Boolean))];
 }
+
+/** Nom présenté aux joueurs : masqué tant que le MJ ne veut pas révéler le lieu. */
+export function playerDisplayName(
+  location: Pick<Location, 'name' | 'hideNameOnPlayerDisplay'>,
+): string | undefined {
+  return location.hideNameOnPlayerDisplay ? undefined : location.name;
+}
+
+export function locationPlayerDisplayState(
+  location: Pick<Location, 'id' | 'name' | 'hideNameOnPlayerDisplay'>,
+  imageUrl: string,
+): PlayerDisplayStateOf<'location'> {
+  return {
+    mode: 'location',
+    locationId: location.id,
+    name: playerDisplayName(location),
+    imagePath: imageUrl,
+  };
+}
+
+/** Visuel de démonstration affiché tant qu’un lieu n’a pas d’image enregistrée. */
+export const DEMO_LOCATION_IMAGE_URL = '/demo/location-placeholder.png';

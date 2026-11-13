@@ -342,109 +342,29 @@
 </main>
 
 @if (showImageViewer() && !isUsingDemoImage()) {
-  <div
-    class="media-viewer"
-    role="presentation"
-    (click)="closeImageViewer()"
-    (wheel)="zoomImageViewerWithWheel($event)"
-  >
-    <section
-      class="media-viewer__dialog"
-      role="dialog"
-      aria-modal="true"
-      aria-label="Image du lieu en grand"
-      (click)="$event.stopPropagation()"
-    >
-      <button
-        class="media-viewer__close"
-        type="button"
-        aria-label="Fermer l’image"
-        (click)="closeImageViewer()"
-      >
-        ×
-      </button>
-      <button
-        class="media-viewer__arrow media-viewer__arrow--previous"
-        type="button"
-        aria-label="Image précédente"
-        [disabled]="!hasPreviousImage()"
-        (click)="selectPreviousImage()"
-      >
-        ‹
-      </button>
-      <div
-        #imageViewerViewport
-        class="media-viewer__viewport"
-        [class.media-viewer__viewport--zoomed]="imageViewerZoom() > 1"
-        (pointerdown)="startImageViewerDrag($event)"
-        (pointermove)="moveImageViewer($event)"
-        (pointerup)="stopImageViewerDrag($event)"
-        (pointercancel)="stopImageViewerDrag($event)"
-      >
-        <img
-          [src]="imageUrl()"
-          [alt]="selectedLocation()?.name || 'Image du lieu'"
-          [style.transform]="imageViewerTransform()"
-          draggable="false"
-        />
-      </div>
-      <button
-        class="media-viewer__arrow media-viewer__arrow--next"
-        type="button"
-        aria-label="Image suivante"
-        [disabled]="!hasNextImage()"
-        (click)="selectNextImage()"
-      >
-        ›
-      </button>
-      <div class="media-viewer__controls" role="group" aria-label="Contrôles du zoom">
-        <button
-          type="button"
-          aria-label="Dézoomer"
-          [disabled]="imageViewerZoom() <= 1"
-          (click)="zoomImageViewerOut()"
-        >
-          −
-        </button>
-        <span class="media-viewer__zoom-level" aria-live="polite">
-          {{ imageViewerZoomPercent() }} %
-        </span>
-        <button
-          type="button"
-          aria-label="Zoomer"
-          [disabled]="imageViewerZoom() >= 5"
-          (click)="zoomImageViewerIn()"
-        >
-          +
-        </button>
-        <button type="button" (click)="resetImageViewer()">Ajuster</button>
-      </div>
-      <span class="media-viewer__counter">
-        {{ selectedImageIndex() + 1 }} / {{ galleryImagePaths().length }}
-      </span>
-    </section>
-  </div>
+  <app-media-viewer
+    label="Image du lieu en grand"
+    [imageUrl]="imageUrl()"
+    [alt]="selectedLocation()?.name || 'Image du lieu'"
+    [position]="selectedImageIndex() + 1"
+    [count]="galleryImagePaths().length"
+    [hasPrevious]="hasPreviousImage()"
+    [hasNext]="hasNextImage()"
+    (closed)="closeImageViewer()"
+    (previous)="selectPreviousImage()"
+    (next)="selectNextImage()"
+  />
 }
 
-@if (showPendingChangesDialog()) {
-  <app-dialog
-    kicker="Modifications non enregistrées"
-    title="Que veux-tu faire ?"
+@if (pendingChanges.isOpen()) {
+  <app-pending-changes-dialog
     headingId="pending-title"
-  >
-    <p>Tes dernières modifications de fiche ou de note seront perdues si tu quittes.</p>
-    <div dialog-actions class="dialog-actions three-actions">
-      <button appButton="primary" type="button" [disabled]="isSaving()" (click)="saveAndLeave()">
-        Enregistrer et quitter
-      </button>
-      <button appButton="secondary-danger" type="button" (click)="leaveWithoutSaving()">
-        Quitter sans enregistrer
-      </button>
-      <button appButton="secondary" type="button" (click)="continueEditing()">
-        Continuer la modification
-      </button>
-    </div>
-  </app-dialog>
+    message="Tes dernières modifications de fiche ou de note seront perdues si tu quittes."
+    [saving]="isSaving()"
+    (save)="saveAndLeave()"
+    (discard)="leaveWithoutSaving()"
+    (keepEditing)="continueEditing()"
+  />
 }
 
 @if (showCatalogDialog()) {

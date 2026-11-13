@@ -5,6 +5,10 @@ import { LocationService } from '@app/features/locations/application/location.se
 import { LocationImageGateway } from '@app/features/locations/data-access/location-image.gateway';
 import { NarrativeItemService } from '@app/features/items/application/narrative-item.service';
 import { NpcService } from '@app/features/npcs/application/npc.service';
+import { createNpc } from '@app/features/npcs/domain/npc';
+import { ItemImageGateway } from '@app/features/items/data-access/item-image.gateway';
+import { NpcIdleVideoGateway } from '@app/features/npcs/data-access/npc-idle-video.gateway';
+import { NpcPortraitGateway } from '@app/features/npcs/data-access/npc-portrait.gateway';
 import { InMemoryLocationRepository } from '@app/features/locations/data-access/in-memory-location.repository';
 import { ActiveSceneService } from '@app/features/scenes/application/active-scene.service';
 import type { Scene } from '@app/features/scenes/domain/scene';
@@ -15,6 +19,7 @@ describe('SceneDisplayService', () => {
   const activeScene = { get: vi.fn(), set: vi.fn(), clear: vi.fn() };
   const sceneService = { findById: vi.fn() };
   const imageGateway = { resolveUrl: vi.fn() };
+  const mediaGateway = { resolveUrl: async (path: string) => `asset://${path}` };
   let service: SceneDisplayService;
   let locationService: LocationService;
 
@@ -30,6 +35,9 @@ describe('SceneDisplayService', () => {
         { provide: SceneService, useValue: sceneService },
         { provide: NpcService, useValue: { list: () => Promise.resolve([]) } },
         { provide: NarrativeItemService, useValue: { list: () => Promise.resolve([]) } },
+        { provide: NpcPortraitGateway, useValue: mediaGateway },
+        { provide: NpcIdleVideoGateway, useValue: mediaGateway },
+        { provide: ItemImageGateway, useValue: mediaGateway },
       ],
     });
     service = TestBed.inject(SceneDisplayService);
@@ -73,6 +81,25 @@ describe('SceneDisplayService', () => {
       background: { type: 'default' },
     });
     expect(activeScene.set).toHaveBeenCalledWith('campaign-id', 'scene-id');
+  });
+  it('resolves the media of an NPC shown in front of the scene', async () => {
+    const npc = createNpc({
+      campaignId: 'campaign-id',
+      name: 'Mira Vell',
+      portraitPath: 'mira.webp',
+      idleVideoPath: 'mira.webm',
+    });
+
+    await expect(
+      service.buildWithNpc(sceneFixture(), { ...npc, portraitPath: 'mira.webp' }),
+    ).resolves.toMatchObject({
+      foreground: {
+        type: 'npc',
+        resourceId: npc.id,
+        imagePath: 'asset://mira.webp',
+        idleVideoPath: 'asset://mira.webm',
+      },
+    });
   });
 });
 

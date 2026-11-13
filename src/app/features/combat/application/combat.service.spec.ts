@@ -48,8 +48,8 @@ describe('CombatService', () => {
       { createId: () => 'player-id', now: () => new Date('2026-08-20T12:00:00.000Z') },
     );
     await characters.save(character);
-    let combat = await service.add('campaign-id', playerCharacterCombatantSource(character));
-    combat = await service.setHitPoints(combat, combat.combatants[0]!.id, 7, 24);
+    const combat = await service.add('campaign-id', playerCharacterCombatantSource(character));
+    await service.setHitPoints(combat, combat.combatants[0]!.id, 7, 24);
 
     await expect(characters.findById('campaign-id', 'player-id')).resolves.toMatchObject({
       currentHitPoints: 7,

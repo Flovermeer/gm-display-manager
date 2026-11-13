@@ -16,6 +16,9 @@ import { UniverseResourceCatalog } from '@app/features/game-systems/ui/universe-
 import type { PendingChangesAware } from '@app/core/navigation/pending-changes.guard';
 import { BackupSettings } from '@app/features/backups/ui/backup-settings/backup-settings';
 import { DiagnosticSettings } from '@app/features/diagnostics/ui/diagnostic-settings/diagnostic-settings';
+import { errorMessage } from '@app/shared/error-message';
+
+const ERROR_FALLBACK = 'Impossible de modifier la configuration.';
 
 type ConfigurationSection = 'systems' | 'resources' | 'rules' | 'backups' | 'diagnostics';
 
@@ -195,7 +198,7 @@ export class GlobalConfiguration implements OnInit, PendingChangesAware {
       this.selectedSystemId.set(selectedId);
       await this.loadUniverses(selectedId);
     } catch (error) {
-      this.error.set(this.errorMessage(error));
+      this.error.set(errorMessage(error, ERROR_FALLBACK));
     } finally {
       this.isLoading.set(false);
     }
@@ -211,9 +214,9 @@ export class GlobalConfiguration implements OnInit, PendingChangesAware {
       currentId && universes.some(({ id }) => id === currentId)
         ? currentId
         : (universes.find((universe) => !universe.deletedAt && isGenericUniverse(universe))?.id ??
-          universes.find(({ deletedAt }) => !deletedAt)?.id ??
-          universes[0]?.id ??
-          null),
+            universes.find(({ deletedAt }) => !deletedAt)?.id ??
+            universes[0]?.id ??
+            null),
     );
   }
 
@@ -224,13 +227,9 @@ export class GlobalConfiguration implements OnInit, PendingChangesAware {
     try {
       await action();
     } catch (error) {
-      this.error.set(this.errorMessage(error));
+      this.error.set(errorMessage(error, ERROR_FALLBACK));
     } finally {
       this.isSubmitting.set(false);
     }
-  }
-
-  private errorMessage(error: unknown): string {
-    return error instanceof Error ? error.message : 'Impossible de modifier la configuration.';
   }
 }

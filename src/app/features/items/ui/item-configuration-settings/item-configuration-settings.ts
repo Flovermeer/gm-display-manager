@@ -9,6 +9,9 @@ import type {
 import { ButtonDirective } from '@app/shared/ui/button/button.directive';
 import { Dialog } from '@app/shared/ui/dialog/dialog';
 import { FormField } from '@app/shared/ui/form-field/form-field';
+import { errorMessage } from '@app/shared/error-message';
+
+const ERROR_FALLBACK = 'Impossible de modifier la configuration.';
 
 type ConfigurationSection = Readonly<{
   kind: ItemConfigurationKind;
@@ -100,7 +103,7 @@ export class ItemConfigurationSettings {
       await this.reload();
       this.cancelEditing();
     } catch (error) {
-      this.error.set(errorMessage(error));
+      this.error.set(errorMessage(error, ERROR_FALLBACK));
     } finally {
       this.isSaving.set(false);
     }
@@ -117,7 +120,7 @@ export class ItemConfigurationSettings {
       await this.reload();
     } catch (error) {
       this.pendingDeletion.set(null);
-      this.error.set(errorMessage(error));
+      this.error.set(errorMessage(error, ERROR_FALLBACK));
     } finally {
       this.isSaving.set(false);
     }
@@ -128,7 +131,7 @@ export class ItemConfigurationSettings {
       await this.service.ensureDefaults(universeId);
       await this.reload();
     } catch (error) {
-      this.error.set(errorMessage(error));
+      this.error.set(errorMessage(error, ERROR_FALLBACK));
     }
   }
 
@@ -139,8 +142,4 @@ export class ItemConfigurationSettings {
     ]);
     this.options.set({ type, rarity });
   }
-}
-
-function errorMessage(error: unknown): string {
-  return error instanceof Error ? error.message : 'Impossible de modifier la configuration.';
 }

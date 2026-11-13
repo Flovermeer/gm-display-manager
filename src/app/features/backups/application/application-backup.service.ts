@@ -23,6 +23,7 @@ import type {
 } from '@app/features/backups/domain/backup.models';
 import { ToastService } from '@app/shared/ui/toast/toast.service';
 import { TechnicalLogService } from '@app/features/diagnostics/application/technical-log.service';
+import { errorMessage } from '@app/shared/error-message';
 
 const AUTOMATIC_BACKUP_INTERVAL = 30 * 60 * 1_000;
 
@@ -68,7 +69,7 @@ export class ApplicationBackupService {
         return null;
       });
       this.recovery.set({
-        reason: this.errorMessage(error),
+        reason: errorMessage(error),
         candidate,
         isSelecting: false,
         isRestoring: false,
@@ -142,7 +143,7 @@ export class ApplicationBackupService {
       this.recovery.set({
         ...recovery,
         isSelecting: false,
-        error: this.errorMessage(error),
+        error: errorMessage(error),
       });
     } finally {
       const current = this.recovery();
@@ -155,13 +156,13 @@ export class ApplicationBackupService {
     if (!recovery?.candidate || recovery.isRestoring) return;
     this.recovery.set({ ...recovery, isRestoring: true, error: null });
     try {
-      await this.prepareRestoreAndRestart(recovery.candidate.archivePath, () => {});
+      await this.prepareRestoreAndRestart(recovery.candidate.archivePath, () => undefined);
     } catch (error) {
       this.log.reportError('backup.recovery-restore', error);
       this.recovery.set({
         ...recovery,
         isRestoring: false,
-        error: this.errorMessage(error),
+        error: errorMessage(error),
       });
     }
   }
@@ -179,7 +180,7 @@ export class ApplicationBackupService {
       await this.closeApplication();
     } catch (error) {
       this.log.reportError('backup.close-save', error);
-      this.closePrompt.set({ isSaving: false, error: this.errorMessage(error) });
+      this.closePrompt.set({ isSaving: false, error: errorMessage(error) });
     }
   }
 
@@ -188,7 +189,7 @@ export class ApplicationBackupService {
       await this.closeApplication();
     } catch (error) {
       this.log.reportError('backup.close-without-save', error);
-      const message = this.errorMessage(error);
+      const message = errorMessage(error);
       const recovery = this.recovery();
       if (recovery) this.recovery.set({ ...recovery, error: message });
       else this.closePrompt.set({ isSaving: false, error: message });
@@ -231,7 +232,7 @@ export class ApplicationBackupService {
         this.log.reportError('backup.close-status', error);
         this.closePrompt.set({
           isSaving: false,
-          error: `Impossible de vérifier la dernière sauvegarde : ${this.errorMessage(error)}`,
+          error: `Impossible de vérifier la dernière sauvegarde : ${errorMessage(error)}`,
         });
         return;
       }
@@ -242,7 +243,7 @@ export class ApplicationBackupService {
           this.log.reportError('backup.close', error);
           this.closePrompt.set({
             isSaving: false,
-            error: `Impossible de fermer l’application : ${this.errorMessage(error)}`,
+            error: `Impossible de fermer l’application : ${errorMessage(error)}`,
           });
         }
         return;
@@ -259,14 +260,14 @@ export class ApplicationBackupService {
       if (this.manualBackupPromise) await this.manualBackupPromise;
       const status = await this.gateway.getBackupStatus();
       if (!status.hasChanges) return;
-      await this.gateway.createAutomaticBackup(() => {});
+      await this.gateway.createAutomaticBackup(() => undefined);
     })();
     this.automaticBackupPromise = operation;
     void operation
       .catch((error) => {
         this.log.reportError('backup.automatic', error);
         if (!required) {
-          this.toast.warning(`Sauvegarde automatique impossible : ${this.errorMessage(error)}`);
+          this.toast.warning(`Sauvegarde automatique impossible : ${errorMessage(error)}`);
         }
       })
       .finally(() => {
@@ -314,9 +315,5 @@ export class ApplicationBackupService {
       window.clearInterval(this.automaticBackupTimer);
       this.automaticBackupTimer = null;
     }
-  }
-
-  private errorMessage(error: unknown): string {
-    return error instanceof Error ? error.message : String(error);
   }
 }

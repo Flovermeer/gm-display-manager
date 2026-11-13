@@ -33,7 +33,9 @@ export class TauriPlayerCharacterPortraitGateway extends PlayerCharacterPortrait
       await mkdir(directory, { baseDir: BaseDirectory.AppData, recursive: true });
       await copyFile(selectedPath, await this.absolutePath(relativePath));
     } catch (error) {
-      throw new Error(`Impossible de copier le portrait : ${nativeErrorMessage(error)}`);
+      throw new Error(`Impossible de copier le portrait : ${nativeErrorMessage(error)}`, {
+        cause: error,
+      });
     }
     return relativePath;
   }

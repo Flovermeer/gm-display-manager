@@ -1,5 +1,7 @@
 import {
   createLocation,
+  locationPlayerDisplayState,
+  playerDisplayName,
   updateLocation,
   type LocationFactoryDependencies,
 } from '@app/features/locations/domain/location';
@@ -94,5 +96,25 @@ describe('Location', () => {
 
     expect(location.imagePaths).toEqual(['map.webp', 'view.webp']);
     expect(location.imagePath).toBe('map.webp');
+  });
+});
+
+describe('Location player display', () => {
+  const location = { id: 'tavern', name: 'Taverne du Beholder', hideNameOnPlayerDisplay: false };
+
+  it('shows the location name unless the GM hides it', () => {
+    expect(playerDisplayName(location)).toBe('Taverne du Beholder');
+    expect(playerDisplayName({ ...location, hideNameOnPlayerDisplay: true })).toBeUndefined();
+  });
+
+  it('builds the standalone player display state with the selected image', () => {
+    expect(
+      locationPlayerDisplayState({ ...location, hideNameOnPlayerDisplay: true }, 'tavern.webp'),
+    ).toEqual({
+      mode: 'location',
+      locationId: 'tavern',
+      name: undefined,
+      imagePath: 'tavern.webp',
+    });
   });
 });

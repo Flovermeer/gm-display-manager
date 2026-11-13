@@ -11,6 +11,9 @@ import { computed, inject, Injectable, signal } from '@angular/core';
 
 import { CombatService } from '@app/features/combat/application/combat.service';
 import type { ActiveCombat, Combatant, CombatantSource } from '@app/features/combat/domain/combat';
+import { errorMessage } from '@app/shared/error-message';
+
+const ERROR_FALLBACK = 'Impossible de mettre à jour le combat.';
 
 @Injectable()
 export class CombatStore {
@@ -125,13 +128,9 @@ export class CombatStore {
     try {
       await action();
     } catch (error) {
-      this.error.set(errorMessage(error));
+      this.error.set(errorMessage(error, ERROR_FALLBACK));
     } finally {
       this.isBusy.set(false);
     }
   }
-}
-
-function errorMessage(error: unknown): string {
-  return error instanceof Error ? error.message : 'Impossible de mettre \u00e0 jour le combat.';
 }

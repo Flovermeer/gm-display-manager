@@ -1,4 +1,4 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { TestBed } from '@angular/core/testing';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { Component } from '@angular/core';
 
@@ -37,7 +37,9 @@ describe('SearchableSelect', () => {
     fixture.detectChanges();
     expect(fixture.nativeElement.querySelectorAll('.searchable-select__option')).toHaveLength(1);
 
-    (fixture.nativeElement.querySelector('.searchable-select__option') as HTMLButtonElement).click();
+    (
+      fixture.nativeElement.querySelector('.searchable-select__option') as HTMLButtonElement
+    ).click();
     fixture.detectChanges();
     expect(fixture.componentInstance.control.value).toEqual(['npc-1']);
     expect(fixture.nativeElement.querySelector('.tag-pill')?.textContent).toContain('Syndra');

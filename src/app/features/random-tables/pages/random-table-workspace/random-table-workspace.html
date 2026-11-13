@@ -250,23 +250,13 @@
   </app-dialog>
 }
 
-@if (showPendingChangesDialog()) {
-  <app-dialog
-    kicker="Modifications non enregistrées"
-    title="Quitter cette table ?"
+@if (pendingChanges.isOpen()) {
+  <app-pending-changes-dialog
     headingId="random-table-pending-title"
-  >
-    <p>Enregistre les modifications ou quitte sans les conserver.</p>
-    <div dialog-actions class="dialog-actions three-actions">
-      <button appButton="secondary" type="button" (click)="continueEditing()">
-        Continuer la modification
-      </button>
-      <button appButton="secondary-danger" type="button" (click)="leaveWithoutSaving()">
-        Quitter sans enregistrer
-      </button>
-      <button appButton="primary" type="button" (click)="saveAndLeave()">
-        Enregistrer et quitter
-      </button>
-    </div>
-  </app-dialog>
+    title="Quitter cette table ?"
+    message="Enregistre les modifications ou quitte sans les conserver."
+    (save)="saveAndLeave()"
+    (discard)="leaveWithoutSaving()"
+    (keepEditing)="continueEditing()"
+  />
 }

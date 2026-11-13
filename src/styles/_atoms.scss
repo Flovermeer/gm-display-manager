@@ -120,3 +120,12 @@
   outline: 2px solid var(--color-workspace-focus);
   outline-offset: 2px;
 }
+
+/* Libellé d'une zone qui n'est pas un champ natif (éditeur riche, import de média). */
+.field-label {
+  display: block;
+  margin-bottom: 0.45rem;
+  color: #5d554c;
+  font-size: 0.8rem;
+  font-weight: 800;
+}

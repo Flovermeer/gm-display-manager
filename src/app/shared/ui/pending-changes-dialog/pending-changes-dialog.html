@@ -1,0 +1,14 @@
+<app-dialog kicker="Modifications non enregistrées" [title]="title()" [headingId]="headingId()">
+  <p>{{ message() }}</p>
+  <div dialog-actions class="dialog-actions pending-changes-dialog__actions">
+    <button appButton="primary" type="button" [disabled]="saving()" (click)="save.emit()">
+      Enregistrer et quitter
+    </button>
+    <button appButton="secondary-danger" type="button" (click)="discard.emit()">
+      Quitter sans enregistrer
+    </button>
+    <button appButton="secondary" type="button" (click)="keepEditing.emit()">
+      Continuer la modification
+    </button>
+  </div>
+</app-dialog>

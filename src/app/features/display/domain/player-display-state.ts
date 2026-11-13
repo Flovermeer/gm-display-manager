@@ -61,4 +61,30 @@ export type PlayerDisplayForeground =
       summary?: string;
     }>;
 
+export type PlayerDisplayStateOf<Mode extends PlayerDisplayState['mode']> = Extract<
+  PlayerDisplayState,
+  { mode: Mode }
+>;
+
 export const initialPlayerDisplayState: PlayerDisplayState = { mode: 'neutral' };
+
+export function isDisplayingResource(
+  state: PlayerDisplayState,
+  resourceType: string,
+  resourceId: string,
+): boolean {
+  switch (resourceType) {
+    case 'npc':
+      return state.mode === 'npc' && state.npcId === resourceId;
+    case 'monster':
+      return state.mode === 'monster' && state.monsterId === resourceId;
+    case 'location':
+      return state.mode === 'location' && state.locationId === resourceId;
+    case 'item':
+      return state.mode === 'item' && state.itemId === resourceId;
+    case 'scene':
+      return state.mode === 'scene' && state.sceneId === resourceId;
+    default:
+      return false;
+  }
+}

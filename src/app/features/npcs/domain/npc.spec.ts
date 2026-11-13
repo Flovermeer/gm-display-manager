@@ -3,6 +3,10 @@ import {
   createNpc,
   NPC_SHEET_SCHEMA_VERSION,
   normalizeNpcSheet,
+  npcPlayerDisplayState,
+  npcStatusIcon,
+  npcStatusLabel,
+  npcTypeLine,
   updateNpc,
   type NpcFactoryDependencies,
 } from '@app/features/npcs/domain/npc';
@@ -103,5 +107,41 @@ describe('Npc', () => {
       subraceOptionId: 'drow-id',
       subrace: 'Drow',
     });
+  });
+});
+
+describe('Npc player display', () => {
+  const npc = { id: 'mira', name: 'Mira Vell' };
+
+  it('shows the portrait and adds the idle video only when it exists', () => {
+    expect(npcPlayerDisplayState(npc, { portraitUrl: 'mira.webp' })).toEqual({
+      mode: 'npc',
+      npcId: 'mira',
+      name: 'Mira Vell',
+      portraitPath: 'mira.webp',
+    });
+    expect(
+      npcPlayerDisplayState(npc, { portraitUrl: 'mira.webp', idleVideoUrl: 'mira.webm' }),
+    ).toHaveProperty('idleVideoPath', 'mira.webm');
+  });
+});
+
+describe('Npc labels', () => {
+  it('labels every NPC status with text and icon', () => {
+    expect(npcStatusLabel('retired')).toBe('Retiré');
+    expect(npcStatusIcon('dead')).toBe('💀');
+  });
+
+  it('builds the type line from the known identity fields only', () => {
+    expect(
+      npcTypeLine({
+        ...createEmptyNpcSheet(),
+        size: 'Moyenne',
+        race: 'Elfe',
+        subrace: 'Haut-elfe',
+        alignment: 'Neutre bon',
+      }),
+    ).toBe('Moyenne, Elfe, Haut-elfe, Neutre bon');
+    expect(npcTypeLine(createEmptyNpcSheet())).toBe('—');
   });
 });

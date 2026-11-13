@@ -16,6 +16,9 @@ import {
   type RecentResourceTarget,
   type RecentResourceType,
 } from '@app/features/recent-resources/domain/recent-resource';
+import { errorMessage } from '@app/shared/error-message';
+
+const ERROR_FALLBACK = "Impossible de mettre à jour l'historique récent.";
 
 @Injectable()
 export class RecentResourceStore {
@@ -37,7 +40,7 @@ export class RecentResourceStore {
         this.resources.set(resources);
         this.nextOrder = Math.max(0, ...resources.map(({ viewedOrder }) => viewedOrder));
       })
-      .catch((error: unknown) => this.error.set(errorMessage(error)));
+      .catch((error: unknown) => this.error.set(errorMessage(error, ERROR_FALLBACK)));
     return this.ready;
   }
 
@@ -78,7 +81,9 @@ export class RecentResourceStore {
       await this.service.save(resource);
       this.error.set(null);
     });
-    this.writeQueue = operation.catch((error: unknown) => this.error.set(errorMessage(error)));
+    this.writeQueue = operation.catch((error: unknown) =>
+      this.error.set(errorMessage(error, ERROR_FALLBACK)),
+    );
     return this.writeQueue;
   }
 
@@ -96,13 +101,9 @@ export class RecentResourceStore {
       await this.service.remove(campaignId, resourceType, resourceId);
       this.error.set(null);
     });
-    this.writeQueue = operation.catch((error: unknown) => this.error.set(errorMessage(error)));
+    this.writeQueue = operation.catch((error: unknown) =>
+      this.error.set(errorMessage(error, ERROR_FALLBACK)),
+    );
     return this.writeQueue;
   }
-}
-
-function errorMessage(error: unknown): string {
-  return error instanceof Error
-    ? error.message
-    : "Impossible de mettre à jour l'historique récent.";
 }

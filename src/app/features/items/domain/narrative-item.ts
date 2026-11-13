@@ -1,3 +1,4 @@
+import type { PlayerDisplayStateOf } from '@app/features/display/domain/player-display-state';
 import {
   createEmptyRichTextDocument,
   type RichTextDocument,
@@ -96,4 +97,39 @@ function normalizeInput(input: UpdateNarrativeItemInput): UpdateNarrativeItemInp
     summary: input.summary.trim(),
     attunementCondition: input.attunement === 'conditional' ? input.attunementCondition.trim() : '',
   };
+}
+
+export function itemPlayerDisplayState(
+  item: Pick<NarrativeItem, 'id' | 'name' | 'summary'>,
+  imageUrl: string,
+): PlayerDisplayStateOf<'item'> {
+  return {
+    mode: 'item',
+    itemId: item.id,
+    name: item.name,
+    summary: item.summary,
+    imagePath: imageUrl,
+  };
+}
+
+/** Visuel de démonstration affiché tant qu’un objet n’a pas d’image enregistrée. */
+export const DEMO_ITEM_IMAGE_URL = '/demo/item-placeholder.svg';
+
+const NARRATIVE_ITEM_STATUS_LABELS: Readonly<Record<NarrativeItemStatus, string>> = {
+  active: 'En jeu',
+  lost: 'Perdu',
+  destroyed: 'Détruit',
+  retired: 'Retiré',
+};
+
+export function narrativeItemStatusLabel(status: NarrativeItemStatus): string {
+  return NARRATIVE_ITEM_STATUS_LABELS[status];
+}
+
+export function attunementLabel(
+  item: Pick<NarrativeItem, 'attunement' | 'attunementCondition'>,
+): string {
+  if (item.attunement === 'none') return 'Aucune';
+  if (item.attunement === 'required') return 'Requise';
+  return `Requise — ${item.attunementCondition}`;
 }

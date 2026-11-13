@@ -528,19 +528,13 @@
   }
 </section>
 
-@if (showPendingChangesDialog()) {
-  <app-dialog
-    kicker="Modifications non enregistrées"
-    title="Quitter l’éditeur ?"
+@if (pendingChanges.isOpen()) {
+  <app-pending-changes-dialog
     headingId="canonical-resource-pending-title"
-  >
-    <p>Tu peux enregistrer la fiche, abandonner le brouillon ou continuer à la modifier.</p>
-    <div dialog-actions class="dialog-actions">
-      <button appButton="secondary" type="button" (click)="continueEditing()">Continuer</button>
-      <button appButton="secondary-danger" type="button" (click)="leaveWithoutSaving()">
-        Abandonner
-      </button>
-      <button appButton="primary" type="button" (click)="saveAndLeave()">Enregistrer</button>
-    </div>
-  </app-dialog>
+    title="Quitter l’éditeur ?"
+    message="Tu peux enregistrer la fiche, abandonner le brouillon ou continuer à la modifier."
+    (save)="saveAndLeave()"
+    (discard)="leaveWithoutSaving()"
+    (keepEditing)="continueEditing()"
+  />
 }

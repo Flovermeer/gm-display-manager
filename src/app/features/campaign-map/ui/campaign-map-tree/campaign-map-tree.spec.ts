@@ -140,7 +140,9 @@ class FakeCytoscape {
     return this;
   }
 
-  destroy(): void {}
+  destroy(): void {
+    // Rien à libérer dans ce double de test.
+  }
 
   minZoom(): number {
     return 0.35;

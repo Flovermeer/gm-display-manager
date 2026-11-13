@@ -1,0 +1,126 @@
+<section class="npc-character-sheet stat-block" aria-labelledby="npc-sheet-title">
+  <header class="stat-block-heading">
+    <h3 id="npc-sheet-title">Fiche PNJ</h3>
+    <p>{{ npcTypeLine(sheet()) }}</p>
+  </header>
+
+  <dl class="combat-stat-lines">
+    @if (sheet().occupation) {
+      <div>
+        <dt>Occupation</dt>
+        <dd>{{ sheet().occupation }}</dd>
+      </div>
+    }
+    <div>
+      <dt>Classe d'armure</dt>
+      <dd>{{ armorClassLabel(sheet()) }}</dd>
+    </div>
+    <div>
+      <dt>Points de vie</dt>
+      <dd>{{ hitPointsLabel(sheet()) }}</dd>
+    </div>
+    <div>
+      <dt>Vitesse</dt>
+      <dd>{{ sheet().speed || '—' }}</dd>
+    </div>
+  </dl>
+
+  <div class="ability-grid" aria-label="Caractéristiques">
+    <div>
+      <span>FOR</span><strong>{{ abilityScoreWithModifier(sheet().abilities.strength) }}</strong>
+    </div>
+    <div>
+      <span>DEX</span><strong>{{ abilityScoreWithModifier(sheet().abilities.dexterity) }}</strong>
+    </div>
+    <div>
+      <span>CON</span
+      ><strong>{{ abilityScoreWithModifier(sheet().abilities.constitution) }}</strong>
+    </div>
+    <div>
+      <span>INT</span
+      ><strong>{{ abilityScoreWithModifier(sheet().abilities.intelligence) }}</strong>
+    </div>
+    <div>
+      <span>SAG</span><strong>{{ abilityScoreWithModifier(sheet().abilities.wisdom) }}</strong>
+    </div>
+    <div>
+      <span>CHA</span><strong>{{ abilityScoreWithModifier(sheet().abilities.charisma) }}</strong>
+    </div>
+  </div>
+
+  <dl class="reference-stat-lines">
+    @if (sheet().savingThrows.length) {
+      <div>
+        <dt>Jets de sauvegarde</dt>
+        <dd>{{ sheet().savingThrows.join(', ') }}</dd>
+      </div>
+    }
+    @if (sheet().skills.length) {
+      <div>
+        <dt>Compétences</dt>
+        <dd>{{ sheet().skills.join(', ') }}</dd>
+      </div>
+    }
+    @if (sheet().damageVulnerabilities.length) {
+      <div>
+        <dt>Vulnérabilités aux dégâts</dt>
+        <dd>{{ sheet().damageVulnerabilities.join(', ') }}</dd>
+      </div>
+    }
+    @if (sheet().damageResistances.length) {
+      <div>
+        <dt>Résistances aux dégâts</dt>
+        <dd>{{ sheet().damageResistances.join(', ') }}</dd>
+      </div>
+    }
+    @if (sheet().damageImmunities.length) {
+      <div>
+        <dt>Immunités aux dégâts</dt>
+        <dd>{{ sheet().damageImmunities.join(', ') }}</dd>
+      </div>
+    }
+    @if (sheet().conditionImmunities.length) {
+      <div>
+        <dt>Immunités aux états</dt>
+        <dd>{{ sheet().conditionImmunities.join(', ') }}</dd>
+      </div>
+    }
+    @if (sheet().senses.length) {
+      <div>
+        <dt>Sens</dt>
+        <dd>{{ sheet().senses.join(', ') }}</dd>
+      </div>
+    }
+    @if (sheet().languages.length) {
+      <div>
+        <dt>Langues</dt>
+        <dd>{{ sheet().languages.join(', ') }}</dd>
+      </div>
+    }
+    <div>
+      <dt>Dangerosité</dt>
+      <dd>{{ challengeLabel(sheet()) }}</dd>
+    </div>
+  </dl>
+
+  @for (section of featureSections; track section.key) {
+    @if (sheet()[section.key].length) {
+      <app-rich-text-feature-section
+        [title]="section.label"
+        [features]="sheet()[section.key]"
+        [mentionCandidates]="mentionCandidates()"
+        (mentionActivate)="mentionActivate.emit($event)"
+      />
+    }
+  }
+</section>
+
+<section class="official-description-readonly" aria-labelledby="npc-description-title">
+  <h3 id="npc-description-title">Description officielle</h3>
+  <app-rich-text-editor
+    [value]="sheet().officialDescription"
+    [editable]="false"
+    [mentionCandidates]="mentionCandidates()"
+    (mentionActivate)="mentionActivate.emit($event)"
+  />
+</section>

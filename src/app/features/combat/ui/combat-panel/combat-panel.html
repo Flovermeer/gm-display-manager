@@ -1,10 +1,10 @@
 @if (store.isOpen()) {
-  <div class="combat-overlay" (click)="store.close()">
-    <aside
-      class="combat-panel"
-      aria-labelledby="combat-panel-title"
-      (click)="$event.stopPropagation()"
-    >
+  <div
+    class="combat-overlay"
+    role="presentation"
+    (click)="$event.target === $event.currentTarget && store.close()"
+  >
+    <aside class="combat-panel" aria-labelledby="combat-panel-title">
       <header class="combat-panel__header">
         <div>
           <p>Suivi privé du MJ</p>

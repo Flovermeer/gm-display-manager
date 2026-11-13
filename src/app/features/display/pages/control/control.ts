@@ -7,11 +7,16 @@ import { DisplayGateway } from '@app/features/display/data-access/display.gatewa
 import type { MonitorDescriptor } from '@app/features/display/domain/display.models';
 import { PlayerDisplayPreferenceService } from '@app/features/display/application/player-display-preference.service';
 import type { PlayerDisplayState } from '@app/features/display/domain/player-display-state';
-import { PlayerDisplayStore } from '@app/features/display/application/player-display.store';
+import { PlayerDisplayPublisher } from '@app/features/display/application/player-display-publisher.service';
+import { DEMO_LOCATION_IMAGE_URL } from '@app/features/locations/domain/location';
+import { DEMO_NPC_PORTRAIT_URL } from '@app/features/npcs/domain/npc';
 import { SceneDisplayService } from '@app/features/scenes/application/scene-display.service';
 import { ButtonDirective } from '@app/shared/ui/button/button.directive';
 import { PlayerDisplayMonitorSessionService } from '@app/features/display/application/player-display-monitor-session.service';
 import { TechnicalLogService } from '@app/features/diagnostics/application/technical-log.service';
+import { errorMessage } from '@app/shared/error-message';
+
+const ERROR_FALLBACK = 'Une erreur native inattendue est survenue.';
 
 @Component({
   selector: 'app-control',
@@ -23,7 +28,7 @@ export class Control implements OnInit, OnDestroy {
   private readonly campaignContext = inject(CampaignContext);
   private readonly displayGateway = inject(DisplayGateway);
   private readonly playerDisplayPreference = inject(PlayerDisplayPreferenceService);
-  private readonly playerDisplayStore = inject(PlayerDisplayStore);
+  private readonly playerDisplay = inject(PlayerDisplayPublisher);
   private readonly sceneDisplayService = inject(SceneDisplayService);
   private readonly playerDisplayMonitorSession = inject(PlayerDisplayMonitorSessionService);
   private readonly log = inject(TechnicalLogService);
@@ -41,7 +46,7 @@ export class Control implements OnInit, OnDestroy {
   protected readonly selectedMonitor = computed(() =>
     this.monitors().find((monitor) => monitor.id === this.selectedMonitorId()),
   );
-  protected readonly displayState = this.playerDisplayStore.state;
+  protected readonly displayState = this.playerDisplay.state;
   protected readonly isSelectedPlayerMonitor = computed(
     () =>
       this.selectedMonitorId() !== '' && this.selectedMonitorId() === this.playerDisplayMonitorId(),
@@ -114,20 +119,20 @@ export class Control implements OnInit, OnDestroy {
   }
 
   protected showLocation(): void {
-    if (this.playerDisplayStore.state().mode === 'location') {
+    if (this.playerDisplay.state().mode === 'location') {
       void this.publishDisplayState({ mode: 'neutral' });
       return;
     }
     void this.publishDisplayState({
       mode: 'location',
       locationId: 'demo-tavern',
-      imagePath: '/demo/location-placeholder.png',
+      imagePath: DEMO_LOCATION_IMAGE_URL,
       name: "Beholder's Inn",
     });
   }
 
   protected showNpc(): void {
-    if (this.playerDisplayStore.state().mode === 'npc') {
+    if (this.playerDisplay.state().mode === 'npc') {
       void this.publishDisplayState({ mode: 'neutral' });
       return;
     }
@@ -135,8 +140,7 @@ export class Control implements OnInit, OnDestroy {
       mode: 'npc',
       npcId: 'demo-innkeeper',
       name: 'Mira Vell',
-      portraitPath: '/demo/npc-placeholder.png',
-      backgroundPath: '/demo/location-placeholder.png',
+      portraitPath: DEMO_NPC_PORTRAIT_URL,
     });
   }
 
@@ -178,7 +182,7 @@ export class Control implements OnInit, OnDestroy {
       await action();
     } catch (error) {
       this.log.reportError('display.action', error);
-      this.error.set(this.errorMessage(error));
+      this.error.set(errorMessage(error, ERROR_FALLBACK));
     } finally {
       this.isLoading.set(false);
     }
@@ -188,12 +192,12 @@ export class Control implements OnInit, OnDestroy {
     try {
       this.unlistenPlayerDisplayReady = await this.displayGateway.listenForPlayerDisplayReady(
         () => {
-          void this.displayGateway.sendPlayerDisplayState(this.playerDisplayStore.state());
+          void this.displayGateway.sendPlayerDisplayState(this.playerDisplay.state());
         },
       );
     } catch (error) {
       this.log.reportError('display.ready-listener', error);
-      this.error.set(this.errorMessage(error));
+      this.error.set(errorMessage(error, ERROR_FALLBACK));
     }
 
     await this.refreshMonitors();
@@ -203,13 +207,13 @@ export class Control implements OnInit, OnDestroy {
     try {
       const campaign = await this.campaignContext.load();
       if (!campaign) return;
-      this.playerDisplayStore.setState(await this.sceneDisplayService.restore(campaign.id));
+      await this.playerDisplay.update(await this.sceneDisplayService.restore(campaign.id), false);
       if (this.isDesktop) {
         await this.initializeDesktop();
       }
     } catch (error) {
       this.log.reportError('display.initialization', error);
-      this.error.set(this.errorMessage(error));
+      this.error.set(errorMessage(error, ERROR_FALLBACK));
     }
   }
 
@@ -251,16 +255,11 @@ export class Control implements OnInit, OnDestroy {
   }
 
   private async publishDisplayState(state: PlayerDisplayState): Promise<void> {
-    this.playerDisplayStore.setState(state);
-
     if (!this.isDesktop || !this.isPlayerDisplayOpen()) {
+      await this.playerDisplay.update(state, false);
       return;
     }
 
-    await this.runDisplayAction(() => this.displayGateway.sendPlayerDisplayState(state));
-  }
-
-  private errorMessage(error: unknown): string {
-    return error instanceof Error ? error.message : 'Une erreur native inattendue est survenue.';
+    await this.runDisplayAction(() => this.playerDisplay.send(state));
   }
 }

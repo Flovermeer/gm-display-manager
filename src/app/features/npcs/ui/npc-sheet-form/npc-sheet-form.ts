@@ -3,11 +3,8 @@ import { ReactiveFormsModule } from '@angular/forms';
 
 import { subracesForRace } from '@app/features/game-systems/domain/character-rule-catalog';
 import { NPC_STATUSES, npcStatusLabel, type NpcSheet } from '@app/features/npcs/domain/npc';
-import {
-  ruleFormOptions,
-  type NpcForm,
-  type NpcFormCatalogs,
-} from '@app/features/npcs/pages/npc-workspace/npc-form';
+import type { NpcForm, NpcFormCatalogs } from '@app/features/npcs/pages/npc-workspace/npc-form';
+import { ruleFormOptions } from '@app/shared/ui/form-field/rule-form-options';
 import type { ResourceMentionCandidate } from '@app/shared/rich-text-editor/resource-mention';
 import { RichTextEditor } from '@app/shared/rich-text-editor/rich-text-editor';
 import type { RichTextDocument } from '@app/shared/rich-text-editor/rich-text-document';

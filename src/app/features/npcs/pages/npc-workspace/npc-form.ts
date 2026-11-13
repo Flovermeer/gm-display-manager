@@ -20,7 +20,7 @@ import {
   type UpdateNpcInput,
 } from '@app/features/npcs/domain/npc';
 import type { RichTextDocument } from '@app/shared/rich-text-editor/rich-text-document';
-import type { FormFieldOption } from '@app/shared/ui/form-field/form-field';
+import { knownOptionId } from '@app/shared/ui/form-field/rule-form-options';
 import type { CreatureFeatureDrafts } from '@app/shared/ui/rich-text-feature-editor/creature-feature-sections';
 
 export type NpcFormCatalogs = Readonly<{
@@ -207,28 +207,6 @@ function sheetNumbersAndTags(sheet: NpcSheet) {
   };
 }
 
-function knownOptionId(value: string, options: readonly { id: string }[]): string | null {
-  return options.some(({ id }) => id === value) ? value : null;
-}
-
 function integerValidator(control: AbstractControl): ValidationErrors | null {
   return control.value === null || Number.isInteger(control.value) ? null : { integer: true };
-}
-
-/** Options d’un référentiel ; une ancienne valeur libre absente du référentiel reste sélectionnable. */
-export function ruleFormOptions(
-  options: readonly Readonly<{ id: string; label: string; code: string }>[],
-  legacyLabel = '',
-): readonly FormFieldOption[] {
-  const normalized = legacyLabel.trim().toLocaleLowerCase('fr');
-  const mapped = options.some(
-    ({ label, code }) =>
-      label.toLocaleLowerCase('fr') === normalized || code.toLocaleLowerCase('fr') === normalized,
-  );
-  return [
-    ...options.map(({ id, label }) => ({ value: id, label })),
-    ...(legacyLabel && !mapped
-      ? [{ value: legacyLabel, label: `${legacyLabel} (ancienne valeur)` }]
-      : []),
-  ];
 }

@@ -7,7 +7,6 @@ import {
   emptyNpcFormValue,
   npcFormValueToInput,
   npcToFormValue,
-  ruleFormOptions,
   type NpcFormCatalogs,
 } from '@app/features/npcs/pages/npc-workspace/npc-form';
 import { createEmptyRichTextDocument } from '@app/shared/rich-text-editor/rich-text-document';
@@ -91,17 +90,5 @@ describe('NPC form', () => {
 
   it('starts a new NPC as active with an empty sheet', () => {
     expect(emptyNpcFormValue()).toMatchObject({ name: '', status: 'active', languages: [] });
-  });
-});
-
-describe('ruleFormOptions', () => {
-  it('keeps an unknown legacy value selectable', () => {
-    const options = [{ id: 'elf', code: 'elf', label: 'Elfe' }];
-
-    expect(ruleFormOptions(options, 'Elfe')).toEqual([{ value: 'elf', label: 'Elfe' }]);
-    expect(ruleFormOptions(options, 'Tieffelin')).toEqual([
-      { value: 'elf', label: 'Elfe' },
-      { value: 'Tieffelin', label: 'Tieffelin (ancienne valeur)' },
-    ]);
   });
 });

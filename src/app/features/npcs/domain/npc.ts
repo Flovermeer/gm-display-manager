@@ -336,3 +336,6 @@ export function npcPlayerDisplayState(
     ...(media.idleVideoUrl ? { idleVideoPath: media.idleVideoUrl } : {}),
   };
 }
+
+/** Portrait de démonstration affiché tant qu’un PNJ n’a pas de portrait enregistré. */
+export const DEMO_NPC_PORTRAIT_URL = '/demo/npc-placeholder.png';

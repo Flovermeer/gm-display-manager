@@ -19,17 +19,11 @@ import {
   subracesForRace,
   type CharacterRuleCatalog,
 } from '@app/features/game-systems/domain/character-rule-catalog';
-import { PlayerDisplayPublisher } from '@app/features/display/application/player-display-publisher.service';
-import {
-  isDisplayingResource,
-  type PlayerDisplayStateOf,
-} from '@app/features/display/domain/player-display-state';
-import { NpcPortraitGateway } from '@app/features/npcs/data-access/npc-portrait.gateway';
-import { NpcIdleVideoGateway } from '@app/features/npcs/data-access/npc-idle-video.gateway';
+import { NpcWorkspaceFacade } from '@app/features/npcs/application/npc-workspace.facade';
 import type { PendingChangesAware } from '@app/core/navigation/pending-changes.guard';
 import {
   createEmptyNpcSheet,
-  npcPlayerDisplayState,
+  DEMO_NPC_PORTRAIT_URL,
   NPC_STATUSES,
   type Npc,
   type NpcSheet,
@@ -74,7 +68,6 @@ import { errorMessage } from '@app/shared/error-message';
 import { PendingChangesPrompt } from '@app/core/navigation/pending-changes-prompt';
 import { PendingChangesDialog } from '@app/shared/ui/pending-changes-dialog/pending-changes-dialog';
 
-const DEMO_NPC_PORTRAIT_URL = '/demo/npc-placeholder.png';
 type NpcTagField =
   | 'savingThrows'
   | 'skills'
@@ -110,9 +103,7 @@ export class NpcWorkspace implements OnInit, PendingChangesAware {
   private readonly route = inject(ActivatedRoute);
   private readonly destroyRef = inject(DestroyRef);
   private readonly npcService = inject(NpcService);
-  private readonly npcPortraitGateway = inject(NpcPortraitGateway);
-  private readonly npcIdleVideoGateway = inject(NpcIdleVideoGateway);
-  private readonly playerDisplay = inject(PlayerDisplayPublisher);
+  private readonly workspace = inject(NpcWorkspaceFacade);
   private readonly creatureRules = inject(CreatureRuleCatalogService);
   private readonly characterRules = inject(CharacterRuleCatalogService);
   private readonly mentionNavigation = inject(ResourceMentionNavigationService);
@@ -190,7 +181,7 @@ export class NpcWorkspace implements OnInit, PendingChangesAware {
   );
   protected readonly isSelectedNpcDisplayed = computed(() => {
     const npc = this.selectedNpc();
-    return npc !== null && isDisplayingResource(this.playerDisplay.state(), 'npc', npc.id);
+    return npc !== null && this.workspace.isDisplayed(npc, this.workspace.playerDisplayState());
   });
   protected readonly filteredNpcs = computed(() => {
     const searchTerm = this.searchTerm().trim().toLocaleLowerCase('fr');
@@ -371,25 +362,16 @@ export class NpcWorkspace implements OnInit, PendingChangesAware {
     this.error.set(null);
 
     try {
-      const importedPath = await this.npcPortraitGateway.chooseAndImport(campaign.universeId);
-      if (!importedPath) {
+      const imported = await this.workspace.importPortrait(campaign.universeId);
+      if (!imported) {
         return;
       }
 
-      const previewUrl = await this.npcPortraitGateway
-        .resolveUrl(importedPath)
-        .catch(async (error: unknown) => {
-          await this.npcPortraitGateway.discard(importedPath);
-          throw error;
-        });
       const previousDraft = this.draftPortraitPath();
-      this.draftPortraitPath.set(importedPath);
-      this.portraitUrl.set(previewUrl);
+      this.draftPortraitPath.set(imported.path);
+      this.portraitUrl.set(imported.url);
       this.npcForm.markAsDirty();
-
-      if (previousDraft) {
-        await this.npcPortraitGateway.discard(previousDraft);
-      }
+      this.reportErrors(await this.workspace.discardMedia({ portraitPath: previousDraft }));
     } catch (error) {
       this.error.set(errorMessage(error));
     } finally {
@@ -403,12 +385,12 @@ export class NpcWorkspace implements OnInit, PendingChangesAware {
     this.isImportingVideo.set(true);
     this.error.set(null);
     try {
-      const importedPath = await this.npcIdleVideoGateway.chooseAndImport(campaign.universeId);
+      const importedPath = await this.workspace.importIdleVideo(campaign.universeId);
       if (!importedPath) return;
       const previousDraft = this.draftIdleVideoPath();
       this.draftIdleVideoPath.set(importedPath);
       this.npcForm.markAsDirty();
-      if (previousDraft) await this.npcIdleVideoGateway.discard(previousDraft);
+      this.reportErrors(await this.workspace.discardMedia({ idleVideoPath: previousDraft }));
     } catch (error) {
       this.error.set(errorMessage(error));
     } finally {
@@ -431,28 +413,24 @@ export class NpcWorkspace implements OnInit, PendingChangesAware {
     this.error.set(null);
 
     try {
-      const selectedNpc = this.selectedNpc();
-      const portraitPath = this.effectivePortraitPath();
-      const idleVideoPath = this.effectiveIdleVideoPath();
-      const previousIdleVideoPath = selectedNpc?.idleVideoPath ?? null;
-      const savedNpc = this.isCreating()
-        ? await this.npcService.create(campaign.id, this.formInput(), portraitPath, idleVideoPath)
-        : selectedNpc
-          ? await this.npcService.update(selectedNpc, this.formInput(), portraitPath, idleVideoPath)
-          : null;
-
-      if (!savedNpc) {
+      const existing = this.isCreating() ? null : this.selectedNpc();
+      if (!this.isCreating() && !existing) {
         return false;
       }
+
+      const savedNpc = await this.workspace.save({
+        campaignId: campaign.id,
+        existing,
+        input: this.formInput(),
+        portraitPath: this.effectivePortraitPath(),
+        idleVideoPath: this.effectiveIdleVideoPath(),
+        isPlayerDisplayOpen: this.isPlayerDisplayOpen(),
+      });
 
       this.draftPortraitPath.set(null);
       this.draftIdleVideoPath.set(null);
       await this.reloadNpcs();
       this.openReadOnly(savedNpc);
-      await this.refreshPublishedNpc(savedNpc);
-      if (previousIdleVideoPath && previousIdleVideoPath !== savedNpc.idleVideoPath) {
-        await this.npcIdleVideoGateway.discard(previousIdleVideoPath);
-      }
       return true;
     } catch (error) {
       this.error.set(errorMessage(error));
@@ -478,11 +456,7 @@ export class NpcWorkspace implements OnInit, PendingChangesAware {
     this.error.set(null);
 
     try {
-      await this.playerDisplay.toggle(
-        npc.campaignId,
-        (state) => isDisplayingResource(state, 'npc', npc.id),
-        async () => npcPlayerDisplayState(npc, await this.resolveNpcMedia(npc)),
-      );
+      await this.workspace.toggleOnPlayerDisplay(npc);
     } catch (error) {
       this.error.set(errorMessage(error));
       this.isPlayerDisplayOpen.set(false);
@@ -515,27 +489,9 @@ export class NpcWorkspace implements OnInit, PendingChangesAware {
     this.error.set(null);
 
     try {
-      await this.playerDisplay.withdraw(
-        (state) => isDisplayingResource(state, 'npc', npc.id),
-        this.isPlayerDisplayOpen(),
-      );
-
-      await this.npcService.delete(npc);
+      const cleanupErrors = await this.workspace.delete(npc, this.isPlayerDisplayOpen());
       await this.recentResources?.remove('npc', npc.id);
-      if (npc.portraitPath) {
-        try {
-          await this.npcPortraitGateway.discard(npc.portraitPath);
-        } catch (error) {
-          this.error.set(errorMessage(error));
-        }
-      }
-      if (npc.idleVideoPath) {
-        try {
-          await this.npcIdleVideoGateway.discard(npc.idleVideoPath);
-        } catch (error) {
-          this.error.set(errorMessage(error));
-        }
-      }
+      this.reportErrors(cleanupErrors);
       await this.reloadNpcs();
       this.selectedNpc.set(null);
       this.portraitUrl.set(DEMO_NPC_PORTRAIT_URL);
@@ -669,7 +625,7 @@ export class NpcWorkspace implements OnInit, PendingChangesAware {
         this.route.snapshot.queryParamMap?.get('resourceId'),
         this.route.snapshot.queryParamMap?.get('entryId'),
       );
-      this.isPlayerDisplayOpen.set(await this.playerDisplay.isOpen());
+      this.isPlayerDisplayOpen.set(await this.workspace.isPlayerDisplayOpen());
     } catch (error) {
       this.error.set(errorMessage(error));
     } finally {
@@ -804,20 +760,12 @@ export class NpcWorkspace implements OnInit, PendingChangesAware {
     const draftIdleVideoPath = this.draftIdleVideoPath();
     this.draftPortraitPath.set(null);
     this.draftIdleVideoPath.set(null);
-    if (draftPortraitPath) {
-      try {
-        await this.npcPortraitGateway.discard(draftPortraitPath);
-      } catch (error) {
-        this.error.set(errorMessage(error));
-      }
-    }
-    if (draftIdleVideoPath) {
-      try {
-        await this.npcIdleVideoGateway.discard(draftIdleVideoPath);
-      } catch (error) {
-        this.error.set(errorMessage(error));
-      }
-    }
+    this.reportErrors(
+      await this.workspace.discardMedia({
+        portraitPath: draftPortraitPath,
+        idleVideoPath: draftIdleVideoPath,
+      }),
+    );
 
     const selectedNpc = this.selectedNpc();
     this.isEditing.set(false);
@@ -930,7 +878,7 @@ export class NpcWorkspace implements OnInit, PendingChangesAware {
     }
 
     try {
-      const url = await this.npcPortraitGateway.resolveUrl(relativePath);
+      const url = await this.workspace.portraitUrl(relativePath);
       if (this.effectivePortraitPath() === relativePath) {
         this.portraitUrl.set(url);
       }
@@ -939,33 +887,9 @@ export class NpcWorkspace implements OnInit, PendingChangesAware {
     }
   }
 
-  private async refreshPublishedNpc(npc: Npc): Promise<void> {
-    await this.playerDisplay.refresh(
-      (state): state is PlayerDisplayStateOf<'npc'> => isDisplayingResource(state, 'npc', npc.id),
-      async (current) => {
-        const media = await this.resolveNpcMedia(npc);
-        return {
-          ...current,
-          name: npc.name,
-          portraitPath: media.portraitUrl,
-          idleVideoPath: media.idleVideoUrl ?? undefined,
-        };
-      },
-      this.isPlayerDisplayOpen(),
-    );
-  }
-
-  private async resolveNpcMedia(
-    npc: Npc,
-  ): Promise<Readonly<{ portraitUrl: string; idleVideoUrl: string | null }>> {
-    return {
-      portraitUrl: npc.portraitPath
-        ? await this.npcPortraitGateway.resolveUrl(npc.portraitPath)
-        : DEMO_NPC_PORTRAIT_URL,
-      idleVideoUrl: npc.idleVideoPath
-        ? await this.npcIdleVideoGateway.resolveUrl(npc.idleVideoPath)
-        : null,
-    };
+  private reportErrors(errors: readonly unknown[]): void {
+    const lastError = errors.at(-1);
+    if (lastError !== undefined) this.error.set(errorMessage(lastError));
   }
 
   private confirmPendingChanges(): boolean | Promise<boolean> {

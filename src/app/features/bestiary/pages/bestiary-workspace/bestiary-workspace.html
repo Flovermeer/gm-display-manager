@@ -67,9 +67,7 @@
     class="bestiary-detail entity-workspace__detail"
     appRecentResourceTracker
     recentResourceType="monster"
-    [recentResourceId]="
-      isCreating() || isCatalogOpen() ? null : (selectedMonster()?.id ?? null)
-    "
+    [recentResourceId]="isCreating() || isCatalogOpen() ? null : (selectedMonster()?.id ?? null)"
     [recentResourceLabel]="
       isCreating() || isCatalogOpen() ? null : (selectedMonster()?.name ?? null)
     "
@@ -570,25 +568,15 @@
   </main>
 </div>
 
-@if (showPendingChangesDialog()) {
-  <app-dialog
-    kicker="Modifications non enregistrées"
-    title="Que veux-tu faire ?"
+@if (pendingChanges.isOpen()) {
+  <app-pending-changes-dialog
     headingId="monster-pending-title"
-  >
-    <p>Les modifications de cette fiche ou de sa note seront perdues si tu quittes.</p>
-    <div dialog-actions class="dialog-actions">
-      <button appButton="primary" type="button" [disabled]="isSaving()" (click)="saveAndLeave()">
-        Enregistrer et quitter
-      </button>
-      <button appButton="secondary-danger" type="button" (click)="leaveWithoutSaving()">
-        Quitter sans enregistrer
-      </button>
-      <button appButton="secondary" type="button" (click)="continueEditing()">
-        Continuer la modification
-      </button>
-    </div>
-  </app-dialog>
+    message="Les modifications de cette fiche ou de sa note seront perdues si tu quittes."
+    [saving]="isSaving()"
+    (save)="saveAndLeave()"
+    (discard)="leaveWithoutSaving()"
+    (keepEditing)="continueEditing()"
+  />
 }
 
 @if (monsterPendingDetachment(); as monster) {
@@ -624,7 +612,9 @@
       cette campagne, sans copie locale supplémentaire.
     </p>
     <div dialog-actions class="dialog-actions">
-      <button appButton="secondary" type="button" (click)="monsterPendingPromotion.set(null)">Annuler</button>
+      <button appButton="secondary" type="button" (click)="monsterPendingPromotion.set(null)">
+        Annuler
+      </button>
       <button appButton="primary" type="button" (click)="confirmPromotion()">Confirmer</button>
     </div>
   </app-dialog>
@@ -638,7 +628,9 @@
   >
     <p>La personnalisation locale sera remplacée par la dernière fiche canonique de l’univers.</p>
     <div dialog-actions class="dialog-actions">
-      <button appButton="secondary" type="button" (click)="monsterPendingReset.set(null)">Annuler</button>
+      <button appButton="secondary" type="button" (click)="monsterPendingReset.set(null)">
+        Annuler
+      </button>
       <button appButton="danger" type="button" (click)="confirmReset()">Réinitialiser</button>
     </div>
   </app-dialog>

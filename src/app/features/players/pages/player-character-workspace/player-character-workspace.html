@@ -556,25 +556,15 @@
   </section>
 </main>
 
-@if (showPendingChangesDialog()) {
-  <app-dialog
-    kicker="Modifications non enregistrées"
-    title="Que veux-tu faire ?"
+@if (pendingChanges.isOpen()) {
+  <app-pending-changes-dialog
     headingId="pending-title"
-  >
-    <p>Tes dernières modifications de fiche ou de note seront perdues si tu quittes.</p>
-    <div dialog-actions class="dialog-actions three-actions">
-      <button appButton="primary" type="button" [disabled]="isSaving()" (click)="saveAndLeave()">
-        Enregistrer et quitter
-      </button>
-      <button appButton="secondary-danger" type="button" (click)="leaveWithoutSaving()">
-        Quitter sans enregistrer
-      </button>
-      <button appButton="secondary" type="button" (click)="continueEditing()">
-        Continuer la modification
-      </button>
-    </div>
-  </app-dialog>
+    message="Tes dernières modifications de fiche ou de note seront perdues si tu quittes."
+    [saving]="isSaving()"
+    (save)="saveAndLeave()"
+    (discard)="leaveWithoutSaving()"
+    (keepEditing)="continueEditing()"
+  />
 }
 
 @if (showCatalogDialog()) {

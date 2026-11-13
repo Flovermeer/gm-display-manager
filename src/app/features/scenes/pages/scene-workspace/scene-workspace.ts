@@ -50,14 +50,15 @@ import {
   type SearchableSelectOption,
 } from '@app/shared/ui/searchable-select/searchable-select';
 import { errorMessage } from '@app/shared/error-message';
+import { PendingChangesPrompt } from '@app/core/navigation/pending-changes-prompt';
+import { PendingChangesDialog } from '@app/shared/ui/pending-changes-dialog/pending-changes-dialog';
 
 const ERROR_FALLBACK = "Impossible d'enregistrer cette scène.";
-
-type PendingDecisionResolver = (canLeave: boolean) => void;
 
 @Component({
   selector: 'app-scene-workspace',
   imports: [
+    PendingChangesDialog,
     ReactiveFormsModule,
     JournalEntryList,
     ButtonDirective,
@@ -93,7 +94,6 @@ export class SceneWorkspace implements OnInit, PendingChangesAware {
   private readonly recentResources = inject(RecentResourceStore, { optional: true });
   private readonly mentionNavigation = inject(ResourceMentionNavigationService);
   private readonly journalEntries = viewChild<JournalEntryList>(JournalEntryList);
-  private pendingDecisionResolver?: PendingDecisionResolver;
 
   protected readonly campaign = this.campaignContext.campaign;
   protected readonly scenes = signal<readonly Scene[]>([]);
@@ -112,7 +112,7 @@ export class SceneWorkspace implements OnInit, PendingChangesAware {
   protected readonly isSaving = signal(false);
   protected readonly isEditing = signal(false);
   protected readonly isCreating = signal(false);
-  protected readonly showPendingChangesDialog = signal(false);
+  protected readonly pendingChanges = new PendingChangesPrompt();
   protected readonly showDeleteDialog = signal(false);
   protected readonly error = signal<string | null>(null);
   protected readonly activeSceneId = signal<string | null>(null);
@@ -419,13 +419,13 @@ export class SceneWorkspace implements OnInit, PendingChangesAware {
   }
 
   protected continueEditing(): void {
-    this.resolvePendingDecision(false);
+    this.pendingChanges.resolve(false);
   }
 
   protected async leaveWithoutSaving(): Promise<void> {
     if (this.journalEntries()?.hasPendingChanges()) this.journalEntries()?.discardPendingChanges();
     if (this.isEditing()) await this.abandonChanges();
-    this.resolvePendingDecision(true);
+    this.pendingChanges.resolve(true);
   }
 
   protected async saveAndLeave(): Promise<void> {
@@ -433,7 +433,7 @@ export class SceneWorkspace implements OnInit, PendingChangesAware {
     if (this.journalEntries()?.hasPendingChanges())
       saved = await this.journalEntries()!.savePendingChanges();
     if (saved && this.isEditing()) saved = await this.saveScene();
-    if (saved) this.resolvePendingDecision(true);
+    if (saved) this.pendingChanges.resolve(true);
   }
 
   private async initialize(): Promise<void> {
@@ -571,16 +571,7 @@ export class SceneWorkspace implements OnInit, PendingChangesAware {
       !this.journalEntries()?.hasPendingChanges()
     )
       return true;
-    if (this.pendingDecisionResolver) return false;
-    this.showPendingChangesDialog.set(true);
-    return new Promise((resolve) => (this.pendingDecisionResolver = resolve));
-  }
-
-  private resolvePendingDecision(value: boolean): void {
-    const resolve = this.pendingDecisionResolver;
-    this.pendingDecisionResolver = undefined;
-    this.showPendingChangesDialog.set(false);
-    resolve?.(value);
+    return this.pendingChanges.request();
   }
 }
 

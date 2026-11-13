@@ -39,7 +39,6 @@ import type { RichTextDocument } from '@app/shared/rich-text-editor/rich-text-do
 import { createEmptyRichTextDocument } from '@app/shared/rich-text-editor/rich-text-document';
 import { RichTextEditor } from '@app/shared/rich-text-editor/rich-text-editor';
 import { ButtonDirective } from '@app/shared/ui/button/button.directive';
-import { Dialog } from '@app/shared/ui/dialog/dialog';
 import { FormField, type FormFieldOption } from '@app/shared/ui/form-field/form-field';
 import { MultiSelectField } from '@app/shared/ui/multi-select-field/multi-select-field';
 import {
@@ -52,6 +51,8 @@ import {
 import { RichTextFeatureEditor } from '@app/shared/ui/rich-text-feature-editor/rich-text-feature-editor';
 import { TagInput } from '@app/shared/ui/tag-input/tag-input';
 import { errorMessage } from '@app/shared/error-message';
+import { PendingChangesPrompt } from '@app/core/navigation/pending-changes-prompt';
+import { PendingChangesDialog } from '@app/shared/ui/pending-changes-dialog/pending-changes-dialog';
 
 const ERROR_FALLBACK = 'Impossible de modifier la ressource.';
 
@@ -65,14 +66,12 @@ type CreatureTagField =
   | 'senses';
 
 type PlayerTagField = 'senses' | 'languages' | 'conditions';
-type PendingDecisionResolver = (canLeave: boolean) => void;
-
 @Component({
   selector: 'app-universe-resource-editor',
   imports: [
+    PendingChangesDialog,
     ReactiveFormsModule,
     ButtonDirective,
-    Dialog,
     FormField,
     MultiSelectField,
     RichTextEditor,
@@ -94,7 +93,6 @@ export class UniverseResourceEditor {
   private readonly itemImages = inject(ItemImageGateway);
   private readonly monsterImages = inject(MonsterImageGateway);
   private loadVersion = 0;
-  private pendingDecisionResolver?: PendingDecisionResolver;
 
   readonly universeId = input.required<string>();
   readonly type = input.required<UniverseResourceType>();
@@ -106,7 +104,7 @@ export class UniverseResourceEditor {
   protected readonly isLoading = signal(true);
   protected readonly isSaving = signal(false);
   protected readonly error = signal<string | null>(null);
-  protected readonly showPendingChangesDialog = signal(false);
+  protected readonly pendingChanges = new PendingChangesPrompt();
   protected readonly primaryMediaUrl = signal<string | null>(null);
   protected readonly draftPrimaryMediaPath = signal<string | null>(null);
   protected readonly draftIdleVideoPath = signal<string | null>(null);
@@ -384,16 +382,16 @@ export class UniverseResourceEditor {
   }
 
   protected continueEditing(): void {
-    this.resolvePendingDecision(false);
+    this.pendingChanges.resolve(false);
   }
 
   protected async leaveWithoutSaving(): Promise<void> {
     await this.discardDraftMedia();
-    this.resolvePendingDecision(true);
+    this.pendingChanges.resolve(true);
   }
 
   protected async saveAndLeave(): Promise<void> {
-    if (await this.save()) this.resolvePendingDecision(true);
+    if (await this.save()) this.pendingChanges.resolve(true);
   }
 
   hasPendingChanges(): boolean {
@@ -406,9 +404,7 @@ export class UniverseResourceEditor {
 
   confirmPendingChanges(): boolean | Promise<boolean> {
     if (!this.hasPendingChanges()) return true;
-    if (this.pendingDecisionResolver) return false;
-    this.showPendingChangesDialog.set(true);
-    return new Promise((resolve) => (this.pendingDecisionResolver = resolve));
+    return this.pendingChanges.request();
   }
 
   private async initialize(
@@ -834,13 +830,6 @@ export class UniverseResourceEditor {
 
   private cancel(): void {
     this.canceled.emit();
-  }
-
-  private resolvePendingDecision(value: boolean): void {
-    const resolve = this.pendingDecisionResolver;
-    this.pendingDecisionResolver = undefined;
-    this.showPendingChangesDialog.set(false);
-    resolve?.(value);
   }
 }
 

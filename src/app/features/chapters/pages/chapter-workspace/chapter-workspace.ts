@@ -36,12 +36,13 @@ import {
 import { buildCampaignMap } from '@app/features/campaign-map/domain/campaign-map';
 import { CampaignMapTree } from '@app/features/campaign-map/ui/campaign-map-tree/campaign-map-tree';
 import { errorMessage } from '@app/shared/error-message';
-
-type PendingDecisionResolver = (canLeave: boolean) => void;
+import { PendingChangesPrompt } from '@app/core/navigation/pending-changes-prompt';
+import { PendingChangesDialog } from '@app/shared/ui/pending-changes-dialog/pending-changes-dialog';
 
 @Component({
   selector: 'app-chapter-workspace',
   imports: [
+    PendingChangesDialog,
     ReactiveFormsModule,
     RouterLink,
     RichTextEditor,
@@ -69,7 +70,6 @@ export class ChapterWorkspace implements OnInit, PendingChangesAware {
   private readonly displayStore = inject(PlayerDisplayStore);
   private readonly mentionNavigation = inject(ResourceMentionNavigationService);
   private readonly recentResources = inject(RecentResourceStore, { optional: true });
-  private pendingDecisionResolver?: PendingDecisionResolver;
 
   protected readonly campaign = this.campaignContext.campaign;
   protected readonly chapters = signal<readonly Chapter[]>([]);
@@ -83,7 +83,7 @@ export class ChapterWorkspace implements OnInit, PendingChangesAware {
   protected readonly isSaving = signal(false);
   protected readonly isEditing = signal(false);
   protected readonly isCreating = signal(false);
-  protected readonly showPendingChangesDialog = signal(false);
+  protected readonly pendingChanges = new PendingChangesPrompt();
   protected readonly showDeleteDialog = signal(false);
   protected readonly pendingSceneMove = signal<Scene | null>(null);
   protected readonly error = signal<string | null>(null);
@@ -356,15 +356,15 @@ export class ChapterWorkspace implements OnInit, PendingChangesAware {
   }
 
   protected continueEditing(): void {
-    this.resolvePendingDecision(false);
+    this.pendingChanges.resolve(false);
   }
 
   protected leaveWithoutSaving(): void {
-    void this.abandonChanges().then(() => this.resolvePendingDecision(true));
+    void this.abandonChanges().then(() => this.pendingChanges.resolve(true));
   }
 
   protected async saveAndLeave(): Promise<void> {
-    if (await this.saveChapter()) this.resolvePendingDecision(true);
+    if (await this.saveChapter()) this.pendingChanges.resolve(true);
   }
 
   private async initialize(): Promise<void> {
@@ -439,18 +439,7 @@ export class ChapterWorkspace implements OnInit, PendingChangesAware {
 
   private confirmPendingChanges(): boolean | Promise<boolean> {
     if (!this.isEditing() || (!this.chapterForm.dirty && !this.contentDirty())) return true;
-    if (this.pendingDecisionResolver) return false;
-    this.showPendingChangesDialog.set(true);
-    return new Promise<boolean>((resolve) => {
-      this.pendingDecisionResolver = resolve;
-    });
-  }
-
-  private resolvePendingDecision(canLeave: boolean): void {
-    const resolve = this.pendingDecisionResolver;
-    this.pendingDecisionResolver = undefined;
-    this.showPendingChangesDialog.set(false);
-    resolve?.(canLeave);
+    return this.pendingChanges.request();
   }
 }
 

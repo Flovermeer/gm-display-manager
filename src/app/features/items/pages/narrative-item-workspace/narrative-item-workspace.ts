@@ -37,10 +37,11 @@ import { EntityTitle } from '@app/shared/ui/entity-title/entity-title';
 import { FormField, type FormFieldOption } from '@app/shared/ui/form-field/form-field';
 import { ActiveSceneService } from '@app/features/scenes/application/active-scene.service';
 import { errorMessage } from '@app/shared/error-message';
+import { PendingChangesPrompt } from '@app/core/navigation/pending-changes-prompt';
+import { PendingChangesDialog } from '@app/shared/ui/pending-changes-dialog/pending-changes-dialog';
 
 const ERROR_FALLBACK = "Impossible d'enregistrer cet objet.";
 
-type PendingDecisionResolver = (canLeave: boolean) => void;
 type OwnerOption = Readonly<{ resourceType: ItemOwnerType; resourceId: string; label: string }>;
 
 const DEMO_ITEM_IMAGE_URL = '/demo/item-placeholder.svg';
@@ -48,6 +49,7 @@ const DEMO_ITEM_IMAGE_URL = '/demo/item-placeholder.svg';
 @Component({
   selector: 'app-narrative-item-workspace',
   imports: [
+    PendingChangesDialog,
     ReactiveFormsModule,
     JournalEntryList,
     RichTextEditor,
@@ -77,7 +79,6 @@ export class NarrativeItemWorkspace implements OnInit, PendingChangesAware {
   private readonly mentionNavigation = inject(ResourceMentionNavigationService);
   private readonly recentResources = inject(RecentResourceStore, { optional: true });
   private readonly journalEntries = viewChild<JournalEntryList>(JournalEntryList);
-  private pendingDecisionResolver?: PendingDecisionResolver;
 
   protected readonly campaign = this.campaignContext.campaign;
   protected readonly items = signal<readonly NarrativeItem[]>([]);
@@ -100,7 +101,7 @@ export class NarrativeItemWorkspace implements OnInit, PendingChangesAware {
   protected readonly isPlayerDisplayOpen = signal(false);
   protected readonly isEditing = signal(false);
   protected readonly isCreating = signal(false);
-  protected readonly showPendingChangesDialog = signal(false);
+  protected readonly pendingChanges = new PendingChangesPrompt();
   protected readonly showDeleteDialog = signal(false);
   protected readonly showCatalogDialog = signal(false);
   protected readonly showPromotionDialog = signal(false);
@@ -418,12 +419,12 @@ export class NarrativeItemWorkspace implements OnInit, PendingChangesAware {
   }
 
   protected continueEditing(): void {
-    this.resolvePendingDecision(false);
+    this.pendingChanges.resolve(false);
   }
   protected async leaveWithoutSaving(): Promise<void> {
     if (this.journalEntries()?.hasPendingChanges()) this.journalEntries()?.discardPendingChanges();
     if (this.isEditing()) await this.abandonChanges();
-    this.resolvePendingDecision(true);
+    this.pendingChanges.resolve(true);
   }
   protected async saveAndLeave(): Promise<void> {
     let saved = true;
@@ -431,7 +432,7 @@ export class NarrativeItemWorkspace implements OnInit, PendingChangesAware {
       saved = await this.journalEntries()!.savePendingChanges();
     }
     if (saved && this.isEditing()) saved = await this.saveItem();
-    if (saved) this.resolvePendingDecision(true);
+    if (saved) this.pendingChanges.resolve(true);
   }
 
   private async initialize(): Promise<void> {
@@ -576,18 +577,7 @@ export class NarrativeItemWorkspace implements OnInit, PendingChangesAware {
   private confirmPendingChanges(): boolean | Promise<boolean> {
     const dirtyItem = this.isEditing() && (this.itemForm.dirty || this.descriptionDirty());
     if (!dirtyItem && !this.journalEntries()?.hasPendingChanges()) return true;
-    if (this.pendingDecisionResolver) return false;
-    this.showPendingChangesDialog.set(true);
-    return new Promise((resolve) => {
-      this.pendingDecisionResolver = resolve;
-    });
-  }
-
-  private resolvePendingDecision(value: boolean): void {
-    const resolve = this.pendingDecisionResolver;
-    this.pendingDecisionResolver = undefined;
-    this.showPendingChangesDialog.set(false);
-    resolve?.(value);
+    return this.pendingChanges.request();
   }
 }
 

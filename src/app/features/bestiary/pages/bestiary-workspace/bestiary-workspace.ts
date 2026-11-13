@@ -45,6 +45,8 @@ import { MultiSelectField } from '@app/shared/ui/multi-select-field/multi-select
 import { ResourceMentionDisplayGateway } from '@app/shared/rich-text-editor/resource-mention-display.gateway';
 import type { ResourceMentionCandidate } from '@app/shared/rich-text-editor/resource-mention';
 import { errorMessage } from '@app/shared/error-message';
+import { PendingChangesPrompt } from '@app/core/navigation/pending-changes-prompt';
+import { PendingChangesDialog } from '@app/shared/ui/pending-changes-dialog/pending-changes-dialog';
 
 const ERROR_FALLBACK = 'Impossible de gérer le bestiaire.';
 
@@ -57,11 +59,10 @@ type TagField =
   | 'conditionImmunities'
   | 'senses';
 
-type PendingDecisionResolver = (canLeave: boolean) => void;
-
 @Component({
   selector: 'app-bestiary-workspace',
   imports: [
+    PendingChangesDialog,
     ReactiveFormsModule,
     ButtonDirective,
     Dialog,
@@ -89,7 +90,6 @@ export class BestiaryWorkspace implements OnInit, PendingChangesAware {
   private readonly recentResources = inject(RecentResourceStore, { optional: true });
   private readonly mentionDisplay = inject(ResourceMentionDisplayGateway, { optional: true });
   private readonly journalEntries = viewChild<JournalEntryList>(JournalEntryList);
-  private pendingDecisionResolver?: PendingDecisionResolver;
 
   protected readonly campaign = this.context.campaign;
   protected readonly monsters = signal<readonly Monster[]>([]);
@@ -105,7 +105,7 @@ export class BestiaryWorkspace implements OnInit, PendingChangesAware {
   protected readonly isEditing = signal(false);
   protected readonly isCreating = signal(false);
   protected readonly isCatalogOpen = signal(false);
-  protected readonly showPendingChangesDialog = signal(false);
+  protected readonly pendingChanges = new PendingChangesPrompt();
   protected readonly error = signal<string | null>(null);
   protected readonly focusedJournalEntryId = signal<string | null>(null);
   protected readonly draftImagePath = signal<string | null>(null);
@@ -376,7 +376,7 @@ export class BestiaryWorkspace implements OnInit, PendingChangesAware {
   }
 
   protected continueEditing(): void {
-    this.resolvePendingDecision(false);
+    this.pendingChanges.resolve(false);
   }
 
   protected async leaveWithoutSaving(): Promise<void> {
@@ -384,14 +384,14 @@ export class BestiaryWorkspace implements OnInit, PendingChangesAware {
     await this.discardDraftImageSafely();
     this.isEditing.set(false);
     this.isCreating.set(false);
-    this.resolvePendingDecision(true);
+    this.pendingChanges.resolve(true);
   }
 
   protected async saveAndLeave(): Promise<void> {
     const saved = this.journalEntries()?.hasPendingChanges()
       ? await this.journalEntries()!.savePendingChanges()
       : await this.saveMonster();
-    if (saved) this.resolvePendingDecision(true);
+    if (saved) this.pendingChanges.resolve(true);
   }
 
   protected updateTags(field: TagField, values: readonly string[]): void {
@@ -630,16 +630,7 @@ export class BestiaryWorkspace implements OnInit, PendingChangesAware {
 
   private confirmPendingChanges(): boolean | Promise<boolean> {
     if (!this.hasPendingChanges()) return true;
-    if (this.pendingDecisionResolver) return false;
-    this.showPendingChangesDialog.set(true);
-    return new Promise((resolve) => (this.pendingDecisionResolver = resolve));
-  }
-
-  private resolvePendingDecision(value: boolean): void {
-    const resolve = this.pendingDecisionResolver;
-    this.pendingDecisionResolver = undefined;
-    this.showPendingChangesDialog.set(false);
-    resolve?.(value);
+    return this.pendingChanges.request();
   }
 
   private displayCandidate(monster: Monster): ResourceMentionCandidate {

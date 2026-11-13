@@ -68,8 +68,9 @@ import {
   type CreatureFeatureSection,
 } from '@app/shared/ui/rich-text-feature-editor/creature-feature-sections';
 import { errorMessage } from '@app/shared/error-message';
+import { PendingChangesPrompt } from '@app/core/navigation/pending-changes-prompt';
+import { PendingChangesDialog } from '@app/shared/ui/pending-changes-dialog/pending-changes-dialog';
 
-type PendingDecisionResolver = (canLeave: boolean) => void;
 const DEMO_NPC_PORTRAIT_URL = '/demo/npc-placeholder.png';
 type NpcTagField =
   | 'savingThrows'
@@ -83,6 +84,7 @@ type NpcTagField =
 @Component({
   selector: 'app-npc-workspace',
   imports: [
+    PendingChangesDialog,
     ReactiveFormsModule,
     RichTextEditor,
     TagInput,
@@ -115,7 +117,6 @@ export class NpcWorkspace implements OnInit, PendingChangesAware {
   private readonly mentionNavigation = inject(ResourceMentionNavigationService);
   private readonly combat = inject(CombatStore, { optional: true });
   private readonly recentResources = inject(RecentResourceStore, { optional: true });
-  private pendingDecisionResolver?: PendingDecisionResolver;
   private readonly journalEntries = viewChild<JournalEntryList>(JournalEntryList);
 
   protected readonly campaign = this.campaignContext.campaign;
@@ -135,7 +136,7 @@ export class NpcWorkspace implements OnInit, PendingChangesAware {
   protected readonly isPlayerDisplayOpen = signal(false);
   protected readonly isEditing = signal(false);
   protected readonly isCreating = signal(false);
-  protected readonly showPendingChangesDialog = signal(false);
+  protected readonly pendingChanges = new PendingChangesPrompt();
   protected readonly showDeleteDialog = signal(false);
   protected readonly showCatalogDialog = signal(false);
   protected readonly showPromotionDialog = signal(false);
@@ -565,13 +566,13 @@ export class NpcWorkspace implements OnInit, PendingChangesAware {
   }
 
   protected continueEditing(): void {
-    this.resolvePendingDecision(false);
+    this.pendingChanges.resolve(false);
   }
 
   protected async leaveWithoutSaving(): Promise<void> {
     if (this.journalEntries()?.hasPendingChanges()) this.journalEntries()?.discardPendingChanges();
     if (this.isEditing() && this.npcForm.dirty) await this.abandonChanges();
-    this.resolvePendingDecision(true);
+    this.pendingChanges.resolve(true);
   }
 
   protected async saveAndLeave(): Promise<void> {
@@ -579,7 +580,7 @@ export class NpcWorkspace implements OnInit, PendingChangesAware {
       ? await this.journalEntries()!.savePendingChanges()
       : await this.saveNpc();
     if (saved) {
-      this.resolvePendingDecision(true);
+      this.pendingChanges.resolve(true);
     }
   }
 
@@ -985,21 +986,7 @@ export class NpcWorkspace implements OnInit, PendingChangesAware {
       return true;
     }
 
-    if (this.pendingDecisionResolver) {
-      return false;
-    }
-
-    this.showPendingChangesDialog.set(true);
-    return new Promise<boolean>((resolve) => {
-      this.pendingDecisionResolver = resolve;
-    });
-  }
-
-  private resolvePendingDecision(canLeave: boolean): void {
-    const resolve = this.pendingDecisionResolver;
-    this.pendingDecisionResolver = undefined;
-    this.showPendingChangesDialog.set(false);
-    resolve?.(canLeave);
+    return this.pendingChanges.request();
   }
 }
 

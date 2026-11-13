@@ -41,12 +41,13 @@ import { EmptyState } from '@app/shared/ui/empty-state/empty-state';
 import { EntityTitle } from '@app/shared/ui/entity-title/entity-title';
 import { FormField, type FormFieldOption } from '@app/shared/ui/form-field/form-field';
 import { errorMessage } from '@app/shared/error-message';
-
-type PendingDecisionResolver = (canLeave: boolean) => void;
+import { PendingChangesPrompt } from '@app/core/navigation/pending-changes-prompt';
+import { PendingChangesDialog } from '@app/shared/ui/pending-changes-dialog/pending-changes-dialog';
 
 @Component({
   selector: 'app-player-character-workspace',
   imports: [
+    PendingChangesDialog,
     ReactiveFormsModule,
     TagInput,
     JournalEntryList,
@@ -69,7 +70,6 @@ export class PlayerCharacterWorkspace implements OnInit, PendingChangesAware {
   private readonly portraitGateway = inject(PlayerCharacterPortraitGateway);
   private readonly combat = inject(CombatStore, { optional: true });
   private readonly recentResources = inject(RecentResourceStore, { optional: true });
-  private pendingDecisionResolver?: PendingDecisionResolver;
   private readonly journalEntries = viewChild<JournalEntryList>(JournalEntryList);
 
   protected readonly campaign = this.campaignContext.campaign;
@@ -85,7 +85,7 @@ export class PlayerCharacterWorkspace implements OnInit, PendingChangesAware {
   protected readonly isImportingPortrait = signal(false);
   protected readonly isEditing = signal(false);
   protected readonly isCreating = signal(false);
-  protected readonly showPendingChangesDialog = signal(false);
+  protected readonly pendingChanges = new PendingChangesPrompt();
   protected readonly showDeleteDialog = signal(false);
   protected readonly showResetHitPointsDialog = signal(false);
   protected readonly showCatalogDialog = signal(false);
@@ -405,20 +405,20 @@ export class PlayerCharacterWorkspace implements OnInit, PendingChangesAware {
   }
 
   protected continueEditing(): void {
-    this.resolvePendingDecision(false);
+    this.pendingChanges.resolve(false);
   }
 
   protected async leaveWithoutSaving(): Promise<void> {
     if (this.journalEntries()?.hasPendingChanges()) this.journalEntries()?.discardPendingChanges();
     if (this.isEditing() && this.characterForm.dirty) await this.abandonChanges();
-    this.resolvePendingDecision(true);
+    this.pendingChanges.resolve(true);
   }
 
   protected async saveAndLeave(): Promise<void> {
     const saved = this.journalEntries()?.hasPendingChanges()
       ? await this.journalEntries()!.savePendingChanges()
       : await this.saveCharacter();
-    if (saved) this.resolvePendingDecision(true);
+    if (saved) this.pendingChanges.resolve(true);
   }
 
   protected statusLabel(status: PlayerCharacterStatus): string {
@@ -684,18 +684,7 @@ export class PlayerCharacterWorkspace implements OnInit, PendingChangesAware {
       !this.journalEntries()?.hasPendingChanges()
     )
       return true;
-    if (this.pendingDecisionResolver) return false;
-    this.showPendingChangesDialog.set(true);
-    return new Promise<boolean>((resolve) => {
-      this.pendingDecisionResolver = resolve;
-    });
-  }
-
-  private resolvePendingDecision(canLeave: boolean): void {
-    const resolve = this.pendingDecisionResolver;
-    this.pendingDecisionResolver = undefined;
-    this.showPendingChangesDialog.set(false);
-    resolve?.(canLeave);
+    return this.pendingChanges.request();
   }
 
   private async loadPortrait(relativePath: string | null): Promise<void> {

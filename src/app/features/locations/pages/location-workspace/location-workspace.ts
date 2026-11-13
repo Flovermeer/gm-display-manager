@@ -38,8 +38,9 @@ import {
 import type { ResourceMentionCandidate } from '@app/shared/rich-text-editor/resource-mention';
 import { ResourceMentionNavigationService } from '@app/shared/rich-text-editor/resource-mention-navigation.service';
 import { errorMessage } from '@app/shared/error-message';
+import { PendingChangesPrompt } from '@app/core/navigation/pending-changes-prompt';
+import { PendingChangesDialog } from '@app/shared/ui/pending-changes-dialog/pending-changes-dialog';
 
-type PendingDecisionResolver = (canLeave: boolean) => void;
 type LocationListEntry = Readonly<{
   location: Location;
   depth: number;
@@ -55,6 +56,7 @@ const VIEWER_ZOOM_STEP = 0.25;
 @Component({
   selector: 'app-location-workspace',
   imports: [
+    PendingChangesDialog,
     ReactiveFormsModule,
     JournalEntryList,
     ButtonDirective,
@@ -80,7 +82,6 @@ export class LocationWorkspace implements OnInit, PendingChangesAware {
   private readonly activeSceneService = inject(ActiveSceneService);
   private readonly mentionNavigation = inject(ResourceMentionNavigationService);
   private readonly recentResources = inject(RecentResourceStore, { optional: true });
-  private pendingDecisionResolver?: PendingDecisionResolver;
   private readonly journalEntries = viewChild<JournalEntryList>(JournalEntryList);
   private readonly imageViewerViewport =
     viewChild<ElementRef<HTMLDivElement>>('imageViewerViewport');
@@ -110,7 +111,7 @@ export class LocationWorkspace implements OnInit, PendingChangesAware {
   protected readonly isPlayerDisplayOpen = signal(false);
   protected readonly isEditing = signal(false);
   protected readonly isCreating = signal(false);
-  protected readonly showPendingChangesDialog = signal(false);
+  protected readonly pendingChanges = new PendingChangesPrompt();
   protected readonly showDeleteDialog = signal(false);
   protected readonly showCatalogDialog = signal(false);
   protected readonly showPromotionDialog = signal(false);
@@ -610,13 +611,13 @@ export class LocationWorkspace implements OnInit, PendingChangesAware {
   }
 
   protected continueEditing(): void {
-    this.resolvePendingDecision(false);
+    this.pendingChanges.resolve(false);
   }
 
   protected async leaveWithoutSaving(): Promise<void> {
     if (this.journalEntries()?.hasPendingChanges()) this.journalEntries()?.discardPendingChanges();
     if (this.isEditing() && this.locationForm.dirty) await this.abandonChanges();
-    this.resolvePendingDecision(true);
+    this.pendingChanges.resolve(true);
   }
 
   protected async saveAndLeave(): Promise<void> {
@@ -624,7 +625,7 @@ export class LocationWorkspace implements OnInit, PendingChangesAware {
       ? await this.journalEntries()!.savePendingChanges()
       : await this.saveLocation();
     if (saved) {
-      this.resolvePendingDecision(true);
+      this.pendingChanges.resolve(true);
     }
   }
 
@@ -834,21 +835,7 @@ export class LocationWorkspace implements OnInit, PendingChangesAware {
       return true;
     }
 
-    if (this.pendingDecisionResolver) {
-      return false;
-    }
-
-    this.showPendingChangesDialog.set(true);
-    return new Promise<boolean>((resolve) => {
-      this.pendingDecisionResolver = resolve;
-    });
-  }
-
-  private resolvePendingDecision(canLeave: boolean): void {
-    const resolve = this.pendingDecisionResolver;
-    this.pendingDecisionResolver = undefined;
-    this.showPendingChangesDialog.set(false);
-    resolve?.(canLeave);
+    return this.pendingChanges.request();
   }
 }
 

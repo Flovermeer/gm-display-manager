@@ -8,6 +8,8 @@ import type { MonitorDescriptor } from '@app/features/display/domain/display.mod
 import { PlayerDisplayPreferenceService } from '@app/features/display/application/player-display-preference.service';
 import type { PlayerDisplayState } from '@app/features/display/domain/player-display-state';
 import { PlayerDisplayPublisher } from '@app/features/display/application/player-display-publisher.service';
+import { DEMO_LOCATION_IMAGE_URL } from '@app/features/locations/domain/location';
+import { DEMO_NPC_PORTRAIT_URL } from '@app/features/npcs/domain/npc';
 import { SceneDisplayService } from '@app/features/scenes/application/scene-display.service';
 import { ButtonDirective } from '@app/shared/ui/button/button.directive';
 import { PlayerDisplayMonitorSessionService } from '@app/features/display/application/player-display-monitor-session.service';
@@ -124,7 +126,7 @@ export class Control implements OnInit, OnDestroy {
     void this.publishDisplayState({
       mode: 'location',
       locationId: 'demo-tavern',
-      imagePath: '/demo/location-placeholder.png',
+      imagePath: DEMO_LOCATION_IMAGE_URL,
       name: "Beholder's Inn",
     });
   }
@@ -138,8 +140,7 @@ export class Control implements OnInit, OnDestroy {
       mode: 'npc',
       npcId: 'demo-innkeeper',
       name: 'Mira Vell',
-      portraitPath: '/demo/npc-placeholder.png',
-      backgroundPath: '/demo/location-placeholder.png',
+      portraitPath: DEMO_NPC_PORTRAIT_URL,
     });
   }
 

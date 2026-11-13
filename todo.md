@@ -1,1 +1,0 @@
-- différencier les ressource @ dans l'éditeur de texte par des couleurs (rouge pour un monstre, gris bleuté pour un lieu, vert d'eau pour un pnj, orangé pour un objet)

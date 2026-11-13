@@ -1,0 +1,300 @@
+<form class="npc-form" [formGroup]="form()" (ngSubmit)="submitted.emit()">
+  <div class="form-row">
+    <app-form-field
+      class="field-wide"
+      inputId="npc-name"
+      label="Nom"
+      formControlName="name"
+      [errorMessage]="
+        form().controls.name.touched && form().controls.name.invalid
+          ? 'Le nom est obligatoire.'
+          : null
+      "
+    />
+
+    <app-form-field
+      inputId="npc-status"
+      label="Statut"
+      controlType="select"
+      formControlName="status"
+      [options]="statusFieldOptions"
+    />
+  </div>
+
+  <app-form-field
+    inputId="npc-summary"
+    label="Rôle ou résumé"
+    formControlName="summary"
+    placeholder="Commanditaire, guide, antagoniste…"
+  />
+
+  <div class="field media-field">
+    <div>
+      <label>Animation pour l'écran joueurs</label>
+      <small>
+        {{ hasIdleVideo() ? 'Vidéo WebM/MP4 prête' : 'Aucune animation' }}
+      </small>
+    </div>
+    <button
+      appButton="secondary"
+      type="button"
+      [disabled]="isImportingVideo()"
+      (click)="idleVideoRequested.emit()"
+    >
+      {{ isImportingVideo() ? 'Import…' : hasIdleVideo() ? 'Remplacer' : 'Choisir une vidéo' }}
+    </button>
+  </div>
+
+  <section class="sheet-form-section" aria-labelledby="npc-profile-form-title">
+    <div class="form-section-heading">
+      <p class="section-kicker">Référence en partie</p>
+      <h3 id="npc-profile-form-title">Fiche PNJ</h3>
+    </div>
+
+    <div class="form-grid three-columns">
+      <app-form-field
+        inputId="npc-size"
+        label="Taille"
+        controlType="select"
+        [options]="sizeOptions()"
+        emptyLabel="Non renseignée"
+        emptyValue=""
+        formControlName="size"
+      />
+      <app-form-field
+        inputId="npc-race"
+        label="Espèce"
+        controlType="select"
+        [options]="raceOptions()"
+        emptyLabel="Non renseignée"
+        emptyValue=""
+        formControlName="race"
+        (valueChange)="raceChanged()"
+      />
+      <app-form-field
+        inputId="npc-subrace"
+        label="Sous-espèce"
+        controlType="select"
+        [options]="subraceOptions()"
+        emptyLabel="Non renseignée"
+        emptyValue=""
+        formControlName="subrace"
+      />
+      <app-form-field
+        inputId="npc-class"
+        label="Classe"
+        controlType="select"
+        [options]="classOptions()"
+        emptyLabel="Non renseignée"
+        emptyValue=""
+        formControlName="className"
+      />
+      <app-form-field
+        inputId="npc-occupation"
+        label="Occupation"
+        formControlName="occupation"
+        placeholder="Aubergiste, archiviste…"
+      />
+      <app-form-field
+        inputId="npc-alignment"
+        label="Alignement"
+        controlType="select"
+        [options]="alignmentOptions()"
+        emptyLabel="Non renseigné"
+        emptyValue=""
+        formControlName="alignment"
+      />
+    </div>
+
+    <div class="form-grid combat-basics">
+      <app-form-field
+        class="compact-number"
+        inputId="npc-armor-class"
+        label="Classe d'armure"
+        controlType="number"
+        [min]="0"
+        formControlName="armorClass"
+      />
+      <app-form-field
+        inputId="npc-armor-details"
+        label="Détail de l'armure"
+        formControlName="armorClassDetails"
+        placeholder="Cuir clouté"
+      />
+      <app-form-field
+        class="compact-number"
+        inputId="npc-hit-points"
+        label="Points de vie"
+        controlType="number"
+        [min]="0"
+        formControlName="hitPoints"
+      />
+      <app-form-field
+        inputId="npc-hit-point-formula"
+        label="Formule de PV"
+        formControlName="hitPointFormula"
+        placeholder="15d8 + 15"
+      />
+      <app-form-field
+        inputId="npc-speed"
+        label="Vitesse"
+        formControlName="speed"
+        placeholder="9 m"
+      />
+    </div>
+
+    <fieldset class="abilities-fieldset">
+      <legend>Caractéristiques</legend>
+      <div class="ability-inputs">
+        <app-form-field
+          inputId="npc-strength"
+          label="FOR"
+          controlType="number"
+          [min]="0"
+          formControlName="strength"
+        />
+        <app-form-field
+          inputId="npc-dexterity"
+          label="DEX"
+          controlType="number"
+          [min]="0"
+          formControlName="dexterity"
+        />
+        <app-form-field
+          inputId="npc-constitution"
+          label="CON"
+          controlType="number"
+          [min]="0"
+          formControlName="constitution"
+        />
+        <app-form-field
+          inputId="npc-intelligence"
+          label="INT"
+          controlType="number"
+          [min]="0"
+          formControlName="intelligence"
+        />
+        <app-form-field
+          inputId="npc-wisdom"
+          label="SAG"
+          controlType="number"
+          [min]="0"
+          formControlName="wisdom"
+        />
+        <app-form-field
+          inputId="npc-charisma"
+          label="CHA"
+          controlType="number"
+          [min]="0"
+          formControlName="charisma"
+        />
+      </div>
+    </fieldset>
+
+    <div class="tag-grid">
+      <app-tag-input
+        inputId="npc-saving-throws"
+        label="Jets de sauvegarde"
+        placeholder="Dex +5"
+        [value]="form().controls.savingThrows.value"
+        (valueChange)="updateTags('savingThrows', $event)"
+      />
+      <app-tag-input
+        inputId="npc-skills"
+        label="Compétences"
+        placeholder="Histoire +9"
+        [value]="form().controls.skills.value"
+        (valueChange)="updateTags('skills', $event)"
+      />
+      <app-tag-input
+        inputId="npc-damage-vulnerabilities"
+        label="Vulnérabilités aux dégâts"
+        placeholder="Feu"
+        [value]="form().controls.damageVulnerabilities.value"
+        (valueChange)="updateTags('damageVulnerabilities', $event)"
+      />
+      <app-tag-input
+        inputId="npc-damage-resistances"
+        label="Résistances aux dégâts"
+        placeholder="Froid"
+        [value]="form().controls.damageResistances.value"
+        (valueChange)="updateTags('damageResistances', $event)"
+      />
+      <app-tag-input
+        inputId="npc-damage-immunities"
+        label="Immunités aux dégâts"
+        placeholder="Poison"
+        [value]="form().controls.damageImmunities.value"
+        (valueChange)="updateTags('damageImmunities', $event)"
+      />
+      <app-tag-input
+        inputId="npc-condition-immunities"
+        label="Immunités aux états"
+        placeholder="Charmé"
+        [value]="form().controls.conditionImmunities.value"
+        (valueChange)="updateTags('conditionImmunities', $event)"
+      />
+      <app-tag-input
+        inputId="npc-senses"
+        label="Sens"
+        placeholder="Perception passive 13"
+        [value]="form().controls.senses.value"
+        (valueChange)="updateTags('senses', $event)"
+      />
+      <app-multi-select-field
+        inputId="npc-languages"
+        label="Langues"
+        [options]="languageOptions()"
+        [value]="form().controls.languages.value"
+        (valueChange)="updateLanguages($event)"
+      />
+    </div>
+
+    <div class="form-grid challenge-fields">
+      <app-form-field
+        inputId="npc-challenge-rating"
+        label="Facteur de puissance"
+        formControlName="challengeRating"
+        placeholder="7"
+      />
+      <app-form-field
+        inputId="npc-experience-points"
+        label="Points d'expérience"
+        controlType="number"
+        [min]="0"
+        formControlName="experiencePoints"
+        placeholder="2900"
+      />
+    </div>
+    @if (hasInvalidSheetNumbers()) {
+      <p class="field-error sheet-error" role="alert">
+        Les valeurs numériques de la fiche doivent être des nombres entiers positifs ou nuls.
+      </p>
+    }
+  </section>
+
+  @for (section of featureSections; track section.key) {
+    <app-rich-text-feature-editor
+      inputIdPrefix="npc-feature"
+      [title]="section.label"
+      [singularLabel]="section.singularLabel"
+      [features]="featureDrafts()[section.key]"
+      [mentionCandidates]="mentionCandidates()"
+      (featuresChange)="featuresChange.emit({ section: section.key, features: $event })"
+      (mentionActivate)="mentionActivate.emit($event)"
+    />
+  }
+
+  <section class="official-description-form" aria-labelledby="npc-description-form-title">
+    <div class="form-section-heading">
+      <p class="section-kicker">Contenu de référence</p>
+      <h3 id="npc-description-form-title">Description officielle</h3>
+    </div>
+    <app-rich-text-editor
+      [value]="officialDescription()"
+      [mentionCandidates]="mentionCandidates()"
+      (valueChange)="officialDescriptionChange.emit($event)"
+      (mentionActivate)="mentionActivate.emit($event)"
+    />
+  </section>
+</form>

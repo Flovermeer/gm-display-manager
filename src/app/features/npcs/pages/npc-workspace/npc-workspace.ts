@@ -1,7 +1,6 @@
 import { Component, computed, DestroyRef, inject, OnInit, signal, viewChild } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute } from '@angular/router';
-import { ReactiveFormsModule } from '@angular/forms';
 
 import { CampaignContext } from '@app/features/campaigns/application/campaign-context';
 import { CombatStore } from '@app/features/combat/application/combat.store';
@@ -9,17 +8,19 @@ import { npcCombatantSource } from '@app/features/combat/domain/combatant-source
 import { CharacterRuleCatalogService } from '@app/features/game-systems/application/character-rule-catalog.service';
 import {
   EMPTY_CHARACTER_RULE_CATALOG,
-  subracesForRace,
   type CharacterRuleCatalog,
 } from '@app/features/game-systems/domain/character-rule-catalog';
 import { NpcWorkspaceFacade } from '@app/features/npcs/application/npc-workspace.facade';
+import {
+  NpcSheetForm,
+  type NpcFeatureSectionChange,
+} from '@app/features/npcs/ui/npc-sheet-form/npc-sheet-form';
 import { NpcSheetView } from '@app/features/npcs/ui/npc-sheet-view/npc-sheet-view';
 import {
   createNpcForm,
   emptyNpcFormValue,
   npcFormValueToInput,
   npcToFormValue,
-  ruleFormOptions,
   type NpcFormCatalogs,
 } from '@app/features/npcs/pages/npc-workspace/npc-form';
 import type { PendingChangesAware } from '@app/core/navigation/pending-changes.guard';
@@ -28,7 +29,6 @@ import {
   DEMO_NPC_PORTRAIT_URL,
   npcStatusIcon,
   npcStatusLabel,
-  NPC_STATUSES,
   type Npc,
   type UpdateNpcInput,
 } from '@app/features/npcs/domain/npc';
@@ -36,62 +36,41 @@ import { NpcService } from '@app/features/npcs/application/npc.service';
 import { JournalEntryList } from '@app/features/journal/ui/journal-entry-list/journal-entry-list';
 import { RecentResourceTrackerDirective } from '@app/features/recent-resources/ui/recent-resource-tracker.directive';
 import { RecentResourceStore } from '@app/features/recent-resources/application/recent-resource.store';
-import { RichTextEditor } from '@app/shared/rich-text-editor/rich-text-editor';
 import type { ResourceMentionCandidate } from '@app/shared/rich-text-editor/resource-mention';
 import { ResourceMentionNavigationService } from '@app/shared/rich-text-editor/resource-mention-navigation.service';
 import {
   createEmptyRichTextDocument,
   type RichTextDocument,
 } from '@app/shared/rich-text-editor/rich-text-document';
-import { TagInput } from '@app/shared/ui/tag-input/tag-input';
 import { ButtonDirective } from '@app/shared/ui/button/button.directive';
 import { Dialog } from '@app/shared/ui/dialog/dialog';
 import { EmptyState } from '@app/shared/ui/empty-state/empty-state';
 import { EntityTitle } from '@app/shared/ui/entity-title/entity-title';
-import { FormField, type FormFieldOption } from '@app/shared/ui/form-field/form-field';
-import { RichTextFeatureEditor } from '@app/shared/ui/rich-text-feature-editor/rich-text-feature-editor';
 import { CreatureRuleCatalogService } from '@app/features/game-systems/application/creature-rule-catalog.service';
 import {
   EMPTY_CREATURE_RULE_CATALOG,
   type CreatureRuleCatalog,
 } from '@app/features/game-systems/domain/creature-rule-catalog';
-import { MultiSelectField } from '@app/shared/ui/multi-select-field/multi-select-field';
 import {
-  CREATURE_FEATURE_SECTIONS,
   creatureFeatureDraftsFrom,
   emptyCreatureFeatureDrafts,
   type CreatureFeatureDrafts,
-  type CreatureFeatureSection,
 } from '@app/shared/ui/rich-text-feature-editor/creature-feature-sections';
 import { errorMessage } from '@app/shared/error-message';
 import { PendingChangesPrompt } from '@app/core/navigation/pending-changes-prompt';
 import { PendingChangesDialog } from '@app/shared/ui/pending-changes-dialog/pending-changes-dialog';
 
-type NpcTagField =
-  | 'savingThrows'
-  | 'skills'
-  | 'damageVulnerabilities'
-  | 'damageResistances'
-  | 'damageImmunities'
-  | 'conditionImmunities'
-  | 'senses';
-
 @Component({
   selector: 'app-npc-workspace',
   imports: [
+    NpcSheetForm,
     NpcSheetView,
     PendingChangesDialog,
-    ReactiveFormsModule,
-    RichTextEditor,
-    TagInput,
     JournalEntryList,
     ButtonDirective,
     Dialog,
     EmptyState,
     EntityTitle,
-    FormField,
-    RichTextFeatureEditor,
-    MultiSelectField,
     RecentResourceTrackerDirective,
   ],
   templateUrl: './npc-workspace.html',
@@ -135,14 +114,6 @@ export class NpcWorkspace implements OnInit, PendingChangesAware {
   protected readonly error = signal<string | null>(null);
   protected readonly focusedJournalEntryId = signal<string | null>(null);
   protected readonly mentionCandidates = signal<readonly ResourceMentionCandidate[]>([]);
-  protected readonly statuses = NPC_STATUSES;
-  protected readonly statusFieldOptions: readonly FormFieldOption[] = NPC_STATUSES.map(
-    (status) => ({
-      value: status,
-      label: npcStatusLabel(status),
-    }),
-  );
-  protected readonly featureSections = CREATURE_FEATURE_SECTIONS;
   protected readonly statusLabel = npcStatusLabel;
   protected readonly statusIcon = npcStatusIcon;
   protected readonly featureDrafts = signal<CreatureFeatureDrafts>(emptyCreatureFeatureDrafts());
@@ -153,26 +124,10 @@ export class NpcWorkspace implements OnInit, PendingChangesAware {
   protected readonly characterRuleCatalog = signal<CharacterRuleCatalog>(
     EMPTY_CHARACTER_RULE_CATALOG,
   );
-  protected readonly sizeOptions = computed(() => ruleFormOptions(this.ruleCatalog().sizes));
-  protected readonly raceOptions = computed(() =>
-    ruleFormOptions(this.characterRuleCatalog().races, this.selectedNpc()?.sheet.race),
-  );
-  protected subraceOptions(): readonly FormFieldOption[] {
-    const raceId = this.npcForm.controls.race.value;
-    return ruleFormOptions(
-      subracesForRace(this.characterRuleCatalog(), raceId),
-      this.selectedNpc()?.sheet.subrace,
-    );
-  }
-  protected readonly classOptions = computed(() =>
-    ruleFormOptions(this.characterRuleCatalog().classes, this.selectedNpc()?.sheet.className),
-  );
-  protected readonly alignmentOptions = computed(() =>
-    ruleFormOptions(this.ruleCatalog().alignments),
-  );
-  protected readonly languageOptions = computed(() =>
-    ruleFormOptions(this.ruleCatalog().languages),
-  );
+  protected readonly formCatalogs = computed<NpcFormCatalogs>(() => ({
+    creature: this.ruleCatalog(),
+    character: this.characterRuleCatalog(),
+  }));
   protected readonly effectivePortraitPath = computed(
     () => this.draftPortraitPath() ?? this.selectedNpc()?.portraitPath ?? null,
   );
@@ -200,17 +155,6 @@ export class NpcWorkspace implements OnInit, PendingChangesAware {
     void this.combat?.requestAdd(npcCombatantSource(npc));
   }
 
-  protected raceChanged(): void {
-    const current = this.npcForm.controls.subrace.value;
-    const raceId = this.npcForm.controls.race.value;
-    if (
-      current &&
-      !subracesForRace(this.characterRuleCatalog(), raceId).some(({ id }) => id === current)
-    ) {
-      this.npcForm.controls.subrace.setValue('');
-    }
-  }
-
   ngOnInit(): void {
     this.route.queryParamMap
       ?.pipe(takeUntilDestroyed(this.destroyRef))
@@ -230,11 +174,6 @@ export class NpcWorkspace implements OnInit, PendingChangesAware {
 
   protected updateSearch(event: Event): void {
     this.searchTerm.set((event.target as HTMLInputElement).value);
-  }
-
-  protected updateLanguages(values: readonly string[]): void {
-    this.npcForm.controls.languages.setValue(values);
-    this.npcForm.controls.languages.markAsDirty();
   }
 
   protected async requestSelectNpc(npc: Npc): Promise<void> {
@@ -491,15 +430,7 @@ export class NpcWorkspace implements OnInit, PendingChangesAware {
     }
   }
 
-  protected updateTags(field: NpcTagField, value: readonly string[]): void {
-    this.npcForm.controls[field].setValue(value);
-    this.npcForm.controls[field].markAsDirty();
-  }
-
-  protected updateFeatureSection(
-    section: CreatureFeatureSection,
-    features: CreatureFeatureDrafts[CreatureFeatureSection],
-  ): void {
+  protected updateFeatureSection({ section, features }: NpcFeatureSectionChange): void {
     this.featureDrafts.update((drafts) => ({ ...drafts, [section]: features }));
     this.npcForm.markAsDirty();
   }
@@ -512,20 +443,6 @@ export class NpcWorkspace implements OnInit, PendingChangesAware {
   protected openMention(mention: ResourceMentionCandidate): void {
     const campaign = this.campaign();
     if (campaign) void this.mentionNavigation.open(campaign.id, mention);
-  }
-
-  protected hasInvalidSheetNumbers(): boolean {
-    return [
-      this.npcForm.controls.armorClass,
-      this.npcForm.controls.hitPoints,
-      this.npcForm.controls.strength,
-      this.npcForm.controls.dexterity,
-      this.npcForm.controls.constitution,
-      this.npcForm.controls.intelligence,
-      this.npcForm.controls.wisdom,
-      this.npcForm.controls.charisma,
-      this.npcForm.controls.experiencePoints,
-    ].some((control) => control.invalid && (control.dirty || control.touched));
   }
 
   private async initialize(): Promise<void> {
@@ -615,10 +532,6 @@ export class NpcWorkspace implements OnInit, PendingChangesAware {
       officialDescription: this.officialDescriptionDraft(),
       features: this.featureDrafts(),
     });
-  }
-
-  private formCatalogs(): NpcFormCatalogs {
-    return { creature: this.ruleCatalog(), character: this.characterRuleCatalog() };
   }
 
   private async loadSupportingCatalogs(): Promise<void> {

@@ -102,6 +102,9 @@ En lecture seule, **Afficher aux joueurs** envoie l'image actuellement sélectio
 Display. Supprimer cette image pendant qu'elle y est affichée remet immédiatement l'écran joueurs
 sur le fond neutre. À chaque ouverture de la fiche, la sélection revient à la première image. Le
 visuel de démonstration de l'auberge, marqué **Démo**, est utilisé si aucune image n'est enregistrée.
+En mode édition, coche **Masquer le nom sur l’écran joueurs** pour envoyer l'image sans le nom du
+lieu, par exemple lorsque les joueurs ne l'ont pas encore identifié. Ce réglage s'applique aussi
+lorsque le lieu est affiché depuis une scène ou une mention `@`.
 Supprimer un lieu replace ses enfants à la racine de la campagne au lieu de les supprimer.
 
 ### Gérer les PNJ
@@ -110,13 +113,20 @@ La page **PNJ** propose une liste filtrable à gauche et la fiche sélectionnée
 droite. La flèche replie ou affiche le panneau latéral.
 
 Une fiche est toujours ouverte en lecture seule. Utilise **Modifier** pour
-changer son nom, son statut, son rôle, sa race, sa classe ou son occupation, puis **Enregistrer**. La
-suppression demande une confirmation séparée.
+changer son nom, son statut, son rôle, son espèce, sa sous-espèce, sa classe ou son occupation, puis
+**Enregistrer**. La suppression demande une confirmation séparée.
 
-Les listes **Race** et **Classe** sont communes aux PJ et aux PNJ de l'univers. Configure-les depuis
-**Configuration → Référentiels de règles**. L'occupation reste un texte libre propre à chaque PNJ.
+Les listes **Espèce**, **Sous-espèce** et **Classe** sont communes aux PJ et aux PNJ de l'univers.
+Configure-les depuis **Configuration → Ressources partagées** (voir la section 3). La liste des
+sous-espèces se limite à celles de l'espèce choisie. L'occupation reste un texte libre propre à
+chaque PNJ.
+
 Dans la description officielle et les blocs de capacités/actions, saisis `@` pour créer un lien vers
-un PJ, un PNJ, un monstre, un lieu, un objet ou une scène de la campagne.
+un PJ, un PNJ, un monstre, un lieu, un objet ou une scène de la campagne. Le menu de suggestions
+s'ouvre à côté du curseur. Chaque mention est colorée selon son type : rouge pour un monstre, gris
+bleuté pour un lieu, vert d'eau pour un PNJ, orangé pour un objet et violet pour les autres
+ressources. Lorsque l'écran joueurs est ouvert, l'icône en forme d'œil placée à côté d'une mention
+affichable envoie la ressource aux joueurs ; un second clic arrête son affichage.
 
 En mode édition, clique sur le cadre carré du portrait pour choisir une image
 PNG, JPG, JPEG ou WebP. L'original reste intact : une copie est enregistrée dans
@@ -161,17 +171,29 @@ et leurs notes. La confirmation rappelle cette conséquence avant l'opération.
 ## 3. Gérer les ressources d'un univers
 
 Depuis l'accueil, ouvre **Configuration**, sélectionne un système et un univers,
-puis choisis **Ressources de l'univers**. Les onglets PNJ, PJ, Lieux, Objets et
+puis choisis **Ressources partagées**. Les onglets PNJ, PJ, Lieux, Objets et
 Bestiaire présentent les fiches canoniques partagées par toutes les campagnes de
 cet univers.
+
+Chaque système possède aussi un catalogue **générique**, nommé d'après le système
+suivi de « (générique) », pour les ressources communes à tous ses univers. Il ne peut
+pas être choisi pour une campagne. Le catalogue d'un univers affiche à la fois ses
+propres ressources et celles du catalogue générique, avec leur origine ; une
+campagne peut importer les unes comme les autres. Le sélecteur **Catalogue** en
+haut de la page permet de passer d'un catalogue à l'autre.
 
 - **Ajouter** crée directement une fiche canonique sans l'associer à une campagne.
 - **Modifier** ouvre l'éditeur détaillé et ses médias stockés dans le dossier de
   l'univers.
 - Pour les objets, les types et raretés sont administrés au-dessus du catalogue.
   Une valeur utilisée par une fiche ne peut pas être supprimée.
-- Les races et classes sont administrées dans **Référentiels de règles**, puis utilisées comme
-  sélecteurs par les fiches canoniques PJ et PNJ.
+- Les onglets **Espèces**, **Sous-espèces** et **Classes** administrent les listes
+  utilisées par les fiches PJ et PNJ. Une sous-espèce est toujours rattachée à
+  une espèce parente. Les valeurs héritées du catalogue générique sont visibles
+  mais en lecture seule : sélectionne le catalogue générique pour les modifier.
+  Une valeur utilisée par une fiche ne peut pas être supprimée.
+- **Référentiels de règles** garde les listes propres aux monstres : types,
+  sous-espèces de créature et langues.
 - **Corbeille** empêche les nouveaux imports dans les campagnes sans casser les
   campagnes qui utilisent déjà la fiche. **Restaurer** la rend de nouveau disponible.
 

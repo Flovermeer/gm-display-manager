@@ -1,2 +1,1 @@
-- découper `src-tauri/src/backup.rs` (environ 1000 lignes) en modules archive, restauration et rotation
 - poser des règles de dépendances entre features (nécessite d'installer ESLint)

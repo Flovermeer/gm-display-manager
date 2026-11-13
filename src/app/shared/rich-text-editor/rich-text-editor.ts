@@ -10,6 +10,7 @@ import {
   input,
   output,
   signal,
+  untracked,
   viewChild,
 } from '@angular/core';
 import { Editor, type JSONContent } from '@tiptap/core';
@@ -74,26 +75,33 @@ export class RichTextEditor implements AfterViewInit, OnDestroy {
   private editor: Editor | null = null;
   private readonly refreshMentionMenuPosition = () => this.updateMentionMenuPosition();
 
+  // Les commandes Tiptap relancent les plugins de l'éditeur, dont le déclencheur de mention qui lit
+  // et écrit des signaux. Elles sont exécutées hors suivi pour que ces signaux ne deviennent pas des
+  // dépendances de l'effet : sinon, ouvrir le menu « @ » relance l'effet en boucle.
   private readonly synchronizeExternalValue = effect(() => {
     const value = this.value();
     this.editorReady();
 
-    if (!this.editor || documentsAreEqual(this.editor.getJSON(), value.content)) return;
-    this.editor.commands.setContent(value.content, { emitUpdate: false });
-    this.editorRevision.update((revision) => revision + 1);
+    untracked(() => {
+      if (!this.editor || documentsAreEqual(this.editor.getJSON(), value.content)) return;
+      this.editor.commands.setContent(value.content, { emitUpdate: false });
+      this.editorRevision.update((revision) => revision + 1);
+    });
   });
 
   private readonly synchronizeEditableState = effect(() => {
     const editable = this.editable();
     this.editorReady();
-    this.editor?.setEditable(editable);
+    untracked(() => this.editor?.setEditable(editable));
   });
 
   private readonly synchronizeMentionAvailability = effect(() => {
     this.mentionCandidates();
     this.editorReady();
-    if (!this.editor) return;
-    this.editor.commands.setContent(this.editor.getJSON(), { emitUpdate: false });
+    untracked(() => {
+      if (!this.editor) return;
+      this.editor.commands.setContent(this.editor.getJSON(), { emitUpdate: false });
+    });
   });
 
   private readonly synchronizeMentionDisplayState = effect(() => {
@@ -277,8 +285,7 @@ export class RichTextEditor implements AfterViewInit, OnDestroy {
     const resourceType = mention?.dataset['resourceType'];
     const resourceId = mention?.dataset['resourceId'];
     return this.mentionCandidates().find(
-      (candidate) =>
-        candidate.resourceType === resourceType && candidate.resourceId === resourceId,
+      (candidate) => candidate.resourceType === resourceType && candidate.resourceId === resourceId,
     );
   }
 
@@ -393,10 +400,7 @@ export function calculateMentionMenuPosition(
     0,
     viewport.height - cursor.bottom - MENTION_MENU_GAP - MENTION_MENU_VIEWPORT_PADDING,
   );
-  const spaceAbove = Math.max(
-    0,
-    cursor.top - MENTION_MENU_GAP - MENTION_MENU_VIEWPORT_PADDING,
-  );
+  const spaceAbove = Math.max(0, cursor.top - MENTION_MENU_GAP - MENTION_MENU_VIEWPORT_PADDING);
   const displayBelow = spaceBelow >= MENTION_MENU_MIN_SPACE || spaceBelow >= spaceAbove;
 
   return {

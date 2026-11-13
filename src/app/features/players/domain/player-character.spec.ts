@@ -1,5 +1,9 @@
 import {
   EMPTY_PLAYER_CHARACTER_SHEET,
+  classAndLevel,
+  hasFullHitPoints,
+  hitPointLabel,
+  playerCharacterStatusLabel,
   PLAYER_CHARACTER_SHEET_SCHEMA_VERSION,
   createPlayerCharacter,
   updatePlayerCharacter,
@@ -101,5 +105,25 @@ describe('PlayerCharacter', () => {
     expect(() => updatePlayerCharacter(character, { ...character, currentHitPoints: 25 })).toThrow(
       'Current hit points cannot exceed maximum hit points.',
     );
+  });
+});
+
+describe('PlayerCharacter labels', () => {
+  const sheet = { ...EMPTY_PLAYER_CHARACTER_SHEET, className: 'Rôdeuse', level: 3 };
+
+  it('labels statuses, hit points and class level', () => {
+    expect(playerCharacterStatusLabel('missing')).toBe('Disparu');
+    expect(hitPointLabel({ currentHitPoints: null, maxHitPoints: null })).toBe('PV non renseignés');
+    expect(hitPointLabel({ currentHitPoints: 18, maxHitPoints: null })).toBe('18 / — PV');
+    expect(classAndLevel({ sheet })).toBe('Rôdeuse · niveau 3');
+    expect(classAndLevel({ sheet: { ...sheet, className: '', level: null } })).toBe(
+      'Classe non renseignée',
+    );
+  });
+
+  it('detects full hit points only with a positive maximum', () => {
+    expect(hasFullHitPoints({ currentHitPoints: 24, maxHitPoints: 24 })).toBe(true);
+    expect(hasFullHitPoints({ currentHitPoints: 0, maxHitPoints: 0 })).toBe(false);
+    expect(hasFullHitPoints({ currentHitPoints: 12, maxHitPoints: 24 })).toBe(false);
   });
 });

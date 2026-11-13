@@ -241,3 +241,41 @@ function normalizeTags(values: readonly string[]): readonly string[] {
   return normalized;
 }
 import type { ResourceProvenance } from '@app/shared/domain/resource-provenance';
+
+const PLAYER_CHARACTER_STATUS_LABELS: Readonly<Record<PlayerCharacterStatus, string>> = {
+  active: 'Actif',
+  dead: 'Mort',
+  retired: 'Retiré',
+  missing: 'Disparu',
+};
+
+export function playerCharacterStatusLabel(status: PlayerCharacterStatus): string {
+  return PLAYER_CHARACTER_STATUS_LABELS[status];
+}
+
+export function hitPointLabel(
+  character: Pick<PlayerCharacter, 'currentHitPoints' | 'maxHitPoints'>,
+): string {
+  if (character.currentHitPoints === null && character.maxHitPoints === null) {
+    return 'PV non renseignés';
+  }
+  return `${character.currentHitPoints ?? '—'} / ${character.maxHitPoints ?? '—'} PV`;
+}
+
+export function hasFullHitPoints(
+  character: Pick<PlayerCharacter, 'currentHitPoints' | 'maxHitPoints'>,
+): boolean {
+  return (
+    character.currentHitPoints !== null &&
+    character.maxHitPoints !== null &&
+    character.maxHitPoints > 0 &&
+    character.currentHitPoints === character.maxHitPoints
+  );
+}
+
+export function classAndLevel(character: Pick<PlayerCharacter, 'sheet'>): string {
+  const className = character.sheet.className || 'Classe non renseignée';
+  return character.sheet.level === null
+    ? className
+    : `${className} · niveau ${character.sheet.level}`;
+}

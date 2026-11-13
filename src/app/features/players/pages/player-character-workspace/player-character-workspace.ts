@@ -22,10 +22,14 @@ import {
   type CharacterRuleCatalog,
 } from '@app/features/game-systems/domain/character-rule-catalog';
 import { optionIdFor, optionLabel } from '@app/features/game-systems/domain/creature-rule-catalog';
-import { PlayerCharacterPortraitGateway } from '@app/features/players/data-access/player-character-portrait.gateway';
+import { PlayerCharacterWorkspaceFacade } from '@app/features/players/application/player-character-workspace.facade';
 import {
+  classAndLevel,
   EMPTY_PLAYER_CHARACTER_SHEET,
+  hasFullHitPoints,
+  hitPointLabel,
   PLAYER_CHARACTER_STATUSES,
+  playerCharacterStatusLabel,
   type PlayerCharacter,
   type PlayerCharacterStatus,
   type UpdatePlayerCharacterInput,
@@ -67,7 +71,7 @@ export class PlayerCharacterWorkspace implements OnInit, PendingChangesAware {
   private readonly destroyRef = inject(DestroyRef);
   private readonly characterService = inject(PlayerCharacterService);
   private readonly characterRules = inject(CharacterRuleCatalogService);
-  private readonly portraitGateway = inject(PlayerCharacterPortraitGateway);
+  private readonly workspace = inject(PlayerCharacterWorkspaceFacade);
   private readonly combat = inject(CombatStore, { optional: true });
   private readonly recentResources = inject(RecentResourceStore, { optional: true });
   private readonly journalEntries = viewChild<JournalEntryList>(JournalEntryList);
@@ -110,7 +114,7 @@ export class PlayerCharacterWorkspace implements OnInit, PendingChangesAware {
   );
   protected readonly statuses = PLAYER_CHARACTER_STATUSES;
   protected readonly statusFieldOptions: readonly FormFieldOption[] = PLAYER_CHARACTER_STATUSES.map(
-    (status) => ({ value: status, label: this.statusLabel(status) }),
+    (status) => ({ value: status, label: playerCharacterStatusLabel(status) }),
   );
   protected readonly effectivePortraitPath = computed(
     () => this.draftPortraitPath() ?? this.selectedCharacter()?.portraitPath ?? null,
@@ -280,19 +284,13 @@ export class PlayerCharacterWorkspace implements OnInit, PendingChangesAware {
     this.isImportingPortrait.set(true);
     this.error.set(null);
     try {
-      const importedPath = await this.portraitGateway.chooseAndImport(campaign.universeId);
-      if (!importedPath) return;
-      const previewUrl = await this.portraitGateway
-        .resolveUrl(importedPath)
-        .catch(async (error) => {
-          await this.portraitGateway.discard(importedPath);
-          throw error;
-        });
+      const imported = await this.workspace.importPortrait(campaign.universeId);
+      if (!imported) return;
       const previousDraft = this.draftPortraitPath();
-      this.draftPortraitPath.set(importedPath);
-      this.portraitUrl.set(previewUrl);
+      this.draftPortraitPath.set(imported.path);
+      this.portraitUrl.set(imported.url);
       this.characterForm.markAsDirty();
-      if (previousDraft) await this.portraitGateway.discard(previousDraft);
+      this.reportErrors(await this.workspace.discardPortraits([previousDraft]));
     } catch (error) {
       this.error.set(errorMessage(error));
     } finally {
@@ -312,26 +310,19 @@ export class PlayerCharacterWorkspace implements OnInit, PendingChangesAware {
     this.isSaving.set(true);
     this.error.set(null);
     try {
-      const selected = this.selectedCharacter();
-      const portraitPath = this.effectivePortraitPath();
-      const saved = this.isCreating()
-        ? await this.characterService.create(campaign.id, this.formInput(), portraitPath)
-        : selected
-          ? await this.characterService.update(selected, this.formInput(), portraitPath)
-          : null;
-      if (!saved) return false;
-      const previousPortraitPath = selected?.portraitPath ?? null;
+      const existing = this.isCreating() ? null : this.selectedCharacter();
+      if (!this.isCreating() && !existing) return false;
+      const { character: saved, cleanupErrors } = await this.workspace.save({
+        campaignId: campaign.id,
+        existing,
+        input: this.formInput(),
+        portraitPath: this.effectivePortraitPath(),
+      });
       this.draftPortraitPath.set(null);
       this.showValidationErrors.set(false);
       await this.reloadCharacters();
       this.openReadOnly(saved);
-      if (
-        selected?.provenance === 'campaign' &&
-        previousPortraitPath &&
-        previousPortraitPath !== saved.portraitPath
-      ) {
-        await this.portraitGateway.discard(previousPortraitPath);
-      }
+      this.reportErrors(cleanupErrors);
       return true;
     } catch (error) {
       this.error.set(errorMessage(error));
@@ -385,15 +376,9 @@ export class PlayerCharacterWorkspace implements OnInit, PendingChangesAware {
     this.isSaving.set(true);
     this.error.set(null);
     try {
-      await this.characterService.delete(character);
+      const cleanupErrors = await this.workspace.delete(character);
       await this.recentResources?.remove('player-character', character.id);
-      if (character.provenance === 'campaign' && character.portraitPath) {
-        try {
-          await this.portraitGateway.discard(character.portraitPath);
-        } catch (error) {
-          this.error.set(errorMessage(error));
-        }
-      }
+      this.reportErrors(cleanupErrors);
       await this.reloadCharacters();
       this.selectedCharacter.set(null);
       this.showDeleteDialog.set(false);
@@ -421,37 +406,10 @@ export class PlayerCharacterWorkspace implements OnInit, PendingChangesAware {
     if (saved) this.pendingChanges.resolve(true);
   }
 
-  protected statusLabel(status: PlayerCharacterStatus): string {
-    const labels: Record<PlayerCharacterStatus, string> = {
-      active: 'Actif',
-      dead: 'Mort',
-      retired: 'Retiré',
-      missing: 'Disparu',
-    };
-    return labels[status];
-  }
-
-  protected hitPointLabel(character: PlayerCharacter): string {
-    if (character.currentHitPoints === null && character.maxHitPoints === null)
-      return 'PV non renseignés';
-    return `${character.currentHitPoints ?? '—'} / ${character.maxHitPoints ?? '—'} PV`;
-  }
-
-  protected hasFullHitPoints(character: PlayerCharacter): boolean {
-    return (
-      character.currentHitPoints !== null &&
-      character.maxHitPoints !== null &&
-      character.maxHitPoints > 0 &&
-      character.currentHitPoints === character.maxHitPoints
-    );
-  }
-
-  protected classAndLevel(character: PlayerCharacter): string {
-    const className = character.sheet.className || 'Classe non renseignée';
-    return character.sheet.level === null
-      ? className
-      : `${className} · niveau ${character.sheet.level}`;
-  }
+  protected readonly statusLabel = playerCharacterStatusLabel;
+  protected readonly hitPointLabel = hitPointLabel;
+  protected readonly hasFullHitPoints = hasFullHitPoints;
+  protected readonly classAndLevel = classAndLevel;
 
   protected valueOrDash(value: string | number | null): string | number {
     return value === '' || value === null ? '—' : value;
@@ -658,13 +616,7 @@ export class PlayerCharacterWorkspace implements OnInit, PendingChangesAware {
   private async abandonChanges(): Promise<void> {
     const draftPortraitPath = this.draftPortraitPath();
     this.draftPortraitPath.set(null);
-    if (draftPortraitPath) {
-      try {
-        await this.portraitGateway.discard(draftPortraitPath);
-      } catch (error) {
-        this.error.set(errorMessage(error));
-      }
-    }
+    this.reportErrors(await this.workspace.discardPortraits([draftPortraitPath]));
     const selected = this.selectedCharacter();
     this.isEditing.set(false);
     this.isCreating.set(false);
@@ -676,6 +628,11 @@ export class PlayerCharacterWorkspace implements OnInit, PendingChangesAware {
       this.populateEmptyForm();
       this.portraitUrl.set(null);
     }
+  }
+
+  private reportErrors(errors: readonly unknown[]): void {
+    const lastError = errors.at(-1);
+    if (lastError !== undefined) this.error.set(errorMessage(lastError));
   }
 
   private confirmPendingChanges(): boolean | Promise<boolean> {
@@ -691,7 +648,7 @@ export class PlayerCharacterWorkspace implements OnInit, PendingChangesAware {
     this.portraitUrl.set(null);
     if (!relativePath) return;
     try {
-      const url = await this.portraitGateway.resolveUrl(relativePath);
+      const url = await this.workspace.portraitUrl(relativePath);
       if (this.effectivePortraitPath() === relativePath) this.portraitUrl.set(url);
     } catch (error) {
       this.error.set(errorMessage(error));

@@ -14,9 +14,16 @@ import { ActivatedRoute } from '@angular/router';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 
 import { CampaignContext } from '@app/features/campaigns/application/campaign-context';
-import { DisplayGateway } from '@app/features/display/data-access/display.gateway';
-import { PlayerDisplayStore } from '@app/features/display/application/player-display.store';
-import type { Location, UpdateLocationInput } from '@app/features/locations/domain/location';
+import { PlayerDisplayPublisher } from '@app/features/display/application/player-display-publisher.service';
+import {
+  isDisplayingResource,
+  type PlayerDisplayStateOf,
+} from '@app/features/display/domain/player-display-state';
+import {
+  locationPlayerDisplayState,
+  type Location,
+  type UpdateLocationInput,
+} from '@app/features/locations/domain/location';
 import { LocationService } from '@app/features/locations/application/location.service';
 import { LocationTreeStateService } from '@app/features/locations/application/location-tree-state.service';
 import { LocationImageGateway } from '@app/features/locations/data-access/location-image.gateway';
@@ -29,7 +36,6 @@ import { Dialog } from '@app/shared/ui/dialog/dialog';
 import { EmptyState } from '@app/shared/ui/empty-state/empty-state';
 import { EntityTitle } from '@app/shared/ui/entity-title/entity-title';
 import { FormField, type FormFieldOption } from '@app/shared/ui/form-field/form-field';
-import { ActiveSceneService } from '@app/features/scenes/application/active-scene.service';
 import { RichTextEditor } from '@app/shared/rich-text-editor/rich-text-editor';
 import {
   createEmptyRichTextDocument,
@@ -77,9 +83,7 @@ export class LocationWorkspace implements OnInit, PendingChangesAware {
   private readonly locationService = inject(LocationService);
   private readonly locationTreeState = inject(LocationTreeStateService);
   private readonly locationImageGateway = inject(LocationImageGateway);
-  private readonly displayGateway = inject(DisplayGateway);
-  private readonly playerDisplayStore = inject(PlayerDisplayStore);
-  private readonly activeSceneService = inject(ActiveSceneService);
+  private readonly playerDisplay = inject(PlayerDisplayPublisher);
   private readonly mentionNavigation = inject(ResourceMentionNavigationService);
   private readonly recentResources = inject(RecentResourceStore, { optional: true });
   private readonly journalEntries = viewChild<JournalEntryList>(JournalEntryList);
@@ -144,8 +148,9 @@ export class LocationWorkspace implements OnInit, PendingChangesAware {
   );
   protected readonly isSelectedLocationDisplayed = computed(() => {
     const location = this.selectedLocation();
-    const state = this.playerDisplayStore.state();
-    return location !== null && state.mode === 'location' && state.locationId === location.id;
+    return (
+      location !== null && isDisplayingResource(this.playerDisplay.state(), 'location', location.id)
+    );
   });
   protected readonly locationEntries = computed(() => {
     const entries = buildLocationEntries(this.locations());
@@ -446,21 +451,16 @@ export class LocationWorkspace implements OnInit, PendingChangesAware {
     const url = this.imageUrl();
     if (!path) return;
 
-    const state = this.playerDisplayStore.state();
-    if (
-      state.mode === 'location' &&
-      state.locationId === this.selectedLocation()?.id &&
-      state.imagePath === url
-    ) {
-      this.playerDisplayStore.showNeutral();
-      if (this.isPlayerDisplayOpen()) {
-        try {
-          await this.displayGateway.sendPlayerDisplayState({ mode: 'neutral' });
-        } catch (error) {
-          this.error.set(errorMessage(error));
-          return;
-        }
-      }
+    const locationId = this.selectedLocation()?.id;
+    try {
+      await this.playerDisplay.withdraw(
+        (state) =>
+          state.mode === 'location' && state.locationId === locationId && state.imagePath === url,
+        this.isPlayerDisplayOpen(),
+      );
+    } catch (error) {
+      this.error.set(errorMessage(error));
+      return;
     }
 
     this.galleryImagePaths.update((paths) => paths.filter((_, candidate) => candidate !== index));
@@ -541,21 +541,11 @@ export class LocationWorkspace implements OnInit, PendingChangesAware {
     this.error.set(null);
 
     try {
-      await this.activeSceneService.clear(location.campaignId);
-      if (this.isSelectedLocationDisplayed()) {
-        const state = { mode: 'neutral' as const };
-        this.playerDisplayStore.setState(state);
-        await this.displayGateway.sendPlayerDisplayState(state);
-        return;
-      }
-      const state = {
-        mode: 'location' as const,
-        locationId: location.id,
-        name: location.hideNameOnPlayerDisplay ? undefined : location.name,
-        imagePath: this.imageUrl(),
-      };
-      this.playerDisplayStore.setState(state);
-      await this.displayGateway.sendPlayerDisplayState(state);
+      await this.playerDisplay.toggle(
+        location.campaignId,
+        (state) => isDisplayingResource(state, 'location', location.id),
+        () => locationPlayerDisplayState(location, this.imageUrl()),
+      );
     } catch (error) {
       this.error.set(errorMessage(error));
       this.isPlayerDisplayOpen.set(false);
@@ -586,13 +576,10 @@ export class LocationWorkspace implements OnInit, PendingChangesAware {
     this.error.set(null);
 
     try {
-      const displayState = this.playerDisplayStore.state();
-      if (displayState.mode === 'location' && displayState.locationId === location.id) {
-        this.playerDisplayStore.showNeutral();
-        if (this.isPlayerDisplayOpen()) {
-          await this.displayGateway.sendPlayerDisplayState({ mode: 'neutral' });
-        }
-      }
+      await this.playerDisplay.withdraw(
+        (state) => isDisplayingResource(state, 'location', location.id),
+        this.isPlayerDisplayOpen(),
+      );
 
       await this.locationService.delete(location);
       await this.recentResources?.remove('location', location.id);
@@ -650,9 +637,7 @@ export class LocationWorkspace implements OnInit, PendingChangesAware {
         this.route.snapshot.queryParamMap?.get('resourceId'),
         this.route.snapshot.queryParamMap?.get('entryId'),
       );
-      if (this.displayGateway.isDesktop) {
-        this.isPlayerDisplayOpen.set(await this.displayGateway.isPlayerDisplayOpen());
-      }
+      this.isPlayerDisplayOpen.set(await this.playerDisplay.isOpen());
     } catch (error) {
       this.error.set(errorMessage(error));
     } finally {
@@ -747,22 +732,20 @@ export class LocationWorkspace implements OnInit, PendingChangesAware {
     location: Location,
     selectedImagePath: string | null,
   ): Promise<void> {
-    const currentState = this.playerDisplayStore.state();
-    if (currentState.mode !== 'location' || currentState.locationId !== location.id) {
-      return;
-    }
-
-    const state = {
-      ...currentState,
-      name: location.hideNameOnPlayerDisplay ? undefined : location.name,
-      imagePath: selectedImagePath
-        ? await this.locationImageGateway.resolveUrl(selectedImagePath)
-        : DEMO_LOCATION_IMAGE_URL,
-    };
-    this.playerDisplayStore.setState(state);
-    if (this.isPlayerDisplayOpen()) {
-      await this.displayGateway.sendPlayerDisplayState(state);
-    }
+    await this.playerDisplay.refresh(
+      (state): state is PlayerDisplayStateOf<'location'> =>
+        isDisplayingResource(state, 'location', location.id),
+      async (current) => ({
+        ...current,
+        ...locationPlayerDisplayState(
+          location,
+          selectedImagePath
+            ? await this.locationImageGateway.resolveUrl(selectedImagePath)
+            : DEMO_LOCATION_IMAGE_URL,
+        ),
+      }),
+      this.isPlayerDisplayOpen(),
+    );
   }
 
   private setImageViewerZoom(nextZoom: number, clientX?: number, clientY?: number): void {

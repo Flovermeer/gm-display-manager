@@ -3,6 +3,7 @@ import {
   createNpc,
   NPC_SHEET_SCHEMA_VERSION,
   normalizeNpcSheet,
+  npcPlayerDisplayState,
   updateNpc,
   type NpcFactoryDependencies,
 } from '@app/features/npcs/domain/npc';
@@ -103,5 +104,21 @@ describe('Npc', () => {
       subraceOptionId: 'drow-id',
       subrace: 'Drow',
     });
+  });
+});
+
+describe('Npc player display', () => {
+  const npc = { id: 'mira', name: 'Mira Vell' };
+
+  it('shows the portrait and adds the idle video only when it exists', () => {
+    expect(npcPlayerDisplayState(npc, { portraitUrl: 'mira.webp' })).toEqual({
+      mode: 'npc',
+      npcId: 'mira',
+      name: 'Mira Vell',
+      portraitPath: 'mira.webp',
+    });
+    expect(
+      npcPlayerDisplayState(npc, { portraitUrl: 'mira.webp', idleVideoUrl: 'mira.webm' }),
+    ).toHaveProperty('idleVideoPath', 'mira.webm');
   });
 });

@@ -1,3 +1,4 @@
+import type { PlayerDisplayStateOf } from '@app/features/display/domain/player-display-state';
 import {
   createEmptyRichTextDocument,
   type RichTextDocument,
@@ -321,4 +322,17 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 
 export function createNpcFeature(createId: () => string = () => crypto.randomUUID()): NpcFeature {
   return { id: createId(), name: '', description: createEmptyRichTextDocument() };
+}
+
+export function npcPlayerDisplayState(
+  npc: Pick<Npc, 'id' | 'name'>,
+  media: Readonly<{ portraitUrl: string; idleVideoUrl?: string | null }>,
+): PlayerDisplayStateOf<'npc'> {
+  return {
+    mode: 'npc',
+    npcId: npc.id,
+    name: npc.name,
+    portraitPath: media.portraitUrl,
+    ...(media.idleVideoUrl ? { idleVideoPath: media.idleVideoUrl } : {}),
+  };
 }

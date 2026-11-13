@@ -19,13 +19,17 @@ import {
   subracesForRace,
   type CharacterRuleCatalog,
 } from '@app/features/game-systems/domain/character-rule-catalog';
-import { DisplayGateway } from '@app/features/display/data-access/display.gateway';
-import { PlayerDisplayStore } from '@app/features/display/application/player-display.store';
+import { PlayerDisplayPublisher } from '@app/features/display/application/player-display-publisher.service';
+import {
+  isDisplayingResource,
+  type PlayerDisplayStateOf,
+} from '@app/features/display/domain/player-display-state';
 import { NpcPortraitGateway } from '@app/features/npcs/data-access/npc-portrait.gateway';
 import { NpcIdleVideoGateway } from '@app/features/npcs/data-access/npc-idle-video.gateway';
 import type { PendingChangesAware } from '@app/core/navigation/pending-changes.guard';
 import {
   createEmptyNpcSheet,
+  npcPlayerDisplayState,
   NPC_STATUSES,
   type Npc,
   type NpcSheet,
@@ -49,7 +53,6 @@ import { Dialog } from '@app/shared/ui/dialog/dialog';
 import { EmptyState } from '@app/shared/ui/empty-state/empty-state';
 import { EntityTitle } from '@app/shared/ui/entity-title/entity-title';
 import { FormField, type FormFieldOption } from '@app/shared/ui/form-field/form-field';
-import { ActiveSceneService } from '@app/features/scenes/application/active-scene.service';
 import { RichTextFeatureEditor } from '@app/shared/ui/rich-text-feature-editor/rich-text-feature-editor';
 import { RichTextFeatureSection } from '@app/shared/ui/rich-text-feature-section/rich-text-feature-section';
 import { CreatureRuleCatalogService } from '@app/features/game-systems/application/creature-rule-catalog.service';
@@ -109,9 +112,7 @@ export class NpcWorkspace implements OnInit, PendingChangesAware {
   private readonly npcService = inject(NpcService);
   private readonly npcPortraitGateway = inject(NpcPortraitGateway);
   private readonly npcIdleVideoGateway = inject(NpcIdleVideoGateway);
-  private readonly displayGateway = inject(DisplayGateway);
-  private readonly playerDisplayStore = inject(PlayerDisplayStore);
-  private readonly activeSceneService = inject(ActiveSceneService);
+  private readonly playerDisplay = inject(PlayerDisplayPublisher);
   private readonly creatureRules = inject(CreatureRuleCatalogService);
   private readonly characterRules = inject(CharacterRuleCatalogService);
   private readonly mentionNavigation = inject(ResourceMentionNavigationService);
@@ -189,8 +190,7 @@ export class NpcWorkspace implements OnInit, PendingChangesAware {
   );
   protected readonly isSelectedNpcDisplayed = computed(() => {
     const npc = this.selectedNpc();
-    const state = this.playerDisplayStore.state();
-    return npc !== null && state.mode === 'npc' && state.npcId === npc.id;
+    return npc !== null && isDisplayingResource(this.playerDisplay.state(), 'npc', npc.id);
   });
   protected readonly filteredNpcs = computed(() => {
     const searchTerm = this.searchTerm().trim().toLocaleLowerCase('fr');
@@ -478,26 +478,11 @@ export class NpcWorkspace implements OnInit, PendingChangesAware {
     this.error.set(null);
 
     try {
-      await this.activeSceneService.clear(npc.campaignId);
-      if (this.isSelectedNpcDisplayed()) {
-        const state = { mode: 'neutral' as const };
-        this.playerDisplayStore.setState(state);
-        await this.displayGateway.sendPlayerDisplayState(state);
-        return;
-      }
-      const state = {
-        mode: 'npc' as const,
-        npcId: npc.id,
-        name: npc.name,
-        portraitPath: npc.portraitPath
-          ? await this.npcPortraitGateway.resolveUrl(npc.portraitPath)
-          : DEMO_NPC_PORTRAIT_URL,
-        ...(npc.idleVideoPath
-          ? { idleVideoPath: await this.npcIdleVideoGateway.resolveUrl(npc.idleVideoPath) }
-          : {}),
-      };
-      this.playerDisplayStore.setState(state);
-      await this.displayGateway.sendPlayerDisplayState(state);
+      await this.playerDisplay.toggle(
+        npc.campaignId,
+        (state) => isDisplayingResource(state, 'npc', npc.id),
+        async () => npcPlayerDisplayState(npc, await this.resolveNpcMedia(npc)),
+      );
     } catch (error) {
       this.error.set(errorMessage(error));
       this.isPlayerDisplayOpen.set(false);
@@ -530,13 +515,10 @@ export class NpcWorkspace implements OnInit, PendingChangesAware {
     this.error.set(null);
 
     try {
-      const displayState = this.playerDisplayStore.state();
-      if (displayState.mode === 'npc' && displayState.npcId === npc.id) {
-        this.playerDisplayStore.showNeutral();
-        if (this.isPlayerDisplayOpen()) {
-          await this.displayGateway.sendPlayerDisplayState({ mode: 'neutral' });
-        }
-      }
+      await this.playerDisplay.withdraw(
+        (state) => isDisplayingResource(state, 'npc', npc.id),
+        this.isPlayerDisplayOpen(),
+      );
 
       await this.npcService.delete(npc);
       await this.recentResources?.remove('npc', npc.id);
@@ -687,9 +669,7 @@ export class NpcWorkspace implements OnInit, PendingChangesAware {
         this.route.snapshot.queryParamMap?.get('resourceId'),
         this.route.snapshot.queryParamMap?.get('entryId'),
       );
-      if (this.displayGateway.isDesktop) {
-        this.isPlayerDisplayOpen.set(await this.displayGateway.isPlayerDisplayOpen());
-      }
+      this.isPlayerDisplayOpen.set(await this.playerDisplay.isOpen());
     } catch (error) {
       this.error.set(errorMessage(error));
     } finally {
@@ -960,25 +940,32 @@ export class NpcWorkspace implements OnInit, PendingChangesAware {
   }
 
   private async refreshPublishedNpc(npc: Npc): Promise<void> {
-    const currentState = this.playerDisplayStore.state();
-    if (currentState.mode !== 'npc' || currentState.npcId !== npc.id) {
-      return;
-    }
+    await this.playerDisplay.refresh(
+      (state): state is PlayerDisplayStateOf<'npc'> => isDisplayingResource(state, 'npc', npc.id),
+      async (current) => {
+        const media = await this.resolveNpcMedia(npc);
+        return {
+          ...current,
+          name: npc.name,
+          portraitPath: media.portraitUrl,
+          idleVideoPath: media.idleVideoUrl ?? undefined,
+        };
+      },
+      this.isPlayerDisplayOpen(),
+    );
+  }
 
-    const state = {
-      ...currentState,
-      name: npc.name,
-      portraitPath: npc.portraitPath
+  private async resolveNpcMedia(
+    npc: Npc,
+  ): Promise<Readonly<{ portraitUrl: string; idleVideoUrl: string | null }>> {
+    return {
+      portraitUrl: npc.portraitPath
         ? await this.npcPortraitGateway.resolveUrl(npc.portraitPath)
         : DEMO_NPC_PORTRAIT_URL,
-      idleVideoPath: npc.idleVideoPath
+      idleVideoUrl: npc.idleVideoPath
         ? await this.npcIdleVideoGateway.resolveUrl(npc.idleVideoPath)
-        : undefined,
+        : null,
     };
-    this.playerDisplayStore.setState(state);
-    if (this.isPlayerDisplayOpen()) {
-      await this.displayGateway.sendPlayerDisplayState(state);
-    }
   }
 
   private confirmPendingChanges(): boolean | Promise<boolean> {

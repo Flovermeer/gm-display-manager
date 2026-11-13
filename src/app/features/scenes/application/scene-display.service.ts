@@ -16,6 +16,7 @@ import type {
 } from '@app/features/display/domain/player-display-state';
 import { LocationService } from '@app/features/locations/application/location.service';
 import { LocationImageGateway } from '@app/features/locations/data-access/location-image.gateway';
+import { playerDisplayName } from '@app/features/locations/domain/location';
 import type { Scene } from '@app/features/scenes/domain/scene';
 import { ActiveSceneService } from '@app/features/scenes/application/active-scene.service';
 import { SceneService } from '@app/features/scenes/application/scene.service';
@@ -43,7 +44,7 @@ export class SceneDisplayService {
       ? {
           type: 'image' as const,
           imagePath: await this.locationImageGateway.resolveUrl(location.imagePath),
-          name: location.hideNameOnPlayerDisplay ? undefined : location.name,
+          name: playerDisplayName(location),
         }
       : { type: 'default' as const };
     return { mode: 'scene', sceneId: scene.id, sceneName: scene.name, background, foreground };

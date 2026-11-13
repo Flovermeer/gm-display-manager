@@ -5,8 +5,7 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import type { JSONContent } from '@tiptap/core';
 
 import { CampaignContext } from '@app/features/campaigns/application/campaign-context';
-import { DisplayGateway } from '@app/features/display/data-access/display.gateway';
-import { PlayerDisplayStore } from '@app/features/display/application/player-display.store';
+import { PlayerDisplayPublisher } from '@app/features/display/application/player-display-publisher.service';
 import {
   emptyChapterInput,
   type Chapter,
@@ -66,8 +65,7 @@ export class ChapterWorkspace implements OnInit, PendingChangesAware {
   private readonly chapterService = inject(ChapterService);
   private readonly sceneService = inject(SceneService);
   private readonly activeSceneService = inject(ActiveSceneService);
-  private readonly displayGateway = inject(DisplayGateway);
-  private readonly displayStore = inject(PlayerDisplayStore);
+  private readonly playerDisplay = inject(PlayerDisplayPublisher);
   private readonly mentionNavigation = inject(ResourceMentionNavigationService);
   private readonly recentResources = inject(RecentResourceStore, { optional: true });
 
@@ -337,12 +335,8 @@ export class ChapterWorkspace implements OnInit, PendingChangesAware {
       await Promise.all(scenes.map((scene) => this.sceneService.delete(scene)));
       await Promise.all(scenes.map((scene) => this.recentResources?.remove('scene', scene.id)));
       if (scenes.some(({ id }) => id === activeSceneId)) {
-        const state = defaultSceneState();
         await this.activeSceneService.clear(chapter.campaignId);
-        this.displayStore.setState(state);
-        if (this.displayGateway.isDesktop && (await this.displayGateway.isPlayerDisplayOpen())) {
-          await this.displayGateway.sendPlayerDisplayState(state);
-        }
+        await this.playerDisplay.update(defaultSceneState(), await this.playerDisplay.isOpen());
       }
       await this.recentResources?.remove('chapter', chapter.id);
       await Promise.all([this.reloadChapters(), this.reloadScenes()]);

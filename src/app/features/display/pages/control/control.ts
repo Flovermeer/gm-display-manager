@@ -7,7 +7,7 @@ import { DisplayGateway } from '@app/features/display/data-access/display.gatewa
 import type { MonitorDescriptor } from '@app/features/display/domain/display.models';
 import { PlayerDisplayPreferenceService } from '@app/features/display/application/player-display-preference.service';
 import type { PlayerDisplayState } from '@app/features/display/domain/player-display-state';
-import { PlayerDisplayStore } from '@app/features/display/application/player-display.store';
+import { PlayerDisplayPublisher } from '@app/features/display/application/player-display-publisher.service';
 import { SceneDisplayService } from '@app/features/scenes/application/scene-display.service';
 import { ButtonDirective } from '@app/shared/ui/button/button.directive';
 import { PlayerDisplayMonitorSessionService } from '@app/features/display/application/player-display-monitor-session.service';
@@ -26,7 +26,7 @@ export class Control implements OnInit, OnDestroy {
   private readonly campaignContext = inject(CampaignContext);
   private readonly displayGateway = inject(DisplayGateway);
   private readonly playerDisplayPreference = inject(PlayerDisplayPreferenceService);
-  private readonly playerDisplayStore = inject(PlayerDisplayStore);
+  private readonly playerDisplay = inject(PlayerDisplayPublisher);
   private readonly sceneDisplayService = inject(SceneDisplayService);
   private readonly playerDisplayMonitorSession = inject(PlayerDisplayMonitorSessionService);
   private readonly log = inject(TechnicalLogService);
@@ -44,7 +44,7 @@ export class Control implements OnInit, OnDestroy {
   protected readonly selectedMonitor = computed(() =>
     this.monitors().find((monitor) => monitor.id === this.selectedMonitorId()),
   );
-  protected readonly displayState = this.playerDisplayStore.state;
+  protected readonly displayState = this.playerDisplay.state;
   protected readonly isSelectedPlayerMonitor = computed(
     () =>
       this.selectedMonitorId() !== '' && this.selectedMonitorId() === this.playerDisplayMonitorId(),
@@ -117,7 +117,7 @@ export class Control implements OnInit, OnDestroy {
   }
 
   protected showLocation(): void {
-    if (this.playerDisplayStore.state().mode === 'location') {
+    if (this.playerDisplay.state().mode === 'location') {
       void this.publishDisplayState({ mode: 'neutral' });
       return;
     }
@@ -130,7 +130,7 @@ export class Control implements OnInit, OnDestroy {
   }
 
   protected showNpc(): void {
-    if (this.playerDisplayStore.state().mode === 'npc') {
+    if (this.playerDisplay.state().mode === 'npc') {
       void this.publishDisplayState({ mode: 'neutral' });
       return;
     }
@@ -191,7 +191,7 @@ export class Control implements OnInit, OnDestroy {
     try {
       this.unlistenPlayerDisplayReady = await this.displayGateway.listenForPlayerDisplayReady(
         () => {
-          void this.displayGateway.sendPlayerDisplayState(this.playerDisplayStore.state());
+          void this.displayGateway.sendPlayerDisplayState(this.playerDisplay.state());
         },
       );
     } catch (error) {
@@ -206,7 +206,7 @@ export class Control implements OnInit, OnDestroy {
     try {
       const campaign = await this.campaignContext.load();
       if (!campaign) return;
-      this.playerDisplayStore.setState(await this.sceneDisplayService.restore(campaign.id));
+      await this.playerDisplay.update(await this.sceneDisplayService.restore(campaign.id), false);
       if (this.isDesktop) {
         await this.initializeDesktop();
       }
@@ -254,12 +254,11 @@ export class Control implements OnInit, OnDestroy {
   }
 
   private async publishDisplayState(state: PlayerDisplayState): Promise<void> {
-    this.playerDisplayStore.setState(state);
-
     if (!this.isDesktop || !this.isPlayerDisplayOpen()) {
+      await this.playerDisplay.update(state, false);
       return;
     }
 
-    await this.runDisplayAction(() => this.displayGateway.sendPlayerDisplayState(state));
+    await this.runDisplayAction(() => this.playerDisplay.send(state));
   }
 }

@@ -7,9 +7,11 @@ import type { JSONContent } from '@tiptap/core';
 import { CampaignContext } from '@app/features/campaigns/application/campaign-context';
 import { ChapterService } from '@app/features/chapters/application/chapter.service';
 import type { Chapter } from '@app/features/chapters/domain/chapter';
-import { DisplayGateway } from '@app/features/display/data-access/display.gateway';
-import type { PlayerDisplayState } from '@app/features/display/domain/player-display-state';
-import { PlayerDisplayStore } from '@app/features/display/application/player-display.store';
+import { PlayerDisplayPublisher } from '@app/features/display/application/player-display-publisher.service';
+import {
+  isDisplayingResource,
+  type PlayerDisplayState,
+} from '@app/features/display/domain/player-display-state';
 import type { Location } from '@app/features/locations/domain/location';
 import { LocationService } from '@app/features/locations/application/location.service';
 import { ItemImageGateway } from '@app/features/items/data-access/item-image.gateway';
@@ -85,8 +87,7 @@ export class SceneWorkspace implements OnInit, PendingChangesAware {
   private readonly monsterService = inject(MonsterService);
   private readonly itemService = inject(NarrativeItemService);
   private readonly activeSceneService = inject(ActiveSceneService);
-  private readonly displayGateway = inject(DisplayGateway);
-  private readonly displayStore = inject(PlayerDisplayStore);
+  private readonly playerDisplay = inject(PlayerDisplayPublisher);
   private readonly sceneDisplayService = inject(SceneDisplayService);
   private readonly npcPortraitGateway = inject(NpcPortraitGateway);
   private readonly npcIdleVideoGateway = inject(NpcIdleVideoGateway);
@@ -330,12 +331,11 @@ export class SceneWorkspace implements OnInit, PendingChangesAware {
   }
 
   protected isSceneDisplayed(scene: Scene): boolean {
-    const state = this.displayStore.state();
-    return state.mode === 'scene' && state.sceneId === scene.id;
+    return isDisplayingResource(this.playerDisplay.state(), 'scene', scene.id);
   }
 
   protected isNpcDisplayed(scene: Scene, npc: Npc): boolean {
-    const state = this.displayStore.state();
+    const state = this.playerDisplay.state();
     return (
       state.mode === 'scene' &&
       state.sceneId === scene.id &&
@@ -345,7 +345,7 @@ export class SceneWorkspace implements OnInit, PendingChangesAware {
   }
 
   protected isItemDisplayed(scene: Scene, item: NarrativeItem): boolean {
-    const state = this.displayStore.state();
+    const state = this.playerDisplay.state();
     return (
       state.mode === 'scene' &&
       state.sceneId === scene.id &&
@@ -458,9 +458,7 @@ export class SceneWorkspace implements OnInit, PendingChangesAware {
       this.items.set(items);
       this.mentionCandidates.set(mentionCandidates);
       this.activeSceneId.set(await this.activeSceneService.get(campaign.id));
-      if (this.displayGateway.isDesktop) {
-        this.isPlayerDisplayOpen.set(await this.displayGateway.isPlayerDisplayOpen());
-      }
+      this.isPlayerDisplayOpen.set(await this.playerDisplay.isOpen());
       const queryParams = this.route.snapshot.queryParamMap;
       this.returnChapterId.set(queryParams.get('returnChapterId'));
       if (queryParams.get('create') === 'true') {
@@ -492,10 +490,7 @@ export class SceneWorkspace implements OnInit, PendingChangesAware {
   }
 
   private async sendState(state: PlayerDisplayState): Promise<void> {
-    this.displayStore.setState(state);
-    if (this.displayGateway.isDesktop && this.isPlayerDisplayOpen()) {
-      await this.displayGateway.sendPlayerDisplayState(state);
-    }
+    await this.playerDisplay.update(state, this.isPlayerDisplayOpen());
   }
 
   private async clearActiveScene(campaignId: string): Promise<void> {

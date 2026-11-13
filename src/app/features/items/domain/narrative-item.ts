@@ -1,3 +1,4 @@
+import type { PlayerDisplayStateOf } from '@app/features/display/domain/player-display-state';
 import {
   createEmptyRichTextDocument,
   type RichTextDocument,
@@ -95,5 +96,18 @@ function normalizeInput(input: UpdateNarrativeItemInput): UpdateNarrativeItemInp
     name,
     summary: input.summary.trim(),
     attunementCondition: input.attunement === 'conditional' ? input.attunementCondition.trim() : '',
+  };
+}
+
+export function itemPlayerDisplayState(
+  item: Pick<NarrativeItem, 'id' | 'name' | 'summary'>,
+  imageUrl: string,
+): PlayerDisplayStateOf<'item'> {
+  return {
+    mode: 'item',
+    itemId: item.id,
+    name: item.name,
+    summary: item.summary,
+    imagePath: imageUrl,
   };
 }

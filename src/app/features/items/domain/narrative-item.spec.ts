@@ -1,6 +1,7 @@
 import { createEmptyRichTextDocument } from '@app/shared/rich-text-editor/rich-text-document';
 import {
   createNarrativeItem,
+  itemPlayerDisplayState,
   updateNarrativeItem,
 } from '@app/features/items/domain/narrative-item';
 
@@ -46,5 +47,19 @@ describe('NarrativeItem', () => {
         attunementCondition: ' ',
       }),
     ).toThrow();
+  });
+});
+
+describe('NarrativeItem player display', () => {
+  it('shows the item name, summary and resolved image', () => {
+    expect(
+      itemPlayerDisplayState({ id: 'ring', name: 'Anneau', summary: 'Glacé.' }, 'ring.webp'),
+    ).toEqual({
+      mode: 'item',
+      itemId: 'ring',
+      name: 'Anneau',
+      summary: 'Glacé.',
+      imagePath: 'ring.webp',
+    });
   });
 });

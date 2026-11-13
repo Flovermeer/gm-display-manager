@@ -4,9 +4,9 @@ Date de cadrage : 12 août 2026
 
 Dernière consolidation : 13 novembre 2026
 
-Dernière version publiée : **1.1.8** (19 octobre 2026)
+Dernière version publiée : **1.1.9** (13 novembre 2026)
 
-Version en préparation : **1.1.9**
+Version en préparation : **1.1.10**
 
 Version fonctionnelle actuelle : **V1 terminée**
 
@@ -90,7 +90,7 @@ périmètre de la V1.1 :
 - isolation des données Tauri de développement, stabilisation des checksums de migration et
   validation de la CI sur les pull requests vers `main`.
 
-### Version 1.1.9 — en préparation
+### Version 1.1.9 — 13 novembre 2026
 
 - correction du gel de l'application lors de la saisie de `@` dans un texte riche : l'ouverture du
   menu de mentions relançait en boucle la mise à jour de l'éditeur jusqu'à saturer la mémoire ;
@@ -101,6 +101,14 @@ périmètre de la V1.1 :
 - confirmation « Modifications non enregistrées » commune à tous les écrans, avec les mêmes
   libellés et la même disposition ;
 - documentation actualisée pour les versions 1.1.6 à 1.1.8.
+
+### Version 1.1.10 — en préparation
+
+- correction des mentions `@` : une ressource créée ou renommée est proposée immédiatement dans
+  le menu de mentions, sans quitter la page ;
+- PNJ de type « Organisation » : sans fiche technique ni actions de combat, avec portrait,
+  affichage joueurs, statut, résumé, description officielle et journal. La migration 0029 ajoute
+  `npc.kind` sans modifier les PNJ existants, qui restent des personnages.
 
 ## Statut consolidé
 

@@ -102,6 +102,12 @@ src/app/
 Les imports internes utilisent l'alias unique `@app/...`, afin de conserver des chemins lisibles
 sans masquer la structure réelle du projet derrière de nombreux alias.
 
+Les pages restent minces : chaque écran de ressource délègue ses cas d'usage à une façade
+`application/<ressource>-workspace.facade.ts`, les règles et libellés vivent en fonctions pures
+dans `domain/`, et les formulaires réactifs sont construits et convertis par un fichier
+`<ressource>-form.ts`. Tout changement de l'écran joueurs passe par `PlayerDisplayPublisher`, qui
+met à jour l'état partagé puis l'envoie à la fenêtre.
+
 Les services, contexts, stores, guards, repositories et gateways comportent un en-tête court
 `But / Responsabilités`. Les composants Angular et les simples modèles ne répètent pas de
 documentation évidente.

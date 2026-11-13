@@ -107,6 +107,16 @@ Le premier critère de réussite est simple : un clic sur le laptop du MJ provoq
 - Organiser le code Angular par feature dans `src/app/features/<feature>/`, avec les couches
   `domain/`, `application/`, `data-access/`, `pages/` et `ui/` selon les besoins réels.
 - Ranger les composants routés dans `pages/` et les composants propres à une feature dans `ui/`.
+- Garder les pages minces : elles portent l'état d'écran et délèguent les cas d'usage (médias,
+  sauvegarde avec nettoyage, suppression, affichage joueurs) à une façade `application/`
+  nommée `<Feature>WorkspaceFacade`. Une page n'injecte ni repository ni gateway.
+- Écrire les règles métier et les libellés dérivés en fonctions pures dans `domain/`, et la
+  construction ou la conversion d'un formulaire réactif dans un fichier `<ressource>-form.ts`
+  voisin de la page.
+- Passer exclusivement par `PlayerDisplayPublisher` pour modifier ce que voient les joueurs ;
+  seule la Régie appelle directement `DisplayGateway` pour gérer la fenêtre.
+- Réutiliser `errorMessage`, `PendingChangesPrompt` et `PendingChangesDialog` plutôt que de
+  recopier ces mécanismes dans une page.
 - Utiliser l'alias `@app/...` pour les imports internes plutôt que des remontées relatives profondes.
 - Ajouter un en-tête concis `But / Responsabilités` aux services, contexts, stores, guards,
   repositories et gateways ; ne pas documenter artificiellement les composants ou types évidents.

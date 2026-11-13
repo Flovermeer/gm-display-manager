@@ -32,6 +32,7 @@ describe('NpcWorkspace', () => {
     campaignId: campaign.id,
     provenance: 'campaign',
     name: 'Syndra Silvane',
+    kind: 'character',
     status: 'active',
     summary: 'Commanditaire',
     notes: '',

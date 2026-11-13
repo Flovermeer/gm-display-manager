@@ -19,6 +19,7 @@ import {
 describe('NpcWorkspaceFacade', () => {
   const input: UpdateNpcInput = {
     name: 'Mira Vell',
+    kind: 'character',
     status: 'active',
     summary: 'Aubergiste',
     notes: '',

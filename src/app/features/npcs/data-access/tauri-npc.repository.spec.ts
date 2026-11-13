@@ -41,6 +41,25 @@ describe('TauriNpcRepository', () => {
     ]);
   });
 
+  it('reads the NPC kind from a campaign override, or from the NPC when the override predates it', async () => {
+    const legacyOverride = JSON.stringify({ name: 'Les Zhentarim', sheet: {} });
+    database.select.mockResolvedValue([
+      { ...npcRow, kind: 'organization', source_campaign_id: null, override_snapshot: legacyOverride },
+      {
+        ...npcRow,
+        id: 'other-id',
+        source_campaign_id: null,
+        override_snapshot: JSON.stringify({ name: 'Ménestrels', kind: 'organization', sheet: {} }),
+      },
+    ]);
+    const repository = new TauriNpcRepository();
+
+    await expect(repository.listByCampaign('campaign-id')).resolves.toMatchObject([
+      { name: 'Les Zhentarim', kind: 'organization', provenance: 'override' },
+      { name: 'Ménestrels', kind: 'organization', provenance: 'override' },
+    ]);
+  });
+
   it('scopes lookup and deletion to the campaign', async () => {
     database.select.mockResolvedValue([]);
     const repository = new TauriNpcRepository();
@@ -73,6 +92,7 @@ describe('TauriNpcRepository', () => {
       3,
       '2026-08-12T18:30:00.000Z',
       '2026-08-12T18:30:00.000Z',
+      'character',
     ]);
     expect(database.execute).toHaveBeenNthCalledWith(
       2,
@@ -94,6 +114,7 @@ const npc: Npc = {
   campaignId: 'campaign-id',
   provenance: 'campaign',
   name: 'Syndra Silvane',
+  kind: 'character',
   status: 'active',
   summary: 'Commanditaire',
   notes: 'Souffre de la malédiction.',
@@ -109,6 +130,7 @@ const npcRow = {
   id: 'npc-id',
   campaign_id: 'campaign-id',
   name: 'Syndra Silvane',
+  kind: 'character',
   status: 'active',
   summary: 'Commanditaire',
   notes: 'Souffre de la malédiction.',

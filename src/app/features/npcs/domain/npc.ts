@@ -10,6 +10,10 @@ export const NPC_SHEET_SCHEMA_VERSION = 6 as const;
 
 export type NpcStatus = (typeof NPC_STATUSES)[number];
 
+/** Une organisation n’a pas de fiche technique : seuls sa description et son journal s’affichent. */
+export const NPC_KINDS = ['character', 'organization'] as const;
+export type NpcKind = (typeof NPC_KINDS)[number];
+
 export type NpcAbilityScores = Readonly<{
   strength: number | null;
   dexterity: number | null;
@@ -71,6 +75,7 @@ export type Npc = Readonly<{
   campaignId: string;
   provenance: ResourceProvenance;
   name: string;
+  kind: NpcKind;
   status: NpcStatus;
   summary: string;
   notes: string;
@@ -85,6 +90,7 @@ export type Npc = Readonly<{
 export type CreateNpcInput = Readonly<{
   campaignId: string;
   name: string;
+  kind?: NpcKind;
   status?: NpcStatus;
   summary?: string;
   notes?: string;
@@ -95,6 +101,7 @@ export type CreateNpcInput = Readonly<{
 
 export type UpdateNpcInput = Readonly<{
   name: string;
+  kind: NpcKind;
   status: NpcStatus;
   summary: string;
   notes: string;
@@ -173,6 +180,7 @@ export function createNpc(
     campaignId: input.campaignId,
     provenance: 'campaign',
     name,
+    kind: input.kind ?? 'character',
     status: input.status ?? 'active',
     summary: input.summary?.trim() ?? '',
     notes: input.notes?.trim() ?? '',
@@ -193,6 +201,7 @@ export function updateNpc(
   return {
     ...npc,
     name: requiredName(input.name),
+    kind: input.kind,
     status: input.status,
     summary: input.summary.trim(),
     notes: input.notes.trim(),
@@ -353,6 +362,15 @@ const NPC_STATUS_ICONS: Readonly<Record<NpcStatus, string>> = {
   missing: '?',
   retired: 'X',
 };
+
+const NPC_KIND_LABELS: Readonly<Record<NpcKind, string>> = {
+  character: 'Personnage',
+  organization: 'Organisation',
+};
+
+export function npcKindLabel(kind: NpcKind): string {
+  return NPC_KIND_LABELS[kind];
+}
 
 export function npcStatusLabel(status: NpcStatus): string {
   return NPC_STATUS_LABELS[status];

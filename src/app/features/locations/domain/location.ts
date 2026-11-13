@@ -139,3 +139,6 @@ export function locationPlayerDisplayState(
     imagePath: imageUrl,
   };
 }
+
+/** Visuel de démonstration affiché tant qu’un lieu n’a pas d’image enregistrée. */
+export const DEMO_LOCATION_IMAGE_URL = '/demo/location-placeholder.png';

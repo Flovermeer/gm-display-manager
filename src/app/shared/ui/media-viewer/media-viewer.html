@@ -1,0 +1,68 @@
+<div
+  class="media-viewer"
+  role="presentation"
+  (click)="close.emit()"
+  (wheel)="zoomWithWheel($event)"
+>
+  <section
+    class="media-viewer__dialog"
+    role="dialog"
+    aria-modal="true"
+    [attr.aria-label]="label()"
+    (click)="$event.stopPropagation()"
+  >
+    <button
+      class="media-viewer__close"
+      type="button"
+      aria-label="Fermer l’image"
+      (click)="close.emit()"
+    >
+      ×
+    </button>
+    <button
+      class="media-viewer__arrow media-viewer__arrow--previous"
+      type="button"
+      aria-label="Image précédente"
+      [disabled]="!hasPrevious()"
+      (click)="previous.emit()"
+    >
+      ‹
+    </button>
+    <div
+      #viewport
+      class="media-viewer__viewport"
+      [class.media-viewer__viewport--zoomed]="zoom() > 1"
+      (pointerdown)="startDrag($event)"
+      (pointermove)="drag($event)"
+      (pointerup)="stopDrag($event)"
+      (pointercancel)="stopDrag($event)"
+    >
+      <img [src]="imageUrl()" [alt]="alt()" [style.transform]="transform()" draggable="false" />
+    </div>
+    <button
+      class="media-viewer__arrow media-viewer__arrow--next"
+      type="button"
+      aria-label="Image suivante"
+      [disabled]="!hasNext()"
+      (click)="next.emit()"
+    >
+      ›
+    </button>
+    <div class="media-viewer__controls" role="group" aria-label="Contrôles du zoom">
+      <button
+        type="button"
+        aria-label="Dézoomer"
+        [disabled]="zoom() <= minZoom"
+        (click)="zoomOut()"
+      >
+        −
+      </button>
+      <span class="media-viewer__zoom-level" aria-live="polite">{{ zoomPercent() }} %</span>
+      <button type="button" aria-label="Zoomer" [disabled]="zoom() >= maxZoom" (click)="zoomIn()">
+        +
+      </button>
+      <button type="button" (click)="reset()">Ajuster</button>
+    </div>
+    <span class="media-viewer__counter">{{ position() }} / {{ count() }}</span>
+  </section>
+</div>

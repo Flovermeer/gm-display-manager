@@ -27,6 +27,11 @@ Ce document fixe les décisions de modélisation prises pour le gestionnaire de 
 un seul système et constitue la frontière de partage des ressources. Les données existantes sont
 migrées vers le système D&D 5e et l’univers **Forgotten Realms**.
 
+Chaque système possède en plus un univers technique `<gameSystemId>:generic`, nommé
+« <système> (générique) ». Il porte les ressources et les valeurs de référentiel communes au système.
+Il n'est pas proposé à la création d'une campagne ; le catalogue d'un univers affiche ses propres
+ressources et celles de l'univers générique de son système, en conservant leur origine.
+
 La mise à la corbeille renseigne uniquement `deleted_at` sur le système ou l’univers racine : le
 contenu reste intact et réapparaît lors de la restauration. Une purge définitive utilise les
 cascades SQLite après confirmation explicite.
@@ -72,8 +77,8 @@ jeu. Les données fréquemment affichées et mises à jour restent relationnelle
 - le futur tracker de combat réutilisera ces mêmes valeurs pour les PJ et ne créera pas une copie
   concurrente de leur état.
 
-Le JSON de fiche D&D 5e contient uniquement les informations utiles au MJ : race,
-classe, niveau, classe d'armure, vitesse, perceptions passives, sens, langues, conditions,
+Le JSON de fiche D&D 5e contient uniquement les informations utiles au MJ : espèce (`race`),
+sous-espèce (`subrace`), classe, niveau, classe d'armure, vitesse, perceptions passives, sens, langues, conditions,
 épuisement et notes privées. Les caractéristiques, compétences, sorts, attaques et l'inventaire
 générique détaillés restent hors périmètre initial.
 
@@ -81,6 +86,12 @@ La race et la classe référencent des valeurs configurées au niveau de l'unive
 `game_rule_option`. Le JSON conserve à la fois l'identifiant de l'option et son libellé afin que la
 fiche reste lisible si le référentiel évolue. L'ancien champ libre `species` reste accepté à la
 lecture et est converti en race.
+
+L'interface présente la race comme une **espèce**. La catégorie `subrace` (sous-espèce) référence
+obligatoirement une option `race` parente, définie dans le même univers ou dans l'univers générique
+du système ; un trigger SQLite le garantit. Les catégories `race`, `subrace` et `class` sont
+toujours rattachées à un univers. Un univers hérite des valeurs de son univers générique ; ces
+valeurs héritées restent en lecture seule tant que le catalogue générique n'est pas sélectionné.
 
 Les sens, langues et conditions sont stockés comme des tableaux de libellés libres. L'interface les
 édite sous forme de tags supprimables et convertit à la lecture les anciennes valeurs texte de la
@@ -98,7 +109,7 @@ Plusieurs personnages, y compris de même nom, peuvent appartenir à la même ca
 JSON versionnée. `campaign_npc` contient le statut et le rôle/résumé propres à la campagne. Les
 notes du MJ restent des entrées de journal liées à la campagne et au PNJ.
 
-Un PNJ narratif partage les référentiels de race et de classe avec les PJ et possède en plus une
+Un PNJ narratif partage les référentiels d'espèce, de sous-espèce et de classe avec les PJ et possède en plus une
 occupation en texte libre. Les anciens champs de type et sous-espèce de créature sont encore lus
 pour assurer la compatibilité des fiches existantes, mais ne sont plus proposés dans l'interface
 PNJ. Les monstres conservent leurs référentiels de type et sous-espèce.
@@ -130,6 +141,10 @@ image pour la compatibilité avec les autres projections. L'image courante est c
 dans l'interface, sans être persistée : la fiche revient à la première image à chaque ouverture.
 L'image courante est utilisée dans la fiche MJ et sur le Player Display ; le visuel de démonstration
 de l'auberge sert de fallback tant qu'aucune image n'est enregistrée.
+
+`location.hide_name_on_player_display` (faux par défaut) est un réglage canonique : lorsqu'il est
+actif, le Player Display reçoit l'image du lieu sans son nom, que l'affichage vienne de la fiche,
+d'une scène ou d'une mention `@`.
 
 `campaign_location.description_json` conserve une description riche propre à l'utilisation du lieu
 dans une campagne. Cette description n'est pas propagée au catalogue d'univers et deux campagnes

@@ -95,7 +95,10 @@ export class NpcWorkspaceFacade {
     return errors;
   }
 
-  /** Enregistre la fiche, actualise l’écran joueurs puis retire la vidéo remplacée. */
+  /**
+   * Enregistre la fiche, actualise l’écran joueurs puis retire la vidéo remplacée et, pour une fiche
+   * propre à la campagne, le portrait remplacé.
+   */
   async save(command: SaveNpcCommand): Promise<Npc> {
     const { existing, input, portraitPath, idleVideoPath } = command;
     const saved = existing
@@ -106,6 +109,14 @@ export class NpcWorkspaceFacade {
     const previousIdleVideoPath = existing?.idleVideoPath ?? null;
     if (previousIdleVideoPath && previousIdleVideoPath !== saved.idleVideoPath) {
       await this.idleVideos.discard(previousIdleVideoPath);
+    }
+    const previousPortraitPath = existing?.portraitPath ?? null;
+    if (
+      existing?.provenance === 'campaign' &&
+      previousPortraitPath &&
+      previousPortraitPath !== saved.portraitPath
+    ) {
+      await this.portraits.discard(previousPortraitPath);
     }
     return saved;
   }

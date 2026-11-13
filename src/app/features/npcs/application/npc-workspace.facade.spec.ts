@@ -116,6 +116,38 @@ describe('NpcWorkspaceFacade', () => {
     });
   });
 
+  it('removes the replaced portrait of a campaign NPC only', async () => {
+    const created = await facade.save({
+      campaignId: 'campaign-id',
+      existing: null,
+      input,
+      portraitPath: 'old.webp',
+      idleVideoPath: null,
+      isPlayerDisplayOpen: false,
+    });
+
+    await facade.save({
+      campaignId: 'campaign-id',
+      existing: created,
+      input,
+      portraitPath: 'new.webp',
+      idleVideoPath: null,
+      isPlayerDisplayOpen: false,
+    });
+    expect(portraits.discard).toHaveBeenCalledWith('old.webp');
+
+    portraits.discard.mockClear();
+    await facade.save({
+      campaignId: 'campaign-id',
+      existing: { ...created, provenance: 'universe', portraitPath: 'canonical.webp' },
+      input,
+      portraitPath: 'new.webp',
+      idleVideoPath: null,
+      isPlayerDisplayOpen: false,
+    });
+    expect(portraits.discard).not.toHaveBeenCalled();
+  });
+
   it('shows an NPC without portrait with the demo portrait', async () => {
     const npc = await facade.save({
       campaignId: 'campaign-id',

@@ -44,6 +44,9 @@ import type { FormFieldOption } from '@app/shared/ui/form-field/form-field';
 import { MultiSelectField } from '@app/shared/ui/multi-select-field/multi-select-field';
 import { ResourceMentionDisplayGateway } from '@app/shared/rich-text-editor/resource-mention-display.gateway';
 import type { ResourceMentionCandidate } from '@app/shared/rich-text-editor/resource-mention';
+import { errorMessage } from '@app/shared/error-message';
+
+const ERROR_FALLBACK = 'Impossible de gérer le bestiaire.';
 
 type TagField =
   | 'savingThrows'
@@ -114,15 +117,21 @@ export class BestiaryWorkspace implements OnInit, PendingChangesAware {
   protected readonly featureDrafts = signal<CreatureFeatureDrafts>(emptyCreatureFeatureDrafts());
   protected readonly ruleCatalog = signal<CreatureRuleCatalog>(EMPTY_CREATURE_RULE_CATALOG);
   protected readonly sizeOptions = computed(() => this.formOptions(this.ruleCatalog().sizes));
-  protected readonly typeOptions = computed(() => this.formOptions(this.ruleCatalog().creatureTypes));
-  protected readonly alignmentOptions = computed(() => this.formOptions(this.ruleCatalog().alignments));
+  protected readonly typeOptions = computed(() =>
+    this.formOptions(this.ruleCatalog().creatureTypes),
+  );
+  protected readonly alignmentOptions = computed(() =>
+    this.formOptions(this.ruleCatalog().alignments),
+  );
   protected subspeciesOptions(): readonly FormFieldOption[] {
     const typeId = this.monsterForm.controls.creatureType.value;
     return this.formOptions(
       this.ruleCatalog().subspecies.filter(({ parentOptionId }) => parentOptionId === typeId),
     );
   }
-  protected readonly languageOptions = computed(() => this.formOptions(this.ruleCatalog().languages));
+  protected readonly languageOptions = computed(() =>
+    this.formOptions(this.ruleCatalog().languages),
+  );
   protected readonly filteredMonsters = computed(() => {
     const term = this.searchTerm().trim().toLocaleLowerCase('fr');
     if (!term) return this.monsters();
@@ -172,8 +181,8 @@ export class BestiaryWorkspace implements OnInit, PendingChangesAware {
   protected canShowMonster(monster: Monster): boolean {
     return Boolean(
       monster.imagePath &&
-        this.mentionDisplay?.isPlayerDisplayOpen() &&
-        !this.mentionDisplay.isPublishing(),
+      this.mentionDisplay?.isPlayerDisplayOpen() &&
+      !this.mentionDisplay.isPublishing(),
     );
   }
 
@@ -181,7 +190,7 @@ export class BestiaryWorkspace implements OnInit, PendingChangesAware {
     try {
       await this.mentionDisplay?.display(this.displayCandidate(monster));
     } catch (error) {
-      this.error.set(this.errorMessage(error));
+      this.error.set(errorMessage(error, ERROR_FALLBACK));
     }
   }
 
@@ -270,7 +279,7 @@ export class BestiaryWorkspace implements OnInit, PendingChangesAware {
       await this.load(saved.id);
       return true;
     } catch (error) {
-      this.error.set(this.errorMessage(error));
+      this.error.set(errorMessage(error, ERROR_FALLBACK));
       return false;
     } finally {
       this.isSaving.set(false);
@@ -289,7 +298,7 @@ export class BestiaryWorkspace implements OnInit, PendingChangesAware {
       this.monsterForm.markAsDirty();
       if (previous) await this.imageGateway.discard(previous);
     } catch (error) {
-      this.error.set(this.errorMessage(error));
+      this.error.set(errorMessage(error, ERROR_FALLBACK));
     }
   }
 
@@ -435,7 +444,7 @@ export class BestiaryWorkspace implements OnInit, PendingChangesAware {
         await this.resolveImage(selected.imagePath);
       }
     } catch (error) {
-      this.error.set(this.errorMessage(error));
+      this.error.set(errorMessage(error, ERROR_FALLBACK));
     } finally {
       this.isLoading.set(false);
     }
@@ -451,7 +460,7 @@ export class BestiaryWorkspace implements OnInit, PendingChangesAware {
         this.route.snapshot.queryParamMap.get('entryId'),
       );
     } catch (error) {
-      this.error.set(this.errorMessage(error));
+      this.error.set(errorMessage(error, ERROR_FALLBACK));
     } finally {
       this.isLoading.set(false);
     }
@@ -549,11 +558,7 @@ export class BestiaryWorkspace implements OnInit, PendingChangesAware {
         previous.creatureType,
       ),
       creatureSubspeciesOptionId: value.creatureSubspecies || null,
-      creatureSubspecies: optionLabel(
-        value.creatureSubspecies,
-        this.ruleCatalog().subspecies,
-        '',
-      ),
+      creatureSubspecies: optionLabel(value.creatureSubspecies, this.ruleCatalog().subspecies, ''),
       alignmentOptionId: value.alignment || null,
       alignment: optionLabel(value.alignment, this.ruleCatalog().alignments, previous.alignment),
       armorClass: value.armorClass,
@@ -591,7 +596,9 @@ export class BestiaryWorkspace implements OnInit, PendingChangesAware {
     this.ruleCatalog.set(await this.creatureRules.loadForUniverse(campaign.universeId));
   }
 
-  private formOptions(options: readonly { id: string; label: string }[]): readonly FormFieldOption[] {
+  private formOptions(
+    options: readonly { id: string; label: string }[],
+  ): readonly FormFieldOption[] {
     return options.map(({ id, label }) => ({ value: id, label }));
   }
 
@@ -633,12 +640,6 @@ export class BestiaryWorkspace implements OnInit, PendingChangesAware {
     this.pendingDecisionResolver = undefined;
     this.showPendingChangesDialog.set(false);
     resolve?.(value);
-  }
-
-  private errorMessage(error: unknown): string {
-    if (error instanceof Error) return error.message;
-    if (typeof error === 'string') return error;
-    return 'Impossible de gérer le bestiaire.';
   }
 
   private displayCandidate(monster: Monster): ResourceMentionCandidate {

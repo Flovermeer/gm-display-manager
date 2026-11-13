@@ -26,6 +26,7 @@ import { Dialog } from '@app/shared/ui/dialog/dialog';
 import { EmptyState } from '@app/shared/ui/empty-state/empty-state';
 import { EntityTitle } from '@app/shared/ui/entity-title/entity-title';
 import { FormField } from '@app/shared/ui/form-field/form-field';
+import { errorMessage } from '@app/shared/error-message';
 
 type PendingDecisionResolver = (canLeave: boolean) => void;
 type EntryForm = FormGroup<{
@@ -335,8 +336,4 @@ function nullableOrder(left: number | null, right: number | null): number {
   if (left === null) return right === null ? 0 : 1;
   if (right === null) return -1;
   return left - right;
-}
-
-function errorMessage(error: unknown): string {
-  return error instanceof Error ? error.message : 'Une erreur inattendue est survenue.';
 }

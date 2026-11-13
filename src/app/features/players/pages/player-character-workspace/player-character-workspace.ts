@@ -40,6 +40,7 @@ import { Dialog } from '@app/shared/ui/dialog/dialog';
 import { EmptyState } from '@app/shared/ui/empty-state/empty-state';
 import { EntityTitle } from '@app/shared/ui/entity-title/entity-title';
 import { FormField, type FormFieldOption } from '@app/shared/ui/form-field/form-field';
+import { errorMessage } from '@app/shared/error-message';
 
 type PendingDecisionResolver = (canLeave: boolean) => void;
 
@@ -196,10 +197,7 @@ export class PlayerCharacterWorkspace implements OnInit, PendingChangesAware {
   protected raceChanged(): void {
     const current = this.characterForm.controls.subrace.value;
     const raceId = this.characterForm.controls.race.value;
-    if (
-      current &&
-      !subracesForRace(this.ruleCatalog(), raceId).some(({ id }) => id === current)
-    ) {
+    if (current && !subracesForRace(this.ruleCatalog(), raceId).some(({ id }) => id === current)) {
       this.characterForm.controls.subrace.setValue('');
     }
   }
@@ -296,7 +294,7 @@ export class PlayerCharacterWorkspace implements OnInit, PendingChangesAware {
       this.characterForm.markAsDirty();
       if (previousDraft) await this.portraitGateway.discard(previousDraft);
     } catch (error) {
-      this.error.set(this.errorMessage(error));
+      this.error.set(errorMessage(error));
     } finally {
       this.isImportingPortrait.set(false);
     }
@@ -336,7 +334,7 @@ export class PlayerCharacterWorkspace implements OnInit, PendingChangesAware {
       }
       return true;
     } catch (error) {
-      this.error.set(this.errorMessage(error));
+      this.error.set(errorMessage(error));
       return false;
     } finally {
       this.isSaving.set(false);
@@ -393,14 +391,14 @@ export class PlayerCharacterWorkspace implements OnInit, PendingChangesAware {
         try {
           await this.portraitGateway.discard(character.portraitPath);
         } catch (error) {
-          this.error.set(this.errorMessage(error));
+          this.error.set(errorMessage(error));
         }
       }
       await this.reloadCharacters();
       this.selectedCharacter.set(null);
       this.showDeleteDialog.set(false);
     } catch (error) {
-      this.error.set(this.errorMessage(error));
+      this.error.set(errorMessage(error));
     } finally {
       this.isSaving.set(false);
     }
@@ -507,7 +505,7 @@ export class PlayerCharacterWorkspace implements OnInit, PendingChangesAware {
         this.route.snapshot.queryParamMap?.get('entryId'),
       );
     } catch (error) {
-      this.error.set(this.errorMessage(error));
+      this.error.set(errorMessage(error));
     } finally {
       this.isLoading.set(false);
     }
@@ -624,7 +622,7 @@ export class PlayerCharacterWorkspace implements OnInit, PendingChangesAware {
       await this.reloadCharacters();
       this.openReadOnly(updated);
     } catch (error) {
-      this.error.set(this.errorMessage(error));
+      this.error.set(errorMessage(error));
     } finally {
       this.isSaving.set(false);
     }
@@ -664,7 +662,7 @@ export class PlayerCharacterWorkspace implements OnInit, PendingChangesAware {
       try {
         await this.portraitGateway.discard(draftPortraitPath);
       } catch (error) {
-        this.error.set(this.errorMessage(error));
+        this.error.set(errorMessage(error));
       }
     }
     const selected = this.selectedCharacter();
@@ -700,12 +698,6 @@ export class PlayerCharacterWorkspace implements OnInit, PendingChangesAware {
     resolve?.(canLeave);
   }
 
-  private errorMessage(error: unknown): string {
-    if (error instanceof Error) return error.message;
-    if (typeof error === 'string') return error;
-    return 'Une erreur inattendue est survenue.';
-  }
-
   private async loadPortrait(relativePath: string | null): Promise<void> {
     this.portraitUrl.set(null);
     if (!relativePath) return;
@@ -713,7 +705,7 @@ export class PlayerCharacterWorkspace implements OnInit, PendingChangesAware {
       const url = await this.portraitGateway.resolveUrl(relativePath);
       if (this.effectivePortraitPath() === relativePath) this.portraitUrl.set(url);
     } catch (error) {
-      this.error.set(this.errorMessage(error));
+      this.error.set(errorMessage(error));
     }
   }
 }

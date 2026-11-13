@@ -12,6 +12,9 @@ import { SceneDisplayService } from '@app/features/scenes/application/scene-disp
 import { ButtonDirective } from '@app/shared/ui/button/button.directive';
 import { PlayerDisplayMonitorSessionService } from '@app/features/display/application/player-display-monitor-session.service';
 import { TechnicalLogService } from '@app/features/diagnostics/application/technical-log.service';
+import { errorMessage } from '@app/shared/error-message';
+
+const ERROR_FALLBACK = 'Une erreur native inattendue est survenue.';
 
 @Component({
   selector: 'app-control',
@@ -178,7 +181,7 @@ export class Control implements OnInit, OnDestroy {
       await action();
     } catch (error) {
       this.log.reportError('display.action', error);
-      this.error.set(this.errorMessage(error));
+      this.error.set(errorMessage(error, ERROR_FALLBACK));
     } finally {
       this.isLoading.set(false);
     }
@@ -193,7 +196,7 @@ export class Control implements OnInit, OnDestroy {
       );
     } catch (error) {
       this.log.reportError('display.ready-listener', error);
-      this.error.set(this.errorMessage(error));
+      this.error.set(errorMessage(error, ERROR_FALLBACK));
     }
 
     await this.refreshMonitors();
@@ -209,7 +212,7 @@ export class Control implements OnInit, OnDestroy {
       }
     } catch (error) {
       this.log.reportError('display.initialization', error);
-      this.error.set(this.errorMessage(error));
+      this.error.set(errorMessage(error, ERROR_FALLBACK));
     }
   }
 
@@ -258,9 +261,5 @@ export class Control implements OnInit, OnDestroy {
     }
 
     await this.runDisplayAction(() => this.displayGateway.sendPlayerDisplayState(state));
-  }
-
-  private errorMessage(error: unknown): string {
-    return error instanceof Error ? error.message : 'Une erreur native inattendue est survenue.';
   }
 }

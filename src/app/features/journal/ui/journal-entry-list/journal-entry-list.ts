@@ -17,6 +17,9 @@ import type { ResourceMentionCandidate } from '@app/shared/rich-text-editor/reso
 import { ButtonDirective } from '@app/shared/ui/button/button.directive';
 import { Dialog } from '@app/shared/ui/dialog/dialog';
 import { FormField } from '@app/shared/ui/form-field/form-field';
+import { errorMessage } from '@app/shared/error-message';
+
+const ERROR_FALLBACK = "Impossible d'enregistrer cette note.";
 
 @Component({
   selector: 'app-journal-entry-list',
@@ -132,7 +135,7 @@ export class JournalEntryList {
       this.entriesChanged.emit();
       return true;
     } catch (error) {
-      this.error.set(errorMessage(error));
+      this.error.set(errorMessage(error, ERROR_FALLBACK));
       return false;
     } finally {
       this.isSaving.set(false);
@@ -162,7 +165,7 @@ export class JournalEntryList {
       await this.loadEntries(this.campaignId(), this.target());
       this.entriesChanged.emit();
     } catch (error) {
-      this.error.set(errorMessage(error));
+      this.error.set(errorMessage(error, ERROR_FALLBACK));
     } finally {
       this.isSaving.set(false);
     }
@@ -188,7 +191,7 @@ export class JournalEntryList {
       );
       queueMicrotask(() => this.focusRequestedEntry());
     } catch (error) {
-      this.error.set(errorMessage(error));
+      this.error.set(errorMessage(error, ERROR_FALLBACK));
     }
   }
 
@@ -196,7 +199,7 @@ export class JournalEntryList {
     try {
       this.mentionCandidates.set(await this.mentionNavigation.listCandidates(campaignId));
     } catch (error) {
-      this.error.set(errorMessage(error));
+      this.error.set(errorMessage(error, ERROR_FALLBACK));
     }
   }
 
@@ -228,8 +231,4 @@ function richTextContent(value: unknown): string {
   if (Array.isArray(value)) return value.map(richTextContent).join(' ');
   const record = value as Record<string, unknown>;
   return `${typeof record['text'] === 'string' ? record['text'] : ''} ${richTextContent(record['content'])}`;
-}
-
-function errorMessage(error: unknown): string {
-  return error instanceof Error ? error.message : "Impossible d'enregistrer cette note.";
 }

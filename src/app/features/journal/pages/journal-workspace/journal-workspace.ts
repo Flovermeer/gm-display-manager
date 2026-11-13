@@ -12,6 +12,9 @@ import type { ResourceMentionCandidate } from '@app/shared/rich-text-editor/reso
 import { ButtonDirective } from '@app/shared/ui/button/button.directive';
 import { Dialog } from '@app/shared/ui/dialog/dialog';
 import { EmptyState } from '@app/shared/ui/empty-state/empty-state';
+import { errorMessage } from '@app/shared/error-message';
+
+const ERROR_FALLBACK = 'Impossible de charger le journal.';
 
 type PendingDecisionResolver = (canLeave: boolean) => void;
 
@@ -145,7 +148,7 @@ export class JournalWorkspace implements OnInit, PendingChangesAware {
       if (!campaign) return;
       await this.loadJournal();
     } catch (error) {
-      this.error.set(errorMessage(error));
+      this.error.set(errorMessage(error, ERROR_FALLBACK));
     } finally {
       this.isLoading.set(false);
     }
@@ -194,7 +197,7 @@ export class JournalWorkspace implements OnInit, PendingChangesAware {
       const newestDay = groupByLocalDay(this.timelineEntries())[0]?.key;
       if (newestDay && this.expandedDays().size === 0) this.expandedDays.set(new Set([newestDay]));
     } catch (error) {
-      this.error.set(errorMessage(error));
+      this.error.set(errorMessage(error, ERROR_FALLBACK));
     }
   }
 
@@ -252,8 +255,4 @@ function plainText(value: unknown): string {
   if (Array.isArray(value)) return value.map(plainText).join(' ');
   const record = value as Record<string, unknown>;
   return `${typeof record['text'] === 'string' ? record['text'] : ''} ${plainText(record['content'])}`;
-}
-
-function errorMessage(error: unknown): string {
-  return error instanceof Error ? error.message : 'Impossible de charger le journal.';
 }

@@ -35,6 +35,7 @@ import {
 } from '@app/features/chapters/ui/chapter-scene-list/chapter-scene-list';
 import { buildCampaignMap } from '@app/features/campaign-map/domain/campaign-map';
 import { CampaignMapTree } from '@app/features/campaign-map/ui/campaign-map-tree/campaign-map-tree';
+import { errorMessage } from '@app/shared/error-message';
 
 type PendingDecisionResolver = (canLeave: boolean) => void;
 
@@ -456,10 +457,4 @@ export class ChapterWorkspace implements OnInit, PendingChangesAware {
 function richTextAsPlainText(node: JSONContent): string {
   const ownText = node.text ?? '';
   return [ownText, ...(node.content ?? []).map(richTextAsPlainText)].join(' ');
-}
-
-function errorMessage(error: unknown): string {
-  if (error instanceof Error) return error.message;
-  if (typeof error === 'string') return error;
-  return 'Une erreur inattendue est survenue.';
 }

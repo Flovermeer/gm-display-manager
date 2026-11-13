@@ -51,6 +51,9 @@ import {
 } from '@app/shared/ui/rich-text-feature-editor/creature-feature-sections';
 import { RichTextFeatureEditor } from '@app/shared/ui/rich-text-feature-editor/rich-text-feature-editor';
 import { TagInput } from '@app/shared/ui/tag-input/tag-input';
+import { errorMessage } from '@app/shared/error-message';
+
+const ERROR_FALLBACK = 'Impossible de modifier la ressource.';
 
 type CreatureTagField =
   | 'savingThrows'
@@ -331,7 +334,7 @@ export class UniverseResourceEditor {
       this.activeForm().markAsDirty();
       if (previousDraft) await this.primaryGateway(detail.type).discard(previousDraft);
     } catch (error) {
-      this.error.set(errorMessage(error));
+      this.error.set(errorMessage(error, ERROR_FALLBACK));
     }
   }
 
@@ -346,7 +349,7 @@ export class UniverseResourceEditor {
       this.creatureForm.markAsDirty();
       if (previousDraft) await this.npcVideos.discard(previousDraft);
     } catch (error) {
-      this.error.set(errorMessage(error));
+      this.error.set(errorMessage(error, ERROR_FALLBACK));
     }
   }
 
@@ -369,7 +372,7 @@ export class UniverseResourceEditor {
       this.saved.emit(saved);
       return true;
     } catch (error) {
-      this.error.set(errorMessage(error));
+      this.error.set(errorMessage(error, ERROR_FALLBACK));
       return false;
     } finally {
       this.isSaving.set(false);
@@ -463,7 +466,7 @@ export class UniverseResourceEditor {
       this.populate(detail);
       await this.resolvePrimaryMedia(detail);
     } catch (error) {
-      if (version === this.loadVersion) this.error.set(errorMessage(error));
+      if (version === this.loadVersion) this.error.set(errorMessage(error, ERROR_FALLBACK));
     } finally {
       if (version === this.loadVersion) this.isLoading.set(false);
     }
@@ -522,11 +525,8 @@ export class UniverseResourceEditor {
         optionIdFor(sheet.raceOptionId, sheet.race, this.characterRuleCatalog().races) ||
         sheet.race,
       subrace:
-        optionIdFor(
-          sheet.subraceOptionId,
-          sheet.subrace,
-          this.characterRuleCatalog().subraces,
-        ) || sheet.subrace,
+        optionIdFor(sheet.subraceOptionId, sheet.subrace, this.characterRuleCatalog().subraces) ||
+        sheet.subrace,
       className:
         optionIdFor(sheet.classOptionId, sheet.className, this.characterRuleCatalog().classes) ||
         sheet.className,
@@ -747,14 +747,8 @@ export class UniverseResourceEditor {
     };
   }
 
-  private characterSubraceOptions(
-    raceId: string,
-    legacyLabel: string,
-  ): readonly FormFieldOption[] {
-    return formOptions(
-      subracesForRace(this.characterRuleCatalog(), raceId),
-      legacyLabel,
-    );
+  private characterSubraceOptions(raceId: string, legacyLabel: string): readonly FormFieldOption[] {
+    return formOptions(subracesForRace(this.characterRuleCatalog(), raceId), legacyLabel);
   }
 
   private activeForm(): FormGroup {
@@ -891,8 +885,4 @@ function primaryPath(resource: UniverseResourceDetail): string | null {
   return resource.type === 'npc' || resource.type === 'player-character'
     ? resource.portraitPath
     : resource.imagePath;
-}
-
-function errorMessage(error: unknown): string {
-  return error instanceof Error ? error.message : 'Impossible de modifier la ressource.';
 }

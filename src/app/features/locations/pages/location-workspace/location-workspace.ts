@@ -37,6 +37,7 @@ import {
 } from '@app/shared/rich-text-editor/rich-text-document';
 import type { ResourceMentionCandidate } from '@app/shared/rich-text-editor/resource-mention';
 import { ResourceMentionNavigationService } from '@app/shared/rich-text-editor/resource-mention-navigation.service';
+import { errorMessage } from '@app/shared/error-message';
 
 type PendingDecisionResolver = (canLeave: boolean) => void;
 type LocationListEntry = Readonly<{
@@ -81,7 +82,8 @@ export class LocationWorkspace implements OnInit, PendingChangesAware {
   private readonly recentResources = inject(RecentResourceStore, { optional: true });
   private pendingDecisionResolver?: PendingDecisionResolver;
   private readonly journalEntries = viewChild<JournalEntryList>(JournalEntryList);
-  private readonly imageViewerViewport = viewChild<ElementRef<HTMLDivElement>>('imageViewerViewport');
+  private readonly imageViewerViewport =
+    viewChild<ElementRef<HTMLDivElement>>('imageViewerViewport');
   private draggedPointerId: number | null = null;
   private dragStart = { x: 0, y: 0 };
   private dragStartOffset = { x: 0, y: 0 };
@@ -224,7 +226,7 @@ export class LocationWorkspace implements OnInit, PendingChangesAware {
     if (campaign) {
       void this.locationTreeState
         .save(campaign.id, collapsedLocationIds)
-        .catch((error: unknown) => this.error.set(this.errorMessage(error)));
+        .catch((error: unknown) => this.error.set(errorMessage(error)));
     }
   }
 
@@ -427,7 +429,7 @@ export class LocationWorkspace implements OnInit, PendingChangesAware {
       this.selectedImageIndex.set(firstImportedIndex);
       this.locationForm.markAsDirty();
     } catch (error) {
-      this.error.set(this.errorMessage(error));
+      this.error.set(errorMessage(error));
     } finally {
       this.isImportingImage.set(false);
     }
@@ -454,7 +456,7 @@ export class LocationWorkspace implements OnInit, PendingChangesAware {
         try {
           await this.displayGateway.sendPlayerDisplayState({ mode: 'neutral' });
         } catch (error) {
-          this.error.set(this.errorMessage(error));
+          this.error.set(errorMessage(error));
           return;
         }
       }
@@ -515,7 +517,7 @@ export class LocationWorkspace implements OnInit, PendingChangesAware {
       }
       return true;
     } catch (error) {
-      this.error.set(this.errorMessage(error));
+      this.error.set(errorMessage(error));
       return false;
     } finally {
       this.isSaving.set(false);
@@ -554,7 +556,7 @@ export class LocationWorkspace implements OnInit, PendingChangesAware {
       this.playerDisplayStore.setState(state);
       await this.displayGateway.sendPlayerDisplayState(state);
     } catch (error) {
-      this.error.set(this.errorMessage(error));
+      this.error.set(errorMessage(error));
       this.isPlayerDisplayOpen.set(false);
     } finally {
       this.isPublishing.set(false);
@@ -601,7 +603,7 @@ export class LocationWorkspace implements OnInit, PendingChangesAware {
       this.resetGallery();
       this.showDeleteDialog.set(false);
     } catch (error) {
-      this.error.set(this.errorMessage(error));
+      this.error.set(errorMessage(error));
     } finally {
       this.isSaving.set(false);
     }
@@ -651,7 +653,7 @@ export class LocationWorkspace implements OnInit, PendingChangesAware {
         this.isPlayerDisplayOpen.set(await this.displayGateway.isPlayerDisplayOpen());
       }
     } catch (error) {
-      this.error.set(this.errorMessage(error));
+      this.error.set(errorMessage(error));
     } finally {
       this.isLoading.set(false);
     }
@@ -736,7 +738,7 @@ export class LocationWorkspace implements OnInit, PendingChangesAware {
       );
       if (this.galleryImagePaths() === relativePaths) this.galleryImageUrls.set(urls);
     } catch (error) {
-      this.error.set(this.errorMessage(error));
+      this.error.set(errorMessage(error));
     }
   }
 
@@ -820,7 +822,7 @@ export class LocationWorkspace implements OnInit, PendingChangesAware {
     try {
       await this.locationImageGateway.discard(relativePath);
     } catch (error) {
-      this.error.set(this.errorMessage(error));
+      this.error.set(errorMessage(error));
     }
   }
 
@@ -847,12 +849,6 @@ export class LocationWorkspace implements OnInit, PendingChangesAware {
     this.pendingDecisionResolver = undefined;
     this.showPendingChangesDialog.set(false);
     resolve?.(canLeave);
-  }
-
-  private errorMessage(error: unknown): string {
-    if (error instanceof Error) return error.message;
-    if (typeof error === 'string') return error;
-    return 'Une erreur inattendue est survenue.';
   }
 }
 

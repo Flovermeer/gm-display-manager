@@ -36,7 +36,6 @@ import {
 import { JournalEntryList } from '@app/features/journal/ui/journal-entry-list/journal-entry-list';
 import { RecentResourceTrackerDirective } from '@app/features/recent-resources/ui/recent-resource-tracker.directive';
 import { RecentResourceStore } from '@app/features/recent-resources/application/recent-resource.store';
-import { errorMessage as resolveErrorMessage } from '@app/shared/error-message';
 import type { RichTextDocument } from '@app/shared/rich-text-editor/rich-text-document';
 import { RichTextEditor } from '@app/shared/rich-text-editor/rich-text-editor';
 import type { ResourceMentionCandidate } from '@app/shared/rich-text-editor/resource-mention';
@@ -50,6 +49,9 @@ import {
   SearchableSelect,
   type SearchableSelectOption,
 } from '@app/shared/ui/searchable-select/searchable-select';
+import { errorMessage } from '@app/shared/error-message';
+
+const ERROR_FALLBACK = "Impossible d'enregistrer cette scène.";
 
 type PendingDecisionResolver = (canLeave: boolean) => void;
 
@@ -264,7 +266,7 @@ export class SceneWorkspace implements OnInit, PendingChangesAware {
       this.openReadOnly(saved);
       return true;
     } catch (error) {
-      this.error.set(errorMessage(error));
+      this.error.set(errorMessage(error, ERROR_FALLBACK));
       return false;
     } finally {
       this.isSaving.set(false);
@@ -378,7 +380,7 @@ export class SceneWorkspace implements OnInit, PendingChangesAware {
       this.selectedScene.set(null);
       this.showDeleteDialog.set(false);
     } catch (error) {
-      this.error.set(errorMessage(error));
+      this.error.set(errorMessage(error, ERROR_FALLBACK));
     } finally {
       this.isSaving.set(false);
     }
@@ -467,7 +469,7 @@ export class SceneWorkspace implements OnInit, PendingChangesAware {
         await this.openRequestedScene(queryParams.get('resourceId'), queryParams.get('entryId'));
       }
     } catch (error) {
-      this.error.set(errorMessage(error));
+      this.error.set(errorMessage(error, ERROR_FALLBACK));
     } finally {
       this.isLoading.set(false);
     }
@@ -508,7 +510,7 @@ export class SceneWorkspace implements OnInit, PendingChangesAware {
     try {
       await action();
     } catch (error) {
-      this.error.set(errorMessage(error));
+      this.error.set(errorMessage(error, ERROR_FALLBACK));
     } finally {
       this.isPublishing.set(false);
     }
@@ -585,8 +587,4 @@ export class SceneWorkspace implements OnInit, PendingChangesAware {
 function richTextAsPlainText(node: JSONContent): string {
   const ownText = node.text ?? '';
   return [ownText, ...(node.content ?? []).map(richTextAsPlainText)].join(' ');
-}
-
-function errorMessage(error: unknown): string {
-  return resolveErrorMessage(error, "Impossible d'enregistrer cette scène.");
 }

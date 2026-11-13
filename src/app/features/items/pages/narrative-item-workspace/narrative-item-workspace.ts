@@ -36,6 +36,9 @@ import { EmptyState } from '@app/shared/ui/empty-state/empty-state';
 import { EntityTitle } from '@app/shared/ui/entity-title/entity-title';
 import { FormField, type FormFieldOption } from '@app/shared/ui/form-field/form-field';
 import { ActiveSceneService } from '@app/features/scenes/application/active-scene.service';
+import { errorMessage } from '@app/shared/error-message';
+
+const ERROR_FALLBACK = "Impossible d'enregistrer cet objet.";
 
 type PendingDecisionResolver = (canLeave: boolean) => void;
 type OwnerOption = Readonly<{ resourceType: ItemOwnerType; resourceId: string; label: string }>;
@@ -276,7 +279,7 @@ export class NarrativeItemWorkspace implements OnInit, PendingChangesAware {
       this.itemForm.markAsDirty();
       if (previous) await this.discardImage(previous);
     } catch (error) {
-      this.error.set(errorMessage(error));
+      this.error.set(errorMessage(error, ERROR_FALLBACK));
     } finally {
       this.isImportingImage.set(false);
     }
@@ -313,7 +316,7 @@ export class NarrativeItemWorkspace implements OnInit, PendingChangesAware {
       }
       return true;
     } catch (error) {
-      this.error.set(errorMessage(error));
+      this.error.set(errorMessage(error, ERROR_FALLBACK));
       return false;
     } finally {
       this.isSaving.set(false);
@@ -351,7 +354,7 @@ export class NarrativeItemWorkspace implements OnInit, PendingChangesAware {
       this.imageUrl.set(DEMO_ITEM_IMAGE_URL);
       this.showDeleteDialog.set(false);
     } catch (error) {
-      this.error.set(errorMessage(error));
+      this.error.set(errorMessage(error, ERROR_FALLBACK));
     } finally {
       this.isSaving.set(false);
     }
@@ -379,7 +382,7 @@ export class NarrativeItemWorkspace implements OnInit, PendingChangesAware {
       this.displayStore.setState(state);
       await this.displayGateway.sendPlayerDisplayState(state);
     } catch (error) {
-      this.error.set(errorMessage(error));
+      this.error.set(errorMessage(error, ERROR_FALLBACK));
       this.isPlayerDisplayOpen.set(false);
     } finally {
       this.isPublishing.set(false);
@@ -474,7 +477,7 @@ export class NarrativeItemWorkspace implements OnInit, PendingChangesAware {
       if (this.displayGateway.isDesktop)
         this.isPlayerDisplayOpen.set(await this.displayGateway.isPlayerDisplayOpen());
     } catch (error) {
-      this.error.set(errorMessage(error));
+      this.error.set(errorMessage(error, ERROR_FALLBACK));
     } finally {
       this.isLoading.set(false);
     }
@@ -558,7 +561,7 @@ export class NarrativeItemWorkspace implements OnInit, PendingChangesAware {
     try {
       this.imageUrl.set(await this.imageGateway.resolveUrl(path));
     } catch (error) {
-      this.error.set(errorMessage(error));
+      this.error.set(errorMessage(error, ERROR_FALLBACK));
     }
   }
 
@@ -566,7 +569,7 @@ export class NarrativeItemWorkspace implements OnInit, PendingChangesAware {
     try {
       await this.imageGateway.discard(path);
     } catch (error) {
-      this.error.set(errorMessage(error));
+      this.error.set(errorMessage(error, ERROR_FALLBACK));
     }
   }
 
@@ -599,7 +602,4 @@ function parseOwner(value: string): ItemOwner | null {
     resourceType: value.slice(0, separator) as ItemOwnerType,
     resourceId: value.slice(separator + 1),
   };
-}
-function errorMessage(error: unknown): string {
-  return error instanceof Error ? error.message : "Impossible d'enregistrer cet objet.";
 }

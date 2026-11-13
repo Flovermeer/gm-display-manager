@@ -1,4 +1,6 @@
-export function errorMessage(error: unknown, fallback: string): string {
+export const DEFAULT_ERROR_MESSAGE = 'Une erreur inattendue est survenue.';
+
+export function errorMessage(error: unknown, fallback = DEFAULT_ERROR_MESSAGE): string {
   if (error instanceof Error && error.message) return error.message;
   if (typeof error === 'string' && error.trim()) return error;
   if (isRecord(error)) {

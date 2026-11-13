@@ -67,6 +67,7 @@ import {
   type CreatureFeatureDrafts,
   type CreatureFeatureSection,
 } from '@app/shared/ui/rich-text-feature-editor/creature-feature-sections';
+import { errorMessage } from '@app/shared/error-message';
 
 type PendingDecisionResolver = (canLeave: boolean) => void;
 const DEMO_NPC_PORTRAIT_URL = '/demo/npc-placeholder.png';
@@ -389,7 +390,7 @@ export class NpcWorkspace implements OnInit, PendingChangesAware {
         await this.npcPortraitGateway.discard(previousDraft);
       }
     } catch (error) {
-      this.error.set(this.errorMessage(error));
+      this.error.set(errorMessage(error));
     } finally {
       this.isImportingPortrait.set(false);
     }
@@ -408,7 +409,7 @@ export class NpcWorkspace implements OnInit, PendingChangesAware {
       this.npcForm.markAsDirty();
       if (previousDraft) await this.npcIdleVideoGateway.discard(previousDraft);
     } catch (error) {
-      this.error.set(this.errorMessage(error));
+      this.error.set(errorMessage(error));
     } finally {
       this.isImportingVideo.set(false);
     }
@@ -453,7 +454,7 @@ export class NpcWorkspace implements OnInit, PendingChangesAware {
       }
       return true;
     } catch (error) {
-      this.error.set(this.errorMessage(error));
+      this.error.set(errorMessage(error));
       return false;
     } finally {
       this.isSaving.set(false);
@@ -497,7 +498,7 @@ export class NpcWorkspace implements OnInit, PendingChangesAware {
       this.playerDisplayStore.setState(state);
       await this.displayGateway.sendPlayerDisplayState(state);
     } catch (error) {
-      this.error.set(this.errorMessage(error));
+      this.error.set(errorMessage(error));
       this.isPlayerDisplayOpen.set(false);
     } finally {
       this.isPublishing.set(false);
@@ -542,14 +543,14 @@ export class NpcWorkspace implements OnInit, PendingChangesAware {
         try {
           await this.npcPortraitGateway.discard(npc.portraitPath);
         } catch (error) {
-          this.error.set(this.errorMessage(error));
+          this.error.set(errorMessage(error));
         }
       }
       if (npc.idleVideoPath) {
         try {
           await this.npcIdleVideoGateway.discard(npc.idleVideoPath);
         } catch (error) {
-          this.error.set(this.errorMessage(error));
+          this.error.set(errorMessage(error));
         }
       }
       await this.reloadNpcs();
@@ -557,7 +558,7 @@ export class NpcWorkspace implements OnInit, PendingChangesAware {
       this.portraitUrl.set(DEMO_NPC_PORTRAIT_URL);
       this.showDeleteDialog.set(false);
     } catch (error) {
-      this.error.set(this.errorMessage(error));
+      this.error.set(errorMessage(error));
     } finally {
       this.isSaving.set(false);
     }
@@ -689,7 +690,7 @@ export class NpcWorkspace implements OnInit, PendingChangesAware {
         this.isPlayerDisplayOpen.set(await this.displayGateway.isPlayerDisplayOpen());
       }
     } catch (error) {
-      this.error.set(this.errorMessage(error));
+      this.error.set(errorMessage(error));
     } finally {
       this.isLoading.set(false);
     }
@@ -733,11 +734,8 @@ export class NpcWorkspace implements OnInit, PendingChangesAware {
         optionIdFor(sheet.raceOptionId, sheet.race, this.characterRuleCatalog().races) ||
         sheet.race,
       subrace:
-        optionIdFor(
-          sheet.subraceOptionId,
-          sheet.subrace,
-          this.characterRuleCatalog().subraces,
-        ) || sheet.subrace,
+        optionIdFor(sheet.subraceOptionId, sheet.subrace, this.characterRuleCatalog().subraces) ||
+        sheet.subrace,
       className:
         optionIdFor(sheet.classOptionId, sheet.className, this.characterRuleCatalog().classes) ||
         sheet.className,
@@ -829,14 +827,14 @@ export class NpcWorkspace implements OnInit, PendingChangesAware {
       try {
         await this.npcPortraitGateway.discard(draftPortraitPath);
       } catch (error) {
-        this.error.set(this.errorMessage(error));
+        this.error.set(errorMessage(error));
       }
     }
     if (draftIdleVideoPath) {
       try {
         await this.npcIdleVideoGateway.discard(draftIdleVideoPath);
       } catch (error) {
-        this.error.set(this.errorMessage(error));
+        this.error.set(errorMessage(error));
       }
     }
 
@@ -870,11 +868,7 @@ export class NpcWorkspace implements OnInit, PendingChangesAware {
         raceOptionId: this.optionId(value.race, this.characterRuleCatalog().races),
         race: optionLabel(value.race, this.characterRuleCatalog().races, value.race),
         subraceOptionId: this.optionId(value.subrace, this.characterRuleCatalog().subraces),
-        subrace: optionLabel(
-          value.subrace,
-          this.characterRuleCatalog().subraces,
-          value.subrace,
-        ),
+        subrace: optionLabel(value.subrace, this.characterRuleCatalog().subraces, value.subrace),
         classOptionId: this.optionId(value.className, this.characterRuleCatalog().classes),
         className: optionLabel(
           value.className,
@@ -960,7 +954,7 @@ export class NpcWorkspace implements OnInit, PendingChangesAware {
         this.portraitUrl.set(url);
       }
     } catch (error) {
-      this.error.set(this.errorMessage(error));
+      this.error.set(errorMessage(error));
     }
   }
 
@@ -1006,12 +1000,6 @@ export class NpcWorkspace implements OnInit, PendingChangesAware {
     this.pendingDecisionResolver = undefined;
     this.showPendingChangesDialog.set(false);
     resolve?.(canLeave);
-  }
-
-  private errorMessage(error: unknown): string {
-    if (error instanceof Error) return error.message;
-    if (typeof error === 'string') return error;
-    return 'Une erreur inattendue est survenue.';
   }
 }
 

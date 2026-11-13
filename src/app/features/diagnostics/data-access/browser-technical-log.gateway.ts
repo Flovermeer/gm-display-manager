@@ -6,8 +6,20 @@ import { TechnicalLogGateway } from '@app/features/diagnostics/data-access/techn
 export class BrowserTechnicalLogGateway extends TechnicalLogGateway {
   override readonly isAvailable = false;
 
-  override async info(_message: string): Promise<void> {}
-  override async warning(_message: string): Promise<void> {}
-  override async error(_message: string): Promise<void> {}
-  override async openDirectory(): Promise<void> {}
+  // Hors de Tauri, aucun journal technique n'est écrit sur disque.
+  override async info(_message: string): Promise<void> {
+    return;
+  }
+
+  override async warning(_message: string): Promise<void> {
+    return;
+  }
+
+  override async error(_message: string): Promise<void> {
+    return;
+  }
+
+  override async openDirectory(): Promise<void> {
+    return;
+  }
 }

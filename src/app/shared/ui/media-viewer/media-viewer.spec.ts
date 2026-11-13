@@ -36,7 +36,7 @@ describe('MediaViewer', () => {
     const { fixture, button } = await render();
     const events: string[] = [];
     fixture.componentInstance.next.subscribe(() => events.push('next'));
-    fixture.componentInstance.close.subscribe(() => events.push('close'));
+    fixture.componentInstance.closed.subscribe(() => events.push('close'));
 
     button('Image suivante').click();
     button('Fermer l’image').click();

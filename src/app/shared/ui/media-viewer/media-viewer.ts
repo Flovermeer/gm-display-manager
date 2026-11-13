@@ -31,7 +31,7 @@ export class MediaViewer {
   readonly hasPrevious = input(false);
   readonly hasNext = input(false);
 
-  readonly close = output();
+  readonly closed = output();
   readonly previous = output();
   readonly next = output();
 
@@ -59,7 +59,7 @@ export class MediaViewer {
 
   @HostListener('document:keydown.escape')
   protected closeOnEscape(): void {
-    this.close.emit();
+    this.closed.emit();
   }
 
   protected zoomIn(): void {

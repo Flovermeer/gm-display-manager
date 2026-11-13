@@ -156,7 +156,7 @@ export class ApplicationBackupService {
     if (!recovery?.candidate || recovery.isRestoring) return;
     this.recovery.set({ ...recovery, isRestoring: true, error: null });
     try {
-      await this.prepareRestoreAndRestart(recovery.candidate.archivePath, () => {});
+      await this.prepareRestoreAndRestart(recovery.candidate.archivePath, () => undefined);
     } catch (error) {
       this.log.reportError('backup.recovery-restore', error);
       this.recovery.set({
@@ -260,7 +260,7 @@ export class ApplicationBackupService {
       if (this.manualBackupPromise) await this.manualBackupPromise;
       const status = await this.gateway.getBackupStatus();
       if (!status.hasChanges) return;
-      await this.gateway.createAutomaticBackup(() => {});
+      await this.gateway.createAutomaticBackup(() => undefined);
     })();
     this.automaticBackupPromise = operation;
     void operation

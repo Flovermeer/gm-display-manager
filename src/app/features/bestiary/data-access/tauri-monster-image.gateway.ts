@@ -32,7 +32,9 @@ export class TauriMonsterImageGateway extends MonsterImageGateway {
       await mkdir(directory, { baseDir: BaseDirectory.AppData, recursive: true });
       await copyFile(selectedPath, await this.absolutePath(relativePath));
     } catch (error) {
-      throw new Error(`Impossible de copier l’illustration : ${nativeErrorMessage(error)}`);
+      throw new Error(`Impossible de copier l’illustration : ${nativeErrorMessage(error)}`, {
+        cause: error,
+      });
     }
     return relativePath;
   }

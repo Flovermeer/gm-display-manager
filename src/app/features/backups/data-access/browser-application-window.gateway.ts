@@ -8,8 +8,10 @@ export class BrowserApplicationWindowGateway extends ApplicationWindowGateway {
   override readonly isPrimaryWindow = false;
 
   override async listenForCloseRequest(_callback: () => void): Promise<UnlistenFn> {
-    return () => {};
+    return () => undefined;
   }
 
-  override async close(): Promise<void> {}
+  override async close(): Promise<void> {
+    // Le navigateur garde la main sur la fermeture de son onglet.
+  }
 }

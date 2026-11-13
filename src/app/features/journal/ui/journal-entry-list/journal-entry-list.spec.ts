@@ -2,7 +2,6 @@ import { TestBed } from '@angular/core/testing';
 
 import type { JournalEntry } from '@app/features/journal/domain/journal-entry';
 import { JournalEntryService } from '@app/features/journal/application/journal-entry.service';
-import { createEmptyRichTextDocument } from '@app/shared/rich-text-editor/rich-text-document';
 import { ResourceMentionNavigationService } from '@app/shared/rich-text-editor/resource-mention-navigation.service';
 import { JournalEntryList } from '@app/features/journal/ui/journal-entry-list/journal-entry-list';
 

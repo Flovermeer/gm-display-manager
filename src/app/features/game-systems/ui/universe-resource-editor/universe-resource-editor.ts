@@ -27,9 +27,7 @@ import {
   type CreatureRuleCatalog,
 } from '@app/features/game-systems/domain/creature-rule-catalog';
 import type {
-  UniverseLocationDetail,
   UniverseMonsterDetail,
-  UniverseNarrativeItemDetail,
   UniverseNpcDetail,
   UniversePlayerCharacterDetail,
   UniverseResourceDetail,

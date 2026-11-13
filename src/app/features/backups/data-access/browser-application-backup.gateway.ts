@@ -43,7 +43,9 @@ export class BrowserApplicationBackupGateway extends ApplicationBackupGateway {
     return { hasChanges: false, fingerprint: '' };
   }
 
-  override async checkDatabase(): Promise<void> {}
+  override async checkDatabase(): Promise<void> {
+    // Aucune base SQLite à contrôler hors de Tauri.
+  }
 
   override async latestAutomaticBackup(): Promise<BackupCandidate | null> {
     return null;
@@ -61,6 +63,8 @@ export class BrowserApplicationBackupGateway extends ApplicationBackupGateway {
   }
 
   private desktopOnlyError(): Error {
-    return new Error('La sauvegarde complète est uniquement disponible dans l’application desktop.');
+    return new Error(
+      'La sauvegarde complète est uniquement disponible dans l’application desktop.',
+    );
   }
 }

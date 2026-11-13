@@ -25,7 +25,7 @@ export class InMemoryCombatRepository extends CombatRepository {
     return Promise.resolve();
   }
 
-  override saveCombatant(combat: ActiveCombat, combatant: Combatant): Promise<void> {
+  override saveCombatant(combat: ActiveCombat, _combatant: Combatant): Promise<void> {
     const existing = this.combats.get(combat.campaignId);
     if (!existing || existing.id !== combat.id) {
       return Promise.reject(new Error('Le combat actif est introuvable.'));
@@ -34,7 +34,7 @@ export class InMemoryCombatRepository extends CombatRepository {
     return Promise.resolve();
   }
 
-  override removeCombatant(combat: ActiveCombat, combatantId: string): Promise<void> {
+  override removeCombatant(combat: ActiveCombat, _combatantId: string): Promise<void> {
     const existing = this.combats.get(combat.campaignId);
     if (!existing || existing.id !== combat.id) {
       return Promise.reject(new Error('Le combat actif est introuvable.'));

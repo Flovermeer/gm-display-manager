@@ -66,7 +66,7 @@ describe('TauriApplicationBackupGateway', () => {
     });
 
     await expect(
-      new TauriApplicationBackupGateway().createAutomaticBackup(() => {}),
+      new TauriApplicationBackupGateway().createAutomaticBackup(() => undefined),
     ).resolves.toEqual(candidate);
 
     expect(invoke).toHaveBeenCalledWith('create_automatic_backup', {
@@ -79,7 +79,7 @@ describe('TauriApplicationBackupGateway', () => {
     database.execute.mockRejectedValue(new Error('database is locked'));
 
     await expect(
-      new TauriApplicationBackupGateway().createBackup('D:\\Backups\\session.zip', () => {}),
+      new TauriApplicationBackupGateway().createBackup('D:\\Backups\\session.zip', () => undefined),
     ).rejects.toThrow('database is locked');
 
     expect(invoke).toHaveBeenCalledWith('cleanup_backup_snapshot', {

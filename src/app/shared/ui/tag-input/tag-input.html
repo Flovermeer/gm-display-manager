@@ -1,5 +1,5 @@
 <label [for]="inputId()">{{ label() }}</label>
-<div class="tag-field" (click)="tagInput.focus()">
+<div class="tag-field" role="presentation" (click)="tagInput.focus()">
   @for (tag of value(); track tag; let index = $index) {
     <app-tag-pill [label]="tag" (remove)="removeTag(index)" />
   }

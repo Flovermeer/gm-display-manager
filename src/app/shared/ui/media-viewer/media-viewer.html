@@ -1,21 +1,15 @@
 <div
   class="media-viewer"
   role="presentation"
-  (click)="close.emit()"
+  (click)="$event.target === $event.currentTarget && closed.emit()"
   (wheel)="zoomWithWheel($event)"
 >
-  <section
-    class="media-viewer__dialog"
-    role="dialog"
-    aria-modal="true"
-    [attr.aria-label]="label()"
-    (click)="$event.stopPropagation()"
-  >
+  <section class="media-viewer__dialog" role="dialog" aria-modal="true" [attr.aria-label]="label()">
     <button
       class="media-viewer__close"
       type="button"
       aria-label="Fermer l’image"
-      (click)="close.emit()"
+      (click)="closed.emit()"
     >
       ×
     </button>

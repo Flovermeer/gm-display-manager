@@ -1,1 +1,0 @@
-- poser des règles de dépendances entre features (nécessite d'installer ESLint)

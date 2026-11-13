@@ -376,6 +376,38 @@ describe('NpcWorkspace', () => {
       ),
     ).toBe(true);
   });
+
+  it('refreshes resource mentions after saving an NPC', async () => {
+    const savedNpcMention = {
+      resourceType: 'npc' as const,
+      resourceId: npc.id,
+      label: npc.name,
+    };
+    const fixture = TestBed.createComponent(NpcWorkspace);
+    fixture.detectChanges();
+    await renderUntil(fixture, 'Syndra Silvane');
+    const element = fixture.nativeElement as HTMLElement;
+
+    element.querySelector<HTMLButtonElement>('.npc-list-item')?.click();
+    await renderUntil(fixture, 'Description canonique.');
+    element.querySelector<HTMLButtonElement>('.detail-actions .ui-button--primary')?.click();
+    await renderUntil(fixture, 'Enregistrer');
+    mentionNavigation.listCandidates.mockResolvedValue([mention, savedNpcMention]);
+    [...element.querySelectorAll<HTMLButtonElement>('button')]
+      .find((button) => button.textContent?.includes('Enregistrer'))
+      ?.click();
+
+    await vi.waitFor(() => {
+      fixture.detectChanges();
+      const editors = fixture.debugElement.queryAll(By.directive(RichTextEditor));
+      expect(editors.length).toBeGreaterThan(0);
+      expect(
+        editors.every(({ componentInstance }) =>
+          (componentInstance as RichTextEditor).mentionCandidates().includes(savedNpcMention),
+        ),
+      ).toBe(true);
+    });
+  });
 });
 
 async function renderUntil(fixture: ComponentFixture<NpcWorkspace>, text: string) {

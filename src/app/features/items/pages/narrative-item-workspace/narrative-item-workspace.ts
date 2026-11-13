@@ -460,7 +460,15 @@ export class NarrativeItemWorkspace implements OnInit, PendingChangesAware {
 
   private async reloadItems(): Promise<void> {
     const campaign = this.campaign();
-    if (campaign) this.items.set(await this.itemService.list(campaign.id));
+    if (!campaign) return;
+    // Les mentions sont relues avec la liste : un objet créé ou renommé doit être proposé
+    // dans le menu « @ » sans quitter la page.
+    const [items, mentionCandidates] = await Promise.all([
+      this.itemService.list(campaign.id),
+      this.mentionNavigation.listCandidates(campaign.id),
+    ]);
+    this.items.set(items);
+    this.mentionCandidates.set(mentionCandidates);
   }
 
   private openReadOnly(item: NarrativeItem): void {

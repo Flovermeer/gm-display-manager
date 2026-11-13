@@ -519,12 +519,10 @@ export class LocationWorkspace implements OnInit, PendingChangesAware {
     try {
       const campaign = await this.campaignContext.load();
       if (!campaign) return;
-      const [, mentionCandidates, collapsedLocationIds] = await Promise.all([
+      const [, collapsedLocationIds] = await Promise.all([
         this.reloadLocations(),
-        this.mentionNavigation.listCandidates(campaign.id),
         this.locationTreeState.load(campaign.id),
       ]);
-      this.mentionCandidates.set(mentionCandidates);
       this.collapsedLocationIds.set(collapsedLocationIds);
       await this.openRequestedLocation(
         this.route.snapshot.queryParamMap?.get('resourceId'),
@@ -551,9 +549,15 @@ export class LocationWorkspace implements OnInit, PendingChangesAware {
 
   private async reloadLocations(): Promise<void> {
     const campaign = this.campaign();
-    if (campaign) {
-      this.locations.set(await this.locationService.list(campaign.id));
-    }
+    if (!campaign) return;
+    // Les mentions sont relues avec la liste : un lieu créé ou renommé doit être proposé
+    // dans le menu « @ » sans quitter la page.
+    const [locations, mentionCandidates] = await Promise.all([
+      this.locationService.list(campaign.id),
+      this.mentionNavigation.listCandidates(campaign.id),
+    ]);
+    this.locations.set(locations);
+    this.mentionCandidates.set(mentionCandidates);
   }
 
   private openReadOnly(location: Location): void {

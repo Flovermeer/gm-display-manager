@@ -388,7 +388,15 @@ export class ChapterWorkspace implements OnInit, PendingChangesAware {
 
   private async reloadScenes(): Promise<void> {
     const campaign = this.campaign();
-    if (campaign) this.scenes.set(await this.sceneService.list(campaign.id));
+    if (!campaign) return;
+    // Les mentions sont relues avec les scènes : une scène créée depuis un chapitre doit être
+    // proposée dans le menu « @ » sans quitter la page.
+    const [scenes, mentionCandidates] = await Promise.all([
+      this.sceneService.list(campaign.id),
+      this.mentionNavigation.listCandidates(campaign.id),
+    ]);
+    this.scenes.set(scenes);
+    this.mentionCandidates.set(mentionCandidates);
   }
 
   private async openRequestedChapter(resourceId: string | null): Promise<void> {

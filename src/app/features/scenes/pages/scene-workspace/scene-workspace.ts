@@ -469,7 +469,15 @@ export class SceneWorkspace implements OnInit, PendingChangesAware {
 
   private async reloadScenes(): Promise<void> {
     const campaign = this.campaign();
-    if (campaign) this.scenes.set(await this.sceneService.list(campaign.id));
+    if (!campaign) return;
+    // Les mentions sont relues avec la liste : une scène créée ou renommée doit être proposée
+    // dans le menu « @ » sans quitter la page.
+    const [scenes, mentionCandidates] = await Promise.all([
+      this.sceneService.list(campaign.id),
+      this.mentionNavigation.listCandidates(campaign.id),
+    ]);
+    this.scenes.set(scenes);
+    this.mentionCandidates.set(mentionCandidates);
   }
 
   private async sendState(state: PlayerDisplayState): Promise<void> {

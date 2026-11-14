@@ -188,6 +188,14 @@
   --resource-mention-outline: rgb(157 87 35 / 35%);
 }
 
+/* Citrouille : plus vif que l’orange brun des objets. */
+.rich-text-content .tiptap .resource-mention-shell[data-resource-type='random-table'] {
+  --resource-mention-color: #b34d00;
+  --resource-mention-background: #ffdcb8;
+  --resource-mention-hover-background: #ffc98f;
+  --resource-mention-outline: rgb(220 103 15 / 35%);
+}
+
 .rich-text-content .tiptap .resource-mention {
   padding: 0.12rem 0.35rem;
   border-radius: 999px;

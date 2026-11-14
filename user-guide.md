@@ -122,10 +122,11 @@ sous-espèces se limite à celles de l'espèce choisie. L'occupation reste un te
 chaque PNJ.
 
 Dans la description officielle et les blocs de capacités/actions, saisis `@` pour créer un lien vers
-un PJ, un PNJ, un monstre, un lieu, un objet ou une scène de la campagne. Le menu de suggestions
-s'ouvre à côté du curseur. Chaque mention est colorée selon son type : rouge pour un monstre, gris
-bleuté pour un lieu, vert d'eau pour un PNJ, orangé pour un objet et violet pour les autres
-ressources. Lorsque l'écran joueurs est ouvert, l'icône en forme d'œil placée à côté d'une mention
+un PJ, un PNJ, un monstre, un lieu, un objet, une scène ou une table aléatoire de la campagne. Le
+menu de suggestions s'ouvre à côté du curseur. Chaque mention est colorée selon son type : rouge pour
+un monstre, gris bleuté pour un lieu, vert d'eau pour un PNJ, orangé pour un objet, citrouille pour
+une table et violet pour les autres ressources. Une table s'ouvre côté MJ : elle n'a pas d'icône
+d'affichage aux joueurs. Lorsque l'écran joueurs est ouvert, l'icône en forme d'œil placée à côté d'une mention
 affichable envoie la ressource aux joueurs ; un second clic arrête son affichage.
 
 En mode édition, clique sur le cadre carré du portrait pour choisir une image

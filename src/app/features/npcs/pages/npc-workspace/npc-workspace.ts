@@ -46,6 +46,7 @@ import {
   type RichTextDocument,
 } from '@app/shared/rich-text-editor/rich-text-document';
 import { ButtonDirective } from '@app/shared/ui/button/button.directive';
+import { CombatIcon } from '@app/shared/ui/combat-icon/combat-icon';
 import { Dialog } from '@app/shared/ui/dialog/dialog';
 import { EmptyState } from '@app/shared/ui/empty-state/empty-state';
 import { EntityTitle } from '@app/shared/ui/entity-title/entity-title';
@@ -71,6 +72,7 @@ import { PendingChangesDialog } from '@app/shared/ui/pending-changes-dialog/pend
     PendingChangesDialog,
     JournalEntryList,
     ButtonDirective,
+    CombatIcon,
     Dialog,
     EmptyState,
     EntityTitle,

@@ -45,39 +45,59 @@
           }}
         </p>
       } @else {
-        @for (npc of filteredNpcs(); track npc.id) {
-          <div class="entity-list-entry">
+        @for (group of npcGroups(); track group.kind) {
+          <section class="npc-list-group" [attr.aria-label]="group.label">
             <button
-              class="npc-list-item"
+              class="npc-list-group__toggle"
               type="button"
-              [class.active]="selectedNpc()?.id === npc.id && !isCreating()"
-              (click)="requestSelectNpc(npc)"
+              [attr.aria-expanded]="!isNpcGroupCollapsed(group.kind)"
+              (click)="toggleNpcGroup(group.kind)"
             >
-              <span class="npc-list-heading">
-                <span
-                  class="npc-status-icon"
-                  [attr.data-status]="npc.status"
-                  [attr.aria-label]="'Statut : ' + statusLabel(npc.status)"
-                  [attr.title]="statusLabel(npc.status)"
-                >
-                  {{ statusIcon(npc.status) }}
-                </span>
-                <strong>{{ npc.name }}</strong>
+              <span class="npc-list-group__chevron" aria-hidden="true">
+                {{ isNpcGroupCollapsed(group.kind) ? '▸' : '▾' }}
               </span>
-              <span class="npc-list-summary">{{ npc.summary || statusLabel(npc.status) }}</span>
+              <span class="npc-list-group__label">{{ group.label }}</span>
+              <span class="npc-list-group__count">{{ group.npcs.length }}</span>
             </button>
-            @if (npc.kind === 'character') {
-              <button
-                class="entity-list-entry__combat"
-                type="button"
-                [attr.aria-label]="'Ajouter ' + npc.name + ' au combat'"
-                [title]="'Ajouter ' + npc.name + ' au combat'"
-                (click)="addToCombat(npc)"
-              >
-                Combat
-              </button>
+            @if (!isNpcGroupCollapsed(group.kind)) {
+              @for (npc of group.npcs; track npc.id) {
+                <div class="entity-list-entry">
+                  <button
+                    class="npc-list-item"
+                    type="button"
+                    [class.active]="selectedNpc()?.id === npc.id && !isCreating()"
+                    (click)="requestSelectNpc(npc)"
+                  >
+                    <span class="npc-list-heading">
+                      <span
+                        class="npc-status-icon"
+                        [attr.data-status]="npc.status"
+                        [attr.aria-label]="'Statut : ' + statusLabel(npc.status)"
+                        [attr.title]="statusLabel(npc.status)"
+                      >
+                        {{ statusIcon(npc.status) }}
+                      </span>
+                      <strong>{{ npc.name }}</strong>
+                    </span>
+                    <span class="npc-list-summary">{{
+                      npc.summary || statusLabel(npc.status)
+                    }}</span>
+                  </button>
+                  @if (npc.kind === 'character') {
+                    <button
+                      class="entity-list-entry__combat"
+                      type="button"
+                      [attr.aria-label]="'Ajouter ' + npc.name + ' au combat'"
+                      [title]="'Ajouter ' + npc.name + ' au combat'"
+                      (click)="addToCombat(npc)"
+                    >
+                      Combat
+                    </button>
+                  }
+                </div>
+              }
             }
-          </div>
+          </section>
         }
       }
     </div>

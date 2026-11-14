@@ -175,11 +175,15 @@
   overflow: hidden;
 }
 
+/* Flex et non grid : dans une piste de grille `auto`, le `max-height: 100%` de l’image ne se
+   résout pas et une image haute déborde, tronquée, au lieu de tenir dans l’écran. */
 .media-viewer__viewport {
-  display: grid;
+  display: flex;
   width: 100%;
   height: 100%;
-  place-items: center;
+  min-height: 0;
+  align-items: center;
+  justify-content: center;
   overflow: hidden;
   touch-action: none;
 }

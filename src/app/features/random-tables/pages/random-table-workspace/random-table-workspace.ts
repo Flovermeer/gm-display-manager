@@ -1,4 +1,5 @@
-import { Component, computed, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, DestroyRef, inject, OnInit, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import {
   FormArray,
   FormControl,
@@ -8,6 +9,7 @@ import {
   type ValidatorFn,
   Validators,
 } from '@angular/forms';
+import { ActivatedRoute } from '@angular/router';
 
 import type { PendingChangesAware } from '@app/core/navigation/pending-changes.guard';
 import { CampaignContext } from '@app/features/campaigns/application/campaign-context';
@@ -54,6 +56,8 @@ type EntryForm = FormGroup<{
 export class RandomTableWorkspace implements OnInit, PendingChangesAware {
   private readonly campaignContext = inject(CampaignContext);
   private readonly service = inject(RandomTableService);
+  private readonly route = inject(ActivatedRoute);
+  private readonly destroyRef = inject(DestroyRef);
 
   protected readonly tables = signal<readonly RandomTable[]>([]);
   protected readonly selectedTable = signal<RandomTable | null>(null);
@@ -84,6 +88,10 @@ export class RandomTableWorkspace implements OnInit, PendingChangesAware {
   });
 
   ngOnInit(): void {
+    // Une mention « @ » ouvre la page avec `resourceId` ; on suit aussi les changements suivants.
+    this.route.queryParamMap
+      ?.pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((params) => void this.openRequestedTable(params.get('resourceId')));
     void this.initialize();
   }
 
@@ -249,11 +257,18 @@ export class RandomTableWorkspace implements OnInit, PendingChangesAware {
       const campaign = await this.campaignContext.load();
       if (!campaign) return;
       this.tables.set(await this.service.list(campaign.id));
+      await this.openRequestedTable(this.route.snapshot.queryParamMap?.get('resourceId') ?? null);
     } catch (error) {
       this.error.set(errorMessage(error));
     } finally {
       this.isLoading.set(false);
     }
+  }
+
+  private async openRequestedTable(resourceId: string | null): Promise<void> {
+    const table = this.tables().find(({ id }) => id === resourceId);
+    if (!table || (table.id === this.selectedTable()?.id && !this.isCreating())) return;
+    if (await this.confirmPendingChanges()) this.openReadOnly(table);
   }
 
   private async reloadTables(): Promise<void> {

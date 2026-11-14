@@ -1,4 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { ActivatedRoute, convertToParamMap, type ParamMap } from '@angular/router';
+import { BehaviorSubject } from 'rxjs';
 
 import { CampaignContext } from '@app/features/campaigns/application/campaign-context';
 import type { Campaign } from '@app/features/campaigns/domain/campaign';
@@ -38,8 +40,11 @@ describe('RandomTableWorkspace', () => {
     roll: vi.fn(),
   };
 
+  let queryParams: BehaviorSubject<ParamMap>;
+
   beforeEach(async () => {
     vi.clearAllMocks();
+    queryParams = new BehaviorSubject(convertToParamMap({}));
     service.list.mockResolvedValue([table]);
     service.create.mockImplementation(async (_campaignId: string, input: RandomTableInput) => ({
       ...table,
@@ -60,6 +65,15 @@ describe('RandomTableWorkspace', () => {
           useValue: { campaign: () => campaign, load: () => Promise.resolve(campaign) },
         },
         { provide: RandomTableService, useValue: service },
+        {
+          provide: ActivatedRoute,
+          useValue: {
+            queryParamMap: queryParams,
+            get snapshot() {
+              return { queryParamMap: queryParams.value };
+            },
+          },
+        },
       ],
     }).compileComponents();
   });
@@ -77,6 +91,15 @@ describe('RandomTableWorkspace', () => {
 
     expect(service.roll).toHaveBeenCalledWith(table);
     expect(element.querySelector('.random-table-roll__result')?.textContent).toContain('Marchands');
+  });
+
+  it('opens the table targeted by a mention', async () => {
+    queryParams.next(convertToParamMap({ resourceId: table.id }));
+    const fixture = TestBed.createComponent(RandomTableWorkspace);
+    fixture.detectChanges();
+
+    await renderUntil(fixture, 'Sur la route');
+    expect(findButton(fixture.nativeElement as HTMLElement, 'Tirer')).toBeTruthy();
   });
 
   it('sorts edited ranges before saving the complete table', async () => {

@@ -17,6 +17,7 @@ import { PlayerCharacterService } from '@app/features/players/application/player
 import { NarrativeItemService } from '@app/features/items/application/narrative-item.service';
 import { SceneService } from '@app/features/scenes/application/scene.service';
 import { MonsterService } from '@app/features/bestiary/application/monster.service';
+import { RandomTableService } from '@app/features/random-tables/application/random-table.service';
 import {
   resourceRouteSegment,
   type ResourceMentionCandidate,
@@ -31,15 +32,17 @@ export class ResourceMentionNavigationService {
   private readonly itemService = inject(NarrativeItemService);
   private readonly sceneService = inject(SceneService, { optional: true });
   private readonly monsterService = inject(MonsterService, { optional: true });
+  private readonly randomTableService = inject(RandomTableService, { optional: true });
 
   async listCandidates(campaignId: string): Promise<readonly ResourceMentionCandidate[]> {
-    const [npcs, monsters, locations, characters, items, scenes] = await Promise.all([
+    const [npcs, monsters, locations, characters, items, scenes, tables] = await Promise.all([
       this.npcService.list(campaignId),
       this.monsterService?.list(campaignId) ?? Promise.resolve([]),
       this.locationService.list(campaignId),
       this.characterService.list(campaignId),
       this.itemService.list(campaignId),
       this.sceneService?.list(campaignId) ?? Promise.resolve([]),
+      this.randomTableService?.list(campaignId) ?? Promise.resolve([]),
     ]);
     return [
       ...characters.map(({ id, name }) => ({
@@ -76,6 +79,12 @@ export class ResourceMentionNavigationService {
         resourceId: id,
         label: name,
         playerDisplayAvailable: true,
+      })),
+      // Une table se consulte côté MJ : pas d’affichage joueurs.
+      ...tables.map(({ id, name }) => ({
+        resourceType: 'random-table' as const,
+        resourceId: id,
+        label: name,
       })),
     ];
   }

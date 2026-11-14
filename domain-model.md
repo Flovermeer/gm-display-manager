@@ -326,7 +326,7 @@ n'a pas de titre. Une entrée globale affiche son contenu complet ; une entrée 
 aperçu cliquable qui redirige vers la fiche et la note ciblées.
 
 Les mentions `@` présentes dans le contenu riche sont également interactives en lecture seule. Une
-mention résolue ouvre la fiche PJ, PNJ, monstre, lieu, objet ou scène correspondante dans la campagne active. Si la
+mention résolue ouvre la fiche PJ, PNJ, monstre, lieu, objet, scène ou table aléatoire correspondante dans la campagne active. Si la
 ressource n'existe plus, la mention reste affichée comme du texte normal et ne déclenche aucune
 navigation.
 

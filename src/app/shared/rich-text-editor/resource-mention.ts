@@ -8,6 +8,7 @@ export const RESOURCE_TYPES = [
   'location',
   'item',
   'scene',
+  'random-table',
 ] as const;
 export type ResourceType = (typeof RESOURCE_TYPES)[number];
 
@@ -32,6 +33,7 @@ const RESOURCE_TYPE_LABELS: Readonly<Record<ResourceType, string>> = {
   location: 'Lieu',
   item: 'Objet',
   scene: 'Scène',
+  'random-table': 'Table',
 };
 
 const RESOURCE_ROUTE_SEGMENTS: Readonly<Record<ResourceType, string>> = {
@@ -41,6 +43,7 @@ const RESOURCE_ROUTE_SEGMENTS: Readonly<Record<ResourceType, string>> = {
   location: 'locations',
   item: 'items',
   scene: 'scenes',
+  'random-table': 'tables',
 };
 
 type ResourceMentionExtensionOptions = Readonly<{

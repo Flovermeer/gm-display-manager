@@ -21,6 +21,7 @@ import {
 import type { RichTextDocument } from '@app/shared/rich-text-editor/rich-text-document';
 import { RichTextEditor } from '@app/shared/rich-text-editor/rich-text-editor';
 import { ButtonDirective } from '@app/shared/ui/button/button.directive';
+import { CombatIcon } from '@app/shared/ui/combat-icon/combat-icon';
 import { Dialog } from '@app/shared/ui/dialog/dialog';
 import { EmptyState } from '@app/shared/ui/empty-state/empty-state';
 import { FormField } from '@app/shared/ui/form-field/form-field';
@@ -69,6 +70,7 @@ type TagField =
     PendingChangesDialog,
     ReactiveFormsModule,
     ButtonDirective,
+    CombatIcon,
     Dialog,
     EmptyState,
     FormField,

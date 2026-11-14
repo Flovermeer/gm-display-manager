@@ -2,11 +2,11 @@
 
 Date de cadrage : 12 août 2026
 
-Dernière consolidation : 13 novembre 2026
+Dernière consolidation : 14 novembre 2026
 
-Dernière version publiée : **1.1.9** (13 novembre 2026)
+Dernière version publiée : **1.1.10** (13 novembre 2026)
 
-Version en préparation : **1.1.10**
+Version en préparation : **1.1.11**
 
 Version fonctionnelle actuelle : **V1 terminée**
 
@@ -102,13 +102,24 @@ périmètre de la V1.1 :
   libellés et la même disposition ;
 - documentation actualisée pour les versions 1.1.6 à 1.1.8.
 
-### Version 1.1.10 — en préparation
+### Version 1.1.10 — 13 novembre 2026
 
 - correction des mentions `@` : une ressource créée ou renommée est proposée immédiatement dans
   le menu de mentions, sans quitter la page ;
 - PNJ de type « Organisation » : sans fiche technique ni actions de combat, avec portrait,
   affichage joueurs, statut, résumé, description officielle et journal. La migration 0029 ajoute
   `npc.kind` sans modifier les PNJ existants, qui restent des personnages.
+
+### Version 1.1.11 — en préparation
+
+- liste des PNJ classée en deux accordéons « Organisation » puis « PNJ », repliables et mémorisés
+  par campagne ; une recherche déplie tous les groupes ;
+- raccourci « Ajouter au combat » des listes PNJ, monstres et PJ remplacé par un bouton rond à
+  épées croisées, de taille fixe ;
+- tables aléatoires mentionnables avec `@` (pastille citrouille), ouverture directe de la table
+  depuis la mention ;
+- correction de la brume animée du Player Display, absente des builds de production ;
+- correction de la visionneuse plein écran : une image plus haute que l'écran n'est plus tronquée.
 
 ## Statut consolidé
 

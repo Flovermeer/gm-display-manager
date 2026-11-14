@@ -7,6 +7,7 @@ import { PlayerCharacterService } from '@app/features/players/application/player
 import { NarrativeItemService } from '@app/features/items/application/narrative-item.service';
 import { SceneService } from '@app/features/scenes/application/scene.service';
 import { MonsterService } from '@app/features/bestiary/application/monster.service';
+import { RandomTableService } from '@app/features/random-tables/application/random-table.service';
 import { ResourceMentionNavigationService } from '@app/shared/rich-text-editor/resource-mention-navigation.service';
 
 describe('ResourceMentionNavigationService', () => {
@@ -17,6 +18,7 @@ describe('ResourceMentionNavigationService', () => {
   const itemService = { list: vi.fn() };
   const sceneService = { list: vi.fn() };
   const monsterService = { list: vi.fn() };
+  const randomTableService = { list: vi.fn() };
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -34,6 +36,7 @@ describe('ResourceMentionNavigationService', () => {
     monsterService.list.mockResolvedValue([
       { id: 'monster-id', name: 'Atropal', imagePath: 'atropal.webp' },
     ]);
+    randomTableService.list.mockResolvedValue([{ id: 'table-id', name: 'Rencontres' }]);
     router.navigate.mockResolvedValue(true);
     TestBed.configureTestingModule({
       providers: [
@@ -44,6 +47,7 @@ describe('ResourceMentionNavigationService', () => {
         { provide: NarrativeItemService, useValue: itemService },
         { provide: SceneService, useValue: sceneService },
         { provide: MonsterService, useValue: monsterService },
+        { provide: RandomTableService, useValue: randomTableService },
         { provide: Router, useValue: router },
       ],
     });
@@ -84,6 +88,7 @@ describe('ResourceMentionNavigationService', () => {
         label: 'Audience à la villa',
         playerDisplayAvailable: true,
       },
+      { resourceType: 'random-table', resourceId: 'table-id', label: 'Rencontres' },
     ]);
     await service.open('campaign-id', {
       resourceType: 'npc',

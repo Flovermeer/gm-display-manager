@@ -11,6 +11,7 @@ import { NpcPortraitGateway } from '@app/features/npcs/data-access/npc-portrait.
 import { NpcIdleVideoGateway } from '@app/features/npcs/data-access/npc-idle-video.gateway';
 import { createEmptyNpcSheet, type Npc } from '@app/features/npcs/domain/npc';
 import { NpcService } from '@app/features/npcs/application/npc.service';
+import { NpcListStateService } from '@app/features/npcs/application/npc-list-state.service';
 import { JournalEntryService } from '@app/features/journal/application/journal-entry.service';
 import { createEmptyRichTextDocument } from '@app/shared/rich-text-editor/rich-text-document';
 import { RichTextEditor } from '@app/shared/rich-text-editor/rich-text-editor';
@@ -122,6 +123,7 @@ describe('NpcWorkspace', () => {
     listCandidates: vi.fn(),
     open: vi.fn(),
   };
+  const npcListState = { load: vi.fn(), save: vi.fn() };
 
   beforeEach(async () => {
     vi.clearAllMocks();
@@ -144,6 +146,8 @@ describe('NpcWorkspace', () => {
     activeSceneService.clear.mockResolvedValue(undefined);
     mentionNavigation.listCandidates.mockResolvedValue([mention]);
     mentionNavigation.open.mockResolvedValue(undefined);
+    npcListState.load.mockResolvedValue(new Set());
+    npcListState.save.mockResolvedValue(undefined);
 
     await TestBed.configureTestingModule({
       imports: [NpcWorkspace],
@@ -155,6 +159,7 @@ describe('NpcWorkspace', () => {
           useValue: { campaign: () => campaign, load: () => Promise.resolve(campaign) },
         },
         { provide: NpcService, useValue: npcService },
+        { provide: NpcListStateService, useValue: npcListState },
         { provide: JournalEntryService, useValue: journalEntryService },
         {
           provide: ResourceMentionNavigationService,
@@ -378,6 +383,52 @@ describe('NpcWorkspace', () => {
     ).toBe(true);
   });
 
+  it('groups organizations before NPCs in collapsible sections', async () => {
+    npcListState.load.mockResolvedValue(new Set(['character']));
+    npcService.list.mockResolvedValue([
+      npc,
+      { ...npc, id: 'guild-id', name: 'Les Zhentarim', kind: 'organization' },
+    ]);
+    const fixture = TestBed.createComponent(NpcWorkspace);
+    fixture.detectChanges();
+    await renderUntil(fixture, 'Les Zhentarim');
+    const element = fixture.nativeElement as HTMLElement;
+    const toggles = () => [
+      ...element.querySelectorAll<HTMLButtonElement>('.npc-list-group__toggle'),
+    ];
+    const listedNames = () =>
+      [...element.querySelectorAll('.npc-list-item strong')].map(({ textContent }) => textContent);
+
+    expect(
+      toggles().map((toggle) => [
+        toggle.querySelector('.npc-list-group__label')?.textContent,
+        toggle.querySelector('.npc-list-group__count')?.textContent,
+        toggle.getAttribute('aria-expanded'),
+      ]),
+    ).toEqual([
+      ['Organisation', '1', 'true'],
+      ['PNJ', '1', 'false'],
+    ]);
+    expect(listedNames()).toEqual(['Les Zhentarim']);
+
+    toggles()[1]?.click();
+    fixture.detectChanges();
+    expect(listedNames()).toEqual(['Les Zhentarim', 'Syndra Silvane']);
+    expect(npcListState.save).toHaveBeenLastCalledWith(campaign.id, new Set());
+
+    toggles()[0]?.click();
+    fixture.detectChanges();
+    expect(listedNames()).toEqual(['Syndra Silvane']);
+    expect(toggles()[0]?.getAttribute('aria-expanded')).toBe('false');
+    expect(npcListState.save).toHaveBeenLastCalledWith(campaign.id, new Set(['organization']));
+
+    const search = element.querySelector<HTMLInputElement>('#npc-search')!;
+    search.value = 'zhent';
+    search.dispatchEvent(new Event('input'));
+    fixture.detectChanges();
+    expect(listedNames()).toEqual(['Les Zhentarim']);
+  });
+
   it('hides combat actions for an organization', async () => {
     npcService.list.mockResolvedValue([
       npc,
@@ -389,7 +440,9 @@ describe('NpcWorkspace', () => {
     const element = fixture.nativeElement as HTMLElement;
 
     expect(element.querySelectorAll('.entity-list-entry__combat')).toHaveLength(1);
-    element.querySelectorAll<HTMLButtonElement>('.npc-list-item')[1]?.click();
+    [...element.querySelectorAll<HTMLButtonElement>('.npc-list-item')]
+      .find((item) => item.textContent?.includes('Les Zhentarim'))
+      ?.click();
     await renderUntil(fixture, 'Fiche de l’organisation');
 
     expect(element.textContent).not.toContain('Ajouter au combat');

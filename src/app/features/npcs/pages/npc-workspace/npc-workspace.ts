@@ -10,7 +10,9 @@ import {
   EMPTY_CHARACTER_RULE_CATALOG,
   type CharacterRuleCatalog,
 } from '@app/features/game-systems/domain/character-rule-catalog';
+import { NpcListStateService } from '@app/features/npcs/application/npc-list-state.service';
 import { NpcWorkspaceFacade } from '@app/features/npcs/application/npc-workspace.facade';
+import { groupNpcsByKind } from '@app/features/npcs/domain/npc-list-groups';
 import {
   NpcSheetForm,
   type NpcFeatureSectionChange,
@@ -30,6 +32,7 @@ import {
   npcStatusIcon,
   npcStatusLabel,
   type Npc,
+  type NpcKind,
   type UpdateNpcInput,
 } from '@app/features/npcs/domain/npc';
 import { NpcService } from '@app/features/npcs/application/npc.service';
@@ -43,6 +46,7 @@ import {
   type RichTextDocument,
 } from '@app/shared/rich-text-editor/rich-text-document';
 import { ButtonDirective } from '@app/shared/ui/button/button.directive';
+import { CombatIcon } from '@app/shared/ui/combat-icon/combat-icon';
 import { Dialog } from '@app/shared/ui/dialog/dialog';
 import { EmptyState } from '@app/shared/ui/empty-state/empty-state';
 import { EntityTitle } from '@app/shared/ui/entity-title/entity-title';
@@ -68,6 +72,7 @@ import { PendingChangesDialog } from '@app/shared/ui/pending-changes-dialog/pend
     PendingChangesDialog,
     JournalEntryList,
     ButtonDirective,
+    CombatIcon,
     Dialog,
     EmptyState,
     EntityTitle,
@@ -82,6 +87,7 @@ export class NpcWorkspace implements OnInit, PendingChangesAware {
   private readonly destroyRef = inject(DestroyRef);
   private readonly npcService = inject(NpcService);
   private readonly workspace = inject(NpcWorkspaceFacade);
+  private readonly npcListState = inject(NpcListStateService);
   private readonly creatureRules = inject(CreatureRuleCatalogService);
   private readonly characterRules = inject(CharacterRuleCatalogService);
   private readonly mentionNavigation = inject(ResourceMentionNavigationService);
@@ -98,6 +104,7 @@ export class NpcWorkspace implements OnInit, PendingChangesAware {
   protected readonly draftIdleVideoPath = signal<string | null>(null);
   protected readonly searchTerm = signal('');
   protected readonly isSidebarCollapsed = signal(false);
+  protected readonly collapsedNpcGroups = signal<ReadonlySet<NpcKind>>(new Set());
   protected readonly isLoading = signal(true);
   protected readonly isSaving = signal(false);
   protected readonly isImportingPortrait = signal(false);
@@ -149,6 +156,7 @@ export class NpcWorkspace implements OnInit, PendingChangesAware {
       [npc.name, npc.summary].some((value) => value.toLocaleLowerCase('fr').includes(searchTerm)),
     );
   });
+  protected readonly npcGroups = computed(() => groupNpcsByKind(this.filteredNpcs()));
   protected readonly npcForm = createNpcForm();
 
   protected addToCombat(npc: Npc): void {
@@ -170,6 +178,24 @@ export class NpcWorkspace implements OnInit, PendingChangesAware {
 
   protected toggleSidebar(): void {
     this.isSidebarCollapsed.update((collapsed) => !collapsed);
+  }
+
+  /** Une recherche en cours déplie tous les groupes sans modifier l'état mémorisé. */
+  protected isNpcGroupCollapsed(kind: NpcKind): boolean {
+    return !this.searchTerm().trim() && this.collapsedNpcGroups().has(kind);
+  }
+
+  protected toggleNpcGroup(kind: NpcKind): void {
+    const collapsed = new Set(this.collapsedNpcGroups());
+    if (!collapsed.delete(kind)) collapsed.add(kind);
+    this.collapsedNpcGroups.set(collapsed);
+
+    const campaign = this.campaign();
+    if (campaign) {
+      void this.npcListState
+        .save(campaign.id, collapsed)
+        .catch((error: unknown) => this.error.set(errorMessage(error)));
+    }
   }
 
   protected updateSearch(event: Event): void {
@@ -447,9 +473,11 @@ export class NpcWorkspace implements OnInit, PendingChangesAware {
 
   private async initialize(): Promise<void> {
     try {
-      if (!(await this.campaignContext.load())) return;
+      const campaign = await this.campaignContext.load();
+      if (!campaign) return;
       await this.loadSupportingCatalogs();
       await this.reloadNpcs();
+      this.collapsedNpcGroups.set(await this.npcListState.load(campaign.id));
       await this.openRequestedNpc(
         this.route.snapshot.queryParamMap?.get('resourceId'),
         this.route.snapshot.queryParamMap?.get('entryId'),

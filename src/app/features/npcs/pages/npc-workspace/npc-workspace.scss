@@ -13,6 +13,50 @@ textarea {
   padding: 0.75rem;
 }
 
+// Groupes repliables « Organisation » et « PNJ » de la liste.
+.npc-list-group + .npc-list-group {
+  margin-top: 0.75rem;
+}
+
+.npc-list-group__toggle {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.35rem;
+  padding: 0.45rem 0.5rem;
+  border: 0;
+  border-radius: 0.45rem;
+  color: #b9a6c9;
+  background: transparent;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.npc-list-group__toggle:hover,
+.npc-list-group__toggle:focus-visible {
+  color: #f0e6f7;
+  background: #4d3c5c;
+  outline: none;
+}
+
+.npc-list-group__toggle[aria-expanded='false'] {
+  background: #33283d;
+}
+
+.npc-list-group__label {
+  flex: 1;
+  text-align: left;
+}
+
+.npc-list-group__count {
+  color: #9e9689;
+  font-weight: 400;
+}
+
 .npc-list-item {
   display: grid;
   width: 100%;

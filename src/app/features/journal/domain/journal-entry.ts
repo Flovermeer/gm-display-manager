@@ -1,7 +1,8 @@
 import type { RichTextDocument } from '@app/shared/rich-text-editor/rich-text-document';
 import type { ResourceType } from '@app/shared/rich-text-editor/resource-mention';
 
-export type JournalResourceType = ResourceType;
+// Les tables aléatoires sont mentionnables mais n’ont pas de journal.
+export type JournalResourceType = Exclude<ResourceType, 'random-table'>;
 
 export type JournalTarget = Readonly<{
   resourceType: JournalResourceType;

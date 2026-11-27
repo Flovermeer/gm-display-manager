@@ -2,117 +2,119 @@
   <img src="public/brand/beholders-inn-logo.png" alt="Beholder's Inn" width="160">
 </p>
 
+<p align="center"><b>English</b> · <a href="./README.fr.md">Français</a></p>
+
 # Beholder's Inn
 
-**Application de bureau pour maîtres de jeu de rôle : préparer sa campagne et piloter l'écran
-affiché aux joueurs.**
+**Desktop app for tabletop RPG game masters: prepare your campaign and control the screen shown
+to your players.**
 
-> 🧪 **Projet exploratoire** : Beholder's Inn sert avant tout à tester ce que l'IA permet de
-> construire aujourd'hui. Le code a été entièrement écrit par des agents IA, d'abord **Codex**,
-> puis **Claude Code**. Mon rôle : définir le produit et l'architecture, superviser chaque étape et
-> relire le code produit.
+> 🧪 **Exploratory project**: Beholder's Inn is first and foremost a way to test what AI can
+> build today. The code was written entirely by AI agents, first **Codex**, then
+> **Claude Code**. My role: defining the product and the architecture, supervising every step
+> and reviewing the generated code.
 >
-> 🚧 **En cours de développement** : l'application est utilisable, mais elle évolue encore et
-> certaines fonctionnalités sont provisoires.
+> 🚧 **Work in progress**: the app is usable, but it is still evolving and some features are
+> provisional.
 
 <p align="center">
-  <img src="docs/screenshots/regie-ecran-joueurs.png" alt="Régie : choix du moniteur affiché aux joueurs" width="800">
+  <img src="docs/screenshots/regie-ecran-joueurs.png" alt="Control room: choosing the monitor shown to the players" width="800">
 </p>
 
 <p align="center">
-  <img src="docs/screenshots/fiche-organisation.png" alt="Fiche d'une organisation, avec mentions liées et notes privées du MJ" width="800">
+  <img src="docs/screenshots/fiche-organisation.png" alt="Organization sheet with linked mentions and private GM notes" width="800">
 </p>
 
 <p align="center">
-  <img src="docs/screenshots/arborescence-chapitres.png" alt="Carte automatique de la structure de la campagne" width="800">
+  <img src="docs/screenshots/arborescence-chapitres.png" alt="Automatic map of the campaign structure" width="800">
 </p>
 
-## L'idée
+*The interface is currently in French.*
 
-Pendant une partie, le maître de jeu jongle entre ses notes, ses PNJ, ses lieux et ce qu'il
-veut montrer aux joueurs. Beholder's Inn rassemble la préparation de la campagne et un **second
-écran, dédié aux joueurs**, que le MJ contrôle depuis son panneau : il choisit ce qui s'affiche,
-quand, et sur quel moniteur.
+## The idea
 
-La gestion de la battlemap (grille, fog of war) reste volontairement confiée à
+During a session, the game master juggles notes, NPCs, locations and whatever they want to show
+the players. Beholder's Inn brings together campaign preparation and a **second screen dedicated
+to the players**, controlled from the GM panel: the GM decides what is displayed, when, and on
+which monitor.
+
+Battlemap management (grid, fog of war) is deliberately left to
 [Foundry VTT](https://foundryvtt.com/).
 
-## Fonctionnalités
+## Features
 
-- **Campagnes et univers** : ressources partagées entre les campagnes d'un même univers ;
-- **Lieux** : organisation hiérarchique et galerie d'images ;
-- **PNJ** : fiches, groupes et organisations ;
-- **Personnages joueurs** : fiches utiles au MJ et suivi des points de vie ;
-- **Chapitres et scènes** : classement, préparation et activation des scènes ;
-- **Carte de campagne** : vue graphique automatique des chapitres et des scènes ;
-- **Tables aléatoires** : préparation et tirages privés ;
-- **Suivi de combat** ;
-- **Écran joueurs** : affichage sans contrôles, sur le moniteur de son choix, piloté depuis le
-  panneau du MJ ;
-- **Sauvegarde et restauration** des données.
+- **Campaigns and universes**: resources shared between campaigns of the same universe;
+- **Locations**: hierarchical organization and image gallery;
+- **NPCs**: sheets, groups and organizations;
+- **Player characters**: GM-oriented sheets and hit point tracking;
+- **Chapters and scenes**: ordering, preparation and activation of scenes;
+- **Campaign map**: automatic graph view of chapters and scenes;
+- **Random tables**: preparation and private rolls;
+- **Combat tracker**;
+- **Player screen**: control-free display on the monitor of your choice, driven from the GM
+  panel;
+- **Backup and restore** of your data.
 
-## Télécharger
+## Download
 
-L'installateur Windows est disponible dans les
+The Windows installer is available in the
 [Releases](https://github.com/Flovermeer/gm-display-manager/releases).
 
-L'installateur n'est pas encore signé : Windows SmartScreen peut afficher un avertissement au
-premier lancement. Le [guide d'utilisation](./user-guide.md) détaille l'installation et la prise
-en main.
+The installer is not signed yet, so Windows SmartScreen may show a warning on first launch. The
+[user guide](./user-guide.md) (in French) covers installation and getting started.
 
-## Stack technique
+## Tech stack
 
-| Couche | Technologies |
+| Layer | Technologies |
 |---|---|
-| Interface | Angular 22 (composants standalone, zoneless), SCSS |
-| Application desktop | Tauri 2 (Rust) |
-| Données | SQLite et système de fichiers, via les plugins officiels Tauri |
-| Qualité | ESLint (règles Angular, TypeScript et frontières entre couches), tests Angular et Rust |
-| CI/CD | GitHub Actions : vérifications à chaque pull request, build de l'installateur Windows (NSIS) et publication de la release |
+| UI | Angular 22 (standalone components, zoneless), SCSS |
+| Desktop app | Tauri 2 (Rust) |
+| Data | SQLite and file system, through the official Tauri plugins |
+| Quality | ESLint (Angular and TypeScript rules, layer boundaries), Angular and Rust tests |
+| CI/CD | GitHub Actions: checks on every pull request, Windows installer build (NSIS) and release publishing |
 
-L'architecture sépare strictement les couches : le `domain/` ne dépend ni d'Angular ni de
-Tauri, et les composants n'accèdent jamais directement aux données. Ces règles sont vérifiées
-automatiquement par le lint.
+The architecture strictly separates layers: `domain/` depends on neither Angular nor Tauri, and
+components never access data directly. These rules are enforced automatically by the linter.
 
-## Travailler avec l'IA : la démarche
+## Working with AI: the approach
 
-Ce projet est aussi un terrain d'expérimentation sur la manière d'encadrer des agents IA :
+This project is also a testing ground for how to steer AI agents:
 
-- des **spécifications et un plan d'implémentation** rédigés en amont, découpés en jalons ;
-- des **consignes pour les agents** ([`AGENTS.md`](./AGENTS.md)) : architecture, conventions,
-  limites ;
-- des **garde-fous automatiques** : lint des frontières entre couches, tests et CI sur chaque
-  pull request ;
-- une **revue humaine** de chaque changement avant fusion.
+- **specifications and an implementation plan** written upfront, split into milestones;
+- **instructions for the agents** ([`AGENTS.md`](./AGENTS.md)): architecture, conventions,
+  boundaries;
+- **automated guardrails**: layer-boundary linting, tests and CI on every pull request;
+- **human review** of every change before merging.
 
-### Ce que ça m'a appris
+### What I learned
 
-- **Des sessions courtes et ciblées.** Sur une session trop longue, l'agent finit par halluciner
-  et la qualité du travail baisse.
-- **Un contexte bien délimité et de bonnes instructions de départ.** Sans consignes explicites,
-  l'agent a par exemple tendance à dupliquer du code plutôt qu'à le factoriser en composants
-  réutilisables.
-- **Un humain reste nécessaire.** Avec mon utilisation actuelle, la supervision et la relecture
-  humaines restent indispensables pour garder un code cohérent et maintenable.
+- **Short, focused sessions.** When a session runs too long, the agent ends up hallucinating and
+  the quality of the work drops.
+- **A well-scoped context and good initial instructions.** Without explicit guidance, the agent
+  tends, for example, to duplicate code rather than factor it into reusable components.
+- **A human is still needed.** With the way I currently use these tools, human supervision and
+  review remain essential to keep the code consistent and maintainable.
 
-**En résumé :** le plus difficile n'est pas de faire écrire du code à l'IA, mais de bien
-délimiter le périmètre de chaque demande et d'être clair et précis dans ce qu'on lui demande.
+**In short:** the hardest part is not getting AI to write code, but scoping each request
+properly and being clear and precise about what you ask for.
 
 ## Documentation
 
-- [`user-guide.md`](./user-guide.md) : installation, utilisation, sauvegarde et dépannage ;
-- [`DEVELOPMENT.md`](./DEVELOPMENT.md) : prérequis, lancement en développement, vérifications ;
-- [`WINDOWS_RELEASE.md`](./WINDOWS_RELEASE.md) : construction et publication de l'installateur ;
-- [`dm-display-manager-specs.md`](./dm-display-manager-specs.md) : vision produit ;
-- [`dm-campaign-display-stack.md`](./dm-campaign-display-stack.md) : architecture cible ;
-- [`implementation-plan.md`](./implementation-plan.md) : jalons et critères de validation ;
-- [`domain-model.md`](./domain-model.md) : modèle métier et décisions de données.
+All documentation below is in French.
 
-## Licence
+- [`user-guide.md`](./user-guide.md): installation, usage, backup and troubleshooting;
+- [`DEVELOPMENT.md`](./DEVELOPMENT.md): prerequisites, running in development, checks;
+- [`WINDOWS_RELEASE.md`](./WINDOWS_RELEASE.md): building and publishing the installer;
+- [`dm-display-manager-specs.md`](./dm-display-manager-specs.md): product vision;
+- [`dm-campaign-display-stack.md`](./dm-campaign-display-stack.md): target architecture;
+- [`implementation-plan.md`](./implementation-plan.md): milestones and acceptance criteria;
+- [`domain-model.md`](./domain-model.md): domain model and data decisions.
 
-© 2026 Florence Vermeerbergen. Tous droits réservés.
+## License
 
-Le code source est publié à titre de démonstration. Toute reproduction, modification ou
-redistribution, totale ou partielle, nécessite une autorisation écrite préalable.
-L'installateur publié dans les Releases peut être téléchargé et utilisé librement à titre
-personnel. Voir [`LICENSE`](./LICENSE).
+© 2026 Florence Vermeerbergen. All rights reserved.
+
+The source code is published for demonstration purposes. Any reproduction, modification or
+redistribution, in whole or in part, requires prior written permission. The installer published
+in the Releases may be downloaded and used free of charge for personal use. See
+[`LICENSE`](./LICENSE).

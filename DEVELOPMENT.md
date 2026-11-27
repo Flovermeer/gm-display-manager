@@ -1,7 +1,7 @@
 # Développement — Beholder's Inn
 
 Guide technique pour lancer, vérifier et publier le projet. Pour la présentation générale,
-voir le [README](./README.md).
+voir le [README](./README.fr.md).
 
 ## Stack actuelle
 

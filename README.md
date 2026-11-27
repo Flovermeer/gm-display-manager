@@ -1,150 +1,120 @@
+<p align="center">
+  <img src="public/brand/beholders-inn-logo.png" alt="Beholder's Inn" width="160">
+</p>
+
+<p align="center"><b>English</b> · <a href="./README.fr.md">Français</a></p>
+
 # Beholder's Inn
 
-Application desktop locale pour préparer une campagne de JDR et piloter un
-écran narratif destiné aux joueurs. Foundry VTT reste séparé et conserve la
-gestion de la battlemap, de la grille et du fog of war.
+**Desktop app for tabletop RPG game masters: prepare your campaign and control the screen shown
+to your players.**
 
-## Stack actuelle
+> 🧪 **Exploratory project**: Beholder's Inn is first and foremost a way to test what AI can
+> build today. The code was written entirely by AI agents, first **Codex**, then
+> **Claude Code**. My role: defining the product and the architecture, supervising every step
+> and reviewing the generated code.
+>
+> 🚧 **Work in progress**: the app is usable, but it is still evolving and some features are
+> provisional.
 
-- Angular 22, composants standalone et Router ;
-- application zoneless ;
-- Tauri 2 ;
-- SQLite, Dialog et Filesystem via les plugins officiels Tauri ;
-- Node.js 24.15.0 épinglé localement avec Volta ;
-- Rust 1.88 minimum avec la toolchain Windows MSVC.
+<p align="center">
+  <img src="docs/screenshots/regie-ecran-joueurs.png" alt="Control room: choosing the monitor shown to the players" width="800">
+</p>
 
-## Prérequis Windows
+<p align="center">
+  <img src="docs/screenshots/fiche-organisation.png" alt="Organization sheet with linked mentions and private GM notes" width="800">
+</p>
 
-- Node.js 24.15.0 disponible via Volta ;
-- Rust 1.88 ou plus récent et Cargo avec la cible `x86_64-pc-windows-msvc` ;
-- Microsoft Visual C++ Build Tools ;
-- Microsoft Edge WebView2 Runtime.
+<p align="center">
+  <img src="docs/screenshots/arborescence-chapitres.png" alt="Automatic map of the campaign structure" width="800">
+</p>
 
-Les installations et mises à jour de dépendances sont toujours exécutées par
-l'utilisateur.
+*The interface is currently in French.*
 
-## Installation
+## The idea
 
-Depuis la racine du projet :
+During a session, the game master juggles notes, NPCs, locations and whatever they want to show
+the players. Beholder's Inn brings together campaign preparation and a **second screen dedicated
+to the players**, controlled from the GM panel: the GM decides what is displayed, when, and on
+which monitor.
 
-```powershell
-npm.cmd install
-```
+Battlemap management (grid, fog of war) is deliberately left to
+[Foundry VTT](https://foundryvtt.com/).
 
-Le champ `volta` de `package.json` sélectionne automatiquement Node 24 dans ce
-projet sans imposer cette version ailleurs.
+## Features
 
-## Développement
+- **Campaigns and universes**: resources shared between campaigns of the same universe;
+- **Locations**: hierarchical organization and image gallery;
+- **NPCs**: sheets, groups and organizations;
+- **Player characters**: GM-oriented sheets and hit point tracking;
+- **Chapters and scenes**: ordering, preparation and activation of scenes;
+- **Campaign map**: automatic graph view of chapters and scenes;
+- **Random tables**: preparation and private rolls;
+- **Combat tracker**;
+- **Player screen**: control-free display on the monitor of your choice, driven from the GM
+  panel;
+- **Backup and restore** of your data.
 
-Lancer Angular seul dans le navigateur :
+## Download
 
-```powershell
-npm.cmd start
-```
+The Windows installer is available in the
+[Releases](https://github.com/Flovermeer/gm-display-manager/releases).
 
-Routes actuelles :
+The installer is not signed yet, so Windows SmartScreen may show a warning on first launch. The
+[user guide](./user-guide.md) (in French) covers installation and getting started.
 
-- `http://localhost:4300/campaigns` : accueil et création des campagnes ;
-- `http://localhost:4300/campaigns/:campaignId` : panneau du maître de jeu pour une campagne ;
-- `http://localhost:4300/campaigns/:campaignId/locations` : gestion hiérarchique des lieux et de
-  leur galerie d'images commune à l'univers ;
-- `http://localhost:4300/campaigns/:campaignId/npcs` : gestion des PNJ de la campagne ;
-- `http://localhost:4300/campaigns/:campaignId/player-characters` : fiches PJ utiles au MJ et
-  suivi persistant de leurs points de vie ;
-- `http://localhost:4300/campaigns/:campaignId/chapters` : chapitres, sections et classement des
-  scènes ;
-- `http://localhost:4300/campaigns/:campaignId/map` : carte automatique des chapitres et scènes ;
-- `http://localhost:4300/campaigns/:campaignId/scenes` : préparation et activation des scènes ;
-- `http://localhost:4300/campaigns/:campaignId/tables` : préparation et tirage privé des tables
-  aléatoires de la campagne ;
-- `http://localhost:4300/player-display` : rendu sans contrôles pour les joueurs.
+## Tech stack
 
-Lancer Angular dans la fenêtre desktop Tauri :
+| Layer | Technologies |
+|---|---|
+| UI | Angular 22 (standalone components, zoneless), SCSS |
+| Desktop app | Tauri 2 (Rust) |
+| Data | SQLite and file system, through the official Tauri plugins |
+| Quality | ESLint (Angular and TypeScript rules, layer boundaries), Angular and Rust tests |
+| CI/CD | GitHub Actions: checks on every pull request, Windows installer build (NSIS) and release publishing |
 
-```powershell
-npm.cmd run tauri:dev
-```
+The architecture strictly separates layers: `domain/` depends on neither Angular nor Tauri, and
+components never access data directly. These rules are enforced automatically by the linter.
 
-Le mode développement utilise l'identifiant `com.beholdersinn.app.dev` et un dossier de données
-distinct de l'application installée. Sa base SQLite, ses médias, ses sauvegardes et ses journaux ne
-peuvent donc pas migrer ou remplacer les données de production.
+## Working with AI: the approach
 
-Le premier lancement télécharge et compile les crates Rust déclarées dans
-`src-tauri/Cargo.toml`. Il peut donc prendre plusieurs minutes.
+This project is also a testing ground for how to steer AI agents:
 
-## Vérifications
+- **specifications and an implementation plan** written upfront, split into milestones;
+- **instructions for the agents** ([`AGENTS.md`](./AGENTS.md)): architecture, conventions,
+  boundaries;
+- **automated guardrails**: layer-boundary linting, tests and CI on every pull request;
+- **human review** of every change before merging.
 
-```powershell
-npm.cmd run lint
-npm.cmd run build
-npm.cmd run test -- --watch=false
-cargo test --manifest-path src-tauri/Cargo.toml
-```
+### What I learned
 
-Le développement courant se fait sur une branche dédiée. Toute pull request vers `main`
-déclenche automatiquement la CI Windows, qui exécute le lint, ces tests et le build Angular. Un
-push sur une autre branche ou directement sur `main` ne déclenche pas ce workflow.
+- **Short, focused sessions.** When a session runs too long, the agent ends up hallucinating and
+  the quality of the work drops.
+- **A well-scoped context and good initial instructions.** Without explicit guidance, the agent
+  tends, for example, to duplicate code rather than factor it into reusable components.
+- **A human is still needed.** With the way I currently use these tools, human supervision and
+  review remain essential to keep the code consistent and maintainable.
 
-`npm.cmd run lint` applique les règles recommandées d'Angular et de TypeScript, ainsi que les
-frontières de couches décrites dans `AGENTS.md` : le `domain/` ne dépend ni d'Angular ni de Tauri,
-et les pages et composants n'importent ni repository ni gateway. Ces règles sont définies dans
-`eslint.config.js`.
-
-Le comportement multi-écran devra être validé manuellement sur plusieurs
-moniteurs physiques à partir du jalon 2.
-
-## Installateur Windows
-
-Pour produire localement l'installateur NSIS de la version courante :
-
-```powershell
-npm.cmd run tauri:build -- --bundles nsis
-```
-
-Le workflow `Windows installer` est déclenché manuellement. Depuis la racine du projet, avec GitHub
-CLI authentifié :
-
-```powershell
-gh workflow run windows-installer.yml -R Flovermeer/gm-display-manager --ref main
-```
-
-Le workflow exécute les tests Angular, compile l'application en mode release et génère
-l'installateur NSIS. Il conserve un artefact `beholders-inn-windows-installer` pendant quatorze
-jours et publie aussi l'installateur dans une GitHub Release durable. Le dépôt étant privé, ces
-téléchargements restent accessibles uniquement aux comptes GitHub autorisés. Un simple `git push`
-ne déclenche pas ce workflow.
-
-### Publier soi-même une nouvelle version
-
-1. Choisir un nouveau numéro de version qui n'existe pas encore dans les Releases GitHub.
-2. Reporter exactement ce numéro dans `package.json`, `package-lock.json`, `src-tauri/Cargo.toml`,
-   `src-tauri/Cargo.lock` et `src-tauri/tauri.conf.json`.
-3. Committer puis pousser les changements sur `main`.
-4. Ouvrir [Actions → Windows installer](https://github.com/Flovermeer/gm-display-manager/actions/workflows/windows-installer.yml),
-   cliquer sur **Run workflow**, sélectionner `main`, puis confirmer avec **Run workflow**.
-5. Attendre que toutes les étapes soient vertes. Télécharger ensuite le `.exe` depuis la nouvelle
-   [Release GitHub](https://github.com/Flovermeer/gm-display-manager/releases) ou télécharger
-   l'artefact `beholders-inn-windows-installer` depuis le résumé du workflow.
-
-La même opération peut être lancée en ligne de commande après authentification avec `gh auth login` :
-
-```powershell
-gh workflow run windows-installer.yml -R Flovermeer/gm-display-manager --ref main
-gh run watch -R Flovermeer/gm-display-manager
-```
-
-La publication échoue si la Release `v<version>` existe déjà. Dans ce cas, incrémenter à nouveau les
-cinq fichiers de version, commit, push, puis relancer le workflow. Ne pas créer le tag manuellement :
-le workflow crée lui-même la Release et son tag après la construction réussie de l'installateur.
-
-La procédure complète de versionnement, construction, installation, validation et publication est
-documentée dans [`WINDOWS_RELEASE.md`](./WINDOWS_RELEASE.md).
+**In short:** the hardest part is not getting AI to write code, but scoping each request
+properly and being clear and precise about what you ask for.
 
 ## Documentation
 
-- [`user-guide.md`](./user-guide.md) : installation, sauvegarde, dépannage et utilisation ;
-- [`WINDOWS_RELEASE.md`](./WINDOWS_RELEASE.md) : construction et livraison de l'installateur Windows ;
-- [`dm-display-manager-specs.md`](./dm-display-manager-specs.md) : vision produit ;
-- [`dm-campaign-display-stack.md`](./dm-campaign-display-stack.md) : architecture cible ;
-- [`implementation-plan.md`](./implementation-plan.md) : jalons et critères de validation ;
-- [`domain-model.md`](./domain-model.md) : modèle métier et décisions de données.
+All documentation below is in French.
+
+- [`user-guide.md`](./user-guide.md): installation, usage, backup and troubleshooting;
+- [`DEVELOPMENT.md`](./DEVELOPMENT.md): prerequisites, running in development, checks;
+- [`WINDOWS_RELEASE.md`](./WINDOWS_RELEASE.md): building and publishing the installer;
+- [`dm-display-manager-specs.md`](./dm-display-manager-specs.md): product vision;
+- [`dm-campaign-display-stack.md`](./dm-campaign-display-stack.md): target architecture;
+- [`implementation-plan.md`](./implementation-plan.md): milestones and acceptance criteria;
+- [`domain-model.md`](./domain-model.md): domain model and data decisions.
+
+## License
+
+© 2026 Florence Vermeerbergen. All rights reserved.
+
+The source code is published for demonstration purposes. Any reproduction, modification or
+redistribution, in whole or in part, requires prior written permission. The installer published
+in the Releases may be downloaded and used free of charge for personal use. See
+[`LICENSE`](./LICENSE).

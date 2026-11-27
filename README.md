@@ -95,6 +95,9 @@ Ce projet est aussi un terrain d'expérimentation sur la manière d'encadrer des
 - **Un humain reste nécessaire.** Avec mon utilisation actuelle, la supervision et la relecture
   humaines restent indispensables pour garder un code cohérent et maintenable.
 
+**En résumé :** le plus difficile n'est pas de faire écrire du code à l'IA, mais de bien
+délimiter le périmètre de chaque demande et d'être clair et précis dans ce qu'on lui demande.
+
 ## Documentation
 
 - [`user-guide.md`](./user-guide.md) : installation, utilisation, sauvegarde et dépannage ;

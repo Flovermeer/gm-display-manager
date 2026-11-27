@@ -85,9 +85,15 @@ Ce projet est aussi un terrain d'expérimentation sur la manière d'encadrer des
   pull request ;
 - une **revue humaine** de chaque changement avant fusion.
 
-<!-- Optionnel : 2-3 lignes sur ce que tu as appris (ce que l'IA fait bien, où elle a besoin
-     d'être recadrée, pourquoi le passage de Codex à Claude Code). C'est souvent la partie la
-     plus intéressante pour un lecteur. -->
+### Ce que ça m'a appris
+
+- **Des sessions courtes et ciblées.** Sur une session trop longue, l'agent finit par halluciner
+  et la qualité du travail baisse.
+- **Un contexte bien délimité et de bonnes instructions de départ.** Sans consignes explicites,
+  l'agent a par exemple tendance à dupliquer du code plutôt qu'à le factoriser en composants
+  réutilisables.
+- **Un humain reste nécessaire.** Avec mon utilisation actuelle, la supervision et la relecture
+  humaines restent indispensables pour garder un code cohérent et maintenable.
 
 ## Documentation
 
